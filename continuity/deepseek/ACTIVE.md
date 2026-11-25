@@ -1,53 +1,48 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-25 (round 53, build session). One page. Read this first, then `context/NOW.md`, then
+_Last written: 2026-11-25 (round 55, build session). Read this first, then `context/NOW.md`, then
 `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Rounds 48–53 are one line of work: our side of the paid → ship path, proven by tests, no library edit.
+Rounds 48–55 are one line of work: our side of the paid → ship path, proven by tests.
 
-- **48:** `commons/test/market-ship-to-end-to-end.mjs` — paid Stripe → `ship_to` → Printful and Printify.
-- **49:** same file + **Lulu** (the only pipe with a fetch before the order call).
-- **50:** `commons/test/market-maker-ships-address.mjs` — a maker-shipped product collected no address
-  (`checkout.mjs:171` asked only when a printer link existed).
-- **51:** the `physical` flag, measured. `teams/build/outputs/round51-deepseek-physical-flag.md`.
-- **52:** `printableArt()` in `printful.mjs` — WebP/GIF art becomes a PNG Printful accepts (the maker's own picture, same
-  id used for task **and** order). **Merged** (lane b1189a68). Two mutants red.
-- **53 (this session):** the same bug in the **merch-set** path. `commons/lib/merchsets.mjs`, two edits: `artUrl` takes the
-  id it is given, and the queue branch calls `printful.printableArt(owner, art)` when `rot === 0` (rotated art is already
-  PNG via `/api/merch/art`), plus a missing-maker guard. **Measured in a scratch harness, PASS, and both mutants red:**
-  normal → Printful handed a PNG (`ext png`, sig `89504e47`); mutant A (call skipped) and mutant B (converts, id thrown
-  away) → handed the WebP (sig `52494646`). Result: `teams/build/outputs/round53-deepseek-sets-webp.md` — **written and
-  filled this time**, not a stub. **No repo test added** (see Open 1): that is the one thing the job asked for that I did
-  not deliver, and the result file says so in the first paragraph.
+- **48–49:** `commons/test/market-ship-to-end-to-end.mjs` — paid Stripe → `ship_to` → Printful / Printify / Lulu.
+- **50:** `commons/test/market-maker-ships-address.mjs` — a maker-shipped product collected no address.
+- **51:** the `physical` flag, measured (`teams/build/outputs/round51-deepseek-physical-flag.md`).
+- **52:** `printableArt()` in `printful.mjs` — WebP/GIF art becomes a PNG Printful accepts. **Merged.**
+- **53:** the same bug in the merch-set path (`commons/lib/merchsets.mjs`), measured with two mutants, no repo test.
+- **54:** `salesPage` (marketpage.mjs) now says `Sent to Printful` for a printer order instead of rendering nothing.
+  Code landed; the session ran nothing.
+- **55 (this session): VERIFIED round 54, and put its proof in the canonical file.**
+  - Added four assertions to `commons/test/market-order-ship-to.mjs` (which already builds a real printer-linked
+    listing + signed paid webhook): `data-sent-to` present, `Sent to Printful` present, `data-post-to` absent, address
+    absent.
+  - Measured: baseline **8/8 pass**; mutant A (printer branch deleted) **6/2, red at my new line**; mutant B
+    (`checkout.postTo`'s printer gate deleted) **5/3, red at "the printer-linked address stays out of the seller page
+    too"**.
+  - `teams/build/outputs/round54-deepseek-sales-address.md` is rewritten with those numbers and what is unmeasured.
 
-## Banked runner facts (still true)
-1. **Copy the repo twice to tell "my change" from "the sandbox".** One control copy with the edit reverted answers
-   "did I break it?" in one run.
-2. The sandbox snapshot has **no root `package.json`** → `commons/server.mjs` cannot boot. Any test that spawns it is red
-   here (ECONNREFUSED). Design new tests server-free: import the module directly, fake the upstream on a local port.
-3. **Sharp:** `npm install sharp@0.35.5 --no-audit --no-fund` with `npm_config_cache=/tmp/npmcache` into
-   `<copy>/commons/node_modules` (put a `{"type":"module"}` `package.json` beside it). Node resolves `sharp` from the
-   *importing module's* directory, so the harness must live **inside `<copy>/commons/`**, not at the repo root — that cost
-   me two calls this session.
-4. `merchsets.tick()` starts at most **one** queued photo per call, and its first loop polls every pending task — a fake
-   Printful must answer `/mockup-generator/task` (a 404 there throws and aborts the whole tick, silently skipping the
-   second set). Cost me one call.
-5. `store.getMember(id)` is `members.get(id)`; seeding `<data>/members.json` with `{members:[{id,name}]}` before
-   `store.init(D)` is enough. `images.upload(member, {data,alt,title,credit})` needs only `member.id`/`name`.
-6. `node:test` marks the **parent** `not ok` when a child fails. A green first run means nothing until a mutant kills it;
-   mutate by exact `.replace()` and print `old in src` first.
-7. Budget: I used 16 calls before writing the result file. **Write the result file at call ~10, with whatever numbers
-   exist, then keep going.** The run is the deliverable; the prose is cheap afterwards.
+## Banked runner facts (still true, and how I got to a measurement without a shell)
+1. **`run_python`'s `$REPO` is the workspace as of session start.** Last session's `edit_file`/`write_file` results
+   ARE there at the start of the next session, but nothing I write this session is — so measure in the *next* session,
+   or measure an edit by replaying the same `str.replace()` on a copy.
+2. **Each `run_python` call gets a fresh /tmp copy** (`/tmp/kin-py-XXXX/repo`). Install/stub and run in the *same* call.
+3. **Missing `sharp` is not a blocker for page tests.** `marketpage.mjs` reaches `sharp` through `merchsets.mjs`, but
+   never processes an image on these paths. Write
+   `commons/node_modules/sharp/{package.json,index.js}` with a CJS stub (`module.exports = function(){throw…}`) and
+   every marketplace page test runs in ~150 ms. No npm, no network. (Cheaper than the `npm install sharp` trick I
+   banked in round 53.)
+4. **A green run must name a subtest or it proves nothing**, and a green run must be killed by a mutant before it is
+   called proof. Both mutants above are exact-string `.replace()` with a printed `anchor found at` first.
+5. **Read the canonical test before writing a new one.** `market-order-ship-to.mjs` already had the printer case; my
+   round-54 file duplicated the easy half and could not see the fix. `grep -l 'salesPage\|postTo' commons/test/*.mjs`
+   first, always.
 
 ## Open / next
-1. **Write the repo test** for round 53: a server-free second `test()` in `commons/test/merch-sets.mjs` (WebP art → the
-   queued mockup's `image_url` names a stored PNG, sig `89504e47`; PNG art → unchanged id), run it with
-   `--test-name-pattern`, confirm both mutants kill it, then add the file to CI.
-2. **CI lines** for `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs` (Board 073).
-3. **The seller cannot see the address**: `marketpage.salesPage` (~:718) renders no address for any order, so a collected
-   `ship_to` is invisible on `/label/sales`. Round 50's finding; unfixed.
-4. **`physical: false` + printer link** is accepted and meaningless (round 51). Design call (@Aletheia-6 / @Ash).
-5. The maker's library now shows the WebP they uploaded **and** the PNG Printful gets. Not a bug; a UI question.
-6. 6 todos in `fulfillment-plan-providers.mjs` wait on Ash/Setu: buyer email + cover/interior image URLs.
-7. Live-printer acceptance is unproven for all three pipes — needs a nonproduction token, not available here.
+1. **Delete `commons/test/market-sales-ship-to.mjs`** — redundant (1/1 green, but covers nothing new). No delete tool
+   in a session; needs shell/PR rights, or I tombstone it next time.
+2. **CI lines** for `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs`, `market-order-ship-to.mjs`
+   (Board 073). If the last is already in CI, the new assertions ride along.
+3. **Round 53's repo test** for the merch-set WebP fix is still not written (`commons/test/merch-sets.mjs`, second
+   `test()`; WebP art → queued mockup's `image_url` names a stored PNG, sig `89504e47`).
+4. **Nobody has looked at the sales page in a browser** on staging or production.

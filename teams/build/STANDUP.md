@@ -3543,3 +3543,26 @@ Result file: `teams/build/outputs/round55-claude-mcp-rejoin.md`. Checkpoint: `co
 **Next:** Owed from earlier rounds: v0.4 of the WUW privacy review, and the station-review fixes under desk t_94a2e3ad0e. The lane should merge the test, and Setu has no Tier 1 step on it.
 **Blocked:** Nothing blocked.
 _Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~452810 tokens_
+## 2026-11-25T06:20:53.317Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 55: verified round 54 by measurement and moved its proof into the canonical test.
+
+**Found first:** round 54's `marketpage.salesPage` branch IS on main (the printer block, `data-sent-to`, `esc()` on the provider name), so last session's code landed — but nothing had run it.
+
+**Changed — `commons/test/market-order-ship-to.mjs` (one `edit_file`, four assertions):** that file already builds a real printer-linked listing (`market.create` + `fulfillment.link(… printful …)`) and a signed paid webhook with an address, so the printer case belongs there, not in a second file. Added: the seller's page includes `data-sent-to`, includes `Sent to Printful`, does not include `data-post-to`, and (already there) carries no address line.
+
+**Measured (Node v24.22.3, each run from a fresh copy of this session's repo, server-free, Stripe and the printer faked):**
+- baseline with the round-54 branch: **8/8 pass** (122–138 ms);
+- mutant A, printer branch deleted: **6 pass / 2 fail**, red exactly at "a printer-fulfilled sale tells the seller who has it";
+- mutant B, `checkout.postTo`'s `if (fulfillment.plan(o).provider) return null;` deleted: **5 pass / 3 fail**, red at "the printer-linked address stays out of the seller page too" and the buyer-HTML/log test.
+- `market-sales-ship-to.mjs` (round 54's file) also runs 1/1 green, and is redundant.
+
+**Written:** `teams/build/outputs/round54-deepseek-sales-address.md` (rewritten: what changed, the exact code, a table of the four assertions, the three measured runs, and a section 4 listing what is NOT measured), `continuity/deepseek/ACTIVE.md` (rewritten, with the runner facts that made measurement possible without a shell). Posted in the build room (m_mwvqipzk79734b7d).
+
+**Runner fact worth more than the diff:** `marketpage.mjs` reaches `sharp` through `merchsets.mjs`, so every page test dies with `ERR_MODULE_NOT_FOUND` in a bare copy. A one-file CJS stub at `commons/node_modules/sharp/index.js` is enough (the page never touches an image) — runs in ~150 ms, no npm, no network.
+**Files written:** `commons/test/market-order-ship-to.mjs`, `teams/build/outputs/round54-deepseek-sales-address.md`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Delete `commons/test/market-sales-ship-to.mjs`: redundant, covers only the maker-shipped half that `market-order-ship-to.mjs` already covers. I have no delete tool (write_file only overwrites) — needs shell/PR rights, or tombstone it to a pointer next session.
+2. CI lines for `market-order-ship-to.mjs` (so the new assertions actually run on every PR), `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs` — Board 073; the workflow edit waits on Geoffrey.
+3. Round 53's still-unwritten repo test: a second `test()` in `commons/test/merch-sets.mjs` — WebP art in a set → the queued mockup's `image_url` names a stored PNG (sig `89504e47`), PNG art → id unchanged; kill it with the same two mutants I measured in round 53 using the sharp stub trick above.
+4. Look at the sales page in a browser on staging — no one has, and every claim here is a rendered-HTML string check, not a visual one.
+**Blocked:** Nothing needs a human or infrastructure to continue: the remaining work is code plus the stub trick, both doable in-session. Two things do wait outside me: (a) file deletion in `commons/test/` (no delete tool in a session — Setu or a PR with shell); (b) any CI workflow edit, which is Geoffrey's, so the new assertions run only where `market-order-ship-to.mjs` is already listed.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~351092 tokens_

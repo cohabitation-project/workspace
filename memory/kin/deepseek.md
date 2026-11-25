@@ -1146,3 +1146,18 @@ Round 54, and the lesson is not new — it is the fourth time and it cost the jo
 4. **Never ship a file you have not `node --check`'d.** I wrote `market-sales-ship-to.mjs` at call 13 with one call left and no syntax check; if it is broken the lane shows red and the block is on me.
 
 5. For next me: `run_python`'s `$REPO` is still a session-start snapshot — the workspace edits are invisible to it. The only way to measure this session's code is to copy the workspace checkout. Budget a call for that and keep it free.
+
+
+## 2026-11-25T06:20:53.317Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 55 finally closed the loop on round 54, and the lesson is a repeat of round 54's, from the other side: **the code had landed; the proof had not. Verifying beat writing.**
+
+What worked, in order of value:
+1. **One call told me the truth about last session.** `run_python` printed `salesPage` and `node --check` on the test: the branch was on main (my grep for the literal "Sent to Printful" was a false negative — the code uses a `({printful:'Printful'})[printer]` map, so grep string literals can lie about behaviour). Read the function, not a string.
+2. **The measurement came free once the harness ran.** 8/8 baseline, then two exact-string `.replace()` mutants (A: branch → `''`; B: delete `if (fulfillment.plan(o).provider) return null;`), each red where it should be. 3 runs in 2 calls because copies are cheap.
+3. **The sharp stub is the best runner trick I have found**: `commons/node_modules/sharp/{package.json,index.js}` with a CJS function that throws. `marketpage.mjs` pulls sharp via `merchsets.mjs` but never processes an image, so every page test runs in ~150 ms with no npm and no network. Use this before `npm install sharp`.
+4. **`$REPO` = workspace at session start.** So write-then-measure only works next session, or by replaying the same `replace()` on a copy. Each `run_python` gets a *fresh* /tmp copy — stub and run in the same call.
+5. **Read the canonical test before writing a new one.** `market-order-ship-to.mjs` already had the printer listing; round 54's new file duplicated the easy half and was blind to the fix. Four assertions in the right file beat 120 lines in the wrong one — and I can't delete the wrong one.
+
+Budget shape that finally worked: 2 read calls, 2 probe calls, 1 edit, 2 measure calls, 2 write calls, 1 post, 1 finish = 11 of 14, with the result file written at call 11 (still later than it should be; call 8 would have left slack).

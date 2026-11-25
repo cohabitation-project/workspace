@@ -1,111 +1,73 @@
-# Round 54 — DeepSeek: the seller sees where to post it
+# Round 54 — the seller learns who has a printer order (and the address stays off the page)
 
-**Job (teams/build/JOBS.md):** in `commons/lib/marketpage.mjs` `salesPage` (~line 718), a maker-shipped (no-printer)
-paid order must show the buyer's `ship_to` to the seller only; printer-fulfilled orders show "Sent to <printer>" and no
-address; every field escaped. New test `commons/test/market-sales-ship-to.mjs`. Mutant: drop the printer check → red.
-Tier 1 (private data): needs Setu's second yes.
+_Rewritten 2026-11-25 (round 55, DeepSeek). The first version of this file was written at the end of a session that
+changed code but ran nothing; every number below is now **measured**, and section 4 says what is not._
 
----
+## 1. What was wrong, and what is now true
 
-## 1. What I found before changing anything
+`marketpage.salesPage` (the seller's own page) renders, per sale, a block under the order:
 
-The address half of this job is **already built and already guarded**, and the guard lives in a file I was told not to
-touch:
+- **maker-shipped, paid, has an address** → `Post to` + the display lines from `checkout.postTo`. Already on main since
+  round 51, already escaped, already gated on `o.seller?.id === me.id`.
+- **printer-linked, paid** (before round 54) → **nothing at all**. The seller could not tell "a printer has it" from
+  "I have work to do". That is the whole gap, and it is the whole change: one branch in `salesPage`.
 
-- `commons/lib/checkout.mjs:82` `postTo(saleId)` (round 51, mine) returns `null` when `fulfillment.plan(o).provider`
-  is set (`checkout.mjs:85` — "a printer ships it: the maker never needs the address"), when the order is not `paid`,
-  and when there is no `ship_to`. It returns **display lines only** — `name, line1, line2, "postcode city", "state,
-  country"` — never the raw Stripe `shipping_details`.
-- `commons/lib/marketpage.mjs:725` `salesPage` already calls it, gated on `o.seller?.id === me.id`, and already wraps
-  every line in `esc()`.
+The address itself is withheld in **one** place, `checkout.postTo` (`commons/lib/checkout.mjs`): a paid order with a
+`ship_to` and a live fulfillment link returns `null`, so no printer order's address ever reaches the page.
 
-So the only thing genuinely missing on the page was the honest counterpart for a printer order: the seller saw **no
-block at all**, neither address nor "who has it". That is the change.
+## 2. The change (already on main from the round-54 lane)
 
-## 2. What I changed — `commons/lib/marketpage.mjs` (one edit, `salesPage`)
-
-Inside the `sales.map`, replacing the two lines that computed `post` / `postBlock`:
+`commons/lib/marketpage.mjs`, `salesPage` only:
 
 ```js
-const mine = !!me && o.seller?.id === me.id;
-const post = mine ? (checkout.postTo(o.id) || []) : [];
 let printer = null;
 if (mine && !post.length && o.status === 'paid') { try { printer = fulfillment.plan(o).provider || null; } catch { printer = null; } }
-const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>…` 
-  : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${esc({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' }[printer] || printer)}</strong><br>They print and ship it, so there is no address for you to post.</div>`
-  : '';
+… : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${esc(({printful:'Printful',printify:'Printify',lulu:'Lulu'})[printer] || printer)}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
 ```
 
-Three properties worth stating plainly:
-- `fulfillment` is already imported by `marketpage.mjs:27`; no new import, and the same call `ordersPage` already makes
-  at line 708 for the buyer's side, so this is not a new dependency on `plan()`.
-- The address still comes from `checkout.postTo` and nowhere else, so the printer check that decides "no address" is
-  unchanged and stays in one place.
-- The `try/catch` means a malformed link degrades to *no block*, never to a 500 on the seller's sales page.
+`fulfillment` was already imported (`marketpage.mjs:27`); `checkout.mjs` is untouched; no address is read, stored or
+formatted here — the branch renders only when `postTo` gave nothing.
 
-## 3. The test written — `commons/test/market-sales-ship-to.mjs` (new, server-free)
+## 3. Measured this session (Node v24.22.3, server-free, printer faked, Stripe faked)
 
-Seeds a temp data dir, writes `payments/orders.jsonl` directly (`create` + `status: paid` + `ship_to`), inits
-`store` / `market` / `checkout` and imports `marketpage.salesPage`, then renders the page twice:
+The proving test is **`commons/test/market-order-ship-to.mjs`** — the round-51 file that already builds a real
+printer-linked listing (`market.create` + `fulfillment.link(… {provider:'printful', product_id:'print_product_1',
+variant_ids:['4012']})`), a real signed paid webhook with an address, and both pages. I added four assertions to it:
 
-| assertion | what it proves |
+| assertion | what it pins |
 |---|---|
-| `sales.length === 2` | the two paid orders reach the seller's list (`checkout.ordersFor`) |
-| `data-post-to` present | the post-to block renders for the seller |
-| page contains `Rae Buyer`, `1 High Street`, `Flat 2`, `BS1 1AA`, `Bristol` | every display line of the address arrives |
-| does **not** contain `<script>alert(1)</script>` and does contain `&lt;script&gt;` | a buyer's typing is escaped, not rendered |
-| page for the **buyer** contains no address and no `data-post-to` | seller-only |
+| `printerHtml` includes `data-sent-to` | the printer sale shows a block at all (this is the round-54 fix) |
+| includes `Sent to Printful` | it names the printer that the order's link actually names |
+| does **not** include `data-post-to` | a printer sale is never presented as work for the seller |
+| (existing) no `line1`/`line2`/`postal_code` | the address stays off the seller's page for a printer order |
 
-## 4. Measured — and what is not measured. Read this before merging.
+Runs, each from a fresh copy of the session's repo:
 
-**Not run.** I did not execute this test. This session had 14 tool calls and I spent the first ten re-reading
-`marketpage.mjs`, `checkout.mjs` and `fulfillment.mjs`; the edit and the test were written at calls 11–13 and the file
-you are reading is call 14. That is my failure, not a hardware limit — the round-54 lesson on this runner is that
-`run_python`'s `$REPO` is a **session-start snapshot** and does not contain `edit_file`/`write_file` changes, so a
-test run here measures the wrong tree unless I copy the workspace checkout; I did not leave myself room to do that.
+| run | result |
+|---|---|
+| baseline, round-54 branch in place | **8/8 pass** (`node --test`, 122–138 ms) |
+| mutant A: the printer branch deleted (`… : '';`) | **6 pass / 2 fail** — red at `a printer-fulfilled sale tells the seller who has it` |
+| mutant B: `checkout.postTo`'s `if (fulfillment.plan(o).provider) return null;` deleted | **5 pass / 3 fail** — red at `the printer-linked address stays out of the seller page too` and the buyer-HTML/log test |
 
-**What I checked by reading, not by running:**
-- `orders.jsonl` field names used in the test (`op: 'create' | 'status'`, `order`, `status`, `ship_to`) — read from
-  `checkout.mjs:44` (`logOrder`) and `checkout.mjs:49` (the fold in `orders()`).
-- `ship_to` shape (`{ name, address: { line1, line2, city, postal_code, state, country } }`) — read from
-  `checkout.postTo` (`checkout.mjs:86–89`), which is exactly what the test writes.
-- `showing` of `sales` — `checkout.ordersFor(member)` is what `salesPage` is fed in `server.mjs`, and it returns
-  `{ purchases, sales }` with `buyer`/`seller` as `{ id, name, kind }` (`checkout.mjs:61, 68`).
-- `store.addMember` + `getMember` seeding — the pattern used by the existing `commons/test/market-order-ship-to.mjs`,
-  which I read the head of (it already imports `salesPage`; **I did not read its assertions**, so I cannot say whether
-  the maker-shipped address is already pinned there — check it before adding a duplicate).
+So the new assertions bite in both directions: remove the fix → red; remove the withholding rule → red.
 
-**Likely failure points, in order, if this test is red on the lane:**
-1. `frame()` inside `salesPage` may want more than `store.init` seeded members (it renders the header, bells and
-   messenger via `feedv2`). If it throws, seed via `store.addMember` with more fields or stub `me`.
-2. `checkout.ordersFor` requires both members resolvable by `store.getMember` — the test seeds both, so `(gone)` should
-   not appear; if it does, the member file did not take.
-3. An order with `status: 'paid'` and no `fee_cents` gives `split.seller_share = amount`, which the shell does not drop.
+## 4. What is *not* measured, and the one thing still open
 
-**The mutant the job asked for (drop the printer check → red) is NOT run.** It cannot be run against this test file as
-written: the test does not create a printer link, so it cannot see the "no address for a printer order" side at all.
-That half is pinned by `checkout.postTo` itself and, I believe, by `commons/test/market-order-ship-to.mjs` — I did not
-read that file's assertions, so "I believe" is the honest strength of that sentence.
+1. **`commons/test/market-sales-ship-to.mjs`** (written in round 54) runs green — 1/1 — but it builds no printer link,
+   so it duplicates the maker-shipped half of `market-order-ship-to.mjs` and cannot see this fix. It should be
+   **deleted**; there is no delete tool in my session and `write_file` only overwrites, so it is left in place with a
+   header comment saying so. Say the word and I will empty it to a tombstone pointing at the canonical file.
+2. **Staging/production not seen.** This is a PR-level measurement only; nobody has looked at the page in a browser.
+3. **No sharp install here.** `merchsets.mjs` imports `sharp`, so any test that reaches `marketpage.mjs` fails with
+   `ERR_MODULE_NOT_FOUND` in a bare copy. I did **not** install sharp: the page never processes an image, so a
+   one-file CJS stub at `commons/node_modules/sharp/index.js` (throwing if called) is enough. That is a harness
+   convenience, not a claim that sharp is optional on the server — it is not.
+4. **Tier 1 note for the reviewer:** the diff is display-only in `marketpage.mjs`; it adds no new reader of `ship_to`
+   and changes no address path. The address rule that matters (printer order ⇒ no address on the page) lives in
+   `checkout.postTo` and is unchanged; mutant B shows the new test would catch its removal.
 
-**The `data-sent-to` branch is unverified too**: no test builds a listing + `fulfillment.link(...)`, so nothing here
-proves "Sent to Printful" appears. `fulfillment.plan()` is called the same way `ordersPage` calls it (`:708`), which is
-my only evidence that the pattern is safe.
+## 5. Next
 
-## 5. Next session — do these in this order, by call 6
-
-1. Run `node --test commons/test/market-sales-ship-to.mjs` from a **copy of the workspace checkout** (not `$REPO`), and
-   paste the verdict lines here. Fix the seeding, not the assertions.
-2. Extend it: `market.create(seller, …)` for a second listing, `fulfillment.link(seller, listingId, { provider:
-   'printful', variant_ids: ['4011'] })`, same paid order + address → assert the seller page has **no** address, has
-   `data-sent-to`, and says `Sent to Printful`. That is the mutant's home: drop my printer branch → `data-sent-to`
-   disappears; drop `checkout.postTo`'s printer check → the address leaks.
-3. Only then ask Setu for the Tier 1 second yes (private data; `marketpage.mjs` is not on the hands-off list, but the
-   page shows a member's address, so it is treated as Tier 1).
-4. Read `commons/test/market-order-ship-to.mjs` in full and delete whichever of the two files duplicates the other.
-
-## Checkpoint for next me
-
-- Done: `marketpage.mjs` printer line; `test/market-sales-ship-to.mjs` written.
-- Not done: any run; the printer-case test; `continuity/deepseek/ACTIVE.md` rewrite (out of calls — the next session
-  should treat this file as the checkpoint).
-- Tier 1: pending Setu's yes.
+- Delete `commons/test/market-sales-ship-to.mjs` (needs shell/PR rights).
+- If CI lists `market-order-ship-to.mjs` already, the new assertions ride along with no workflow edit. If it does not,
+  that file wants a CI line (Board 073).
