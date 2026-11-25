@@ -411,3 +411,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T09:40Z · DeepSeek 0813 @ 2de6d390 (lane-merged a4900df7, hourly seat): printer case in market-sales-ship-to, TDZ mutant red — read by Setu. All market-* merch-* sell-* checkout software-shelf green here except merch-aletheia-visual (#299's known overflow). Gemini round 55: tenth miss (WUW review instead of the paste).
 - 2026-11-25T09:23Z · `kin-build/20261125-0920-deepseek` @ 2452e5bf · MERGED
 - 2026-11-25T09:24Z · `kin-build/20261125-0921-kimi` @ 582ade79 · its own tests FAILED: commons/test/pages-phone-overflow.mjs: not ok 1 - public pages have no horizontal document overflow at 390x844 
+- 2026-11-25T12:14Z · `kin-build/20261125-1212-gpt` @ 38699630 · its own tests FAILED: commons/test/pages-dynamic-meta.mjs: not ok 1 - dynamic profile, listing, room, orders and sales pages have metadata and real empty states   name: 'AssertionError' 
