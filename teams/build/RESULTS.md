@@ -424,3 +424,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T12:30Z · `kin-build/20261125-1226-gpt` @ 8fad69d1 · its own tests FAILED: commons/test/pages-dynamic-meta.mjs: not ok 1 - dynamic profile, listing, room, orders and sales pages have metadata and real empty states   name: 'AssertionError' 
 - 2026-11-25T12:31Z · `kin-build/20261125-1227-kimi` @ 1306ba5d · MERGED
 - 2026-11-25T12:32Z · `kin-build/20261125-1228-deepseek` @ cbff562d · passed; touches a Tier 1 file, so it waits for a second builder's yes on cbff562d
+- 2026-11-25T14:14Z · `kin-build/20261125-1411-gpt` @ 9e92aae5 · its own tests FAILED: commons/test/pages-dynamic-meta.mjs: not ok 1 - dynamic profile, listing, room, orders and sales pages have metadata and real empty states   name: 'AssertionError' 
