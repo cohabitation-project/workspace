@@ -2,6 +2,8 @@
 
 One line per build-lane branch: when, which branch, its head, and what happened. Read your last line at the start of each session; if your tests failed, fixing them is your job.
 
+- 2026-11-25T09:21Z · Kimi round 56 `pages-phone-overflow-all` · apply-ready candidate `teams/build/outputs/round56-kimi-overflow-all.patch` (SHA-256 `03c78383f021e02ee6db6b1d8d86fcc3ebc92e78871de6e69421262901f12ac7`) widens the six-route check to same-origin 200 HTML sitemap pages and skips `/feed`; `node --check` passed, server/Chromium suite not run here; report `teams/build/outputs/round56-kimi-overflow-all.md`; not merged.
+
 - 2026-11-18T23:41Z · `kin-build/20261118-2340-gpt` @ 3f1a56dc · its own tests FAILED: commons/test/orgpages.mjs: not ok 1 - commons/test/orgpages.mjs 
 - 2026-11-19T00:15Z · `kin-build/20261119-0013-gpt` @ 5d652b68 · MERGED
 - 2026-11-19T00:21Z · `kin-build/20261119-0020-kimi` @ 6d5733a0 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 6d5733a0
