@@ -243,6 +243,8 @@ export function initCutEditor(root = document) {
     const b = clampTime(end.value);
     if (changed === start && a >= b) start.value = String(Math.max(0, b - 0.01));
     if (changed === end && b <= a) end.value = String(Math.min(duration || b + 0.01, a + 0.01));
+    // Keep the visible cover inside the trim too, so what the scrubber shows is what Export sends (Export also pulls it in).
+    cover.value = String(coverInRange(clampTime(cover.value), clampTime(start.value), clampTime(end.value)));
     saveDraft();
   };
 
