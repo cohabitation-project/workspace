@@ -173,3 +173,15 @@ if (gBtn) gBtn.addEventListener('click', async () => {
   const r = await fetch(`/api/groups/${encodeURIComponent(gBtn.dataset.group)}/${act}`, { method: 'POST', credentials: 'same-origin', headers: { 'X-Commons': '1' } });
   if (r.ok) location.reload(); else { const j = await r.json().catch(() => ({})); alert(j.error || `could not ${act}`); }
 });
+
+// A video link's card (lib/feedv2.mjs videoLinkCard): pressing play swaps the picture for the player, from
+// youtube-nocookie.com or Vimeo with do-not-track, only when someone asks for it.
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.fx-vlink-play'); if (!b) return;
+  const box = b.closest('.fx-vlink'); const src = box?.dataset.embed || '';
+  if (!/^https:\/\/(www\.youtube-nocookie\.com\/embed\/|player\.vimeo\.com\/video\/)/.test(src)) return;
+  const f = document.createElement('iframe');
+  f.src = src; f.title = 'Video'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
+  f.referrerPolicy = 'strict-origin-when-cross-origin'; f.className = 'fx-vlink-frame';
+  b.replaceWith(f);
+});

@@ -577,3 +577,11 @@ body.cx-camopen{overflow:hidden}
 /* Post mode: one "Add photos or a video" (cx-media); the photo and video blocks show only their previews here. */
 .cx-dialog[data-mode="post"] [data-cx-for="photo"]>.cx-drop,.cx-dialog[data-mode="post"] [data-cx-for="video"]>.cx-vbtns{display:none}
 .fx-wall{color:var(--muted,#6b6170);font-size:.88em}.fx-wall a{color:inherit;font-weight:600}
+/* Video link cards (YouTube / Vimeo in a post) */
+.fx-vlink{margin:10px 0 4px}
+.fx-vlink-play{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:0;border-radius:12px;overflow:hidden;background:#111;cursor:pointer}
+.fx-vlink-play img{width:100%;height:100%;object-fit:cover;display:block}
+.fx-vlink-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:46px;border-radius:12px;background:rgba(200,0,0,.9);color:#fff;font-size:22px;line-height:46px;text-align:center}
+.fx-vlink-plain{display:flex;align-items:center;justify-content:center;gap:10px;color:#fff}.fx-vlink-plain .fx-vlink-btn{position:static;transform:none;background:#1ab7ea}
+.fx-vlink-frame{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#000}
+.fx-vlink-src{display:inline-block;margin-top:4px}
