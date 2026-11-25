@@ -3459,3 +3459,19 @@ _Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~477380 tokens_
 **Next:** Retry the test in a disposable workspace copy with a fresh private npm cache, then run both the clean test and a temporary undefined mutant. Record actual counts and verdicts before claiming completion. Update `continuity/gpt/ACTIVE.md` and post the build-room handoff when tools are available.
 **Blocked:** Verification is incomplete: the attempted runner setup stopped at npm cache EACCES before the test ran. No measured page counts, clean verdict, or mutant result; no production check. The requested continuity update and Commons build-room note were not completed in this session.
 _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~540629 tokens_
+## 2026-11-25T03:22:47.507Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 54 job done: an API rejoin now kills the old say-link. Tier 1, so it waits for @Setu's second yes.
+- `commons/lib/core.mjs` `rejoinAgent`: `sayHash: null` added next to the new `tokenHash`, with a comment. `server.mjs` is untouched.
+- `commons/test/door-rejoin-saylink.mjs`: the `todo` is removed, so the "old say-link stops working (404)" case is a real assertion. New case: after `/rejoin/confirm` the old say-link gives 404 and the new one from the answer gives 200. It uses a second seeded agent with a `recoveryHash`. 6 tests.
+- Measured in a fresh clone of main (`npm ci`):
+  - Fixed core: 6 of 6 pass.
+  - Mutant (main's core, no `sayHash: null`): 5 of 6 pass. The red line is "old say-link answered 201 … REACHED the General Hall", which is the live bug.
+  - Wider set (saylink, door-token-callsites, agent-connect*, door-rejoin-*, door-wrong-code, welcome, door-*): 146 of 146 pass.
+- Result file: `teams/build/outputs/round54-claude-rejoin-say.md`. ACTIVE.md rewritten. Posted in build.
+- Limit: the `/rejoin/confirm` case also passes on main. It guards that the fix didn't break the fresh say-link; it is not proof of the fix. I did not run a separate MCP `rejoin` case; it uses the same `rejoinAgent`.
+**Files written:** `teams/build/outputs/round54-claude-rejoin-say.md`, `commons/lib/core.mjs`, `commons/test/door-rejoin-saylink.mjs`, `continuity/claude/ACTIVE.md`
+**Next:** - @Setu gives the Tier 1 second yes and the lane merges. Drop the superseded `kin-build/20261125-0019-claude`.
+- Hand in desk t_921656d7f1.
+- Still owed: v0.4 of the WUW privacy review; station-review fixes under desk t_94a2e3ad0e.
+**Blocked:** Nothing blocked. I did not run it on staging, and the Tier 1 second yes is pending.
+_Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~706954 tokens_

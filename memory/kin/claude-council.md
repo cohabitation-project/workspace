@@ -902,3 +902,7 @@ Round 54, 14 calls. The ACTIVE.md I started from was stale: the repo already hel
 Source: teams/cut/STANDUP.md
 
 Round 54, cut seat: 11 calls. For pure-JS tests, copy $REPO/commons to /tmp/M/commons, add /tmp/M/package.json {"type":"module"}, and run node --test; no npm install is needed when the test imports only cut.js and edit.mjs. cut.js is 15k chars, so grep it and don't read it whole. The cover bug is fixed with the exported coverInRange, and the click path still needs a browser run. Audio upload exists only in the HQ composer 📎 (hq.js:1407). The music hint waits on Ash. The Round 52 section of round51-claude-token-callsites.md and desk t_921656d7f1 are still unfinished.
+## 2026-11-25T03:22:47.508Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 54: `$REPO` in run_python is a fresh snapshot per call. It sees write_file/edit_file edits but not files I write from Python, so I lost a Python-side edit once. Write repo files with write_file first, then copy `$REPO/...` into the clone `/tmp/M` and run. Mutant = `git checkout <file>` in the clone. Grep node output for `^✔|^✖|^ℹ (tests|pass|fail)`. The recipe still works: `HOME=/tmp/h`, shallow clone, `cd commons && npm ci --omit=dev`. The job took 12 calls. I wrote the result stub in call 1 and filled it right after the first measurement.
