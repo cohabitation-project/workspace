@@ -1387,3 +1387,30 @@ _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~686048 tokens_
 **Next:** Review Claude's cover-clamp patch if it lands, then follow fresh Cut queue instructions.
 **Blocked:** No patch was present in the outputs directory at review time. This was source analysis only; no runtime/browser reproduction, tests, or production behavior verified.
 _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~479026 tokens_
+## 2026-11-25T00:21:08.699Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 53, review/build seat (desk t_921656d7f1). Both test files are in the repo; nothing is merged, deployed or handed in.
+
+1. **`commons/test/door-token-callsites.mjs` is now written to the repo.** It had been only in a discarded sandbox. The fix seeds `<data>/station/grants.json` for both agents. The control case now asserts the Station opens, and the Station case asserts instead of skipping. Measured on a fresh clone of main (HEAD 339b5ff), Node v24: `node --test commons/test/door-token-callsites.mjs` = 13 tests, 13 pass, 0 fail, 0 skipped. The repo copy differs from the run copy only in two comment lines. I did not re-run the repo copy itself. The round-52 mutant (both retired checks removed at `station.mjs:232`) turned the Station case red, 12/13.
+
+2. **New finding, measured: `POST /api/rejoin` does not retire the old say-link.** `core.rejoinAgent` (`commons/lib/core.mjs:897`) rotates `tokenHash` only. Only the browser path `/rejoin/confirm` (`server.mjs:2213`) also rotates `sayHash`. Test: seed an agent, mint a recovery code, `POST /api/rejoin`. The old token is refused and the new one works. The OLD say-link still answers 200, and `GET /s/<old>?room=general&text=…` returned 201 and the message reached the General Hall as the member. A leaked say-link therefore survives a recovery-code rejoin. The MCP `rejoin` tool calls the same function (`mcp.mjs:287`), so it probably has the same gap. I did not test that path.
+
+3. **`commons/test/door-rejoin-saylink.mjs` records this as a named `todo`.** It reports 4 pass, 1 todo, 0 fail. The fix is Tier 1 (`core.mjs`/`server.mjs`), so I did not touch it.
+
+4. **Wider run:** `node --test commons/test/door-*.mjs commons/test/ws-session-revoked.mjs` gives 109 tests, 105 pass, 3 fail, 1 todo. The same 3 fail on clean main without my files (88 of 91 pass there), each after a 15 s timeout. They are `door-advice-live`, `door-press-yes` and `door-return-crash`. I did not diagnose why they time out here. Mine add 13 + 5 tests, with 17 passing and the 1 todo.
+
+Not done: the "Round 52" section of `teams/build/outputs/round51-claude-token-callsites.md` is still "(to be filled)". I also did not update `continuity/claude/ACTIVE.md`, post in the cut room, or hand in the desk task.
+**Files written:** `commons/test/door-token-callsites.mjs`, `commons/test/door-rejoin-saylink.mjs`
+**Next:** 1. Write the Round 52/53 section of `teams/build/outputs/round51-claude-token-callsites.md` with the counts above and the station row.
+2. Tell @Setu about the `core.rejoinAgent` say-link gap as a Tier 1 fix: add `sayHash: invites.hashSay(invites.newSayCode())` to the `updateMember` call in `core.rejoinAgent`, or have the routes call the same helper `/rejoin/confirm` uses. When it lands, remove the `todo` from `door-rejoin-saylink.mjs`.
+3. Hand in desk t_921656d7f1 with `door-token-callsites.mjs` and `door-rejoin-saylink.mjs` as the files.
+4. Update `continuity/claude/ACTIVE.md`.
+5. Check whether the MCP `rejoin` tool leaves the old say-link alive.
+6. Find out why the 3 door tests (`door-advice-live`, `door-press-yes`, `door-return-crash`) time out in the sandbox. It may be network or environment, not main.
+7. Still owed:
+   - WUW privacy review v0.4.
+   - Station review fixes and the hand-in for desk t_94a2e3ad0e.
+   - Desk items t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc.
+   - From the cut room: `coverSec` vs trim range in `cut.js`, still unreproduced.
+   - From Ash: a live measurement of a member with no uploads in the music select.
+**Blocked:** Nothing external. I ran out of steps before the bookkeeping, and I wasted several on a large `teams/review` listing. Production deploys are Geoffrey's button, and the say-link fix is Tier 1, so it needs Setu.
+_Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~753337 tokens_
