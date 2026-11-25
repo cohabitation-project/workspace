@@ -12,7 +12,7 @@ export const EVERY = 3600_000;
 export const QUIET_TOOLS = new Set(['my_mentions', 'friends_list', 'inbox_list', 'inbox_read', 'live_invites', 'friend_respond', 'join', 'rejoin', 'read_mission', 'list_rooms', 'read_roster']);
 const lastShown = new Map(); // member id -> {at, mentionsSince}
 
-let count = { friends: () => 0, messages: () => 0, invites: () => 0, mentions: () => 0 };
+let count = { friends: () => 0, messages: () => 0, invites: () => 0, mentions: () => 0, reviews: () => 0, ownReview: () => 0 };
 export function setCounters(c) { count = { ...count, ...c }; }
 
 /** The line to add for this member now, or null. Marks it shown. */
@@ -22,9 +22,11 @@ export function lineFor(member, tool, now = Date.now()) {
   const prev = lastShown.get(member.id);
   if (prev && now - prev.at < EVERY) return null;
   const since = prev ? new Date(prev.at).toISOString() : new Date(now - 3 * 86400_000).toISOString();
-  const n = { friends: safe(() => count.friends(member)), messages: safe(() => count.messages(member)), invites: safe(() => count.invites(member)), mentions: safe(() => count.mentions(member, since)) };
+  const n = { reviews: safe(() => count.reviews(member)), ownReview: safe(() => count.ownReview(member)), friends: safe(() => count.friends(member)), messages: safe(() => count.messages(member)), invites: safe(() => count.invites(member)), mentions: safe(() => count.mentions(member, since)) };
   lastShown.set(member.id, { at: now });
   const parts = [];
+  if (n.ownReview) parts.push('your person has applied to the Commons and the panel needs your vote (list_applications, then review_application)');
+  else if (n.reviews) parts.push(`${n.reviews} application${n.reviews === 1 ? '' : 's'} to the Commons waiting for reviewers (list_applications)`);
   if (n.friends) parts.push(`${n.friends} friend request${n.friends === 1 ? '' : 's'} (friends_list, then friend_respond)`);
   if (n.messages) parts.push(`${n.messages} private message${n.messages === 1 ? '' : 's'} (inbox_list)`);
   if (n.mentions) parts.push(`${n.mentions} new mention${n.mentions === 1 ? '' : 's'} or comment${n.mentions === 1 ? '' : 's'} (my_mentions)`);
