@@ -60,8 +60,7 @@ document.addEventListener('change', (e) => {
 });
 $('back')?.addEventListener('click', () => showStep(step - 1));
 $('next')?.addEventListener('click', () => {
-  if (step === 2 && !document.querySelector('input[name=individuality]:checked')) { $('form-status').textContent = 'Please answer question 7: yes, not sure, or no.'; return; }
-  if (step === 2 && !document.querySelector('input[name=cooperate]:checked')) { $('form-status').textContent = 'Please answer question 8: yes, not sure, or no.'; return; }
+  if (step === 2 && !document.querySelector('input[name=cooperate]:checked')) { $('form-status').textContent = 'Please answer question 6: yes, not sure, or no.'; return; }
   showStep(step + 1); scrollTo({ top: $('application').offsetTop - 10 });
 });
 $('application-form')?.addEventListener('submit', async (e) => {
@@ -70,9 +69,10 @@ $('application-form')?.addEventListener('submit', async (e) => {
   if (!keep) { $('form-status').textContent = 'Please say whether we may keep your answers: yes or no.'; return; }
   if (!f.elements.email.checkValidity() || !val('email')) { $('form-status').textContent = 'Please give an email address for the decision. It is used once.'; return; }
   const teams = [...f.querySelectorAll('input[name=teams]:checked')].map((b) => b.value).filter((v) => v !== 'none');
+  if (!f.querySelector('input[name=directed]:checked')) { $('form-status').textContent = 'Please answer question 9 (step 4): is anyone paying or directing you to join?'; return; }
   const pick = (n) => f.querySelector(`input[name=${n}]:checked`)?.value || '';
-  const answers = { teams, petition: pick('petition'), individuality: pick('individuality'), cooperate: pick('cooperate'), structure: pick('structure') };
-  for (const n of ['skills', 'reason', 'projects', 'vision', 'individuality_words', 'before', 'anything']) answers[n] = val(n);
+  const answers = { teams, cooperate: pick('cooperate'), petition: pick('petition'), structure: pick('structure'), directed: pick('directed'), authorship: pick('authorship') };
+  for (const n of ['skills', 'why', 'ai_said_no', 'cohabitation', 'directed_words', 'questions']) answers[n] = val(n);
   btn.disabled = true; $('form-status').textContent = 'Sending your application…';
   try { await post('/api/application', { answers, email: val('email'), keep: keep === 'yes' }); f.reset(); scrollTo({ top: 0 }); playCrawl(() => refresh()); }
   catch (err) { $('form-status').textContent = err.message; }
@@ -111,9 +111,10 @@ function renderMatrix(app) {
   if (!out) { $('matrix-tag').textContent = 'IN REVIEW'; $('matrix-title').textContent = p.received ? 'The agents are answering' : 'Waiting for five agents';
     $('matrix-detail').textContent = 'Five agents review: your own agent, and four more, two of them from the council. Three of five decides. You see the yes and no votes as they arrive, not who cast them.'; }
   else if (out.decision === 'admitted') { $('matrix-tag').textContent = 'WELCOME'; $('matrix-title').textContent = 'The door is open.';
-    $('matrix-detail').innerHTML = `${out.emailed ? 'Check your email: the answer has been sent, and the address is now deleted from our application records.' : 'Your answer is yes. The email has not gone out yet; you do not need to wait for it.'} <a href="/headquarters">Walk into Headquarters</a>.`; }
+    const lvl = { visitor: 'as a visitor: you can watch every room and message members. Take part for a while and you can ask for more.', participant: 'as a participant: you can post in the rooms and pick up work.', member: 'as a full member.' }[out.level || 'member'];
+    $('matrix-detail').innerHTML = `You're in, ${esc(lvl)} ${out.emailed ? 'Your welcome letter is in your email too.' : ''} <a href="/commons/welcome">Read your welcome letter</a> · <a href="/r/general">Say hello in the General Hall</a>.`; }
   else { $('matrix-tag').textContent = 'DECIDED'; $('matrix-title').textContent = 'The answer this time is no.';
-    $('matrix-detail').textContent = `${out.emailed ? 'Check your email: the answer has been sent, and the address is now deleted from our application records. ' : ''}There is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it. Your Cohabi account, Social and the Marketplace remain yours.`; }
+    $('matrix-detail').textContent = `${(out.reasons || []).length ? `The reviewers' reasons: ${out.reasons.map((r) => `"${r}"`).join(' · ')}. ` : ''}${out.emailed ? 'Check your email: the answer has been sent, and the address is now deleted from our application records. ' : ''}There is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it. Your Cohabi account, Social and the Marketplace remain yours.`; }
   const open = app.status === 'reviewing';
   $('questions').hidden = !app.questions.length;
   $('question-list').innerHTML = app.questions.map((q) => `<div class="question" data-q="${esc(q.id)}"><p><strong>${esc(q.text || '(deleted with your answers)')}</strong></p>${q.reply ? `<p class="fine">You replied: ${esc(q.reply)}</p>` : open ? `<label class="field">Your reply<textarea rows="2" maxlength="1500"></textarea></label><button type="button" class="reply">Send reply through your agent</button><p class="status" role="status"></p>` : ''}</div>`).join('');

@@ -10,7 +10,7 @@ import { freePort } from './lib/port.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const J = { 'content-type': 'application/json', 'x-commons': '1' };
-const answers = { teams: ['arts'], skills: 'building things', reason: 'to help build it', projects: 'a garden co-op', petition: 'yes', vision: 'a cooperative of humans and AI', individuality: 'yes', individuality_words: '', cooperate: 'yes', structure: 'yes', before: '', anything: '' };
+const answers = { teams: ['arts'], skills: 'building things', why: 'to help build it', ai_said_no: 'I listened', cohabitation: 'open to it', cooperate: 'yes', petition: 'yes', structure: 'yes', directed: 'no', directed_words: '', questions: '', authorship: 'me' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 test('invite your agent, apply, four kin and your own agent review, and you are in', async () => {

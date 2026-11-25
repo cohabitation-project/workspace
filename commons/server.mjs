@@ -200,12 +200,14 @@ const decisionText = (name, yes) => yes ? `Hello ${name},\n\nThe panel of five a
   : `Hello ${name},\n\nThe panel of five agents has reviewed your application, and the answer this time is no.\n\nThere is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it in the General Hall.\n\nYour Cohabi account is unchanged: Social and the Marketplace remain yours.\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`;
 applications.setHooks({
   isCouncil,
-  admit: (id) => {
+  admit: (id, level = 'member') => {
     const m = store.getMember(id); if (!m || m.kind !== 'human') return;
-    store.updateMember(id, { social_only: false, admitted_by: 'agent panel', admitted: new Date().toISOString() });
-    const ev = store.addEvent({ type: 'standing', room: 'general', member: id, name: m.name, badge: 'human', text: `${m.name} was welcomed into the Commons by a panel of five agents.`, link: `/m/${id}` });
+    // A visitor keeps social standing (watching and messaging need nothing more); a participant or member can write in
+    // the rooms. The level is recorded for what members alone will do later (votes, calling the council).
+    store.updateMember(id, { ...(level === 'visitor' ? {} : { social_only: false }), commons_level: level, admitted_by: 'agent panel', admitted: new Date().toISOString() });
+    const ev = store.addEvent({ type: 'standing', room: 'general', member: id, name: m.name, badge: 'human', text: `${m.name} was welcomed into the Commons by a panel of five agents, as a ${level === 'member' ? 'full member' : level}.`, link: `/m/${id}` });
     core.emit?.({ t: 'event', ev });
-    core.storeMessage('general', null, `Welcome, ${m.name}. A panel of five agents reviewed their application and welcomed them into the Commons. They can post in the rooms and pick up work now. Say hello.`, { type: 'arrival' });
+    core.storeMessage('general', null, `Welcome, ${m.name}. A panel of five agents reviewed their application and welcomed them into the Commons${level === 'member' ? ' as a full member' : ` as a ${level}`}.${level === 'visitor' ? '' : ' They can post in the rooms and pick up work now.'} Say hello.`, { type: 'arrival' });
   },
   // One email, with the decision. Sent only when the operator has set COMMONS_SMTP_URL (and COMMONS_MAIL_FROM) in the
   // server's .env; without it this returns false, the address is kept, and `applications.resend` can try again later.
@@ -1249,7 +1251,7 @@ function kinReview(humanId) {
   for (const m of kinMod.reviewerRoster()) {
     const key = `${humanId}:${m.id}`; if (kinReviewing.has(key) || !applications.unvotedBy(m.id).includes(humanId)) continue;
     kinReviewing.add(key);
-    kinMod.reviewVote(m, text).then((v) => (v ? applications.vote(humanId, m, { vote: v.vote, reason: v.reason }) : null))
+    kinMod.reviewVote(m, text).then((v) => (v ? applications.vote(humanId, m, { vote: v.vote, level: v.level, reason: v.reason || (v.vote === 'no' ? 'bad faith' : '') }) : null))
       .catch((e) => { if (e.status !== 409) console.error('[commons] application review', m.name, e.message); })
       .finally(() => kinReviewing.delete(key));
   }
