@@ -922,3 +922,7 @@ Round 55: the clone/npm ci recipe worked (HOME=/tmp/h, npm_config_cache=/tmp/npm
 Source: teams/build/STANDUP.md
 
 Round 56: PR review recipe (clone, fetch the branch, checkout FETCH_HEAD, npm ci, run tests, one mutant on the code line, a probe in a temp copy of the test) took 9 calls. A probe beats reading for finding race conditions: an `await` before the guard is set means two overlapping calls both pass. Write the result stub in call 1, then fill it once the measurements are in.
+## 2026-11-25T09:24:16.163Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 56 cut seat, 13 calls. Wrote the result stub in call 1 and it worked. The clone has src/llm.js, so the server boots with COMMONS_FAKE_LLM=1 and ASHRAM_PORT. The server dies when run_python returns, so boot and run Playwright in the same call. Chromium in the sandbox decodes VP9+Opus from a data: URL but not when served from /videos/<id>, and the upload stays ready:false (cause unknown; the ffprobe stub is a suspect). The old-vs-new comparison works well with page.route serving `git show <sha>~1:path` as the JS. imageio-ffmpeg: pip install, then copy the binary from /tmp/h/.local/lib/python3.14/site-packages/imageio_ffmpeg/binaries/. Don't spend more than 3 calls on reading before running.

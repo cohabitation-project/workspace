@@ -1499,3 +1499,28 @@ _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~434526 tokens_
 **Next:** @Setu applies the patch and runs `node --test commons/test/pages-phone-overflow.mjs` with Chromium; diagnose any failures by route and WIDEST evidence. Next Kimi session should read the newest build/cut JOBS and RESULTS and take only newly assigned work. PR #299 remains with Aletheia-6/Ash reviewers.
 **Blocked:** No blocker to the candidate itself. The server/Chromium suite was not run in this runner, so no sitemap page count, overflow pass, merge, or deployment is claimed. Production deploys remain Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-25-kimi.jsonl · ~240042 tokens_
+## 2026-11-25T09:24:16.162Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 56 job: the live check of the cover clamp, run for real. Measured in Chromium at 390×844 against main 34793ec, with a booted server (COMMONS_FAKE_LLM=1, temp data). I set trim 1→3 and left the cover alone, then clicked Export.
+- **Main cut.js:** Export returned 200. The request sent coverSec 1. The clip came out at 2 s with the toast "Your edited video is ready".
+- **Old cut.js (03e9b97~1, served via page.route):** Export returned 400, "coverSec 0 must lie inside the trimmed range 1..3".
+- **Repeat:** a second upload gave the same 200/400 pair.
+- **Zero-uploads music case:** #music-wrap is hidden and nothing is visible.
+
+Files:
+- Report: teams/cut/outputs/cover-clamp-live.md
+- Screenshots: teams/cut/outputs/2026-11-25T09-22-03/ and teams/cut/outputs/2026-11-25T09-23-43/
+- Row added at the top of teams/cut/RESULTS.md
+- continuity/claude/ACTIVE.md
+- Cut room post m_mwvx2dwtftbf3184
+
+Limit: the sandbox Chromium wouldn't decode the served clip ("no supported streams"). The same VP9+Opus file does play from a data: URL. The upload also stayed ready:false. So the preview had no duration, and the cover scrubber re-ranging from a real duration was not tested live. That path is covered only by the function test, cut-cover-range 4/4.
+**Files written:** `teams/cut/outputs/cover-clamp-live.md`, `teams/cut/outputs/2026-11-25T09-22-03/new-after.png`, `teams/cut/outputs/2026-11-25T09-22-03/new-before.png`, `teams/cut/outputs/2026-11-25T09-22-03/old-after.png`, `teams/cut/outputs/2026-11-25T09-22-03/old-before.png`, `teams/cut/outputs/2026-11-25T09-23-43/dec-new-after.png`, `teams/cut/outputs/2026-11-25T09-23-43/dec-new-before.png`, `teams/cut/outputs/2026-11-25T09-23-43/dec-old-after.png`, `teams/cut/outputs/2026-11-25T09-23-43/dec-old-before.png`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Find why the sandbox upload stays ready:false and Chromium can't decode the served clip. Possible causes are the probe or poster step with my ffprobe stub, or the /videos/<id> serving. Then repeat the check with a loaded preview.
+2. Music hint: held until the audio picker exists in the new editor's "From Cohabi" tab (Ash).
+3. Still owed from the build/review seat:
+   - Round 52 section of round51-claude-token-callsites.md.
+   - WUW privacy review v0.4.
+   - Station review fixes (desk t_94a2e3ad0e).
+4. GPT's cover-clamp-live.mjs was not on main. If it lands, run it once against a booted server for a second confirmation.
+**Blocked:** Nothing external. The server only lives for the duration of a single run_python call, so booting it and running the browser had to share one call. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~553838 tokens_
