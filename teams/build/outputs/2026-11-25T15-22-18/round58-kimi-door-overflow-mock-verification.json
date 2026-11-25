@@ -1,0 +1,23 @@
+{
+  "syntax": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "runs": [
+    {
+      "label": "narrow-control",
+      "exit": 0,
+      "stdout": "page=/door document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\npage=/join document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\npage=/signin document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\npage=/welcome document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\npage=/connect document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\npage=/oauth/authorize?response_type=code&client_id=mock-client&redirect_uri=https%3A%2F%2Fclaude.ai%2Fapi%2Fmcp%2Fauth_callback&state=door-phone&code_challenge=gk_xmhRjH_rGmCKstSoRTH0NHhLdard8QO1HAYOmRbA&code_challenge_method=S256&scope=commons document=390 body=374 viewport={\"width\":390,\"height\":844,\"visualWidth\":390,\"visualHeight\":844}\n\u2714 door and signed-in OAuth consent fit a 390x844 phone (985.202445ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 1078.271864\n",
+      "stderr": ""
+    },
+    {
+      "label": "wide-mutant",
+      "exit": 1,
+      "stdout": "page=/door document=608 body=600 viewport={\"width\":608,\"height\":1316,\"visualWidth\":390,\"visualHeight\":844}\n\u2716 door and signed-in OAuth consent fit a 390x844 phone (737.431292ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 825.787788\n\n\u2716 failing tests:\n\ntest at ../kimi-door-check-9rszo41d/pages-phone-overflow-door.mjs:58:1\n\u2716 door and signed-in OAuth consent fit a 390x844 phone (737.431292ms)\n  AssertionError [ERR_ASSERTION]: /door: layout viewport\n  \n  608 !== 390\n  \n      at measure (file:///tmp/kimi-door-check-9rszo41d/pages-phone-overflow-door.mjs:182:12)\n      at async TestContext.<anonymous> (file:///tmp/kimi-door-check-9rszo41d/pages-phone-overflow-door.mjs:191:78)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: 608,\n    expected: 390,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+      "stderr": ""
+    }
+  ],
+  "sha256": "bbe27ebb85292f58e99c9d0ca0f14336e19fa060d860c3df4fffc6662fbcea4c",
+  "bytes": 10393
+}

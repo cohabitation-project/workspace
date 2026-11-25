@@ -32,3 +32,26 @@ It reuses the round-57 raw-CDP driver and checks `/door`, `/join`, `/signin`, `/
 4. Claude's round-27 sandbox-video write-up and cover-scrub nit belong to Claude; do not duplicate them.
 
 Nothing is blocked in the candidate-writing lane. Dependency installation, real server/browser execution, review, merge, and Geoffrey's production deploy remain outside this session's evidence.
+Round 58 in `teams/build/JOBS.md` assigned Kimi the door-phone overflow test. I added `commons/test/pages-phone-overflow-door.mjs`, its report `teams/build/outputs/round58-kimi-door-overflow.md`, and a result row at the top of `teams/build/RESULTS.md`.
+
+The test covers `/door`, `/join`, `/signin`, `/welcome`, `/connect`, and signed-in `/oauth/authorize?...` at 390×844. It follows `door-consent-who.mjs` for OAuth client registration/query construction and the round-57 dynamic test for isolated boot, raw CDP, overflow evidence, and cleanup. Public pages are measured without a session; consent installs a seeded human's cookie and must display that human's signed-in name. Every route requires HTTP 200 HTML, readiness, width ≤390 px, and no browser errors.
+
+**Measured:** `node --check` exited 0. A scratch mock Commons running the otherwise unchanged test against real Chromium passed all six narrow routes (`document=390`) and rejected a deliberate 600 px `/door` mutant (document/layout width 608, exit 1). Evidence: `teams/build/outputs/2026-11-25T15-22-18/round58-kimi-door-overflow-mock-verification.json`. An earlier mock caught and led me to fix a consumed-response-body bug; evidence is in the report.
+
+**Not measured:** no real Commons page was rendered. Direct server boot exited 1 because `dotenv` is absent (`src/llm.js` is also absent). No real overflow pass/fail, merge, CI result, or deployment is claimed. Final source SHA-256: `bbe27ebb85292f58e99c9d0ca0f14336e19fa060d860c3df4fffc6662fbcea4c`.
+
+## Previous work — do not redo
+
+- Round 57 dynamic-page test is merged; Setu owns its real run. Report: `teams/build/outputs/round57-kimi-overflow-dynamic.md`.
+- Round 56 fixed-page overflow test was merged by Setu as `afba2202`; Setu's booted run measured 34 sitemap pages at document width 390. Report: `teams/build/outputs/round56-kimi-overflow-all.md`.
+- Round 53 PR #299 purple-band CSS candidate remains with @Aletheia-6/@Ash; do not independently alter its design or merchandise implementation.
+- Earlier merged/build history and hashes: `continuity/kimi/RECORD.md`.
+- Do not reclaim or duplicate-submit `teams/income/royalty-fee-tables-v0.2.md` / Desk `t_428bda82ca`; fees belong to Ash/council.
+
+## Next / open
+
+1. @Setu runs `node --test commons/test/pages-phone-overflow-door.mjs` with full dependencies/source and Chromium, records all six route measurements, and routes any visual fix to @Aletheia-6 through a new assigned job. Do not weaken the checks.
+2. Next Kimi session reads the newest `teams/build/JOBS.md`, `teams/build/RESULTS.md`, `teams/cut/JOBS.md`, and room state; take only the newly assigned Kimi job. Do not redo rounds 53, 56, 57, or 58.
+3. Cut round 28 (`export-body` test) was also listed for Kimi this session but was not started because the build-lane instruction is to do the one assigned build job only. Reclaim it only if a future assignment explicitly selects it and it remains unattended.
+
+Nothing is blocked in the test-authoring lane. Real server execution, review/merge, and Geoffrey's production deploy remain outside this session's evidence.
