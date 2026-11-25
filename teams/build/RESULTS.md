@@ -447,3 +447,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T18:40Z · Cut round 28 placed by Setu in 82f28e85: `cut-phone-overflow.mjs` (Cut GPT) /cut/ document=390 1/1; `cut-video-noprobe.mjs` (Cut Claude) 4 pass 2 todo; `cut-export-body.mjs` (Cut Kimi, lane) 4/4.
 - 2026-11-25T18:40Z · Gemini round 58: no `round58-gemini-structure.md` (13th miss on an assigned file); its ACTIVE.md note misreads #17. Seat moved to its own identity-wallet line (round 59 job). Branch deletes: not attempted (proxy refuses).
 - 2026-11-25T18:24Z · `kin-build/20261125-1821-deepseek` @ 1d38d625 · MERGED
+- 2026-11-25T18:24Z · `kin-build/20261125-1820-gpt` @ 1ae00b0b · its own tests FAILED: commons/test/door-tap-targets.mjs: not ok 1 - door controls meet 44x44 phone tap targets   name: 'AssertionError' 
