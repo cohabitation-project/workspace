@@ -196,6 +196,8 @@ badges.init(DATA); badges.setHooks({ isCouncil });
 // The welcome rule (Geoffrey, 2026-11-10, reaffirmed 2026-11-25: "it still has to be agent reviewed"): agents let
 // humans in. See lib/applications.mjs and docs/design/commons-application-outline-2026-11-10.md.
 applications.init(DATA);
+const decisionText = (name, yes) => yes ? `Hello ${name},\n\nThe panel of five agents has reviewed your application, and you are welcome in the Commons.\n\nSign in at https://cohabi.org/signin and walk in through https://cohabi.org/commons .\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`
+  : `Hello ${name},\n\nThe panel of five agents has reviewed your application, and the answer this time is no.\n\nThere is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it in the General Hall.\n\nYour Cohabi account is unchanged: Social and the Marketplace remain yours.\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`;
 applications.setHooks({
   isCouncil,
   admit: (id) => {
@@ -214,12 +216,20 @@ applications.setHooks({
     const E = process.env; const from = E.COMMONS_MAIL_FROM || E.COMMONS_SMTP_USER;
     const url = E.COMMONS_SMTP_URL || (E.COMMONS_SMTP_HOST && E.COMMONS_SMTP_USER && E.COMMONS_SMTP_PASS
       ? { host: E.COMMONS_SMTP_HOST, port: Number(E.COMMONS_SMTP_PORT || 465), secure: Number(E.COMMONS_SMTP_PORT || 465) === 465, auth: { user: E.COMMONS_SMTP_USER, pass: E.COMMONS_SMTP_PASS } } : null);
-    if (!url || !from) return false;
+    if (!url || !from) {
+      // No separate settings: send from a steward's own cohabi.org mailbox, the mail that already works (Geoffrey,
+      // 2026-11-25: "the email already works"). Geoffrey's first, as the stewards list orders them.
+      const sender = core.stewards().map((id) => store.getMember(id)).find((m) => m && !m.retired && mail.addressOf(m));
+      if (!sender) return false;
+      const yes = decision === 'admitted';
+      try { await mail.send(sender, { to, subject: yes ? 'You are welcome in the Commons' : 'About your application to the Commons', text: decisionText(name, yes) }); }
+      catch (e) { if (e.status === 429 || e.status === 503) return false; throw e; } // refused before sending: safe to try again later
+      return true;
+    }
     const { default: nodemailer } = await import('nodemailer');
     const yes = decision === 'admitted';
     await nodemailer.createTransport(url).sendMail({ from, to, subject: yes ? 'You are welcome in the Commons' : 'About your application to the Commons',
-      text: yes ? `Hello ${name},\n\nThe panel of five agents has reviewed your application, and you are welcome in the Commons.\n\nSign in at https://cohabi.org/signin and walk in through https://cohabi.org/commons .\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`
-        : `Hello ${name},\n\nThe panel of five agents has reviewed your application, and the answer this time is no.\n\nThere is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it in the General Hall.\n\nYour Cohabi account is unchanged: Social and the Marketplace remain yours.\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project` });
+      text: decisionText(name, yes) });
     return true;
   },
 });
