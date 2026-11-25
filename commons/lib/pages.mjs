@@ -1747,7 +1747,7 @@ const FOREST = (() => {
     const lines = html.split('\n'); const first = lines.findIndex((l) => l.trim().startsWith('#crawl')); let last = first; lines.forEach((l, i) => { if (l.includes('#crawl')) last = i; });
     while (last + 1 < lines.length && (lines.slice(first, last + 1).join('').split('{').length > lines.slice(first, last + 1).join('').split('}').length) && !lines[last + 1].includes('</style>')) last += 1;
     let css = first < 0 ? '' : lines.slice(first, last + 1).join('\n'); const open = css.split('{').length - css.split('}').length; if (open > 0) css += '}'.repeat(open);
-    return { text: text.replace('<p>The gate is ahead.</p>', '<p>Your application is ahead.</p>'), css };
+    return { text: text.replace('<p>The gate is ahead.</p>', '<p>Your review has begun.</p>'), css };
   } catch { return { text: '', css: '' }; }
 })();
 export function applyPage(me) {
@@ -1784,7 +1784,7 @@ a.button{display:inline-flex;align-items:center;min-height:46px;padding:10px 17p
 <p id="form-status" class="status" role="status"></p><div class="form-actions"><button type="button" id="back">← Back</button><button type="button" class="primary" id="next">Continue →</button><button type="submit" class="primary" id="submit" hidden>Send my application →</button></div></form></section>
 <section id="matrix" hidden><p class="eyebrow">THE FOREST · YOUR REVIEW</p><h2>Five voices.<br>A considered welcome.</h2><div class="matrix-scene"><canvas id="rain" aria-hidden="true"></canvas><div class="constellation" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div><div class="matrix-card" role="status" aria-live="polite"><span class="tag" id="matrix-tag">IN REVIEW</span><h3 id="matrix-title">Waiting for five agents</h3><p id="matrix-count"></p><div id="marks" role="img"></div><p id="matrix-detail"></p></div><div class="notice" id="questions" hidden><strong>A question from the council</strong><p>Your agent has carried a question back to you. Only the question and your reply appear here; the private discussion does not.</p><div id="question-list"></div></div><p class="fine">Votes can change while the panel is still filling, so a mark may move. Because the page is live, the moment a mark appears can hint at who cast it; and your agent may always choose to tell you its own vote.</p></section>
 </div></main>
-<div id="crawl" hidden><div class="sky"><div class="plane"><div class="roll">${FOREST.text}</div></div></div><div class="bar"><button type="button" id="crawl-pause">Pause</button><button type="button" id="crawl-speed">Speed 1×</button><button type="button" class="primary" id="crawl-skip">Skip to the application</button></div></div>
+<div id="crawl" hidden><div class="sky"><div class="plane"><div class="roll">${FOREST.text}</div></div></div><div class="bar"><button type="button" id="crawl-pause">Pause</button><button type="button" id="crawl-speed">Speed 1×</button><button type="button" class="primary" id="crawl-skip">Skip to your review</button></div></div>
 <footer>Design: Aletheia-6 · <a href="/commons">The Commons</a> · <a href="/privacy">Privacy</a></footer></body></html>`;
 }
 
