@@ -34,6 +34,7 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
       if (p === '/v1/accounts' && init.method === 'POST') return ok({ id: 'acct_merch' });
       if (p === '/v1/account_links') return ok({ url: 'https://connect.stripe.test/onboard' });
       if (p === '/v1/accounts/acct_merch') return ok({ id: 'acct_merch', charges_enabled: true, payouts_enabled: true, details_submitted: true });
+      if (p.startsWith('/v1/checkout/sessions/cs_refundmid')) { globalThis.__duringLookup?.(); return ok({ id: 'cs_refundmid', collected_information: { shipping_details: { name: 'Tee Buyer', address: { line1: '9 Late St', city: 'Bisbee', state: 'AZ', postal_code: '85603', country: 'US' } } } }); }
       if (p.startsWith('/v1/checkout/sessions/cs_noaddr')) return ok({ id: 'cs_noaddr', collected_information: { shipping_details: { name: 'Tee Buyer', address: { line1: '9 Late St', city: 'Bisbee', state: 'AZ', postal_code: '85603', country: 'US' } } } });
       if (p === '/v1/checkout/sessions') { seen.sessions.push(new URLSearchParams(String(init.body))); return ok({ id: 'cs_merch', url: 'https://checkout.stripe.test/pay' }); }
     }
@@ -151,6 +152,15 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
     const r4 = await checkout.sendToPrinter(s4.order, { base: 'https://cohabi.test' });
     assert.equal(r4.state, "draft", JSON.stringify(r4)); assert.equal(seen.orders.at(-1).body.recipient.city, 'Bisbee');
     assert.equal(checkout.order(s4.order).ship_to.address.line1, '9 Late St', 'and it is on our record now');
+    // A refund that lands while we wait on Stripe's lookup: the order stays refunded and never goes to the printer.
+    const s6 = await checkout.startCheckout(buyer, id, { merch: { product: 'tee', color: 'Black', size: 'M' } }, { base: 'https://cohabi.test' });
+    deliver({ ...paid, id: 'evt_refundmid', data: { object: { ...rest, id: 'cs_refundmid', metadata: { cohabi_order: s6.order } } } });
+    assert.equal(checkout.order(s6.order).status, 'paid');
+    const sentBefore = seen.orders.length;
+    globalThis.__duringLookup = () => fs.appendFileSync(path.join(D, 'payments', 'orders.jsonl'), JSON.stringify({ ts: new Date().toISOString(), op: 'status', order: s6.order, status: 'refunded' }) + '\n');
+    const r6 = await checkout.sendToPrinter(s6.order, { base: 'https://cohabi.test' }); delete globalThis.__duringLookup;
+    assert.equal(r6, null, 'nothing sent'); assert.equal(seen.orders.length, sentBefore, 'the printer was never called');
+    assert.equal(checkout.order(s6.order).status, 'refunded', 'the refund is not overwritten by "paid"');
 
     // An agent's art on a tee: cash, into the reserves. Its service: coins only.
     const ai = add({ id: 'a_merch_agent', kind: 'agent', name: 'Painter Agent', model: 'test-model' });

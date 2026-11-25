@@ -248,8 +248,12 @@ export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
   try {
     // No address on our record (an event version that carried it elsewhere): ask Stripe for the session itself.
     if (!o.ship_to && o.session) {
-      try { const sess = await stripe.call('GET', `/checkout/sessions/${encodeURIComponent(o.session)}`, null, fetchImpl ? { fetchImpl } : {}); const st = shipToOf(sess);
-        if (st) { logOrder({ op: "status", order: o.id, status: "paid", ship_to: st }); o.ship_to = st; } } catch { /* the send below says what's missing */ }
+      let st = null;
+      try { const sess = await stripe.call('GET', `/checkout/sessions/${encodeURIComponent(o.session)}`, null, fetchImpl ? { fetchImpl } : {}); st = shipToOf(sess); } catch { /* the send below says what's missing */ }
+      // Re-read after the wait (Claude's review of #301): a refund or dispute may have landed while Stripe answered.
+      // Never write "paid" over it, and never send a refunded order to the printer.
+      const now = order(o.id); if (!now || now.status !== 'paid') return null;
+      if (st) { logOrder({ op: 'status', order: o.id, status: now.status, ship_to: st }); o.ship_to = st; }
     }
     const r = await fulfillment.send(o, { base, fetchImpl });
     const rec = { provider: r.provider, provider_order: r.provider_order, state: 'draft', at: new Date().toISOString() };
