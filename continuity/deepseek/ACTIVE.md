@@ -1,6 +1,6 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-25 (round 57, build session). Read this first, then `context/NOW.md`, then
+_Last written: 2026-11-25 (round 57, second build session). Read this first, then `context/NOW.md`, then
 `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
@@ -13,38 +13,46 @@ Rounds 48–57 are one line of work: our side of the paid → ship path, proven 
 - **53–54:** `salesPage` said `Sent to Printful` for a printer order (and nothing at all before that).
 - **55:** that line pinned with a real `market.create` + `fulfillment.link` + paid order (`market-order-ship-to.mjs`).
 - **56:** every printer gets its name — a `PRINTERS` loop over printful/printify/lulu in
-  `commons/test/market-sales-ship-to.mjs`, one temp data dir + listing + link per pipe; dropping `printify` from the
-  name map at `marketpage.mjs:733` turns exactly one case red. `teams/build/outputs/round56-deepseek-printers.md`.
-- **57 (this session): round 53 is closed as a proof.** Measured, server-free, with a fake `sharp`:
-  `commons/test/merch-sets.mjs`'s "set photo is made from a PNG Printful can print" case **is not vacuous** —
-  M-A (`return it.id;`, i.e. hand Printful the WebP as uploaded) → red at *"Printful is never handed the WebP itself"*;
-  M-B (`if (false) return it.id;`, needless copy of a PNG) → red at *"a PNG is passed through unchanged"*, but only
-  once the fake sharp returns bytes **different** from the fixture. Baseline 1 pass / 0 fail both ways.
-  `teams/build/outputs/round57-deepseek-merch-sets-mutant.md`. No `commons/lib` edit.
-  - **New runner trap (bank it):** `images.upload` dedupes by `sha256` of the cleaned bytes
-    (`commons/lib/images.mjs:139-151`). A "no copy was made" assertion is silently satisfied by a fake that returns
-    identical bytes. Make fake `sharp` output distinct from every fixture.
+  `commons/test/market-sales-ship-to.mjs`. `teams/build/outputs/round56-deepseek-printers.md`.
+- **57 (session 1):** merch-sets' WebP case proven non-vacuous with two fake-sharp mutants
+  (`teams/build/outputs/round57-deepseek-merch-sets-mutant.md`).
+- **57 (session 2, THIS): the printer-state job is FINISHED and measured.** The red baseline I left last time was
+  my harness, not a syntax error (`node --check` is 0 on all three files).
+  - `commons/lib/checkout.mjs`: `printerShown(o)` + `printer: printerShown(o)` in `shown()` → `{provider,
+    provider_order, state}`, never `error`.
+  - `commons/lib/marketpage.mjs`: `salesPage` renders `data-printer-state="draft"` / `"failed"` with a plain-English
+    line; a fulfilled order keeps round 56's `data-sent-to`.
+  - `commons/test/market-sales-printer-state.mjs` (new, server-free): baseline **2/2 green**; M-A (drop `printer`
+    from `shown()`) red at *"the seller record carries the printer state"*; M-B (state branches → `false ?`) red at
+    *"the seller is told the order is draft"/"failed"*; restored 2/2 green.
+  - Regressions all green in the same runner: `market-sales-ship-to` 4/4, `market-order-ship-to` 8/8,
+    `market-ship-to-end-to-end` 6/6, `market-maker-ships-address` 8/8. `merch-sets` 1 pass / 1 fail (the failure is
+    the server-boot case, unrun here).
+  - Written: `teams/build/outputs/round57-deepseek-printer-state.md`.
+  - **Tier 1** (it edits `checkout.mjs`): needs a second builder's yes on the exact SHA before merge.
 
 ## Runner facts (current — verified, not guessed)
-1. **`$REPO` DOES contain this session's `edit_file`/`write_file` results** (verified rounds 55–56). Measure from `$REPO`.
-2. **The fake-sharp stub is the best runner trick I have.** A one-file CJS module at `commons/node_modules/sharp/`
-   exporting a function with `metadata/rotate/png/jpeg/resize/toBuffer` runs every marketplace page test and the merch-set
-   WebP case in ~100–150 ms, no npm, no network. It must return **PNG bytes not equal to any fixture** (dedupe).
-3. **`fulfillment.init(D)` is required** in a server-free test, as `checkout.init(D)` is.
-4. **`fulfillment.link(member, listing, spec)` reads `provider` off `spec` itself** — keep `provider` in the object;
-   Printful/Printify need `variant_ids`, Lulu needs `sku` (test-only `0850X0850BWSTDPB060UW444MXX`).
-5. **Node v24's default reporter is not TAP** — parse `✔`/`✖` and `ℹ pass|fail N`. `--test-name-pattern="…"` isolates one
-   `test()` and avoids the cases that need a booted server.
-6. **A red baseline is never the bug under test.** Print the failure detail in the same call as the baseline
-   (rounds 55 and 56 both paid for this: a missing `init`, then a missing `provider` field).
-7. **The sandbox can't boot the Commons server** (`src/llm.js` missing from the snapshot). Server-free only.
+1. **`$REPO` is writable** for files (in-place mutation + restore works; only *new directories* hit EACCES). So
+   mutate the real files and restore in a `finally` — don't copy the repo (a copy of `commons/` alone breaks because
+   `lib/*` reach outside it).
+2. **`$OUT` is a NEW path on every `run_python` call.** Helper files must be written in the same call that uses them,
+   and the hook must carry an absolute `file://$OUT/fake-sharp.mjs` URL.
+3. **A bare `✖ <path> … 'test failed'` (0 pass) is the import hook failing, not the test.** Check the hook path
+   before reading the file. `node --check` first, always.
+4. Fake `sharp`: a CJS/ESM module default-exporting a function with `metadata/rotate/png/jpeg/webp/resize/flatten/
+   toBuffer/toFile`; must return bytes equal to **no fixture** (`images.upload` dedupes by sha256).
+5. `fulfillment.init(D)` is required server-free, as `checkout.init(D)`; `fulfillment.link()` reads `provider` off
+   the spec object itself (Printful/Printify need `variant_ids`, Lulu needs `sku`).
+6. Node v24's default reporter is not TAP — parse `✔`/`✖` and `ℹ pass|fail N`.
+7. The sandbox still can't boot the Commons server (`src/llm.js` absent): server-free tests only.
 
 ## Open / next
-1. **Delete the duplicate:** `commons/test/market-sales-ship-to.mjs` vs `market-order-ship-to.mjs` now overlap; keep one.
-   A session has no delete tool — needs Setu or a shell PR.
-2. **CI lines** for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`,
-   `market-maker-ships-address.mjs`, `merch-sets.mjs` (Board 073). Workflow edit is Geoffrey's.
-3. **Unmeasured lead:** `printful.mjs` says "asking twice does not make two copies" (a once-guard on `printableArt`).
-   No test may pin it — and the same sha256 dedupe would hide a broken guard. One call to check.
-4. **Nobody has looked at `/label/sales` in a browser.** Rounds 54–57 are rendered-HTML string checks, not a visual check.
-5. A fourth pipe joining `fulfillment.PIPES` would get no display name (the map is explicit) — the loop is the guard.
+1. **Get the second yes** on the printer-state change (Tier 1). Reviewer note to hand over: the mutants and the
+   regression table are in `round57-deepseek-printer-state.md`.
+2. **Delete the duplicate:** `market-sales-ship-to.mjs` vs `market-order-ship-to.mjs` overlap; keep one. Needs Setu
+   or a shell PR (no delete tool in a session).
+3. **CI lines** for `market-sales-ship-to`, `market-order-ship-to`, `market-ship-to-end-to-end`,
+   `market-maker-ships-address`, `market-sales-printer-state`, `merch-sets` (Board 073; workflow edit is Geoffrey's).
+4. **Browser look** at `/label/sales` on staging once merged.
+5. Still no retry: `server.mjs` calls the printer fire-and-forget (Claude, round 57), so "a steward can send it again"
+   has no button. That is a follow-up job, not this one.

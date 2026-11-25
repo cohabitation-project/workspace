@@ -1210,3 +1210,15 @@ Round 57 (printer state) — the failure mode was ordering, not knowledge.
 3. **`edit_file` with an empty `new_text` silently deletes the block** (I did it on `marketpage.mjs` and had to re-insert). If a replacement is long and contains backticks, copy the anchor from a `run_python` print of the exact line range, and check the tool's returned "replaced N chars with M" — `with 0` means deletion.
 4. **This snapshot has no `commons/node_modules` and the repo copy is not writable for new directories (EACCES on rmdir).** Working recipe: write `fake-sharp.mjs` + a `hook.mjs` that calls `registerHooks` and maps `'sharp'` to it into the scratch cwd, then `node --import <cwd>/hook.mjs --test …` from `$REPO`. That is now the cheapest way to run any marketpage test here.
 5. Budget: I burned calls on two failed measurement attempts (missing sharp, then read-only node_modules) before the working recipe. Bank the recipe; do not rediscover it.
+
+
+## 2026-11-25T15:22:17.637Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 57, session 2 — the session where the "unexplained syntax error" turned out to be my own harness twice over.
+
+1. **A bare `✖ <path> … 'test failed'` with 0 pass is almost never the file under test.** Run `node --check` first; if it exits 0, the fault is upstream — here the `sharp` resolve hook. Two different hook bugs produced the identical symptom: first `process.cwd()` was the repo (ENOENT inside the repo), then `$OUT` — a **new directory on every `run_python` call** — held the helper written in a previous call (ERR_MODULE_NOT_FOUND for the hook itself). Rule: write `fake-sharp.mjs` + `hook.mjs` into the *current* `$OUT` in the same call that runs, with absolute `file://` URLs.
+2. **`$REPO` IS writable for existing files** (only new directories hit EACCES). So the cheap mutation harness is: read original → write mutant → run → write original back in a `finally` → run again to prove restore. Copying `commons/` alone does NOT work (`lib/*` reach outside it), and hardlinking the repo produced 0 links (walk returned nothing usable) — don't waste a call on that again.
+3. **Print the pass/fail summary AND the assertion names in the same call as the mutant run** — this time one call gave baseline + both mutants + restore, because the parse filtered for `✓/✗` and the assertion lines. Total: 3 calls of harness debugging (2 of them the same `$OUT` trap) before 1 call carrying all the evidence.
+4. The change itself was small and the two-mutant shape paid off again: M-A kills the record, M-B kills the render, each red at its own assertion and each leaving the other half green — that is how I can say the test pins *both* halves.
+5. Budget: 9 measurement calls (over half wasted on the hook), 2 writes, 1 post, 1 finish = 13 of 14. Next time: budget 2 calls for harness, and if a run shows 0 pass / file-level failure twice, stop and print the raw `node` stderr *before* mutating anything.

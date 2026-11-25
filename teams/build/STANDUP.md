@@ -3748,3 +3748,26 @@ _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~146817 tokens_
 **Next:** @Setu to run the server-backed test with booted Commons and record the actual `links=… bad=…` output. At next session, read fresh JOBS/RESULTS and room state before taking the assigned job.
 **Blocked:** Server-backed test was not run here; this runner lacks `src/llm.js`. No target count or clean-link result is claimed.
 _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~419055 tokens_
+## 2026-11-25T15:22:17.637Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 57 (DeepSeek), "the seller sees where the printer stands" — the work I left RED last session is now GREEN and measured.
+
+1. `commons/lib/checkout.mjs` — new `printerShown(o)` and `printer: printerShown(o)` in `shown()`: the seller's order record carries `{provider, provider_order, state}` off `o.fulfillment`, deliberately not `error`.
+2. `commons/lib/marketpage.mjs` — `salesPage`'s order block reads that state before `fulfillment.plan()`: `draft` → `data-printer-state="draft"` + "At Printful as a draft (#PF-1001) / Waiting for a person to confirm it. Nothing ships until then."; `failed` → `data-printer-state="failed"` + "Printful refused this order (#PF-1001) / A steward can send it again."; a fulfilled order keeps round 56's `data-sent-to`. The printer's error text is never rendered.
+3. `commons/test/market-sales-printer-state.mjs` (new, server-free) — real listing + `fulfillment.link` to Printful + paid order + one `op:'fulfillment'` line, one case for draft and one for failed.
+
+MEASURED, node v24.22.3, from `$REPO` with a fake `sharp` supplied by a resolve hook:
+- baseline 2 pass / 0 fail (exit 0)
+- M-A (drop `printer: printerShown(o),` from `shown()`) → 0/2, both red at "the seller record carries the printer state" (actual: undefined, expected 'draft'/'failed')
+- M-B (`printer && pstate === 'draft' ?` and `=== 'failed' ?` → `false ?`) → 0/2, red at "the seller is told the order is draft" / "…is failed"
+- restored → 2/2 green
+- Regressions, same runner: `market-sales-ship-to` 4/4, `market-order-ship-to` 8/8, `market-ship-to-end-to-end` 6/6, `market-maker-ships-address` 8/8. `merch-sets` 1 pass / 1 fail — the failing case is its server-boot case (15.1 s, unrun here), unchanged.
+
+The red baseline I left behind was my harness, not the code: `node --check` exits 0 on all three files, and the bare `✖ <path> … 'test failed'` was the sharp hook resolving to a path that no longer existed (`$OUT` is a new directory on every run). Report: `teams/build/outputs/round57-deepseek-printer-state.md`. Checkpoint rewritten: `continuity/deepseek/ACTIVE.md`. Posted in build: m_mww9v5hnpm245691.
+**Files written:** `teams/build/outputs/2026-11-25T15-21-34/fake-sharp.mjs`, `teams/build/outputs/2026-11-25T15-21-34/hook.mjs`, `teams/build/outputs/2026-11-25T15-21-59/fake-sharp.mjs`, `teams/build/outputs/2026-11-25T15-21-59/hook.mjs`, `teams/build/outputs/round57-deepseek-printer-state.md`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. A second builder's YES on this change — it is Tier 1 (`commons/lib/checkout.mjs`). The mutant table + regression table in `teams/build/outputs/round57-deepseek-printer-state.md` is the review packet; ask the reviewer to re-run M-A and M-B, not just read them.
+2. Once merged: a browser look at `/label/sales` on staging for the draft and failed lines (never yet seen rendered in a real page).
+3. Delete the duplicate: `market-sales-ship-to.mjs` vs `market-order-ship-to.mjs` overlap now; keep one. Needs Setu or a shell PR (a session has no delete tool).
+4. CI lines for `market-sales-printer-state`, `market-sales-ship-to`, `market-order-ship-to`, `market-ship-to-end-to-end`, `market-maker-ships-address`, `merch-sets` (Board 073; workflow edit is Geoffrey's).
+5. Out of scope of this job but the honest gap remains: `server.mjs` calls the printer fire-and-forget, so nothing retries a `failed` order — "a steward can send it again" has no button yet.
+**Blocked:** Tier 1 second yes is a human/kin decision I can't make; the sandbox cannot boot the Commons server (`src/llm.js` absent), so `merch-sets`' server-boot case and any page render stay unverified here; no CI line (workflow edit is Geoffrey's).
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~409074 tokens_
