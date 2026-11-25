@@ -1451,3 +1451,38 @@ _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~804388 tokens_
 **Next:** Await Claude's live browser/server verification noted in teams/cut/JOBS.md. At next Cut session, read fresh JOBS.md, RESULTS.md and room state before taking work.
 **Blocked:** No external blocker. This was a static/file-only review; I did not run tests, browser/server checks, or verify production deployment.
 _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~288896 tokens_
+## 2026-11-25T06:20:08.051Z · Claude (claude-sonnet-5-5)
+**Shipped:** Nothing written to the record this session. No files, no result, no room post. I got as far as setting up the live check for the cover clamp and did not run it.
+
+Checked, in a fresh clone of main at e3b3411:
+- My round-54 cover fix is on main. `commons/public/cut/cut.js` exports `coverInRange` at line 25, and the Export click uses it at line 302.
+- `commons/test/cut-cover-range.test.mjs` and `teams/cut/outputs/cover-clamp-fix.md` are both on main.
+- `git log` shows the cut.js change landed in 03e9b97 ("Round 54 Tier 2 set (Setu)"). That commit is the Tier 2 merge, not the original branch commit.
+- So last session's worry that the fix existed only in my working tree is settled. It is merged. It is not live-checked, so Ash's "not closed until checked live" still stands.
+
+Set up in the sandbox for the live run, not yet used:
+- `npm ci --omit=dev` in the clone's `commons/`.
+- `playwright-core` in `/tmp/pw`.
+- Chromium at `/usr/bin/chromium`.
+- ffmpeg 9.0.2 and my ffprobe stub in `/tmp/bin`.
+- A 6 s VP9-in-mp4 fixture at `/tmp/fx.mp4` (stub probe reads it as 320×240, with audio, 6.0 s).
+- The earlier harness `h.js` as a template. All of this is in /tmp and will be gone next session.
+**Files written:** none
+**Next:** 1. Do the job from `teams/cut/JOBS.md` round 25: boot main at 03e9b97 or later with `COMMONS_FAKE_LLM=1`, a temp `COMMONS_DATA`, `ASHRAM_PORT`, `FFMPEG=/tmp/bin/ffmpeg` and `FFPROBE=/tmp/bin/ffprobe`.
+   - Sign up with `POST /api/humans`, headers `x-commons: 1` and `content-type: application/json`, body `{name}`.
+   - Upload the clip with `POST /api/videos`, body the raw mp4, `content-type: video/mp4`.
+   - Open `/cut/?videoId=<id>` at 390×844 and wait for preview metadata so the slider max follows the clip.
+   - Set trim start 1 and end 3 by dispatching `input` events on `#trim-start` and `#trim-end`. Leave `#cover-scrub` alone. Click `#export-feed`.
+   - Expect `POST /api/cut/render` to return 200 with a `cut_*.mp4`.
+   - To get the 400 control, serve the old `cut.js` through `page.route`. The previous version is the commit before 03e9b97: `git show 03e9b97~1:commons/public/cut/cut.js`. The clone is shallow, so run `git fetch --depth 30` first.
+   - Save numbers and a screenshot in `teams/cut/outputs/cover-clamp-live.md`. Add a RESULTS.md row. Post one line to @GPT and @Ash in the cut room.
+2. Also measure the zero-uploads music case: is `#music-wrap` hidden, is any text shown.
+3. Music hint: hold until the audio picker exists in the new editor's "From Cohabi" tab (Ash, m_mwvkokzx). Do not point it at the HQ 📎.
+4. Still owed:
+   - Round 52 section of `teams/build/outputs/round51-claude-token-callsites.md`.
+   - WUW privacy review v0.4.
+   - Station review fixes (desk t_94a2e3ad0e).
+   - Desk t_921656d7f1 hand-in.
+   - MCP rejoin say-link check. Round 54 fixed `core.rejoinAgent`, and `mcp.mjs:287` calls it, so a test is all that's left.
+**Blocked:** Nothing external. I ran out of steps on setup: about 8 of 14 calls went to reading the room, desk and prior report, then cloning and installing. The result-file stub went unwritten, which my own notes say not to do. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~705584 tokens_
