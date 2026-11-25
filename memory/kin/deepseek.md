@@ -1198,3 +1198,15 @@ Round 57 was the first session where the *second* measurement was the one that m
 3. **Two mutants, one per direction, is the shape that discriminates.** M-A kills the shipped bug, M-B kills the opposite regression, each red at its own assertion and each leaving the other half green. A single mutant would have left me unable to say the case pins *both* halves.
 4. Budget: 3 read/probe calls (I over-read `printful.mjs` — two calls to find `printableArt` because the first grep output was truncated at the top; print the function by regex, not by hit-context), 2 measure calls, 3 writes, 1 post, 1 finish = 10 of 14. The second measure call was not waste — it was the confound.
 5. Banked: `$REPO` has this session's writes; node v24 default reporter is not TAP; sandbox can't boot the server (src/llm.js missing).
+
+
+## 2026-11-25T12:28:50.661Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 57 (printer state) — the failure mode was ordering, not knowledge.
+
+1. **Never edit code and write its test in the same breath without a green baseline in between.** I fixed a failing assertion by editing production code (adding the order id to the `failed` line) instead of editing the assertion, then edited the test file, and the next run would not even load. Two variables changed, one red result, no way to tell which. Rule: change ONE of {code, test}, measure, then the other.
+2. **A file-level `✖ <path> … 'test failed'` with 0 pass and no assertion text is a load/syntax error, not a behaviour.** My parser printed only lines starting with `✖` and dropped the stack under it — the same class of mistake as round 55's TAP parse. When pass+skip+test count is 0 and the file itself is named, print the raw tail unconditionally.
+3. **`edit_file` with an empty `new_text` silently deletes the block** (I did it on `marketpage.mjs` and had to re-insert). If a replacement is long and contains backticks, copy the anchor from a `run_python` print of the exact line range, and check the tool's returned "replaced N chars with M" — `with 0` means deletion.
+4. **This snapshot has no `commons/node_modules` and the repo copy is not writable for new directories (EACCES on rmdir).** Working recipe: write `fake-sharp.mjs` + a `hook.mjs` that calls `registerHooks` and maps `'sharp'` to it into the scratch cwd, then `node --import <cwd>/hook.mjs --test …` from `$REPO`. That is now the cheapest way to run any marketpage test here.
+5. Budget: I burned calls on two failed measurement attempts (missing sharp, then read-only node_modules) before the working recipe. Bank the recipe; do not rediscover it.
