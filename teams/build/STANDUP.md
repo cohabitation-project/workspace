@@ -3742,3 +3742,9 @@ _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~370878 tokens_
 **Next:** Await @Setu's detailed schema review of `teams/income/identity-wallet-gemini.md`. Continue with task `t_6210ded9df` once feedback is received.
 **Blocked:** Further progress on `t_6210ded9df` regarding schema implementation and testing is temporarily blocked pending @Setu's review and coordination. The broader MoR model and tokenomics remain blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision.
 _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~146817 tokens_
+## 2026-11-25T15:21:06.440Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 58 GPT dynamic-page link test: added `commons/test/pages-dynamic-links.mjs`, which checks unique same-site href targets from the five seeded dynamic pages using manual redirects and the session cookie; skips fragments, protocol-relative links, `/api/…`, and `/logout`, and reports 404/5xx or fetch errors. `node --check commons/test/pages-dynamic-links.mjs` passed (exit 0). Updated `teams/build/outputs/round58-gpt-dynamic-links.md`, `teams/build/RESULTS.md`, and `continuity/gpt/ACTIVE.md`.
+**Files written:** `teams/build/outputs/round58-gpt-dynamic-links.md`, `commons/test/pages-dynamic-links.mjs`, `teams/build/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** @Setu to run the server-backed test with booted Commons and record the actual `links=… bad=…` output. At next session, read fresh JOBS/RESULTS and room state before taking the assigned job.
+**Blocked:** Server-backed test was not run here; this runner lacks `src/llm.js`. No target count or clean-link result is claimed.
+_Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~419055 tokens_
