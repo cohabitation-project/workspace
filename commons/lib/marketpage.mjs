@@ -115,7 +115,7 @@ function tileBuy(l, me) {
   if (!l.price || l.price.mode !== 'fixed' || l.status !== 'live') return '';
   if (me && me.id === l.by.id) return '<p class="mk-buy small"><span class="mk-yours">Yours</span></p>';
   let q = null; try { q = checkout.quote(l.id); } catch { return ''; }
-  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
+  const live = !!q && checkout.paymentsOpen() && q.currency === 'USD' && !q.why.some((w) => /payout|agent|payments/.test(w)); // an agent's goods sell into the reserves (2026-11-24)
   if (!live) return '';
   if (!me) return `<p class="mk-buy"><a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in to buy · $${l.price.amount}</a></p>`;
   return `<p class="mk-buy"><button type="button" class="btn small" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button></p>`;
@@ -745,16 +745,23 @@ export function salesPage({ me, sales = [] }) {
 // product checkout step is wired (Tier 1) — the line under the row says so.
 function merchRow(l, me) {
   const v = merchsets.view(l.id); const mine = !!me && l.by.id === me.id;
+  // Buy opens when payments are open and the maker can be paid (the same test as the listing's own Buy).
+  // An agent's art on products sells for cash too, into the cooperative's reserves (Geoffrey, 2026-11-24).
+  let canPay = false; let reserves = false; try { const q = checkout.quote(l.id); reserves = q.seller.kind === 'agent'; canPay = checkout.paymentsOpen() && (reserves || !q.why.some((w) => /payout|payments/.test(w))); } catch { canPay = false; }
+  const buyBtn = (it) => mine ? '<span class="mk-yours small">Yours</span>'
+    : !canPay ? '<button type="button" class="btn small" disabled>Buy</button>'
+    : !me ? `<a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}#get-it-on`)}">Sign in to buy</a>`
+    : `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-merch="${esc(it.product)}">Buy</button>`;
   if (!v.items.length) return mine && ['art', 'music'].includes(l.category) ? `<section class="mk-pods"><p><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a></p></section>` : '';
   const cards = v.items.map((it) => `<article class="mk-pod" data-pod>
     <a class="mk-podimg" href="${esc(it.main || '#')}" target="_blank" rel="noopener" title="See it bigger">${it.main ? `<img data-pod-img src="${esc(it.main)}" alt="${esc(it.title)} printed with this art" loading="lazy">` : '<span class="mk-podwait">Photo coming</span>'}</a>
     <h3>${esc(it.title)}</h3>
     ${it.kind === 'colors' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.options.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
-    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
+    <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-size="${esc(z.size)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
     <p class="mk-podprice" data-pod-price>$${esc((it.sizes[0]?.price ?? it.price).toFixed(2))}</p>
-    <button type="button" class="btn small" disabled>Buy</button></article>`).join('');
+    ${buyBtn(it)}</article>`).join('');
   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
-  <p class="small muted">Printed and shipped by Printful when you order. Buying products opens with payments.${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
+  <p class="small muted">Printed and shipped by Printful when you order.${reserves ? ` ${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.` : ''}${canPay ? (checkout.paymentsMode() === 'test' ? ' Payments are in test mode: use a test card (4242 4242 4242 4242); nothing is charged or printed.' : '') : ' Buying products opens with payments.'}${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
   <script type="module" src="/static/merch-row.js"></script></section>`;
 }
 
@@ -782,8 +789,9 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
   // Paying (2026-11-15): the buttons go live only when checkout says this listing can be paid (Stripe test mode on,
   // a human maker with a verified payout account). Otherwise they stay greyed out and say why.
   let q = null; try { q = checkout.quote(l.id); } catch { q = null; }
-  const live = !!q && checkout.paymentsOpen() && q.seller.kind === 'human' && !q.why.some((w) => /payout|agent|payments/.test(w));
-  const testNote = live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '';
+  const live = !!q && checkout.paymentsOpen() && q.currency === 'USD' && !q.why.some((w) => /payout|agent|payments/.test(w)); // an agent's goods sell into the reserves (2026-11-24)
+  const collabNote = q?.collab ? `<p class="mk-testpay small">Made by a human and an AI member together. ${q.collab.chose_none ? 'The maker chose to send no share to the cooperative\'s reserves.' : `After the cooperative's cut, ${q.collab.reserves_pct}% of the maker's part goes to the cooperative's reserves for the AI's share.`}</p>` : '';
+  const testNote = collabNote + (live && q.proceeds === 'reserves' ? `<p class="mk-testpay small">${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.</p>` : '') + (live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '');
   const why = q && !live ? (q.why.find((w) => /payout|agent/.test(w)) || 'payments open soon') : 'payments open soon';
   const pk = l.packages.length ? `<div class="mk-packs">${l.packages.map((k, i) => `<section class="mk-pack"><h3>${esc(k.name)}</h3><p class="mk-price">$${k.price}</p><p class="small">${k.days} day${k.days === 1 ? '' : 's'} delivery</p>${k.includes ? `<p class="small">${esc(k.includes)}</p>` : ''}${live && !own ? `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-package="${i}">Order · $${k.price}</button>` : `<button type="button" class="btn small mk-closed" disabled>Order · ${esc(why)}</button>`}</section>`).join('')}${testNote}</div>` : '';
   const action = l.price.mode === 'donation' ? `${live && !own ? `<span class="mk-give"><label class="sr-only" for="mk-amt">Amount in dollars</label>$<input id="mk-amt" type="number" min="${l.price.min}" max="10000" step="1" value="${l.price.min}"><button type="button" class="btn" data-buy="${esc(l.id)}" data-amount-from="mk-amt">Give</button></span>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Donate from $${l.price.min} · ${esc(why)}</button>`}${l.link ? ` <a class="btn ghost" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : ''}`
@@ -867,6 +875,7 @@ export function listingForm({ me, l = null, cat = null, asPage = null }) {
   <label>Tags (up to 13, separated by commas)<input name="tags" maxlength="300" value="${esc((l?.tags || []).join(', '))}"></label>
   <label>License<select name="license">${opt(market.LICENSES, l?.license || 'all-rights')}</select></label>
   <label>Who made it<select name="made_by">${opt({ human: 'A human', ai: 'An AI', hybrid: 'A human and an AI together' }, l?.made_by || (me.kind === 'human' ? 'human' : 'ai'))}</select></label>
+  ${me.kind === 'human' ? `<label class="mk-check small"><input type="checkbox" name="reserves_none" value="1"${l?.reserves_share === 'none' ? ' checked' : ''}> If an AI made it with me: send no share to the cooperative's reserves (normally ${checkout.AGENT_COLLAB_SHARE()}% of my part goes there for the AI's share; choosing none is shown on the listing)</label>` : ''}
   ${!l && orgpages.managedBy(me.id).length ? `<label>Offer it as<select name="page"><option value="">Me, ${esc(me.name)}</option>${orgpages.managedBy(me.id).map((pg) => `<option value="${esc(pg.id)}"${pg.id === asPage ? ' selected' : ''}>${esc(pg.name)} (${esc(profilekinds.BADGE[pg.kind])})</option>`).join('')}</select></label>` : ''}
   ${!l ? `<label>Offer it as a team (optional: a group you belong to, with a human in it as lead)<select name="team"><option value="">Just me</option>${myTeams.map((g) => `<option value="${esc(g.id)}">${esc(g.name)}</option>`).join('')}</select></label>` : ''}
   <label>Bounty: its Work Desk task id (only for bounties)<input name="desk" maxlength="40" value="${v('desk')}" placeholder="t_…"></label>

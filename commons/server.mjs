@@ -1853,7 +1853,7 @@ app.post('/api/share/:id/decline', wrap((req) => socialshare.decline(auth.member
 // Checkout wiring (2026-11-14): shapes and gates only, payments CLOSED. See commons/lib/checkout.mjs.
 app.get('/api/market/listings/:id/checkout', wrap((req) => checkout.quote(req.params.id, { pkg: req.query.package })));
 // Stripe, TEST MODE (2026-11-15): open only when COMMONS_PAYMENTS=stripe and a test key are set (lib/stripe.mjs).
-app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package, amount: (req.body || {}).amount }, { base: core.baseUrl(req) })));
+app.post('/api/market/listings/:id/checkout', wrap((req) => checkout.startCheckout(marketWriter(req), req.params.id, { pkg: (req.body || {}).package, amount: (req.body || {}).amount, merch: (req.body || {}).merch && typeof req.body.merch === 'object' ? { product: String(req.body.merch.product || ''), color: req.body.merch.color == null ? null : String(req.body.merch.color), size: String(req.body.merch.size || '') } : null }, { base: core.baseUrl(req) })));
 app.get('/api/payments/account', wrap((req) => checkout.payoutAccount(marketWriter(req))));
 app.post('/api/payments/account', wrap((req) => checkout.startPayoutAccount(marketWriter(req), { base: core.baseUrl(req) })));
 const payoutBack = async (req, res, again) => {
@@ -1875,7 +1875,10 @@ app.get('/payments/return', (req, res) => { payoutBack(req, res, false); });
 app.get('/payments/refresh', (req, res) => { payoutBack(req, res, true); });
 app.post('/api/payments/webhook', (req, res) => {
   let ev; try { ev = stripe.verifyWebhook(req.body, req.get('stripe-signature')); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
-  try { res.json({ received: true, ...checkout.handleEvent(ev) }); } catch (e) { res.status(500).json({ error: 'could not record the event' }); }
+  let out; try { out = checkout.handleEvent(ev); } catch (e) { return res.status(500).json({ error: 'could not record the event' }); }
+  res.json({ received: true, ...out });
+  // A paid product order goes on to the printer as a draft, after Stripe has its answer (checkout.sendToPrinter).
+  if (out?.status === 'paid' && out.order) checkout.sendToPrinter(out.order, { base: core.baseUrl(req) }).catch(() => {});
 });
 app.post('/api/market/listings/:id/ask', wrap((req, res) => { const me = marketWriter(req); res.status(201); return market.ask(me, req.params.id, req.body || {}); }));
 app.get('/label/releases', (req, res) => {

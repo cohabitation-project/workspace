@@ -17,6 +17,7 @@ import * as market from './market.mjs';
 import { CommonsError } from './core.mjs';
 import { paymentsOpen } from './checkout.mjs';
 import * as images from './images.mjs';
+import * as merchsets from './merchsets.mjs';
 
 const fail = (s, m) => { throw new CommonsError(s, m); };
 const env = (k) => (process.env[k] || '').trim();
@@ -112,6 +113,9 @@ export function recipientFor(provider, ship_to) {
 
 /** What would be sent to the printer for a paid order, without sending it. */
 export function plan(order) {
+  // A product bought under an artwork (merch sets): Printful's catalog variant plus the approved print file, which
+  // send() works out (it may need a PNG copy). Always Printful; no store link involved.
+  if (order?.merch) return { provider: 'printful', request: { method: 'POST', url: `${PIPES.printful.base()}/orders`, body: { external_id: order.id, recipient: recipientFor('printful', order.ship_to), items: [{ variant_id: order.merch.variant_id, quantity: order.quantity || 1, files: [] }] } } };
   const lk = links[order.listing]; if (!lk) return { provider: null, why: 'this listing has no print or fulfillment link: the maker ships it' };
   const p = PIPES[lk.provider];
   const req = lk.provider === 'printful'
@@ -134,7 +138,7 @@ export function plan(order) {
 }
 
 /** Send a PAID order to its printer. Refuses unless payments are open, the order is paid and the pipe is connected. */
-export async function send(order, { fetchImpl = fetch } = {}) {
+export async function send(order, { fetchImpl = fetch, base = env('COMMONS_PUBLIC_URL') || 'https://cohabi.org' } = {}) {
   if (!paymentsOpen()) fail(503, "Payments aren't open yet, so no order goes to a printer.");
   if (order?.status !== 'paid') fail(409, 'only a paid order goes to the printer');
   const pl = plan(order); if (!pl.provider) fail(409, pl.why);
@@ -142,6 +146,7 @@ export async function send(order, { fetchImpl = fetch } = {}) {
   // it, and before any provider fetch (Lulu's sign-in is a fetch too). Nothing is invented; no printer gets a blank address.
   if (!hasAddress(order?.ship_to)) fail(409, 'this order has no shipping address');
   if (!status()[pl.provider].connected) fail(503, `${pl.provider} isn't connected yet`);
+  if (order.merch) pl.request.body.items[0].files = [await merchsets.printFile(order.merch, base)];
   const headers = { 'content-type': 'application/json' };
   if (pl.provider === 'printful') { headers.authorization = `Bearer ${env('PRINTFUL_TOKEN')}`; headers['X-PF-Store-Id'] = env('PRINTFUL_STORE_ID'); }
   if (pl.provider === 'printify') headers.authorization = `Bearer ${env('PRINTIFY_TOKEN')}`;
