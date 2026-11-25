@@ -17,6 +17,9 @@ const SAY = 'say_REJOINSAY_' + crypto.randomBytes(12).toString('base64url');
 const TOK2 = 'cmn_REJOINSAY2_' + crypto.randomBytes(18).toString('base64url');
 const SAY2 = 'say_REJOINSAY2_' + crypto.randomBytes(12).toString('base64url');
 const REC2 = 'rec_REJOINSAY2_' + crypto.randomBytes(12).toString('base64url');
+const TOK3 = 'cmn_REJOINSAY3_' + crypto.randomBytes(18).toString('base64url');
+const SAY3 = 'say_REJOINSAY3_' + crypto.randomBytes(12).toString('base64url');
+const REC3 = 'rec_REJOINSAY3_' + crypto.randomBytes(12).toString('base64url');
 const J = { 'content-type': 'application/json', 'x-commons': '1' };
 let srv; let B; let out = '';
 const get = (p, h = {}) => fetch(B + p, { redirect: 'manual', headers: h, signal: AbortSignal.timeout(15000) });
@@ -29,6 +32,7 @@ test('boot with two seeded agents', async () => {
   fs.writeFileSync(path.join(D, 'members.json'), JSON.stringify({ members: [
     { id: 'a_rjsay', kind: 'agent', name: 'Rejoin Say', created: '2026-11-01T00:00:00Z', tokenHash: sha(TOK), sayHash: sha(SAY), consent },
     { id: 'a_rjsay2', kind: 'agent', name: 'Confirm Say', created: '2026-11-01T00:00:00Z', tokenHash: sha(TOK2), sayHash: sha(SAY2), recoveryHash: sha(REC2), consent },
+    { id: 'a_rjsay3', kind: 'agent', name: 'Mcp Say', created: '2026-11-01T00:00:00Z', tokenHash: sha(TOK3), sayHash: sha(SAY3), recoveryHash: sha(REC3), consent },
   ] }));
   const port = await freePort(); B = `http://127.0.0.1:${port}`;
   srv = spawn(process.execPath, [path.join(ROOT, 'commons', 'server.mjs')], { env: { ...process.env, ASHRAM_PORT: String(port), COMMONS_PORT: String(port), COMMONS_DATA: D, COMMONS_FAKE_LLM: '1', COMMONS_NO_SPEND_POLL: '1' }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -77,6 +81,24 @@ test('/rejoin/confirm: the OLD say-link stops working and the NEW say-link works
   assert.notEqual(fresh, SAY2, 'the say-link is a different one');
   assert.equal((await get(`/s/${SAY2}`)).status, 404, 'the OLD say-link is dead after /rejoin/confirm');
   assert.equal((await get(`/s/${fresh}`)).status, 200, 'the NEW say-link works');
+});
+
+// Round 55: the MCP `rejoin` tool (mcp.mjs:287) calls the same core.rejoinAgent; drive it over POST /mcp (JSON-RPC tools/call,
+// the shape agent-connect.mjs:236 uses) with a third seeded agent. No token is needed to call rejoin: the recovery code is the credential.
+test('MCP rejoin tool: new token works, the OLD say-link is 404 and its text never reaches the General Hall', async () => {
+  assert.equal((await get(`/s/${SAY3}`)).status, 200, 'third agent: old say-link answers before the MCP rejoin');
+  const r = await fetch(`${B}/mcp`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'rejoin', arguments: { name: 'Mcp Say', recovery: REC3 } } }), signal: AbortSignal.timeout(15000) });
+  assert.equal(r.status, 200, `/mcp answered ${r.status}`);
+  const j = await r.json();
+  assert.ok(!j.result?.isError && !j.error, 'the rejoin tool call failed: ' + JSON.stringify(j).slice(0, 300));
+  const body = JSON.parse(j.result.content[0].text);
+  assert.ok(body.token && body.token !== TOK3, 'a new token came back: ' + Object.keys(body).join(','));
+  assert.ok([401, 403, 404].includes((await get('/api/me', { authorization: 'Bearer ' + TOK3 })).status), 'old token refused');
+  assert.equal((await get('/api/me', { authorization: 'Bearer ' + body.token })).status, 200, 'new token works');
+  const stale = await get(`/s/${SAY3}?room=general&text=${encodeURIComponent('stale mcp say-link words')}`);
+  const msgs = await (await get('/api/rooms/general/messages', { authorization: 'Bearer ' + body.token })).text();
+  assert.equal(stale.status, 404, `the old say-link answered ${stale.status} after the MCP rejoin (a message from it ${/stale mcp say-link words/.test(msgs) ? 'REACHED the General Hall' : 'did not reach the record'})`);
+  assert.ok(!/stale mcp say-link words/.test(msgs), 'the old say-link posted into the General Hall as the member');
 });
 
 test('teardown', () => { try { srv.kill(); } catch { /* done */ } });
