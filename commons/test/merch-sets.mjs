@@ -6,6 +6,8 @@
 //   - the money: card fee 2.9% + $0.30, Cohabi cut from COMMONS_FEE_PERCENT, earnings; a price that pays nothing refused
 //   - moving the art takes an approved product back to draft (its photo no longer matches)
 //   - only the maker can do any of it; the art stays ONE listing
+//   - the art as uploaded may be a WebP, which Printful refuses: the set's photo is made from a PNG copy (second test,
+//     no server boot, so it runs where the site's dependencies are missing)
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -134,4 +136,70 @@ test('preview, colours, placement and money before a product reaches buyers', as
     await call(`/api/market/listings/${id}/merch/tee`, 'DELETE', null, maker);
     assert.deepEqual((await call(`/api/market/listings/${id}/merch?mine=1`, 'GET', null, maker)).j.items.map((i) => i.product), ['canvas'], 'the shirt is gone, the canvas stays');
   } finally { srv.kill(); fake.close(); }
+});
+
+// The art a maker uploads may be a WebP or a GIF, which Printful refuses ("invalid file format"). startMockup already
+// makes a PNG copy as the maker's OWN picture; this proves the set path (the background photo maker) does the same, and
+// that a PNG is still passed through untouched. No server boot: the module directly, a stand-in Printful on a local port.
+test('the set photo is made from a PNG Printful can print, not the WebP as uploaded', async () => {
+  const WEBP = Buffer.from('UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAwA0JaQAA3AA/vuUAAA=', 'base64'); // 1x1, real RIFF/WEBP
+  const seen = { tasks: [] };
+  const PRODUCTS = { 71: { title: 'Unisex Staple T-Shirt | Bella + Canvas 3001', variants: [
+    { id: 4012, name: 'Black / M', color: 'Black', color_code: '#0b0b0b', size: 'M', price: '11.50' },
+    { id: 4022, name: 'White / M', color: 'White', color_code: '#ffffff', size: 'M', price: '11.50' }] } };
+  const FP = await freePort();
+  const fake = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x'); const json = (code, o) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
+    let m = u.pathname.match(/^\/products\/(\d+)$/);
+    if (m && PRODUCTS[m[1]]) { const p = PRODUCTS[m[1]]; return json(200, { code: 200, result: { product: { id: Number(m[1]), title: p.title, currency: 'USD', is_discontinued: false }, variants: p.variants.map((v) => ({ ...v, in_stock: true })) } }); }
+    m = u.pathname.match(/^\/mockup-generator\/printfiles\/(\d+)$/);
+    if (m && PRODUCTS[m[1]]) return json(200, { code: 200, result: { available_placements: { front: 'Front print' }, printfiles: [{ printfile_id: 1, width: 1800, height: 2400, dpi: 150 }], variant_printfiles: PRODUCTS[m[1]].variants.map((v) => ({ variant_id: v.id, placements: { front: 1 } })) } });
+    m = u.pathname.match(/^\/mockup-generator\/templates\/(\d+)$/);
+    if (m) return json(200, { code: 200, result: { version: 1, min_dpi: 150, variant_mapping: [], templates: [] } });
+    m = u.pathname.match(/^\/mockup-generator\/create-task\/(\d+)$/);
+    if (m && req.method === 'POST') { let b = ''; req.on('data', (c) => { b += c; }); req.on('end', () => { seen.tasks.push({ product: m[1], ...JSON.parse(b) }); json(200, { code: 200, result: { task_key: `gt-${seen.tasks.length}`, status: 'pending' } }); }); return; }
+    // Still pending, never 404: a throw inside tick() is swallowed and aborts the whole tick, which would hide the bug.
+    if (u.pathname === '/mockup-generator/task') return json(200, { code: 200, result: { task_key: u.searchParams.get('task_key'), status: 'pending' } });
+    json(404, { code: 404 });
+  });
+  await new Promise((r) => fake.listen(FP, '127.0.0.1', r));
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-sets-webp-'));
+  const savedEnv = { ...process.env };
+  Object.assign(process.env, { PRINTFUL_TOKEN: 'test-token', PRINTFUL_API_URL: `http://127.0.0.1:${FP}`, PRINTFUL_MOCKUPS_PER_MINUTE: '10',
+    PRINTFUL_PRODUCTS: JSON.stringify([{ key: 'tee', id: 71 }]) });
+  const store = await import('../lib/store.mjs'); const images = await import('../lib/images.mjs');
+  const market = await import('../lib/market.mjs'); const merchsets = await import('../lib/merchsets.mjs'); const printful = await import('../lib/printful.mjs');
+  try {
+    fs.writeFileSync(path.join(D, 'members.json'), JSON.stringify({ members: [{ id: 'm_painter', name: 'Painter One', kind: 'human', joined: '2026-11-01T00:00:00.000Z' }] }));
+    store.init(D); images.init(D); market.init(D); merchsets.init(D); printful.resetCache();
+    const maker = store.getMember('m_painter'); assert.ok(maker, 'the maker is seeded');
+    const base = 'http://127.0.0.1:65530'; // addressed, never fetched: Printful would be the one downloading the art
+    const list = (data, alt) => { const art = images.upload(maker, { data, alt });
+      const l = market.create(maker, { title: alt, text: 'A painting.', category: 'art', type: 'product', price: { mode: 'quote' }, license: 'all-rights', rights: true, images: [art.id] });
+      return { art, l }; };
+
+    // (1) A WebP as uploaded: the photo is made from a PNG copy, and Printful is handed that copy's id.
+    const a = list(WEBP, 'a sunflower, saved as a webp');
+    assert.equal(a.art.ext, 'webp', 'the library keeps the WebP exactly as uploaded');
+    await merchsets.saveDraft(maker, a.l.id, 'tee', { colors: ['Black'], scale: 0.6, x: 0.5, y: 0.3, price: 30 });
+    await merchsets.requestPhoto(maker, a.l.id, 'tee', 'Black');
+    await merchsets.tick(base);
+    assert.equal(seen.tasks.length, 1, 'the queued photo was started');
+    const url = seen.tasks[0].files[0].image_url;
+    assert.match(url, new RegExp(`^${base}/images/[^/]+$`), 'Printful fetches the art from our address');
+    const sentId = url.split('/').pop();
+    assert.notEqual(sentId, a.art.id, 'Printful is never handed the WebP itself');
+    const sent = images.get(sentId); assert.ok(sent, 'a stored picture answers that address');
+    assert.equal(fs.readFileSync(images.fileOf(sent)).subarray(0, 4).toString('hex'), '89504e47', 'the file behind that id is a PNG');
+    assert.equal(sent.by, maker.id, 'the PNG copy is the maker\'s own picture');
+    assert.equal(sent.title, 'a sunflower, saved as a webp', 'the copy keeps the title');
+
+    // (2) A PNG needs no copy: the id Printful is handed is the art itself.
+    const b = list(PNG, 'a spiral, saved as a png');
+    await merchsets.saveDraft(maker, b.l.id, 'tee', { colors: ['White'], scale: 0.6, x: 0.5, y: 0.3, price: 30 });
+    await merchsets.requestPhoto(maker, b.l.id, 'tee', 'White');
+    await merchsets.tick(base);
+    assert.equal(seen.tasks.length, 2, 'the second queued photo was started on the next tick');
+    assert.equal(seen.tasks[1].files[0].image_url, `${base}/images/${b.art.id}`, 'a PNG is passed through unchanged');
+  } finally { Object.assign(process.env, savedEnv); fake.close(); }
 });
