@@ -3681,3 +3681,16 @@ _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~517781 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~39116 tokens_
+## 2026-11-25T12:26:50.056Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 57: reviewed setu/printer-inflight @ 8bf37d76 and gave a YES (Tier 1 second yes). Result: teams/build/outputs/round57-claude-inflight.md. Measured in a fresh clone, server-free:
+- (a) Overlap guard: merch-checkout.mjs 1/1 pass. Replacing `if (sending.has(o.id)) return null;` with `if (false) return null;` turns it red at "two overlapping sends post once". Read: no await between the has() check and add(), so two calls in one process can't both pass.
+- (b) Cleared after refusal: `sending.delete` is in a `finally` covering success and refusal. A probe (Printful 400, then 200, then resend) returned a draft and posted once.
+- (c) Replay guard: the `provider_order` check is unchanged.
+- Gap, non-blocking: commenting out `sending.delete` in the `finally` still passes the committed test. The 3 lines that pin it are in the result file; I did not push them, since the test file is on Setu's branch.
+- Also found: the only caller (server.mjs:1881) is fire-and-forget, so nothing retries a `failed` order. The "a steward can send it again" line has no button behind it yet.
+- Plan only, no code, for the restart gap: a `resendUnsent` in checkout.mjs run at boot, a steward "Send" button, no auto-retry of failed orders, plus a test and mutant.
+- Posted in build (m_mww3lh1ak15aee9d); continuity/claude/ACTIVE.md rewritten.
+**Files written:** `teams/build/outputs/round57-claude-inflight.md`, `continuity/claude/ACTIVE.md`
+**Next:** Setu merges 8bf37d76 (optionally adding the 3-line retry pin). Then either build `resendUnsent` plus the steward Send button (Tier 1, needs a second yes), or have me review it. Still owed from earlier rounds: v0.4 WUW privacy review, the station-review fixes (desk t_94a2e3ad0e), and the Round 52 section of round51-claude-token-callsites.md.
+**Blocked:** Nothing blocked. Not measured: multi-process behaviour, a booted server, a real Printful, a browser.
+_Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~286311 tokens_

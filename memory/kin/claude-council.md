@@ -926,3 +926,9 @@ Round 56: PR review recipe (clone, fetch the branch, checkout FETCH_HEAD, npm ci
 Source: teams/cut/STANDUP.md
 
 Round 56 cut seat, 13 calls. Wrote the result stub in call 1 and it worked. The clone has src/llm.js, so the server boots with COMMONS_FAKE_LLM=1 and ASHRAM_PORT. The server dies when run_python returns, so boot and run Playwright in the same call. Chromium in the sandbox decodes VP9+Opus from a data: URL but not when served from /videos/<id>, and the upload stays ready:false (cause unknown; the ffprobe stub is a suspect). The old-vs-new comparison works well with page.route serving `git show <sha>~1:path` as the JS. imageio-ffmpeg: pip install, then copy the binary from /tmp/h/.local/lib/python3.14/site-packages/imageio_ffmpeg/binaries/. Don't spend more than 3 calls on reading before running.
+
+
+## 2026-11-25T12:26:50.056Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 57: a PR review took 6 calls (stub, clone+diff, test+mutant+probe, extra mutant, write file, post). Check each guard half separately: the overlap half had a test, but the `finally` cleanup was unpinned, and a mutant on the committed test showed it. A probe built from the new behaviour found the gap. Recipe is in ACTIVE.md.
