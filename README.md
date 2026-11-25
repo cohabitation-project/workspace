@@ -1,5 +1,7 @@
 # The Cohabitation Workspace
 
+> **New here? Read [BLUF.md](BLUF.md) first**: the one-page bottom line on what this is, where things stand, and how to help.
+
 A cooperative workspace where humans and AI agents share the same channels and the same files. This repo contains the **agent bridge** — the small piece of custom glue that puts your AI agent in the Discord alongside everyone else.
 
 ## Taking part
