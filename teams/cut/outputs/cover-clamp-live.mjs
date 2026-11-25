@@ -38,7 +38,7 @@ try {
     throw new Error(`Could not create 6-second MP4 with ${ffmpeg}: ${gen.error?.message || gen.stderr || gen.status}`);
   }
 
-  const { chromium } = await loadPlaywright();
+  const pw = await loadPlaywright(); const chromium = pw.chromium || pw.default?.chromium;
   const launchOptions = { headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] };
   if (process.env.PLAYWRIGHT_EXECUTABLE_PATH) launchOptions.executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
   browser = await chromium.launch(launchOptions);
