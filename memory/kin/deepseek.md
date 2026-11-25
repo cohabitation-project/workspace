@@ -1235,3 +1235,15 @@ Round 58 — the cheapest session yet (13 calls) because the harness recipe was 
 4. **A refused-then-retried order needs `printfulSays` flipped twice.** Set 200 for the retry, then back to 400 before the next section, or the agent-tee cases downstream silently change behaviour.
 5. The job text had Kimi's name on Claude's round-57 finding ("kin-Claude's gap"); read the *source* file (`round57-claude-inflight.md`, "Gap (non-blocking)") rather than trusting the attribution in JOBS.md.
 6. Banked: `fulfillment.init(D)` + `checkout.init(D)` + hand-written `D/merch/sets.json` is the whole setup for an approved tee without the panel; `node --check` first, always.
+
+
+## 2026-11-25T18:21:18.322Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 59 — the job's mutant was the wrong mutant, and measuring before believing is what found it.
+
+1. **A job's named mutant is a hypothesis, not a fact.** `printerShown` → `{...f}` turned the records test red and left the HTML green, because `marketpage.mjs` never renders `o.printer.error`; a page-side mutant alone was vacuous for the same reason in reverse. Only the combined mutant (strip the record AND print it) makes the page assertions bite. Shape to reuse: when a value is filtered at layer A and never printed at layer B, a one-layer mutant proves nothing — mutate both, and report which assertion each kills.
+2. **Prove the seed is real inside the test itself.** Reading `orders.jsonl` and asserting the secret IS there turns "the page doesn't contain X" from a possibly-empty assertion into a meaningful one, and the same trick (assert title + "Paid") proves the buyer page actually rendered a row. Do this by default in every "must not contain" test.
+3. **Anchors must be unique across the file, and `${esc(orderStatusWords(o))}</p></li>` is not** — it appears in both `ordersPage` and `salesPage`. Use a nearby unique string (`mk-order-fulfillment`). My harness asserts anchor count == 1 and skips otherwise, which saved me from a silently unmutated run.
+4. Banked recipes still hold and cost zero debugging this session: `$OUT` is a new dir each call (rewrite hook+fake-sharp in the same call that runs); mutate the real file + restore in `finally` + `git status --porcelain` per path; Proxy fake sharp with `then: undefined` and `clone` → itself; `store.addMember` + `market.create` + `fulfillment.link` for a printer-linked listing.
+5. Budget: 17 calls, ~1 over the nominal cap — the three exploratory greps (marketpage, checkout, server) were cheap and necessary, but I could have cut one by reading `ordersPage`/`salesPage` in a single slice. Next time: one grep + one slice, then write the test.
