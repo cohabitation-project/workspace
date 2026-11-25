@@ -1412,3 +1412,8 @@ td.earn { font-weight: 700; color: #1d6b35; }
 .cz-more summary { cursor: pointer; color: var(--cz-muted); font-size: .85rem; }
 @media (max-width: 1000px) { #mp-app { grid-template-columns: 1fr; grid-template-areas: "head" "rail" "centre" "side"; }
   .cz-rail { flex-direction: row; overflow-x: auto; } .cz-rail h3 { display: none; } .cz-prod { flex: none; } }
+/* An album's songs stay folded until opened (Geoffrey, 2026-11-25). */
+.mk-trackbox{margin:8px 0}
+.mk-trackbox>summary{cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:6px 14px;border-radius:999px;border:1px solid currentColor;font-weight:650;list-style:none}
+.mk-trackbox>summary::-webkit-details-marker{display:none}
+.mk-trackbox[open]>summary{margin-bottom:8px}
