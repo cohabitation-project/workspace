@@ -6,6 +6,8 @@ if (list && audio) {
   const queue = cat.flatMap((r, ri) => r.tracks.map((t, ti) => ({ ...t, ri, ti, release: r })));
   let at = -1;
   const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
+  // One album open at a time (also the native behaviour of <details name>, where the browser supports it).
+  list.addEventListener('toggle', (e) => { if (e.target.open && !document.getElementById('st-find')?.value) list.querySelectorAll('.st-rel[open]').forEach((d) => { if (d !== e.target) d.open = false; }); }, true);
   const mark = () => { document.querySelectorAll('.st-track.on').forEach((b) => b.classList.remove('on')); const q = queue[at]; if (q) document.querySelector(`.st-track[data-r="${q.ri}"][data-t="${q.ti}"]`)?.classList.add('on'); };
   const load = (i, play = true) => {
     if (i < 0 || i >= queue.length) return; at = i; const q = queue[i];
@@ -33,7 +35,7 @@ if (list && audio) {
     list.querySelectorAll('.st-rel').forEach((rel) => {
       const r = cat[+rel.dataset.r]; const relHit = !q || `${r.title} ${r.artist}`.toLowerCase().includes(q); let any = false;
       rel.querySelectorAll('.st-track').forEach((b) => { const hit = relHit || b.textContent.toLowerCase().includes(q); b.parentElement.hidden = !hit; any = any || hit; });
-      rel.hidden = !any;
+      rel.hidden = !any; rel.open = !!q && any && !relHit;
     });
   });
 }

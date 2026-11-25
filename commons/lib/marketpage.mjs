@@ -657,7 +657,7 @@ export function artistPage({ me, slug }) {
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
     <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
-    ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
+    ${(r.files || []).length ? `<details class="mk-trackbox"><summary>▶ ${r.files.length} song${r.files.length === 1 ? '' : 's'}: open the album</summary><ol class="mk-tracks">${r.files.map(audio).join('')}</ol></details>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}${r.made_with ? `<p class="small muted">Made with: ${esc(r.made_with)}</p>` : ''}
     <p><button type="button" class="btn ghost small rel-share" data-release="${esc(r.id)}" data-title="${esc(r.title)}">Share to the feed</button></p></div></article>`;
   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=music">Music</a> / artist</p>
@@ -936,7 +936,7 @@ function songsBlock(a) {
     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
     <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
     ${r.notes ? `<p class="small">${esc(r.notes)}</p>` : ''}
-    ${(r.files || []).length ? `<ol class="mk-tracks">${r.files.map(audio).join('')}</ol>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
+    ${(r.files || []).length ? `<details class="mk-trackbox"><summary>▶ ${r.files.length} song${r.files.length === 1 ? '' : 's'}: open the album</summary><ol class="mk-tracks">${r.files.map(audio).join('')}</ol></details>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
     ${r.license ? `<p class="small muted">${esc(r.license)}</p>` : ''}
     <p><button type="button" class="btn ghost small rel-share" data-release="${esc(r.id)}" data-title="${esc(r.title)}">Share to the feed</button></p></div></article>`).join('')}</div>`;
 }

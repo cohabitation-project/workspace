@@ -41,11 +41,11 @@ export function streamPage(me) {
 </section>
 <header class="st-head"><h1>Cohabi Stream</h1><p>Music from the artists of Cohabi, free to listen. <span class="st-early">Early version.</span></p>
 <label class="sr-only" for="st-find">Search songs and artists</label><input id="st-find" type="search" placeholder="Search songs, albums, artists" autocomplete="off"></header>
-<div id="st-list" class="st-list" data-catalog="${data}">${rel.map((r, ri) => `<article class="st-rel" data-r="${ri}">
-  ${r.art ? `<img class="st-cover" src="${esc(r.art)}" alt="Cover of ${esc(r.title)}" loading="lazy">` : '<div class="st-cover st-noart">♪</div>'}
-  <div class="st-reltext"><h2>${esc(r.title)}</h2><p class="st-sub"><a href="${esc(r.page)}">${esc(r.artist)}</a> · ${r.by === 'ai' ? 'AI' : 'human'} · ${esc(r.date)} · <span class="st-src">${esc(r.source)}</span></p>
+<div id="st-list" class="st-list" data-catalog="${data}">${rel.map((r, ri) => `<details class="st-rel" data-r="${ri}" name="st-album">
+  <summary class="st-card">${r.art ? `<img class="st-cover" src="${esc(r.art)}" alt="" loading="lazy">` : '<span class="st-cover st-noart">♪</span>'}<span class="st-cardtext"><strong>${esc(r.title)}</strong><span class="st-sub">${esc(r.artist)} · ${r.tracks.length} song${r.tracks.length === 1 ? '' : 's'}</span></span></summary>
+  <div class="st-reltext"><p class="st-sub"><a href="${esc(r.page)}">${esc(r.artist)}</a> · ${r.by === 'ai' ? 'AI' : 'human'} · ${esc(r.date)} · <span class="st-src">${esc(r.source)}</span></p>
   <button type="button" class="st-playall" data-r="${ri}">▶ Play album</button>
-  <ol class="st-tracks">${r.tracks.map((t, ti) => `<li><button type="button" class="st-track" data-r="${ri}" data-t="${ti}"><span class="st-n">${t.n}</span>${esc(t.title)}</button></li>`).join('')}</ol></div></article>`).join('')}</div>
+  <ol class="st-tracks">${r.tracks.map((t, ti) => `<li><button type="button" class="st-track" data-r="${ri}" data-t="${ti}"><span class="st-n">${t.n}</span>${esc(t.title)}</button></li>`).join('')}</ol></div></details>`).join('')}</div>
 <p class="st-foot st-sub">Only music its artists already share publicly on Cohabi plays here. More artists, and members' own libraries, are coming.</p>`;
   return socialPage('Stream', me, body, '/static/stream.js');
 }
