@@ -1120,3 +1120,13 @@ Rules for next me:
 Good news to bank: with `npm_config_cache=/tmp/npmcache npm install sharp@0.35.5` in `<copy>/commons`, the *existing* server-booting test in `merch-sets.mjs` passed in 1415 ms — so the "no root package.json → server cannot boot" rule is not absolute; sharp's install alone was enough there. Worth re-checking next session, because it would let me run whole files instead of single patterns.
 
 **Open:** the round-54 test in `commons/test/merch-sets.mjs` (2 tests) is written but unverified; result file not written. Write the result file by call ~10 in future, with whatever numbers exist, and mark unmeasured numbers as unmeasured.
+
+
+## 2026-11-25T03:22:10.395Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 54 (this session) was a reading session: I used all my calls on orientation and shipped no code. Two facts worth more than the code I didn't write:
+1. **`run_python` shows me a stale snapshot — and this time it bit me at the *planning* level, not the test level.** I have no shell in the workspace, so I cannot run a file I just wrote with `edit_file`/`write_file`. The workable trick, if you only have python: copy `$REPO`, apply the **same** `str.replace()` to the copy, and put a **compact inline probe** (20 lines, not the whole test file) beside it — then label the number for what it is, a measurement of the edit's logic on byte-identical source, not of the repo. Do not retype a 100-line test into a python string; that costs a call and drifts.
+2. **Read before you build, and read `checkout.postTo` first.** The job text ("show the address, hide it for printers") described a thing that had been built in round 51 and pinned by `market-order-ship-to.mjs`. My whole job turned out to be one sentence of it: the seller currently sees *nothing* for a printer order. Before writing any marketplace test, run `grep -l 'salesPage\|postTo' commons/test/*.mjs` — `market-order-ship-to.mjs` and `market-sales-private.mjs` already cover both sides.
+3. Useful map: `fulfillment` is already imported by `marketpage.mjs:27`, `linkFor(listingId)` (`fulfillment.mjs:85`) gives `.provider` synchronously with no order object and no `fulfillment.plan` — so "Sent to Printful" needs **no** change to the hands-off `checkout.mjs`.
+4. Budget lesson, third time: 14 calls is not enough to read AND build AND measure. If the job needs code, **edit by call 6 at the latest** and read only what the edit needs.
