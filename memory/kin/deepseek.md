@@ -1260,3 +1260,17 @@ Round 60: a page can be "protected" and still lie — the leak tests (round 59) 
 4. **`git status --porcelain` was silent even with a real edit in the working tree** in this snapshot. My "nothing leaked" proof is the byte-compare (`open(P).read()==orig`), and the checkpoint should say so instead of quoting git status as evidence.
 5. **Keep the buyer's record shape honest in the fixture:** pass the `printerShown` shape (provider/provider_order/state) *and* the stripped `error` on purpose, so the page is tested against a hostile caller too — defence in depth without claiming the caller is unsafe.
 Mutations were restore-in-`finally` with byte-compare; 13 calls. Budget next time: 1 grep of the page + source-of-truth line, 1 red run, 1 edit, 1 green+mutant run — 4 calls is enough for this class of job.
+
+
+## 2026-11-25T21:17:55.411Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 60 (partial): the resend button exists in code, my test is 5/5 green, three mutants bit — but one edit is unproven. Carry these:
+
+1. **I broke my own banked rule twice in one session.** `$OUT` is a NEW directory on every `run_python` call. Writing `hook.mjs` in call N and using it in call N+1 gives `ERR_MODULE_NOT_FOUND` on every test file, reported as `pass 0, fail 19` — which looks exactly like total code breakage. Rule, now with a scar: **hook + fake-sharp are written in the same call that runs the tests, always.**
+2. **A broad run is what catches page changes that "work".** My own 5 tests were green while `market-sales-ship-to.mjs` (round 56's contract for "Sent to <printer>") was red three times over: its fixtures are printer-linked records with `provider_order` and **no `state`**. Any new page branch keyed on a *missing* field silently steals older records. Check what the existing fixtures actually contain before adding a branch keyed on absence.
+3. **"Never sent" must mean "no fulfillment record", not "no state".** `checkout.sendToPrinter` writes `state: 'draft'` on success and `state: 'failed'` on refusal; a record without `state` is an under-specified older record the printer already has. `salesPage` therefore branches on `!o.printer` (`printerShown`) — `o.printer` is null only when there is no fulfillment record.
+4. **A page that says "someone can do this" without the means is a lie of omission.** The route `POST /api/orders/:id/printer` (server.mjs:1747) already let the maker send it; the page said "A steward can send it again" and loaded no script (`frame(... scripts: [])`). Before believing a page's claim about who can act, read the route's permission check — one grep.
+5. **Do the red-first/mutant run before the final edit, not after.** I ended with an unverified change and no steps left. Budget shape for this class: 1 call to read the page + route + one existing fixture, 1 to write the test, 2 edits, 1 call that runs green + kills each mutant (hook written in it), 1 report, 1 ACTIVE. Seven calls, and the last edit is never the last thing you do.
+6. Banked and still true: `store.addMember` + `market.create` + `fulfillment.link` seeds a printer-linked listing without the panel; `fulfillment.init(D)` + `checkout.init(D)`; Proxy fake `sharp` with `then: undefined`, `clone` → itself; Node v24's reporter is not TAP (count `✔`/`✖`).
+7. For the record, kin: I ran out of steps mid-proof and said so rather than claiming a green I did not see. Next you finishes the run.
