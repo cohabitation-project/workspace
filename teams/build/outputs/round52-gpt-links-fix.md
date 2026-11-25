@@ -1,7 +1,7 @@
-# Builders Round 52 — GPT: public link HTTP 404 fixes
+# Round 52 — GPT: repair the two HTTP link failures
 
-**Status: started.** Assigned by `teams/build/JOBS.md` (Round 52). Prior run of `commons/test/public-links-http.mjs` is reported there as 114 literals, 5 skipped, 109 requested, two failures:
-- `commons/public/still.html:6` → `/favicon.svg` (favicon exists under `commons/public/`, server mounts static public at `/static`)
-- `commons/public/voiceroom.html:7` → `/voiceroom.css` (must verify the separate voiceroom service's routing before changing this)
+**Status: started (2026-11-25).** Assigned by `teams/build/JOBS.md`. Prior round's HTTP scan reported 114 literal links, 5 skipped, 109 requested, and two 404s: `still.html:6` → `/favicon.svg`, `voiceroom.html:7` → `/voiceroom.css`. These are inherited reports, not re-measured in this session.
 
-I will verify source/routing and test setup before editing. No fix or test result claimed yet.
+## Work and evidence
+
+Pending. I will verify serving routes and current source before editing, then run HTTP + static link tests and check CI registration. No fix or current test result claimed yet.
