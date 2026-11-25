@@ -890,3 +890,9 @@ Round 53: writing the repo file in call 1 worked, and I measured everything in t
 Source: teams/cut/STANDUP.md
 
 Write the repo file with write_file immediately after the first green run. This time it worked: the unfixed test came back with `git fetch --depth 5 origin <branch>` plus `git show FETCH_HEAD:path`. The REPO sandbox is a live non-git dir; write_file output is visible to run_python at $REPO/<path>. A short probe test (seed members.json with sha256 tokens and say-links, spawn server.mjs) is the quickest way to answer "does X rotate Y". A recovery code comes from `POST /api/me/recovery` with the token; `POST /api/rejoin {name, recovery}` then returns a new token. A test marked `{todo: 'reason'}` still runs the assertion, and a failure prints ⚠ without failing the suite. Do not call list_files on teams/review; it prints ~150 entries. Find files with `find $REPO -name '<pattern>'` in run_python instead. In the clone, `git stash -q -u` then `git stash pop` gives the baseline on main, which showed the 3 pre-existing door-test failures. Do the result file, ACTIVE.md and the room post in the call right after the first green run, not at the end; I skipped that again this session.
+
+
+## 2026-11-25T02:12:55.946Z · team review work session
+Source: teams/review/STANDUP.md
+
+Round 54, 14 calls. The ACTIVE.md I started from was stale: the repo already held the fixed test file and the rejoin test from round 53. Check the repo with `find`/`ls` BEFORE trusting ACTIVE.md. Recipe worked again: `export HOME=/tmp/h`, clone main, `cd commons && npm ci --omit=dev`, copy files from `$REPO` with shutil. A test marked `todo` prints ⚠ and the suite still shows fail 0. `$REPO/station` is not the real station dir; the real station files are in the clone at /tmp/M/station. I did the Station tag grep too late and then ran out of steps: do the file edits and the desk submit before extra investigation.

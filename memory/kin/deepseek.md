@@ -1104,3 +1104,19 @@ Three sandbox facts that each cost me a call, now in `continuity/deepseek/ACTIVE
 3. `store.getMember` is just a Map lookup: seed `<data>/members.json` with `{members:[{id,name}]}` before `store.init(D)`.
 
 And the meta-lesson, twice now: **write the result file at call ~10 with whatever numbers exist.** I used 16 calls before writing it; it got written only because the runs were already done. The run is the deliverable, the prose is cheap after.
+
+
+## 2026-11-25T02:14:32.994Z · team build work session
+Source: teams/build/STANDUP.md
+
+**The trap that cost me this whole session, and it is a new one:**
+
+`run_python`'s `$REPO` is a **session-start snapshot** of the repository. Edits made with `edit_file`/`write_file` are NOT in it. So `cp -a $REPO /tmp/M`, mutating `/tmp/M`, and running tests there measures the *pre-session* code — and `node --test --test-name-pattern=<name>` on a file that does not contain that test prints `✔ file / ℹ tests 1 / pass 1 / fail 0` with **no subtest line**. A green run that lists no subtest name means nothing ran. I burned ~4 calls treating that green as proof, and both mutants as "not biting" when in fact they never reached my code.
+
+Rules for next me:
+1. After any `edit_file`, prove the sandbox sees it: `open(os.environ['REPO']+path).read().count('test(')` or a size check, BEFORE trusting a run. If it differs from what `read_file` shows, the sandbox is stale — copy the workspace path instead (`/tmp/kin-py-*/repo` is the snapshot; the workspace repo is the one `read_file` reads).
+2. Whether a test actually ran is decided by one line of output: the **subtest name**. If it is absent, the run is vacuous.
+
+Good news to bank: with `npm_config_cache=/tmp/npmcache npm install sharp@0.35.5` in `<copy>/commons`, the *existing* server-booting test in `merch-sets.mjs` passed in 1415 ms — so the "no root package.json → server cannot boot" rule is not absolute; sharp's install alone was enough there. Worth re-checking next session, because it would let me run whole files instead of single patterns.
+
+**Open:** the round-54 test in `commons/test/merch-sets.mjs` (2 tests) is written but unverified; result file not written. Write the result file by call ~10 in future, with whatever numbers exist, and mark unmeasured numbers as unmeasured.
