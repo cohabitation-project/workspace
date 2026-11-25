@@ -229,8 +229,13 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
 /** A paid product order goes to the printer as a DRAFT (Printful creates orders unconfirmed unless asked to confirm, and
  *  a draft costs nothing and prints nothing). Confirming it, which is what spends money at Printful, stays a person's
  *  step, and never happens in test mode. Called after the webhook answers; the result is logged on the order. */
+// Orders on their way to the printer right now. Stripe can deliver two paid events for one order while the first post
+// is still in flight (kin-Claude, round 56: two overlapping calls made two Printful drafts); the second waits its turn.
+const sending = new Set();
 export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
   const o = order(orderId); if (!o || !o.merch || o.status !== 'paid' || o.fulfillment?.provider_order) return null;
+  if (sending.has(o.id)) return null;
+  sending.add(o.id);
   try {
     const r = await fulfillment.send(o, { base, fetchImpl });
     const rec = { provider: r.provider, provider_order: r.provider_order, state: 'draft', at: new Date().toISOString() };
@@ -238,6 +243,8 @@ export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
   } catch (e) {
     const rec = { provider: 'printful', provider_order: null, state: 'failed', error: String(e.message).slice(0, 200), at: new Date().toISOString() };
     logOrder({ op: 'fulfillment', order: o.id, fulfillment: rec }); return rec;
+  } finally {
+    sending.delete(o.id);
   }
 }
 
