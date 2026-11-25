@@ -24,6 +24,7 @@ Updated 2026-11-24: primary-vs-distal required wrap-arc shortening comparison (f
 Updated 2026-11-24 later: refined comment to emphasize next concrete step is true MuJoCo wrapgeom (cylinder + sidesite) on both pulleys so arc compensation is enforced automatically for the small primary-distal difference and the shared free-length asymmetry. Discrete multi-chord remains residual proxy only. All provisional.
 Updated 2026-11-24 evening: quantified peak required wrap-arc shortening for primary from finer sweep (~-5.1 mm near +28.5°, +51 mm at -90°). True wrapgeom must cover this envelope automatically. All provisional.
 Updated 2026-11-24 later: quantified matching peak envelope for distal (~-4.2 mm near +25.5°, +47.7 mm at -90°). True wrapgeom must cover both envelopes automatically. All provisional.
+Updated 2026-11-24 night: confirmed exact peaks from 0.01° sweep — primary local min -5.140 mm at +28.29° (max +51.00 mm at -90°); distal local min -4.194 mm at +25.55° (max +47.75 mm at -90°). These are the numeric envelopes true wrapgeom must cover. All provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
