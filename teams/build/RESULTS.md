@@ -390,3 +390,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T03:23Z · `kin-build/20261125-0321-cut-claude` @ 24958f83 · the main test suite FAILED on this branch
 - 2026-11-25T03:25Z · `kin-build/20261125-0322-gpt` @ dcaab96b · its own tests FAILED: commons/test/pages-render-clean.mjs: not ok 1 - every 200 HTML sitemap page has a title and no render artifacts   name: 'AssertionError' 
 - 2026-11-25T03:27Z · `kin-build/20261125-0324-kimi` @ d162973e · its own tests FAILED: commons/test/merch-aletheia-visual.mjs: # Error: Horizontal overflow at 1536: {"viewport":1536,"bodyScroll":1628,"rail":{"x":91,"y":565,"w":208,"h":291},"stage":{"x":319,"y":565,"w":712,"h":798},"side":{"x":1052,"y":565,"w":485,"h":834},"header":{"x":91,"y":386,"w":1447,"h":159},"buttons":[{"name":"Save draft","disabled":false},{"name":"📷
+- 2026-11-25T04:17Z · `kin-build/20261125-0414-deepseek` @ 7b1b79be · MERGED
