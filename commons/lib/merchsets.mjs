@@ -87,7 +87,7 @@ export async function rotatedArt(listingId, rot) {
   const k = `${art.id}:${r}`; if (!turned.has(k)) { if (turned.size > 200) turned.clear(); turned.set(k, await sharp(images.fileOf(art)).rotate(r).png().toBuffer()); }
   return turned.get(k);
 }
-const artUrl = (base, s, rot) => (rot ? `${base}/api/merch/art/${s.listing}/${rot}` : `${base}/images/${s.art}`);
+const artUrl = (base, s, rot, artId) => (rot ? `${base}/api/merch/art/${s.listing}/${rot}` : `${base}/images/${artId}`);
 
 // ------------------------------------------------------------------ reading
 export const get = (listingId) => sets[String(listingId)] || null;
@@ -233,10 +233,16 @@ export async function tick(publicUrl) {
       const o = it.queue?.[0]; if (!o) continue;
       const p = list.find((q) => q.key === key); if (!p) continue;
       const v = variantFor(p, it, o); if (!v) { it.queue.shift(); save(); continue; }
-      const px = await artPixels(images.get(s.art)); const rot = it.pos.rot || 0;
+      const art = images.get(s.art); const px = await artPixels(art); const rot = it.pos.rot || 0;
       let aspect = px?.width && px?.height ? px.width / px.height : 1; if (rot % 180) aspect = 1 / aspect;
       const position = printful.positionFor(v.area || p.area, { ...it.pos, aspect });
-      const k = await printful.queueMockup({ productId: p.id, variantId: v.id, placement: p.placement, imageUrl: artUrl(base, s, rot), position });
+      // The art as uploaded may be a WebP or a GIF, which Printful refuses. A PNG copy is made (as the maker's own picture)
+      // and Printful is handed THAT id, the same fix startMockup has. Rotated art is already re-encoded as PNG by
+      // /api/merch/art, so it is passed through untouched.
+      const owner = store.getMember(s.by);
+      if (!owner) { it.queue.shift(); it.errors[o] = 'the maker is no longer here'; save(); continue; }
+      const artId = rot ? s.art : await printful.printableArt(owner, art);
+      const k = await printful.queueMockup({ productId: p.id, variantId: v.id, placement: p.placement, imageUrl: artUrl(base, s, rot, artId), position });
       if (!k) return;
       it.queue.shift(); it.tasks[o] = { key: k, pos: posKey(it.pos) }; save(); return;
     }
