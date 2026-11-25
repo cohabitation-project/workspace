@@ -56,33 +56,29 @@ if (composer && scrim) {
   const watch = new MutationObserver(paint); for (const id of ['c-pics', 'c-vid']) { const el = byId(id); if (el) watch.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'hidden'] }); }
 
   // ● Record a video with the camera, right here (Geoffrey, 2026-11-15: "shoot live video to post it").
-  // The camera fills the whole screen while it's open, and the recording is ALWAYS vertical (9:16): each camera
-  // frame is drawn, centre-cropped, onto a 720×1280 canvas, and the canvas is what gets recorded, together with the
-  // microphone's own track. So a phone held either way, or a laptop's landscape webcam, still posts a vertical video
-  // with sound (2026-11-15: a vertical phone video posted sideways and silent).
+  // The camera fills the screen while it's open. Each camera frame is drawn onto a canvas of the camera's own shape, and
+  // the canvas is what gets recorded, with the microphone's own track (2026-11-15: a phone video once posted sideways
+  // and silent). 2026-11-25: no forced 9:16 any more; the video is exactly what the camera sees.
   const cam = byId('cx-cam'), camV = byId('cx-cam-v'), go = byId('cx-cam-go'), time = byId('cx-cam-time'), msg = composer.querySelector('.form-msg');
-  const W = 720, H = 1280, MAX = 120;
+  const MAX = 120;
   let stream = null, rec = null, chunks = [], facing = 'user', started = 0, tick = null, raf = 0, canvas = null, ctx2 = null;
-  // Fill or Fit (Geoffrey, 2026-11-25: on a phone the camera came out as a wide "theatrical" band). Fill crops the camera
-  // picture to cover the whole vertical frame, like every phone camera app; Fit shows all of it with the blurred edges.
-  // Fill is the default; the button on the camera screen switches, and the choice is kept for next time.
-  let fill = (() => { try { return localStorage.getItem('cohabi-cam-fit') !== 'fit'; } catch { return true; } })();
+  // The recording is the camera's own picture, in the camera's own shape (Geoffrey, 2026-11-25: cropping to 9:16 zoomed a
+  // phone's wide front camera in on his face; fitting it showed a thin band). No crop, no bars: what the camera sees.
+  let W = 720, H = 1280;
   const fmt = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
   // Chrome and Firefox: WebM with Opus sound (reliable); Safari: MP4 with AAC. The server makes every one an MP4.
   const pickType = () => (window.MediaRecorder ? ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '' : '');
-  // The whole camera picture is fitted inside the vertical frame, never cropped, so nothing looks zoomed in
-  // (Geoffrey, 2026-11-16); a soft blurred copy fills the edges, as phones do. The preview IS this canvas, so what you
-  // see is exactly what records.
+  // The preview IS this canvas, so what you see is exactly what records.
+  const size = () => { // the canvas takes the camera's own shape, long side at most 1280
+    const vw = camV.videoWidth, vh = camV.videoHeight; if (!vw || !vh) return;
+    const k = Math.min(1, 1280 / Math.max(vw, vh)); const w = Math.round(vw * k / 2) * 2, h = Math.round(vh * k / 2) * 2;
+    if (canvas && (canvas.width !== w || canvas.height !== h)) { canvas.width = w; canvas.height = h; } W = w; H = h;
+  };
   const draw = () => {
     if (ctx2 && camV.videoWidth) {
-      const vw = camV.videoWidth, vh = camV.videoHeight;
+      if (!rec) size(); // never change shape mid-recording
       ctx2.save(); if (facing === 'user') { ctx2.translate(W, 0); ctx2.scale(-1, 1); } // selfie as a mirror, like every phone
-      const kc = Math.max(W / vw, H / vh);
-      if (fill) ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc);
-      else {
-        ctx2.filter = 'blur(28px) brightness(.7)'; ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc); ctx2.filter = 'none';
-        const kf = Math.min(W / vw, H / vh); ctx2.drawImage(camV, (W - vw * kf) / 2, (H - vh * kf) / 2, vw * kf, vh * kf);
-      }
+      ctx2.drawImage(camV, 0, 0, W, H);
       ctx2.restore();
     }
     raf = requestAnimationFrame(draw);
@@ -98,11 +94,9 @@ if (composer && scrim) {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
     try {
       stream?.getTracks().forEach((t) => t.stop());
-      // Ask for a portrait picture when the screen is portrait (width and height are read in the screen's orientation on
-      // phones), so the phone sends a tall frame and Fill crops little or nothing.
-      const tall = innerHeight >= innerWidth;
-      const want = tall ? { width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } } : { aspectRatio: { ideal: 9 / 16 }, height: { ideal: 1280 } };
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, ...want }, audio: { echoCancellation: true, noiseSuppression: true } });
+      // Only the long side is asked for, so the phone keeps its camera's natural shape (nothing cropped or zoomed).
+      const long = innerHeight >= innerWidth ? { height: { ideal: 1280 } } : { width: { ideal: 1280 } };
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, ...long }, audio: { echoCancellation: true, noiseSuppression: true } });
       camV.srcObject = stream; await camV.play().catch(() => {});
       if (!canvas) { canvas = byId('cx-cam-c'); ctx2 = canvas.getContext('2d'); } cancelAnimationFrame(raf); draw();
       cam.hidden = false; document.body.classList.add('cx-camopen'); time.textContent = `0:00 / ${fmt(MAX)}`; msg.textContent = '';
@@ -115,10 +109,6 @@ if (composer && scrim) {
   };
   byId('cx-rec')?.addEventListener('click', startCam);
   byId('cx-cam-x')?.addEventListener('click', stopCam);
-  const fitBtn = byId('cx-cam-fit');
-  const showFit = () => { if (fitBtn) { fitBtn.textContent = fill ? 'Fit' : 'Fill'; fitBtn.setAttribute('aria-label', fill ? 'Show the whole camera picture' : 'Fill the screen'); } };
-  showFit();
-  fitBtn?.addEventListener('click', () => { fill = !fill; try { localStorage.setItem('cohabi-cam-fit', fill ? 'fill' : 'fit'); } catch { /* private mode */ } showFit(); });
   byId('cx-cam-flip')?.addEventListener('click', () => { if (rec) return; facing = facing === 'user' ? 'environment' : 'user'; startCam(); });
   // Photo or Video, like a phone's camera app (Geoffrey, 2026-11-25: "you can't take a photo with the camera").
   // Photo mode: the shutter takes a still of exactly what the preview shows and adds it to the post's photos.
