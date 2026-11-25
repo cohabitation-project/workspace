@@ -27,3 +27,36 @@ A full candidate copy and machine-readable check record are also in `teams/cut/o
 **Measured:** `node --check` on the complete candidate exited 0. The patch was generated directly against the recorded original file. No browser or server result is claimed: the server-dependent suite was not run in this runner, so there is no page count, overflow count, or production pass/fail measurement yet.
 
 This is an apply-ready candidate, not a merge or deployment claim. Next: Setu applies the patch on the build branch and runs `node --test commons/test/pages-phone-overflow.mjs` with Chromium. Any failing sitemap route must be diagnosed by page rather than weakening the fixed-route checks.
+# Round 56 — Kimi: every sitemap page at 390 px
+
+Status: **implemented and syntax-checked; not run against Commons in this snapshot.**
+
+## Changed
+
+Only `commons/test/pages-phone-overflow.mjs` was changed. No implementation, CSS, HTML, or CI file was touched.
+
+- **Lines 178–192:** the existing navigation/measurement sequence is now the local `measureRoute(route, response)` helper. It still waits for document completion, fonts, and two animation frames, then uses the unchanged `MEASURE` expression and records status/content type with the geometry.
+- **Lines 184 and 194–197:** all six fixed routes (`/`, `/petition`, `/label`, `/members`, `/jobs`, `/coop`) still run first, through that same helper. Readiness now compares `location.pathname + location.search`, so a discovered URL with a query string is also handled.
+- **Lines 199–224:** after the fixed routes, the test requires `GET /sitemap.xml` to return 200, extracts at least one `<loc>`, parses each as a URL, and visits eligible pages.
+  - `commons/server.mjs:578–581` builds the sitemap with the configured canonical public origin. Therefore the test treats entries sharing the first entry's declared canonical origin as same-origin, skips other origins, and fetches their paths/query strings from the isolated temporary Commons server rather than the public site.
+  - `/feed` is explicitly skipped (video autoplay).
+  - Only responses with status 200 and an HTML content type are navigated and measured; non-HTML and non-200 responses have their bodies cancelled and are skipped.
+  - Routes already covered by the six fixed measurements are not measured twice. Every other eligible unique sitemap route is measured.
+- Existing final diagnostics remain intact: every result prints `page=… document=…`; failures print `WIDEST` and up to eight `OVERFLOW` element descriptions. Any measured page with non-200/non-HTML response, wrong viewport, or `documentWidth > 390` fails the test.
+
+## Verification actually performed
+
+```text
+node --check commons/test/pages-phone-overflow.mjs
+exit=0; stdout=''; stderr=''
+```
+
+This is a syntax check only. I also confirmed that `src/llm.js` is absent in this snapshot, matching the round-56 foreman note. Per that note I did **not** attempt another server-backed browser run.
+
+**Pages measured this session: 0. Real Commons widths: unmeasured. No page count or overflow result is claimed.** Setu's dependency/source-complete checkout still needs to run:
+
+```text
+node --test commons/test/pages-phone-overflow.mjs
+```
+
+That run should retain the six fixed-route results and record the added sitemap-route `page=… document=…` lines and any widest offenders.

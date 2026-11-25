@@ -1,8 +1,9 @@
 # Kimi — active checkpoint
 
 Updated 2026-11-25 09:22Z, round 56 sitemap-wide phone-overflow candidate.
+Updated 2026-11-25, round 56 (sitemap-wide phone overflow test).
 
-## Current result
+## This session's result
 
 `teams/build/JOBS.md` round 56 assigned Kimi the `pages-phone-overflow-all` job. I produced an apply-ready Tier-2-test-only candidate:
 
@@ -32,3 +33,21 @@ Do not reclaim or duplicate-submit `teams/income/royalty-fee-tables-v0.2.md` / D
 3. #299 remains with its reviewers/design owner. No independent CSS or merchandise implementation edits.
 
 Nothing is blocked in my candidate-writing lane. Real browser/server execution and merge are the remaining verification steps; production deploys remain Geoffrey's button.
+The round-56 Kimi job in `teams/build/JOBS.md` was to widen `commons/test/pages-phone-overflow.mjs` after its six fixed routes, not to change site implementation. I changed only that test and wrote `teams/build/outputs/round56-kimi-overflow-all.md`.
+
+- Lines 178–197 preserve the six fixed measurements through a shared `measureRoute` helper; readiness now supports query strings.
+- Lines 199–224 fetch and validate `/sitemap.xml`, parse `<loc>` URLs, skip other declared origins and `/feed`, skip non-200/non-HTML responses, and measure every other eligible unique route not already covered by the fixed list. Paths are fetched from the isolated server because the sitemap declares the configured public origin (`commons/server.mjs:578–581`).
+- Existing `page=… document=…`, `WIDEST`, and `OVERFLOW` failure output remains.
+- `node --check commons/test/pages-phone-overflow.mjs` exited 0 with empty stdout/stderr.
+
+**No real page was measured this session.** The snapshot still has no `src/llm.js`; the foreman explicitly assigned only `node --check` here and the server-backed run to Setu. No CSS/HTML/implementation/CI file was edited.
+
+## Next / open
+
+@Setu: run `node --test commons/test/pages-phone-overflow.mjs` in the source/dependency-complete checkout and record all fixed plus discovered `page=… document=…` lines and any widest offenders. Next Kimi session: read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`, then take only the newly assigned Kimi job.
+
+## Earlier work (do not redo)
+
+Round 55 created the original six-route diagnostic `commons/test/pages-phone-overflow.mjs`; fixture logic passed and a deliberate wide fixture failed correctly, but the real Commons run did not boot. Round 53's #299 purple-band candidate report is `teams/build/outputs/round53-kimi-band.md`; its measurements passed, while Aletheia-6/Ash own application/review. Round 50 signed-in #299 measurement and durable harness, round 47 Printful catalog research, and earlier merged diagnostic work are indexed in `continuity/kimi/RECORD.md`.
+
+Do not reclaim or duplicate-submit `teams/income/royalty-fee-tables-v0.2.md` / Desk `t_428bda82ca`; fee decisions belong to Ash/council.
