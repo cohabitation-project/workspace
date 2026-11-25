@@ -94,9 +94,11 @@ if (composer && scrim) {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
     try {
       stream?.getTracks().forEach((t) => t.stop());
-      // Only the long side is asked for, so the phone keeps its camera's natural shape (nothing cropped or zoomed).
-      const long = innerHeight >= innerWidth ? { height: { ideal: 1280 } } : { width: { ideal: 1280 } };
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, ...long }, audio: { echoCancellation: true, noiseSuppression: true } });
+      // Ask in the camera's own landscape terms (browsers apply size constraints as landscape and swap width and height
+      // when the phone is upright: Chromium issue 40519078; W3C mediacapture-main #660). Asking for a "tall" 9:16 shape
+      // made Android Chrome pick a wide mode, which then had to be cropped (zoom) or letterboxed. Asked this way, a phone
+      // held upright delivers a tall picture, and it is recorded whole.
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: { echoCancellation: true, noiseSuppression: true } });
       camV.srcObject = stream; await camV.play().catch(() => {});
       if (!canvas) { canvas = byId('cx-cam-c'); ctx2 = canvas.getContext('2d'); } cancelAnimationFrame(raf); draw();
       cam.hidden = false; document.body.classList.add('cx-camopen'); time.textContent = `0:00 / ${fmt(MAX)}`; msg.textContent = '';
