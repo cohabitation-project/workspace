@@ -19,6 +19,15 @@ export function buildEdit({ trimStart, trimEnd, textBody = '', textPosition = 'm
   return edit;
 }
 
+// The cover frame must lie inside the trimmed range (the server's editToTracks refuses anything else with a 400).
+// The scrubber follows the playhead and starts at 0, so a member who only moves the trim start would otherwise send
+// coverSec 0 outside 1..N. Pull it to the nearest end of the range; if the range itself is bad, leave it for the server's message.
+export function coverInRange(cover, trimStart, trimEnd) {
+  const c = Number(cover), a = Number(trimStart), b = Number(trimEnd);
+  if (![c, a, b].every(Number.isFinite) || b < a) return c;
+  return Math.min(Math.max(c, a), b);
+}
+
 function safeRead(key) {
   try {
     const raw = localStorage.getItem(key);
@@ -290,7 +299,7 @@ export function initCutEditor(root = document) {
     const values = saveDraft();
     let edit;
     try {
-      edit = buildEdit({ ...values, coverSec: values.coverSec });
+      edit = buildEdit({ ...values, coverSec: coverInRange(values.coverSec, values.trimStart, values.trimEnd) });
     } catch (error) {
       showToast(error.message);
       return;

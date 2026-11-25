@@ -731,8 +731,8 @@ export function salesPage({ me, sales = [] }) {
     if (mine && !post.length && o.status === 'paid') { try { printer = fulfillment.plan(o).provider || null; } catch { printer = null; } }
     const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>`
       : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${esc(({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[printer] || printer)}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
-    const fulfillment = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
-    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillment}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+    const fulfillmentLink = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
+    return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillmentLink}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
   return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
