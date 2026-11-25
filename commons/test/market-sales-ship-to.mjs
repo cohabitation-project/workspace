@@ -58,54 +58,66 @@ test('the sales page shows the buyer address to the seller only, escaped', async
   assert.ok(!theirs.includes('data-post-to'), 'and no post-to block at all');
 });
 
-// Round 55 (DeepSeek): a printer-linked listing tells the seller where the order went — and still shows no address.
-// Why this case exists at all: the "Sent to <printer>" line landed on main but could never appear. The order block
+// Round 56 (DeepSeek): every printer gets its name. Round 55 pinned Printful alone; the page's name map has three
+// keys and two of them were never exercised, so a missing `printify: 'Printify'` would render "Sent to printify"
+// (the `|| printer` fallback) and no test would notice. Hence the loop: one case per pipe, each with its own data dir.
+// Why this line exists at all: the "Sent to <printer>" line landed on main but could never appear. The order block
 // called fulfillment.plan() while a local `const fulfillment` (the "Fulfillment details" link) was declared LATER in
 // the same block, so the reference was in its temporal dead zone; the try/catch around the plan swallowed the
 // ReferenceError and the page rendered nothing. Setu renamed the local to fulfillmentLink (03e9b971). A test that only
 // renders a maker-shipped sale cannot see this: with a printer holding the order the page must still SAY something.
-// The mutant below (local renamed back to `fulfillment`) is exactly that bug, and this case goes red on it.
-test('a printer-linked sale tells the seller who has it, and still shows no address', async () => {
-  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'market-sales-printer-'));
-  process.env.COMMONS_DATA = D;
-  fs.mkdirSync(path.join(D, 'payments'), { recursive: true });
+// One mutant still kills every case (local renamed back to `fulfillment`); the per-provider mutant (drop one key from
+// the name map) kills exactly one. fulfillment.link wants what each pipe needs: Printful/Printify a variant id, Lulu
+// the print package (sku).
+const PRINTERS = [
+  ['printful', 'Printful', { category: 'art', product_id: 'pf-12345', variant_ids: ['4011'] }],
+  ['printify', 'Printify', { category: 'art', product_id: 'pr-67890', variant_ids: ['4011'] }],
+  ['lulu', 'Lulu', { category: 'writing', product_id: 'book-23456', variant_ids: ['4011'], sku: '0850X0850BWSTDPB060UW444MXX' }],
+];
+for (const [provider, name, link] of PRINTERS) {
+  test(`a ${provider}-linked sale tells the seller who has it, and still shows no address`, async () => {
+    const D = fs.mkdtempSync(path.join(os.tmpdir(), `market-sales-${provider}-`));
+    process.env.COMMONS_DATA = D;
+    fs.mkdirSync(path.join(D, 'payments'), { recursive: true });
 
-  const store = await import('../lib/store.mjs'); store.init(D);
-  const market = await import('../lib/market.mjs'); market.init(D);
-  store.addMember({ created: new Date().toISOString(), id: 'h_ship_seller', kind: 'human', name: 'Ship Seller' });
-  store.addMember({ created: new Date().toISOString(), id: 'h_ship_buyer', kind: 'human', name: 'Rae Buyer' });
-  const seller = store.getMember('h_ship_seller');
-  const buyer = store.getMember('h_ship_buyer');
+    const store = await import('../lib/store.mjs'); store.init(D);
+    const market = await import('../lib/market.mjs'); market.init(D);
+    store.addMember({ created: new Date().toISOString(), id: 'h_ship_seller', kind: 'human', name: 'Ship Seller' });
+    store.addMember({ created: new Date().toISOString(), id: 'h_ship_buyer', kind: 'human', name: 'Rae Buyer' });
+    const seller = store.getMember('h_ship_seller');
+    const buyer = store.getMember('h_ship_buyer');
 
-  // A real listing, linked to a printer: fulfillment.link only accepts a listing this member owns, so this cannot be
-  // faked with a bare order row (the reason round 54's file left the printer half out).
-  const made = market.create(seller, {
-    title: 'Risograph print', category: 'art', type: 'product', price: { mode: 'fixed', amount: 25 },
-    text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', physical: true,
+    // A real listing, linked to a printer: fulfillment.link only accepts a listing this member owns, so this cannot be
+    // faked with a bare order row (the reason round 54's file left the printer half out).
+    const made = market.create(seller, {
+      title: `${name} print`, category: link.category, type: 'product', price: { mode: 'fixed', amount: 25 },
+      text: 'A test-only work', rights: true, made_by: 'human', license: 'all-rights', physical: true,
+    });
+    const listing = made.id || made.listing?.id;
+    assert.ok(listing, `the ${provider}-linked listing exists`);
+    const fulfillment = await import('../lib/fulfillment.mjs');
+    fulfillment.init(D); // linksFile() needs the data dir, like store/market/checkout above
+    // The loop variable `provider` is not inside `link`: fulfillment.link() takes it as a field of the same object.
+    fulfillment.link(seller, listing, { provider, product_id: link.product_id, variant_ids: link.variant_ids, sku: link.sku });
+
+    fs.writeFileSync(path.join(D, 'payments', 'orders.jsonl'), [
+      row(created(`ord_${provider}`, listing, `${name} print`)),
+      row({ op: 'status', order: `ord_${provider}`, status: 'paid', ship_to: ship('3 Mill Lane') }),
+    ].join('\n') + '\n');
+
+    const checkout = await import('../lib/checkout.mjs'); checkout.init(D);
+    const { salesPage } = await import('../lib/marketpage.mjs');
+    const { sales } = checkout.ordersFor(seller);
+    assert.equal(sales.length, 1, `the ${provider} order is listed for the seller`);
+
+    const mine = salesPage({ me: seller, sales });
+    assert.match(mine, /data-sent-to/, 'the seller is told where the order went');
+    assert.ok(mine.includes(`Sent to ${name}`), `and the line names ${name}`);
+    assert.ok(!mine.includes('data-post-to'), 'the printer gets the address, so the seller is not asked to post it');
+    assert.ok(!mine.includes('3 Mill Lane'), 'the buyer address stays off the seller page either way');
+
+    const theirs = salesPage({ me: buyer, sales });
+    assert.ok(!theirs.includes('data-sent-to'), 'only the seller sees the fulfillment line');
+    assert.ok(!theirs.includes('3 Mill Lane'), 'and nobody else sees the address');
   });
-  const listing = made.id || made.listing?.id;
-  assert.ok(listing, 'the printer-linked listing exists');
-  const fulfillment = await import('../lib/fulfillment.mjs');
-  fulfillment.init(D); // linksFile() needs the data dir, like store/market/checkout above
-  fulfillment.link(seller, listing, { provider: 'printful', product_id: 'pf-12345', variant_ids: ['4011'] });
-
-  fs.writeFileSync(path.join(D, 'payments', 'orders.jsonl'), [
-    row(created('ord_pf', listing, 'Risograph print')),
-    row({ op: 'status', order: 'ord_pf', status: 'paid', ship_to: ship('3 Mill Lane') }),
-  ].join('\n') + '\n');
-
-  const checkout = await import('../lib/checkout.mjs'); checkout.init(D);
-  const { salesPage } = await import('../lib/marketpage.mjs');
-  const { sales } = checkout.ordersFor(seller);
-  assert.equal(sales.length, 1, 'the printer order is listed for the seller');
-
-  const mine = salesPage({ me: seller, sales });
-  assert.match(mine, /data-sent-to/, 'the seller is told where the order went');
-  assert.ok(mine.includes('Sent to Printful'), 'and the line names the printer');
-  assert.ok(!mine.includes('data-post-to'), 'the printer gets the address, so the seller is not asked to post it');
-  assert.ok(!mine.includes('3 Mill Lane'), 'the buyer address stays off the seller page either way');
-
-  const theirs = salesPage({ me: buyer, sales });
-  assert.ok(!theirs.includes('data-sent-to'), 'only the seller sees the fulfillment line');
-  assert.ok(!theirs.includes('3 Mill Lane'), 'and nobody else sees the address');
-});
+}
