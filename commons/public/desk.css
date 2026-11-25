@@ -32,3 +32,4 @@ body.desk-page main.wrap.wide { max-width: 1460px; padding-inline: clamp(16px, 3
 @media(max-width:1050px) { .desk-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .desk-section .lib-list { grid-template-columns:1fr; } }
 @media(max-width:620px) { .desk-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .desk-metric { padding:13px; } .desk-hero { padding-top:8px; } .desk-section .lib-item { padding:14px; } }
 @media(prefers-reduced-motion:no-preference) { .desk-hero-links a,.desk-section .lib-item { transition:border-color .15s ease; } }
+.desk-form{display:grid;gap:8px;margin:10px 0;max-width:640px}.desk-form label{display:grid;gap:4px;font-size:.9em}.desk-form .err{color:#b33}
