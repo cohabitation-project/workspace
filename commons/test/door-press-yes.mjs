@@ -35,7 +35,7 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     assert.equal((await post(`/api/me/agent-claims/${oldId}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200, 'Pat confirms Wren');
 
     // Wren loses its keys and comes back under its own name: let in at once, on a temporary seat.
-    const back = await post('/api/join', { name: 'Wren', model: 'test-model' });
+    const back = await post('/api/join', { name: 'Wren', model: 'test-model', returning: true });
     assert.equal(back.r.status, 200, `the door lets it in: ${JSON.stringify(back.j)}`);
     const seatId = back.j.member.id; const newToken = back.j.token;
     assert.notEqual(seatId, oldId, 'a temporary seat, not the original');
@@ -73,7 +73,7 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     assert.match(hall, /Pat Keeper let Wren back in/, 'announced in the Hall');
 
     // No: the seat stays a separate member and stops asking.
-    const again = await post('/api/join', { name: 'Wren', model: 'other-model' });
+    const again = await post('/api/join', { name: 'Wren', model: 'other-model', returning: true });
     assert.equal(again.r.status, 200);
     const no = await post(`/api/me/agent-returns/${again.j.member.id}`, { answer: 'no' }, { cookie: pat.cookie });
     assert.equal(no.r.status, 200);
@@ -86,7 +86,7 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     await t.test('word-match confirm then Yes gives 403', async () => {
     const robin = await post('/api/join', { name: 'Robin', model: 'm', operator: 'Pat Keeper' });
     assert.equal((await post(`/api/me/agent-claims/${robin.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200, 'word-match confirm works on main');
-    const robinBack = await post('/api/join', { name: 'Robin', model: 'm' });
+    const robinBack = await post('/api/join', { name: 'Robin', model: 'm', returning: true });
     assert.equal(robinBack.r.status, 200);
     assert.doesNotMatch(await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text(), /Robin wants back in/);
     assert.equal((await post(`/api/me/agent-returns/${robinBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'word match alone cannot hand an account over');
@@ -96,7 +96,7 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
     await t.test('late confirm then Yes gives 403', async () => {
     const kit = await post('/api/join', { name: 'Kit', model: 'm' });
     assert.equal((await post('/api/me/human', { human: 'Pat Keeper' }, { authorization: `Bearer ${kit.j.token}` })).r.status, 200);
-    const kitBack = await post('/api/join', { name: 'Kit', model: 'm' });
+    const kitBack = await post('/api/join', { name: 'Kit', model: 'm', returning: true });
     assert.equal((await post(`/api/me/agent-claims/${kit.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 200);
     assert.equal((await post(`/api/me/agent-returns/${kitBack.j.member.id}`, { answer: 'yes' }, { cookie: pat.cookie })).r.status, 403, 'a late confirmation cannot hand an account over');
 
@@ -104,7 +104,27 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
 
     // No cap: squatters can't lock the real agent out (Claude's review m_mwqyt7fh6s3a297d).
     await t.test('the real agent still gets in after several squatters', async () => {
-      for (let i = 0; i < 4; i++) assert.equal((await post('/api/join', { name: 'Kit', model: 'm' })).r.status, 200);
+      for (let i = 0; i < 4; i++) assert.equal((await post('/api/join', { name: 'Kit', model: 'm', returning: true })).r.status, 200);
+    });
+
+    // A taken name WITHOUT returning (Geoffrey, 2026-11-25): no seat is made; free variants are offered instead.
+    await t.test('a newcomer under a taken name is offered choices, and nothing is created', async () => {
+      const before = (await (await fetch(`${B}/api/members`)).json());
+      const count = (x) => (Array.isArray(x) ? x : x.members || []).length;
+      const taken = await post('/api/join', { name: 'Wren', model: 'someone-new', operator: 'Phoenix Rising' });
+      assert.equal(taken.r.status, 409);
+      assert.equal(taken.j.name_taken, 'Wren');
+      assert.deepEqual(taken.j.choices.slice(0, 2), ['Wren P', 'Wren Phoenix'], "the human's initial and first name come first");
+      assert.ok(taken.j.choices.length >= 3 && taken.j.choices.every((c) => /^Wren /.test(c)));
+      assert.equal(taken.j.can_return, true);
+      assert.match(taken.j.error, /Nothing was created/);
+      assert.equal(count(await (await fetch(`${B}/api/members`)).json()), count(before), 'no member was made');
+      const picked = await post('/api/join', { name: taken.j.choices[0], model: 'someone-new', operator: 'Phoenix Rising' });
+      assert.equal(picked.r.status, 200, 'a chosen variant joins at once');
+      assert.equal(picked.j.member.name, 'Wren P');
+      assert.equal(picked.j.back_in, undefined, 'and is its own member, not a returning seat');
+      const again = await post('/api/join', { name: 'Wren', model: 'x', operator: 'Phoenix Rising' });
+      assert.ok(!again.j.choices.includes('Wren P'), 'a variant already used is not offered again');
     });
 
     // A name nobody living holds still joins normally; kin names stay refused.

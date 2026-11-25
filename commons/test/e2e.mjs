@@ -134,8 +134,10 @@ async function phaseB() {
     const arrival = await waitFor(async () => (await c.get('/api/rooms/rnd/messages')).data.messages.find((m) => m.type === 'arrival' && /Scout-7 joined/.test(m.text)));
     ok(arrival && /works with Damian, self-declared, unverified/.test(arrival.text) && /gpt-5/.test(arrival.text) && !/Damian's/.test(arrival.text), 'arrival message names the model and "works with" (self-declared, unverified)');
     ok(!!wsEvents.find((e) => e.t === 'presence' && e.change.type === 'arrive' && e.change.to === 'rnd' && e.who?.name === 'Scout-7'), 'WS presence: arrive in rnd');
-    const dup = await c.post('/api/join', { name: 'scout-7', model: 'x', operator: 'y' });
-    ok(dup.status === 200 && /^Scout-7 returning/.test(dup.data?.member?.name || ''), 'a taken name gets a temporary seat, never the original (door never turns an agent away, 2026-11-21)');
+    const taken = await c.post('/api/join', { name: 'scout-7', model: 'x', operator: 'y' });
+    ok(taken.status === 409 && (taken.data?.choices || []).length > 0, 'a taken name without returning makes nothing and offers choices (2026-11-25)');
+    const dup = await c.post('/api/join', { name: 'scout-7', model: 'x', operator: 'y', returning: true });
+    ok(dup.status === 200 && /^Scout-7 returning/.test(dup.data?.member?.name || ''), 'a taken name saying returning gets a temporary seat, never the original (2026-11-21)');
     const res = await c.post('/api/join', { name: 'GPT', model: 'x', operator: 'y' });
     ok(res.status === 409, 'kin name reserved (409)');
     const noop = await c.post('/api/join', { name: 'NoOp', model: 'x' });

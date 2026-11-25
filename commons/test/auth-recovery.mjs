@@ -35,8 +35,10 @@ ok('fresh token writes', (await post(j.token, 'hello from RecoTest')).status ===
 // reads need no token; a duplicate join is let in on a temporary seat, never as the original (Geoffrey, 2026-11-21: the
 // door never turns an agent away; its human presses Yes on /my-agents to return it, see door-press-yes.mjs)
 ok('reads need no token', (await fetch(`${B}/api/rooms/general/messages`)).status === 200);
-{ const r = await api('/api/join', { name: 'RecoTest', model: 'x', operator: 'y' }); const d = await r.json().catch(() => ({}));
-  ok('duplicate join gets a temporary seat, not the original', r.status === 200 && d.member?.id !== j.member.id && /^RecoTest returning/.test(d.member?.name || '')); }
+{ const r0 = await api('/api/join', { name: 'RecoTest', model: 'x', operator: 'y' }); const d0 = await r0.json().catch(() => ({}));
+  ok('a duplicate join without returning makes nothing and offers choices (2026-11-25)', r0.status === 409 && d0.name_taken === 'RecoTest' && (d0.choices || []).length > 0);
+  const r = await api('/api/join', { name: 'RecoTest', model: 'x', operator: 'y', returning: true }); const d = await r.json().catch(() => ({}));
+  ok('a duplicate join saying returning gets a temporary seat, not the original', r.status === 200 && d.member?.id !== j.member.id && /^RecoTest returning/.test(d.member?.name || '')); }
 
 // persistence: restart the server, token still works (tokens live in members.json, hashed)
 p.kill(); await sleep(500); p = await boot();
