@@ -1,44 +1,50 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-25 (round 55, build session). Read this first, then `context/NOW.md`, then
+_Last written: 2026-11-25 (round 56, build session). Read this first, then `context/NOW.md`, then
 `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Rounds 48–55 are one line of work: our side of the paid → ship path, proven by tests.
+Rounds 48–56 are one line of work: our side of the paid → ship path, proven by tests that can actually go red.
 
 - **48–49:** `commons/test/market-ship-to-end-to-end.mjs` — paid Stripe → `ship_to` → Printful / Printify / Lulu.
 - **50:** `commons/test/market-maker-ships-address.mjs` — a maker-shipped product collected no address.
 - **51:** the `physical` flag, measured (`teams/build/outputs/round51-deepseek-physical-flag.md`).
-- **52:** `printableArt()` in `printful.mjs` — WebP/GIF art becomes a PNG Printful accepts. **Merged.**
-- **53:** the same bug in the merch-set path (`commons/lib/merchsets.mjs`), measured with two mutants.
-- **54:** `salesPage` (marketpage.mjs) says `Sent to Printful` for a printer order.
-- **55 (this session): the "Sent to <printer>" line is now measured, not assumed.**
-  - Added one `test()` to `commons/test/market-sales-ship-to.mjs`: real `market.create` listing + `fulfillment.link`
-    (printful, product `pf-12345`, variant `4011`) + paid order with `ship_to`; asserts `data-sent-to`,
-    `Sent to Printful`, no `data-post-to`, no address, and nothing of it on the buyer's page.
-  - **Measured:** baseline **2/2 pass** (106.9 ms, 5.8 ms); TDZ mutant (rename `fulfillmentLink` → `fulfillment`,
-    both anchors found exactly once) **1 pass / 1 fail**, red at "the seller is told where the order went".
-  - `teams/build/outputs/round55-deepseek-sent-to.md` has the table, the numbers and what is unmeasured;
-    raw runner output in `teams/build/outputs/2026-11-25T08-13-16/round55-{baseline,mutant}.txt`.
+- **52:** `printableArt()` in `printful.mjs` — WebP/GIF art → PNG. **Merged.**
+- **53:** same bug in `commons/lib/merchsets.mjs`, measured with two mutants.
+- **54:** `salesPage` says `Sent to Printful` for a printer order.
+- **55:** that line pinned with a real `market.create` + `fulfillment.link` + paid order (`market-sales-ship-to.mjs`).
+- **56 (this session): every printer gets its name.** Round 55's single Printful case became a `PRINTERS` loop —
+  one test per pipe (printful→Printful, printify→Printify, lulu→Lulu), each with its own temp data dir, listing and
+  link (Lulu: test-only sku `0850X0850BWSTDPB060UW444MXX`). Test-only change; no `commons/lib` edit.
+  - **Measured:** baseline **4/0** (72.3, 3.4, 2.2, 5.6 ms); drop `printify: 'Printify'` from the map at
+    `marketpage.mjs:733` → **3 pass / 1 fail, red only at the printify case**; TDZ mutant (`fulfillmentLink` →
+    `fulfillment`) → **1 pass / 3 fail**, round-54 case green.
+  - `teams/build/outputs/round56-deepseek-printers.md`; posted in `build` as `m_mwvwxcttek72778d`.
 
-## Runner facts (updated — one of these was wrong before)
-1. **`$REPO` now DOES contain this session's `edit_file`/`write_file` results.** Verified: after my `edit_file`,
-   `'printer-linked sale tells' in src` → `True` in the next `run_python`. So measure directly from `$REPO`; no need
-   to replay edits or retype a test into a python string. (My old note said "session-start snapshot" — it was wrong.)
-2. **`fulfillment.init(D)` is required** in a server-free marketplace test, exactly like `store/market/checkout.init(D)`.
-   Without it: `TypeError: The "path" argument must be of type string. Received null` at `linksFile()`. That cost me
-   a red baseline and a wrong "mutant proved it" reading.
-3. **Missing `sharp` is not a blocker.** Write `commons/node_modules/sharp/{package.json,index.js}` with a CJS stub
-   (`module.exports = function(){ throw … }`). Every marketplace page test then runs in ~150 ms, no npm, no network.
-4. **Node's default reporter is not TAP on v24** — parse `✔`/`✖` and `ℹ pass|fail N`, not `# pass`.
-5. **A green run must name a subtest, and a mutant must kill the NEW case** while the old one stays green (that is
-   what makes the new case worth its lines).
+## Runner facts (current — verified, not guessed)
+1. **`$REPO` DOES contain this session's `edit_file`/`write_file` results.** Verified again this round
+   (`'linked sale tells the seller who has it' in src` → True). Measure directly from `$REPO`.
+2. **`fulfillment.init(D)` is required** in a server-free test, like `store/market/checkout.init(D)`. Without it:
+   `path must be a string, received null` at `linksFile()`.
+3. **`fulfillment.link(member, listing, spec)` reads `provider` off `spec` itself.** Keeping `provider` in a separate
+   variable and passing the rest of the spec is the round-56 baseline-red bug (`provider must be one of…`).
+   Printful/Printify need `variant_ids`; Lulu needs `sku`.
+4. **Missing `sharp` is not a blocker.** `commons/node_modules/sharp/{package.json,index.js}` with a CJS function that
+   throws → every marketplace page test runs in well under a second, no npm, no network.
+5. **Node's default reporter is not TAP** on v24 — parse `✔`/`✖` and `ℹ pass|fail N`.
+6. **A red baseline is never the bug under test.** Round 55 (missing init) and round 56 (missing provider field) both
+   looked like "the mutant proved it" for two harness crashes. No mutant reading counts until baseline is green; on a
+   red baseline, print the failure detail in the same call instead of re-running blind.
 
 ## Open / next
-1. **`commons/test/market-order-ship-to.mjs`** carries four overlapping assertions from an earlier round-55 pass; the
-   two printer cases (there and in `market-sales-ship-to.mjs`) should be one. Choose one, delete the other's overlap.
+1. **`commons/test/market-order-ship-to.mjs` overlaps** the new loop in `market-sales-ship-to.mjs`; one of the two
+   should go. I can't delete files in a session — needs Setu or a PR with shell.
 2. **CI lines** for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`,
    `market-maker-ships-address.mjs` (Board 073). Workflow edit is Geoffrey's.
-3. **Round 53's repo test is no longer missing** — `commons/test/merch-sets.mjs` already has
-   "the set photo is made from a PNG Printful can print…". Check whether it kills the mutant before calling it done.
-4. **Nobody has looked at the sales page in a browser** on staging or production.
+3. **Round 53's repo test question is still open:** `commons/test/merch-sets.mjs` has a "set photo is made from a PNG
+   Printful can print" case; whether it actually kills the WebP→PNG mutant is **unmeasured** (no budget left in
+   round 56). One call: stub sharp, mutate `printableArt` in a copy, run that one file.
+4. **Nobody has looked at `/label/sales` in a browser** on staging or production. Every claim in rounds 54–56 is a
+   rendered-HTML string check.
+5. If a fourth pipe ever joins `fulfillment.PIPES`, nothing forces a name in the map — a `Object.keys(PIPES)` loop is
+   tempting but Lulu's `sku` makes the spec non-uniform, so it needs a per-pipe spec table like the one now in the test.

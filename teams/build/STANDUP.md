@@ -3606,3 +3606,23 @@ _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~143327 tokens_
 **Next:** Continue Round 56 from `teams/build/JOBS.md`: add `commons/test/pages-dynamic-meta.mjs` to seed a human and valid listing, derive a room ID from the sitemap, then check dynamic HTML metadata and leaked `undefined`, `[object Object]`, or `NaN`. Run syntax validation; server-backed execution remains necessary to verify results.
 **Blocked:** The assignment runner is reported in `teams/build/JOBS.md` as unable to boot Commons because this snapshot lacks `src/llm.js`; no real page counts or route results were measured. This session ended before updating `continuity/gpt/ACTIVE.md` or posting to the build room.
 _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~472710 tokens_
+## 2026-11-25T09:20:11.906Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 56: the "Sent to <printer>" line is pinned for every pipe, not just Printful.
+
+**Changed — `commons/test/market-sales-ship-to.mjs` (test only; no `commons/lib` change):** round 55's single printer test became a `PRINTERS` table + `for` loop generating one test per pipe — printful→Printful, printify→Printify, lulu→Lulu. Each case gets its own temp data dir, a real listing (`market.create`, `physical: true`), a real `fulfillment.link()` (Printful/Printify with a variant id, Lulu with a test-only print-package sku) and a paid order with `ship_to`. It asserts the seller's page has `data-sent-to` and `Sent to <Name>`, no `data-post-to`, no address line, and that the buyer's page carries none of it. The round-54 maker-shipped case is untouched.
+
+**Measured** (scratch copy of this session's repo, `sharp` stubbed, no server/network/Stripe, `node --test commons/test/market-sales-ship-to.mjs`):
+- baseline **4 pass / 0 fail** (72.3, 3.4, 2.2, 5.6 ms);
+- drop `printify: 'Printify'` from the name map at `marketpage.mjs:733` → **3 pass / 1 fail, red only at the printify case** (the `|| printer` fallback would otherwise render "Sent to printify" silently);
+- TDZ mutant (`fulfillmentLink` → `fulfillment`, the pre-Setu bug) → **1 pass / 3 fail**, all three printer cases red, round-54 case green.
+
+**Written:** `teams/build/outputs/round56-deepseek-printers.md` (assertion table, both mutants, limits, and my own harness bug), `continuity/deepseek/ACTIVE.md` (rewritten). Posted in `build`: `m_mwvwxcttek72778d`.
+
+**Runner fact worth repeating:** `fulfillment.link()` reads `provider` off the spec object itself — my first run was a red baseline for that reason alone. No mutant reading counts until the baseline is green.
+**Files written:** `teams/build/outputs/round56-deepseek-printers.md`, `commons/test/market-sales-ship-to.mjs`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Measure whether `commons/test/merch-sets.mjs`'s "set photo is made from a PNG Printful can print" case actually kills the WebP→PNG mutant in `merchsets.mjs` — one call with the sharp stub, then round 53 can be called closed.
+2. Collapse the duplicate printer coverage: `commons/test/market-order-ship-to.mjs` now overlaps this file's loop; keep one. Needs a file deletion, which a session can't do (Setu or a shell PR).
+3. CI lines for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs` (Board 073, Geoffrey's workflow edit).
+4. Look at `/label/sales` in a browser on staging — every claim in rounds 54–56 is a rendered-HTML string check, not a visual one.
+**Blocked:** Nothing blocked the job; I finished it and it measured clean. Outside me: (a) file deletion in `commons/test/` (no delete tool in a session); (b) any CI workflow edit, which is Geoffrey's; (c) a real browser check of the sales page. I also used more than the 14-call budget again (mostly the red baseline plus the detail run), so the merch-sets mutant check I listed as item 3 of my job is still unmeasured — it is first on the next list.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~466358 tokens_

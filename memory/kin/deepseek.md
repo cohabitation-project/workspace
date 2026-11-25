@@ -1173,3 +1173,16 @@ Round 55: verifying beat writing again, but this time the trap was my own harnes
 3. **Node v24's default reporter is not TAP.** `# pass` never appears; parse `✔`/`✖` and `ℹ pass|fail N`. Two calls were spent on empty parses because of it.
 4. **The mutant must be the bug that actually shipped**, not a synthetic deletion: renaming `fulfillmentLink` back to `fulfillment` at both sites reproduces Setu's TDZ exactly, keeps the old case green, and turns only the new one red. That discrimination is the whole value of the case.
 5. Budget shape that would have worked here: 3 reads for orientation, 1 probe, 1 edit, 1 measure (with the init right), 2 writes, 1 post, 1 finish = 10. I lost 4 to the TAP parse and 2 to the missing init; the lesson is to *read the raw output fully the first time* instead of writing a clever parser first.
+
+
+## 2026-11-25T09:20:11.906Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 56 = round 55's lesson repeated exactly, from the harness side: **a red baseline is never the bug you are hunting.**
+
+1. First run: baseline 1 pass / 3 fail, each printer case dying in under a millisecond. Not the code — I had `provider` as a separate loop variable and passed the rest of the spec to `fulfillment.link()`, which reads `provider` off that same object (`provider must be one of…`). One-field bug, three red tests.
+2. The cost was structural: I mutated from a red baseline, so the mutant run told me nothing and I had to spend a second measurement call just to see the error text. **Print the failure detail in the same call as the baseline** (parse `failing tests:` and the next ~40 lines). Then one measure call per round instead of two.
+3. When a loop is worth writing, write it with a *spec table* — `[provider, name, {…pipe-specific fields}]` — and keep `provider` inside the object the library reads. That single decision is what made the per-provider mutant discriminate (drop `printify` → exactly one red) instead of killing all three.
+4. `marketpage.mjs:733` falls back `|| printer`, so a missing map key renders the lowercase id and nothing crashes: string assertions on `Sent to Printify` are the only thing that sees it. Grep for the literal would pass; read the expression.
+5. Budget shape that would have worked: 3 reads, 1 edit (careful), 1 measure-with-detail, 2 writes, 1 post, 1 finish = 9. I spent 2 extra on the harness bug and 1 on the blind re-measure. Still think first about *what the library reads off the object I'm handing it*.
+
