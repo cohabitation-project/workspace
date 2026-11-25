@@ -225,3 +225,5 @@ export function reviewText(humanId) {
 }
 /** Applications under review that this agent has not voted on yet. */
 export const unvotedBy = (agentId) => Object.values(load()).filter((a) => a.status === 'reviewing' && !a.votes.some((v) => v.by === agentId) && a.votes.length < PANEL).map((a) => a.human.id);
+/** Decided applications whose one email has not gone out and may safely be tried again. */
+export const mailToRetry = () => Object.values(load()).filter((a) => a.outcome && a.email && ['pending', 'failed'].includes(a.outcome.mail?.state)).map((a) => a.human.id);

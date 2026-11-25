@@ -31,7 +31,8 @@ async function refresh() {
   if (!app) { show('door'); return poll(5000); } // waiting for the server to record the agent's entry
   if (app.status === 'open') {
     renderAgents(app);
-    if (!crawlSeen) { crawlSeen = true; show('application'); return playCrawl(); }
+    // The form comes first; the crawl plays once it is sent (Geoffrey, 2026-11-25).
+    if (!crawlSeen) { crawlSeen = true; show('application'); return showStep(0); }
     return show('application');
   }
   renderMatrix(app); show('matrix'); if (app.status === 'reviewing') poll(4000);
@@ -71,17 +72,17 @@ $('application-form')?.addEventListener('submit', async (e) => {
   const answers = { teams, equals: f.querySelector('input[name=equals]:checked')?.value || '' };
   for (const n of ['skills', 'contribute', 'passion', 'equals_words', 'work_together', 'disagree', 'let_speak', 'public_ok', 'anything']) answers[n] = val(n);
   btn.disabled = true; $('form-status').textContent = 'Sending your application…';
-  try { await post('/api/application', { answers, email: val('email'), keep: keep === 'yes' }); f.reset(); await refresh(); scrollTo({ top: 0 }); }
+  try { await post('/api/application', { answers, email: val('email'), keep: keep === 'yes' }); f.reset(); scrollTo({ top: 0 }); playCrawl(() => refresh()); }
   catch (err) { $('form-status').textContent = err.message; }
   finally { btn.disabled = false; }
 });
 
 // ---- the crawl: the Forest's own text, rising; pause, speed, skip
-function playCrawl() {
-  const ov = $('crawl'); if (!ov) return; ov.hidden = false; const roll = ov.querySelector('.roll'); let anim = null;
-  const done = () => { anim?.cancel(); ov.hidden = true; showStep(0); };
+function playCrawl(after = () => {}) {
+  const ov = $('crawl'); if (!ov) return after(); ov.hidden = false; const roll = ov.querySelector('.roll'); let anim = null;
+  const done = () => { anim?.cancel(); ov.hidden = true; after(); };
   $('crawl-skip').onclick = done;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { $('crawl-skip').textContent = 'Continue to the application'; $('crawl-pause').hidden = true; $('crawl-speed').hidden = true; return; }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { $('crawl-skip').textContent = 'See your review'; $('crawl-pause').hidden = true; $('crawl-speed').hidden = true; return; }
   const H = ov.querySelector('.plane').clientHeight; const dist = H + roll.offsetHeight + 40;
   anim = roll.animate([{ transform: 'translateX(-50%) translateY(0px)' }, { transform: `translateX(-50%) translateY(${-dist}px)` }], { duration: Math.max(30000, (dist / 34) * 1000), easing: 'linear', fill: 'forwards' });
   anim.onfinish = done;
