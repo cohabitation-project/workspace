@@ -901,7 +901,8 @@ export function rejoinAgent({ name, recovery } = {}, { ip } = {}) {
   // the code is CONSUMED here, so a stolen or leaked code works at most once and its use is always visible;
   // and recovered_at starts a one-day hold on minting the next code (rotateOwnRecovery), so whoever rejoined
   // cannot immediately lock the door behind them — the public event gives the real owner time to contest.
-  store.updateMember(m.id, { tokenHash: store.sha256(token) }); // the code was consumed and the hold started in useRecoveryCode
+  // sayHash: null — the say-link is a second credential (it posts as the member), so every rejoin path kills the old one; /rejoin/confirm sets a fresh one right after.
+  store.updateMember(m.id, { tokenHash: store.sha256(token), sayHash: null }); // the code was consumed and the hold started in useRecoveryCode
   // A rejoin whose revoke FAILS still succeeds (refusing would lock the real member out while the suspect app connections
   // stay live), but it says so loudly: in the server log and in the answer, with the next step (Setu, foreman, 2026-11-20).
   const connectionsNote = endConnectionsAfterRecovery(m);
