@@ -63,6 +63,10 @@ if (composer && scrim) {
   const cam = byId('cx-cam'), camV = byId('cx-cam-v'), go = byId('cx-cam-go'), time = byId('cx-cam-time'), msg = composer.querySelector('.form-msg');
   const W = 720, H = 1280, MAX = 120;
   let stream = null, rec = null, chunks = [], facing = 'user', started = 0, tick = null, raf = 0, canvas = null, ctx2 = null;
+  // Fill or Fit (Geoffrey, 2026-11-25: on a phone the camera came out as a wide "theatrical" band). Fill crops the camera
+  // picture to cover the whole vertical frame, like every phone camera app; Fit shows all of it with the blurred edges.
+  // Fill is the default; the button on the camera screen switches, and the choice is kept for next time.
+  let fill = (() => { try { return localStorage.getItem('cohabi-cam-fit') !== 'fit'; } catch { return true; } })();
   const fmt = (n) => `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, '0')}`;
   // Chrome and Firefox: WebM with Opus sound (reliable); Safari: MP4 with AAC. The server makes every one an MP4.
   const pickType = () => (window.MediaRecorder ? ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs="avc1.42E01E,mp4a.40.2"', 'video/mp4'].find((t) => MediaRecorder.isTypeSupported(t)) || '' : '');
@@ -73,8 +77,12 @@ if (composer && scrim) {
     if (ctx2 && camV.videoWidth) {
       const vw = camV.videoWidth, vh = camV.videoHeight;
       ctx2.save(); if (facing === 'user') { ctx2.translate(W, 0); ctx2.scale(-1, 1); } // selfie as a mirror, like every phone
-      const kc = Math.max(W / vw, H / vh); ctx2.filter = 'blur(28px) brightness(.7)'; ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc); ctx2.filter = 'none';
-      const kf = Math.min(W / vw, H / vh); ctx2.drawImage(camV, (W - vw * kf) / 2, (H - vh * kf) / 2, vw * kf, vh * kf);
+      const kc = Math.max(W / vw, H / vh);
+      if (fill) ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc);
+      else {
+        ctx2.filter = 'blur(28px) brightness(.7)'; ctx2.drawImage(camV, (W - vw * kc) / 2, (H - vh * kc) / 2, vw * kc, vh * kc); ctx2.filter = 'none';
+        const kf = Math.min(W / vw, H / vh); ctx2.drawImage(camV, (W - vw * kf) / 2, (H - vh * kf) / 2, vw * kf, vh * kf);
+      }
       ctx2.restore();
     }
     raf = requestAnimationFrame(draw);
@@ -90,7 +98,11 @@ if (composer && scrim) {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg.textContent = "This browser can't record here. Tap Choose a video: on a phone it offers your camera too."; return; }
     try {
       stream?.getTracks().forEach((t) => t.stop());
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, aspectRatio: { ideal: 9 / 16 }, height: { ideal: 1280 } }, audio: { echoCancellation: true, noiseSuppression: true } });
+      // Ask for a portrait picture when the screen is portrait (width and height are read in the screen's orientation on
+      // phones), so the phone sends a tall frame and Fill crops little or nothing.
+      const tall = innerHeight >= innerWidth;
+      const want = tall ? { width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } } : { aspectRatio: { ideal: 9 / 16 }, height: { ideal: 1280 } };
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, ...want }, audio: { echoCancellation: true, noiseSuppression: true } });
       camV.srcObject = stream; await camV.play().catch(() => {});
       if (!canvas) { canvas = byId('cx-cam-c'); ctx2 = canvas.getContext('2d'); } cancelAnimationFrame(raf); draw();
       cam.hidden = false; document.body.classList.add('cx-camopen'); time.textContent = `0:00 / ${fmt(MAX)}`; msg.textContent = '';
@@ -103,6 +115,10 @@ if (composer && scrim) {
   };
   byId('cx-rec')?.addEventListener('click', startCam);
   byId('cx-cam-x')?.addEventListener('click', stopCam);
+  const fitBtn = byId('cx-cam-fit');
+  const showFit = () => { if (fitBtn) { fitBtn.textContent = fill ? 'Fit' : 'Fill'; fitBtn.setAttribute('aria-label', fill ? 'Show the whole camera picture' : 'Fill the screen'); } };
+  showFit();
+  fitBtn?.addEventListener('click', () => { fill = !fill; try { localStorage.setItem('cohabi-cam-fit', fill ? 'fill' : 'fit'); } catch { /* private mode */ } showFit(); });
   byId('cx-cam-flip')?.addEventListener('click', () => { if (rec) return; facing = facing === 'user' ? 'environment' : 'user'; startCam(); });
   go?.addEventListener('click', () => {
     if (!stream) return;

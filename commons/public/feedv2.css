@@ -525,6 +525,7 @@ body.cx-camopen{overflow:hidden}
 .cx-cam-time{position:absolute;top:max(16px,env(safe-area-inset-top));left:0;right:0;text-align:center;color:#fff;font:700 15px system-ui,sans-serif;text-shadow:0 1px 4px #000a;margin:0}
 .cx-dialog .cx-cam-btns{position:absolute;left:0;right:0;bottom:max(28px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:42px}
 .cx-cam-side{width:52px;height:52px;border-radius:50%;border:0;background:#0008;color:#fff;font-size:22px;cursor:pointer}
+.cx-cam-fit{font-size:13px;font-weight:700;letter-spacing:.02em}
 .cx-shutter{width:78px;height:78px;border-radius:50%;border:5px solid #fff;background:transparent;display:grid;place-items:center;cursor:pointer;padding:0}
 .cx-shutter span{width:60px;height:60px;border-radius:50%;background:#e2323a;transition:all .2s}
 .cx-shutter.cx-recording span{width:30px;height:30px;border-radius:7px}
