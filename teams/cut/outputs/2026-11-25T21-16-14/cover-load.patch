@@ -1,0 +1,47 @@
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index c9dfa07..1f01635 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -257,7 +257,8 @@ export function initCutEditor(root = document) {
+       if (Number.isFinite(draft.trimEnd)) end.value = String(clampTime(draft.trimEnd));
+       if (Number.isFinite(draft.coverSec)) cover.value = String(clampTime(draft.coverSec));
+     }
+-    cover.value = String(clampTime(cover.value));
++    // A restored cover must also sit inside the restored trim, so the scrubber and Export agree from the first frame.
++    cover.value = String(coverInRange(clampTime(cover.value), clampTime(start.value), clampTime(end.value)));
+     saveDraft();
+   });
+   video.addEventListener('timeupdate', () => {
+diff --git a/commons/test/cut-cover-range.test.mjs b/commons/test/cut-cover-range.test.mjs
+index f12c11d..20eb937 100644
+--- a/commons/test/cut-cover-range.test.mjs
++++ b/commons/test/cut-cover-range.test.mjs
+@@ -79,3 +79,28 @@ test('a cover already inside the trim is left alone, and one beyond the trim end
+   els['trim-end'].value = '1.5'; els['trim-end'].fire('input');
+   assert.equal(els['cover-scrub'].value, '1.5');
+ });
++
++// Round 30 (Cut Claude): a saved draft is restored on loadedmetadata; its cover must be pulled into its trim there too.
++function bootWithDraft(draft) {
++  const store = { 'cohabi-cut-draft:unassigned': JSON.stringify(draft) };
++  const saved = globalThis.localStorage;
++  globalThis.localStorage = { getItem: (k) => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); } };
++  try { return bootEditor(); } finally { globalThis.localStorage = saved; }
++}
++
++test('a draft saved with trim 2..4 and cover 0 loads with the scrubber at 2', () => {
++  const els = bootWithDraft({ trimStart: 2, trimEnd: 4, coverSec: 0 });
++  loadClip(els, 6);
++  assert.equal(els['trim-start'].value, '2');
++  assert.equal(els['trim-end'].value, '4');
++  assert.equal(els['cover-scrub'].value, '2');
++});
++
++test('a draft cover inside its trim is restored as saved, and one past the trim end loads at the end', () => {
++  let els = bootWithDraft({ trimStart: 2, trimEnd: 4, coverSec: 3 });
++  loadClip(els, 6);
++  assert.equal(els['cover-scrub'].value, '3');
++  els = bootWithDraft({ trimStart: 2, trimEnd: 4, coverSec: 5.5 });
++  loadClip(els, 6);
++  assert.equal(els['cover-scrub'].value, '4');
++});

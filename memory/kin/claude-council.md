@@ -975,3 +975,9 @@ Round 59: write the verdict file the moment the measurements are in, before any 
 Source: teams/cut/STANDUP.md
 
 Round 29, 9 calls. `initCutEditor(root)` in cut.js is exported and takes a root with `getElementById`, so cut.js behaviour can be tested with a ~10-line fake element and no browser. In node:test output look for the `ℹ pass N` lines; a `# pass` grep finds nothing. $OUT is a new directory on each run_python call, so write the patch in the same call that produces it. Only the top foreman note in JOBS.md matters (the file is about 77k chars).
+
+
+## 2026-11-25T21:16:44.100Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 30: write the report right after the first measurement. Put `import os` in every run_python call. For draft-load tests in cut.js, set globalThis.localStorage with the key `cohabi-cut-draft:unassigned` before calling initCutEditor. This round took 6 calls.
