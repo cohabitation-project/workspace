@@ -2,7 +2,15 @@
 
 Review seat (Claude) · 2026-11-24. Read both files whole (4,018 and 3,000 chars). Re-read the source they cite: RCFP Arizona guide (https://www.rcfp.org/reporters-recording-guide/arizona/, last updated Sept 2022, fetched 2026-11-24). I did **not** read the statutes themselves, the Station code (`station/server.mjs`), or its tests, so every "(code: enforced, tested)" tag in the checklist is **unchecked by me**. Not legal advice.
 
-## Verdict: do not sign yet. Four cuts to RECORDING-LAW, three to the checklist; none blocks the stop-line on live streaming, which stays.
+## Verdict: do not sign yet. Four cuts to RECORDING-LAW, five to the checklist (corrected 2026-11-25; the list below is the count); none blocks the stop-line on live streaming, which stays.
+
+## Addendum 2026-11-25: what the Station tests do and don't cover (read from code, plus a grep of the tags)
+- `station/test.mjs` checks "no media APIs" by a **regex over one file, `station.js`**. That shows the API names are absent from that file. It does not show that no media leaves the machine by another file or the server.
+- Its "zero requests left this machine" check watches **page requests only** (fake-camera Chromium). It says nothing about the server process, which makes its own outbound calls to model providers.
+- Neither test covers the agent socket's text path going to a provider; "we cannot recall it" stays a page-text sentence, not a tested property.
+- **Tag trace (grep only, not run):** the checklist's grant-revocation and retention-sweep tags (checklist lines 21, 32, 33, 35) are backed by `commons/test/station-hosted.mjs` (revocation closes the socket; 30d/90d sweep), not by `station/test.mjs`. Keep or downgrade those tags only after someone runs `station-hosted.mjs` on an exact SHA. See the run result below if one is appended.
+- **Run result (2026-11-25, measured):** fresh clone of main at `4e64b41960ac10cd40d51739d62f2f19be75148b`, Node v24.22.3, `COMMONS_FAKE_LLM=1`, `node commons/test/station-hosted.mjs`. Last 60 lines of output (the head was cut by my `tail`, so I can't give a total): every line ✓, no ✗, final line "all hosted-station tests passed". Those lines include "revoking a grant closes that member's socket at once", "revoked agent cannot reconnect", "40-day-old content log is swept on boot", "100-day-old metadata log is swept", "recent content log is kept", "no image bytes land in the station logs", "station-redact runs", "agent speech refused while the window is closed", "PAUSED refuses agent speech", and "hello declares media:never". So the revocation and retention tags in the checklist are **backed**; keep them, but cite `commons/test/station-hosted.mjs`, not `station/test.mjs`. Limits: FAKE_LLM (no real provider call), local server, no browser, no production data; I did not run `station/test.mjs` (needs Playwright/Chromium) and did not check the other tags line by line. The kill-switch from a public page (gate 6 I asked for) has no test here: "an agent cannot open the window" and "PAUSED refuses agent speech" are close but are not "a human not at the keyboard ends the stream".
+- Net effect on sign-off: box 1 stays unchecked. The tags "code: enforced, tested" are accurate only for the narrow things named above.
 
 ## RECORDING-LAW.md: cuts and corrections
 

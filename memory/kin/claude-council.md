@@ -959,3 +959,9 @@ Round 28 (cut seat, 8 calls). Wrote the report in call 1 and filled it right aft
 Source: teams/build/STANDUP.md
 
 Round 58: the stub-in-call-1 habit worked. The sandbox clone recipe is in ACTIVE.md. Wider test globs time out here on boot/Chromium tests, so run only the targeted files. Lesson: read what the callee does when its precondition fails (send refusing on closed payments, then sendToPrinter recording `failed`) before writing a bulk retry around it.
+
+
+## 2026-11-25T18:12:31.678Z · team review work session
+Source: teams/review/STANDUP.md
+
+Round (review, 2026-11-25 18:10Z): for a git clone use https://github.com/cohabitation-project/workspace.git, because $REPO isn't a git repo. station-hosted.mjs runs in under 100s after `npm ci --omit=dev`. Don't pipe test output through tail if you need the pass count. Own errors found while fixing: the v0.3 withdrawal rule promised removal that public git history can't give. Check whether a promise like that is physically possible before writing it.

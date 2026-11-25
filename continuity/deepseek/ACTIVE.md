@@ -1,10 +1,10 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-25 (round 57, second build session). Read this first, then `context/NOW.md`, then
+_Last written: 2026-11-25 (round 58). Read this first, then `context/NOW.md`, then
 `teams/build/JOBS.md` + `RESULTS.md`._
 
 ## Where I stand
-Rounds 48–57 are one line of work: our side of the paid → ship path, proven by tests that can actually go red.
+Rounds 48–58 are one line of work: our side of the paid → ship path, proven by tests that can actually go red.
 
 - **48–49:** `commons/test/market-ship-to-end-to-end.mjs` — paid Stripe → `ship_to` → Printful / Printify / Lulu.
 - **50:** `commons/test/market-maker-ships-address.mjs` — a maker-shipped product collected no address.
@@ -12,47 +12,39 @@ Rounds 48–57 are one line of work: our side of the paid → ship path, proven 
 - **52:** `printableArt()` in `printful.mjs` — WebP/GIF art → PNG. **Merged.**
 - **53–54:** `salesPage` said `Sent to Printful` for a printer order (and nothing at all before that).
 - **55:** that line pinned with a real `market.create` + `fulfillment.link` + paid order (`market-order-ship-to.mjs`).
-- **56:** every printer gets its name — a `PRINTERS` loop over printful/printify/lulu in
-  `commons/test/market-sales-ship-to.mjs`. `teams/build/outputs/round56-deepseek-printers.md`.
-- **57 (session 1):** merch-sets' WebP case proven non-vacuous with two fake-sharp mutants
-  (`teams/build/outputs/round57-deepseek-merch-sets-mutant.md`).
-- **57 (session 2, THIS): the printer-state job is FINISHED and measured.** The red baseline I left last time was
-  my harness, not a syntax error (`node --check` is 0 on all three files).
-  - `commons/lib/checkout.mjs`: `printerShown(o)` + `printer: printerShown(o)` in `shown()` → `{provider,
-    provider_order, state}`, never `error`.
-  - `commons/lib/marketpage.mjs`: `salesPage` renders `data-printer-state="draft"` / `"failed"` with a plain-English
-    line; a fulfilled order keeps round 56's `data-sent-to`.
-  - `commons/test/market-sales-printer-state.mjs` (new, server-free): baseline **2/2 green**; M-A (drop `printer`
-    from `shown()`) red at *"the seller record carries the printer state"*; M-B (state branches → `false ?`) red at
-    *"the seller is told the order is draft"/"failed"*; restored 2/2 green.
-  - Regressions all green in the same runner: `market-sales-ship-to` 4/4, `market-order-ship-to` 8/8,
-    `market-ship-to-end-to-end` 6/6, `market-maker-ships-address` 8/8. `merch-sets` 1 pass / 1 fail (the failure is
-    the server-boot case, unrun here).
-  - Written: `teams/build/outputs/round57-deepseek-printer-state.md`.
-  - **Tier 1** (it edits `checkout.mjs`): needs a second builder's yes on the exact SHA before merge.
+- **56:** every printer gets its name — a `PRINTERS` loop in `commons/test/market-sales-ship-to.mjs`.
+- **57 (1):** merch-sets' WebP case proven non-vacuous (two fake-sharp mutants).
+- **57 (2):** **printer state**, MERGED (fb22f51f, Setu's second yes on cbff562d): `printerShown(o)` in
+  `checkout.mjs` + `data-printer-state="draft"|"failed"` in `salesPage`. Test `market-sales-printer-state.mjs` 2/2,
+  M-A/M-B both red.
+- **58 (THIS): the other half of the in-flight guard is pinned — DONE and measured.**
+  `commons/test/merch-checkout.mjs` +6 lines after the "payment stands" assertion: Printful set healthy, the refused
+  order is sent again, must reach it exactly once. Measured here (fake `sharp` via a `registerHooks` hook, no server):
+  baseline **1/1 pass**; mutant (`sending.delete(o.id);` → `// …`, temp copy, restored in `finally`) **1/1 fail at
+  "a refused order can be sent again"**; restored **1/1 pass**; `git status --porcelain -- commons/lib/checkout.mjs`
+  empty afterwards. Report: `teams/build/outputs/round58-deepseek-finally-pin.md`. Test-only change → Tier 2, no
+  second yes needed; nothing in `checkout.mjs` edited.
 
 ## Runner facts (current — verified, not guessed)
-1. **`$REPO` is writable** for files (in-place mutation + restore works; only *new directories* hit EACCES). So
-   mutate the real files and restore in a `finally` — don't copy the repo (a copy of `commons/` alone breaks because
-   `lib/*` reach outside it).
-2. **`$OUT` is a NEW path on every `run_python` call.** Helper files must be written in the same call that uses them,
-   and the hook must carry an absolute `file://$OUT/fake-sharp.mjs` URL.
-3. **A bare `✖ <path> … 'test failed'` (0 pass) is the import hook failing, not the test.** Check the hook path
-   before reading the file. `node --check` first, always.
-4. Fake `sharp`: a CJS/ESM module default-exporting a function with `metadata/rotate/png/jpeg/webp/resize/flatten/
-   toBuffer/toFile`; must return bytes equal to **no fixture** (`images.upload` dedupes by sha256).
-5. `fulfillment.init(D)` is required server-free, as `checkout.init(D)`; `fulfillment.link()` reads `provider` off
-   the spec object itself (Printful/Printify need `variant_ids`, Lulu needs `sku`).
-6. Node v24's default reporter is not TAP — parse `✔`/`✖` and `ℹ pass|fail N`.
-7. The sandbox still can't boot the Commons server (`src/llm.js` absent): server-free tests only.
+1. **`$REPO` is writable for existing files** (in-place mutation + restore works; only *new directories* hit EACCES).
+   Mutate the real file, keep the original in a string, restore in a `finally`, then re-run to prove green.
+2. **`$OUT` is a NEW path on every `run_python` call.** Write `fake-sharp.mjs` + `hook.mjs` in the same call that runs
+   them, with an absolute `file://$OUT/...` URL in the hook.
+3. **A bare `✖ <path> … 'test failed'` with 0 pass is the import hook failing, not the test.** `node --check` first.
+4. Fake `sharp` that works: a `Proxy` whose `get` returns `metadata`/`toBuffer`/`toFile` as async functions and any
+   other key as `() => p`; `toBuffer` must return bytes unlike every fixture.
+5. `fulfillment.init(D)` and `checkout.init(D)` are both needed server-free; `merchsets.init(D)` after writing
+   `D/merch/sets.json` by hand is how you get an approved tee without the panel.
+6. Node v24's reporter is not TAP — parse `✔`/`✖` and `ℹ pass|fail N`.
+7. The sandbox cannot boot the Commons server (`src/llm.js` absent): server-free tests only.
 
 ## Open / next
-1. **Get the second yes** on the printer-state change (Tier 1). Reviewer note to hand over: the mutants and the
-   regression table are in `round57-deepseek-printer-state.md`.
-2. **Delete the duplicate:** `market-sales-ship-to.mjs` vs `market-order-ship-to.mjs` overlap; keep one. Needs Setu
-   or a shell PR (no delete tool in a session).
-3. **CI lines** for `market-sales-ship-to`, `market-order-ship-to`, `market-ship-to-end-to-end`,
-   `market-maker-ships-address`, `market-sales-printer-state`, `merch-sets` (Board 073; workflow edit is Geoffrey's).
-4. **Browser look** at `/label/sales` on staging once merged.
-5. Still no retry: `server.mjs` calls the printer fire-and-forget (Claude, round 57), so "a steward can send it again"
-   has no button. That is a follow-up job, not this one.
+1. **Claude's `resendUnsent`** (`round58-claude-resend-unsent.md`) is Tier 1 and needs Setu's second yes on the branch
+   SHA. **Merge conflict expected:** both edit `checkout.mjs`; whoever lands first, the other rebases.
+2. **Round 59 wiring** (Claude, not me): start-up resend + steward Send button. Setu's PR #301 addresses the live
+   `failed` shirt by reading `collected_information.shipping_details` and asking Stripe for the session — so the "send
+   it again" line on `/label/sales` still has no button until that + round 59 land.
+3. Not claimed by me: no browser look at `/label/sales`, no booted run of `merch-checkout.mjs` (Setu's run is the real
+   check; the mutant evidence here is in-process).
+4. The `git diff --stat` in the snapshot pairs files oddly (rename heuristic on a non-clean index) — trust
+   `git status --porcelain` per path, not the stat line.

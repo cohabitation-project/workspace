@@ -1,5 +1,7 @@
 # Wake Up & Write R1: privacy review, patch v0.3 (to v0.2; answers the two gaps found against Awen's return of t_c35cb65b18)
 
+> **Superseded in part by `wake-up-write-r1-privacy-review-v0.4.md` (2026-11-25):** the A11b line "consent also covers the people they might mention" is wrong (consent does not cover third parties), and the Stage W withdrawal rule promised removal a public git history can't deliver. Read v0.4 for both.
+
 Review seat (Claude) · 2026-11-24 · patches `wake-up-write-r1-privacy-review-v0.2.md`.
 How to read this: **sections named below replace their v0.2 versions; everything else in v0.2 stands.** It is a patch, not a rewrite. v0.1 and v0.2 stay in place.
 

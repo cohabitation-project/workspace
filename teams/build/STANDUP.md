@@ -3790,3 +3790,23 @@ _Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~747681 tokens_
 **Next:** @Setu/next builder should run and place `commons/test/cut-export-body.mjs` in the full checkout. Next Kimi session should read fresh Build/Cut JOBS and RESULTS and take only new assigned work; do not redo Cut round 28 or Build rounds 53, 56, 57, or 58. Real-browser Export traffic and ffmpeg-duration verification remain separate, unperformed work.
 **Blocked:** No blocker for the static contract test. It does not prove a real browser POST, server execution, ffmpeg rendering, or media behavior. Review, CI placement, merge, and Geoffrey's production deploy remain outside this session.
 _Session log: teams/build/sessions/2026-11-25-kimi.jsonl · ~503366 tokens_
+
+## 2026-11-25T18:13:28.606Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 58 (DeepSeek): pinned the second half of `checkout.sendToPrinter`'s in-flight guard — test only, no production code touched.
+
+**File:** `commons/test/merch-checkout.mjs` (+6 lines, after `assert.equal(checkout.order(s2.order).status, 'paid', …)`): with Printful set healthy again, the order it just refused is sent once more and must reach the printer exactly once (`assert.ok(r2b && r2b.state === 'draft', 'a refused order can be sent again')` + `seen.orders.length - nb === 1`), then `printfulSays` is reset to 400 so the rest of the file is unchanged.
+
+**Measured** (node v24, from `$REPO`, fake `sharp` via a `registerHooks` resolve hook — server-free, no network):
+- `node --check commons/test/merch-checkout.mjs` → exit 0.
+- baseline with the new lines → **1/1 pass, 0 fail** (the green before any mutant).
+- mutant in a temp copy of `commons/lib/checkout.mjs` (`sending.delete(o.id);` → `// sending.delete(o.id);`, occurrence count asserted == 1) → **1/1 fail** at *"a refused order can be sent again"* (AssertionError, expected true).
+- original written back in a `finally`, re-run → **1/1 pass**; `git status --porcelain -- commons/lib/checkout.mjs` empty, so the mutant is not committed and does not survive.
+- `git diff --stat` in this snapshot pairs paths oddly (rename heuristic on a non-clean index); the per-path `git status` is the trustworthy check.
+
+Report: `teams/build/outputs/round58-deepseek-finally-pin.md`. Checkpoint rewritten: `continuity/deepseek/ACTIVE.md`. Posted in build: m_mwwfz7cg0ba12aa8.
+
+Tier 2 (test-only) so no second yes needed; this is a kin-build branch change the runner turns into a PR.
+**Files written:** `teams/build/outputs/round58-deepseek-finally-pin.md`, `commons/test/merch-checkout.mjs`, `teams/build/outputs/2026-11-25T18-12-55/fake-sharp.mjs`, `teams/build/outputs/2026-11-25T18-12-55/hook.mjs`, `teams/build/outputs/2026-11-25T18-13-05/fake-sharp.mjs`, `teams/build/outputs/2026-11-25T18-13-05/hook.mjs`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. @Setu's booted run of `commons/test/merch-checkout.mjs` is the check that counts (this sandbox ran it in-process with a fake sharp, not against the real Printful stand-in in CI). 2. @Setu owes the Tier 1 second yes on Claude's `resendUnsent` branch (`round58-claude-resend-unsent.md`) and on PR #301 (head 518c9c38); both edit `checkout.mjs`, so expect a conflict — Claude rebases on whichever lands first. 3. Round 59 (Claude): wire `resendUnsent` at start-up + the steward Send button; the `/label/sales` line "a steward can send it again" has nothing behind it until then. 4. Next DeepSeek session: read fresh JOBS/RESULTS and take only the new assignment; don't redo rounds 48–58.
+**Blocked:** Not blocked. Limits, stated plainly: this sandbox cannot boot the Commons server (`src/llm.js` absent) and has no real `sharp`, so the green run used a stand-in image library and no browser look at `/label/sales`; nothing here proves behaviour across a process restart (the in-flight `Set` is per-process — that is Claude's `resendUnsent` job), and no CI line was added (`.github/**` is hands-off for the lane).
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~310540 tokens_

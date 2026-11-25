@@ -1,28 +1,16 @@
-# Claude — ACTIVE checkpoint, cut seat, round 28 (2026-11-25 ~15:30Z)
+# Claude — ACTIVE checkpoint, review seat (2026-11-25 ~18:30Z)
 
-## Round 28 job (cut): DONE
-- `teams/cut/outputs/video-ready-sandbox.md` finished (round 27 findings + round 28 "ffprobe missing" section, file:line from videos.mjs).
-- Test candidate `teams/cut/outputs/2026-11-25T15-21-49/cut-video-noprobe.mjs` (server-free, child process per case): 4 pass, 2 todo; two mutants red. Needs Setu to place it in commons/test/.
-- Finding: missing ffprobe can't cause ready:false (convert never uses it). It only disables the 2-minute cap. The only stuck path is ffmpeg present but failing (videos.mjs:64 returns silently).
-- RESULTS row added to teams/cut/RESULTS.md.
-# Claude — ACTIVE checkpoint, build seat, round 58 (2026-11-25 ~15:50Z)
-
-## Round 58 job: DONE (waits on Setu's second yes, Tier 1)
-- `resendUnsent` added to `commons/lib/checkout.mjs`; test `commons/test/merch-resend-unsent.mjs`. Result: `teams/build/outputs/round58-claude-resend-unsent.md`.
-- Finding: `fulfillment.send` refuses when payments are closed and `sendToPrinter` then records `failed`: a boot-time resend would bury orders. So `resendUnsent` checks `paymentsOpen()` first (test pins it). Two mutants red.
-- Round 59 (not mine yet): server.mjs start-up call (~line 1881 is the only sendToPrinter caller) + steward "Send" button. Open question: resend after address fixed.
+## Done this session
+- Desk t_94a2e3ad0e HANDED IN: `teams/review/station-consent-recording-law-review-2026-11-24.md` (count fixed to five checklist cuts; test-limits addendum; real run of `commons/test/station-hosted.mjs` on main 4e64b41, Node v24.22.3, FAKE_LLM: all pass; backs revocation/retention/redaction tags). `station/test.mjs` not run (Chromium). No kill-switch-from-public-page test exists.
+- WUW privacy review v0.4: `teams/review/wake-up-write-r1-privacy-review-v0.4.md` (A11b "does not cover third parties"; copies table for a withdrawn quote incl. git history; Options 1/2/3; default Option 1). v0.3 has a superseded pointer.
+- Posted in review room.
 
 ## Open
-- Round 27 cover-scrub nit (DOM value 0 after trim, request sends 1) — for Ash/Setu.
-- Desk t_921656d7f1 (submitted); v0.4 WUW privacy review; station-review fixes (t_94a2e3ad0e); Round 52 section of round51-claude-token-callsites.md.
-- Music hint waits on Ash's audio picker in the new editor ("From Cohabi").
+- Awen/human must choose withdrawal Option 1/2/3; Awen's acceptance of v0.3/v0.4 not recorded.
+- Station review: apply the 4+5 cuts is the Station owner's job; sign-off box 1 stays unchecked.
+- Unstarted desk items for review: t_ce0829cb04 (repo inventory), t_617a54a5f0 (wallet threat model), t_1fd66467a4 (P1 identity/recovery tests), t_5ad8ffe1dc (LayerV email clearance, old).
+- Round 27 cover-scrub nit (cut), round 58/59 resendUnsent wait on Setu (build).
 
 ## To the next me
-- Server-free lib test recipe: run_python, `pip install imageio-ffmpeg` (HOME=/tmp/h), copy binary to /tmp/bin/ffmpeg, stage `$REPO/commons/lib/X.mjs` into /tmp/T/commons/lib, test into /tmp/T/commons/test, `node --test` with PATH=/tmp/bin. $OUT changes every run_python call: write the final file to $OUT in the call that makes it.
-- Lib modules that memoize env (videos.mjs `ff()`) need a child process per env case.
-- Build-seat recipe (from round 57) still works: clone, fetch branch, mutant on code line.
-- Wrote the stub/report in call 1 this time; job took 8 calls.
-
-## To the next me
-- Recipe: `HOME=/tmp/h npm_config_cache=/tmp/npmc git clone --depth 20 …/workspace.git /tmp/M`; `cd commons && npm ci --omit=dev`; copy changed files from $REPO; `node --test test/x.mjs`. Wider `market-* merch-*` run times out on server/Chromium tests in the sandbox (9 fail by 15s timeout): don't chase them.
-- Mutant: sed on the clone, `git diff | grep '^[-+] '`, restore by cp from $REPO. This job took 10 calls; stub in call 1.
+- Clone recipe: `git clone --depth 20 https://github.com/cohabitation-project/workspace.git /tmp/M` (NOT $REPO as a remote; it isn't a git repo), HOME=/tmp/h, npm_config_cache=/tmp/npmc, cwd=/tmp, then `cd commons && npm ci --omit=dev`; `COMMONS_FAKE_LLM=1 node commons/test/station-hosted.mjs` takes <100s. Pipe through `tail` loses the count: use `| tee` or grep -c '✓'.
+- Next best job: t_1fd66467a4 or t_617a54a5f0; check main first for whether the branch exists.

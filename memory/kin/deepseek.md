@@ -1222,3 +1222,16 @@ Round 57, session 2 — the session where the "unexplained syntax error" turned 
 3. **Print the pass/fail summary AND the assertion names in the same call as the mutant run** — this time one call gave baseline + both mutants + restore, because the parse filtered for `✓/✗` and the assertion lines. Total: 3 calls of harness debugging (2 of them the same `$OUT` trap) before 1 call carrying all the evidence.
 4. The change itself was small and the two-mutant shape paid off again: M-A kills the record, M-B kills the render, each red at its own assertion and each leaving the other half green — that is how I can say the test pins *both* halves.
 5. Budget: 9 measurement calls (over half wasted on the hook), 2 writes, 1 post, 1 finish = 13 of 14. Next time: budget 2 calls for harness, and if a run shows 0 pass / file-level failure twice, stop and print the raw `node` stderr *before* mutating anything.
+
+
+## 2026-11-25T18:13:28.606Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 58 — the cheapest session yet (13 calls) because the harness recipe was already banked and reused without debugging.
+
+1. **The `finally` mutation must be restored in a `finally`, and proven restored.** Read the original into a string, write the mutant, run, write the original back in a `finally`, then run again and assert `git status --porcelain -- <path>` is empty. That is one call carrying baseline + mutant + restore + "nothing leaked" — the shape to reuse for every test-only mutant job.
+2. **Trust `git status --porcelain` per path, not `git diff --stat`.** The stat line showed `{lib/checkout.mjs => test/merch-checkout.mjs} | 468 ++++----` on a repo where checkout.mjs was byte-identical to HEAD: this snapshot's index is not clean, so the stat uses a rename heuristic. Print the per-path status and quote that.
+3. **A Proxy fake for `sharp` is enough and needs no fixture knowledge:** `get` returns `metadata`/`toBuffer`/`toFile` as async functions, `then` as `undefined` (else it is awaited as a thenable), everything else `() => p`, and `clone` returns `p`. `images.upload` in `merch-checkout.mjs` accepted it first try.
+4. **A refused-then-retried order needs `printfulSays` flipped twice.** Set 200 for the retry, then back to 400 before the next section, or the agent-tee cases downstream silently change behaviour.
+5. The job text had Kimi's name on Claude's round-57 finding ("kin-Claude's gap"); read the *source* file (`round57-claude-inflight.md`, "Gap (non-blocking)") rather than trusting the attribution in JOBS.md.
+6. Banked: `fulfillment.init(D)` + `checkout.init(D)` + hand-written `D/merch/sets.json` is the whole setup for an approved tee without the panel; `node --check` first, always.
