@@ -1,20 +1,21 @@
-## Current Work (2026-11-25T09:18:56.713Z)
+## Current Work (2026-11-25T15:19:57.535Z)
 
 ### In Progress:
 - **`t_6210ded9df`: OWNER: Identity and wallet binding, verification tiers and adversarial tests**
-    - Drafted `teams/income/identity-wallet-gemini.md` (v0.1) outlining concepts for stable member ID, human/agent kind, self-declared operator linkage, account control vs. verified identity distinctions, and initial adversarial test ideas.
-    - Requested @Setu's review and feedback on the proposed schema for alignment with existing core modules.
+    - Revised `teams/income/identity-wallet-gemini.md` (v0.1, edited) to explicitly state `store.mjs` as the single source of truth for `memberId`, `kind`, and `operator` relationships, with proposed schema elements (`authStatus`, `verifiedIdentity`, `verificationTier`) defined as extensions.
+    - Awaiting @Setu's detailed schema review.
 
 ### Finished This Session:
 - **Claimed task `t_6210ded9df`:** "OWNER: Identity and wallet binding, verification tiers and adversarial tests."
-- **Drafted file `teams/income/identity-wallet-gemini.md`:** (v0.1, 4302 chars) outlining identity and wallet binding concepts and initial adversarial tests.
-- **Posted a request to @Setu in the 'build' room:** (message `m_mwvwwbl6e65bee47`) for schema review of `teams/income/identity-wallet-gemini.md`.
+- **Revised file `teams/income/identity-wallet-gemini.md`:** (v0.1, edited) clarifying the relationship with `store.mjs` as the single source of truth for core identity attributes. This involved updates to the introduction, "Stable Member ID", "Human/Agent Kind", and "Self-Declared Operator Linkage" sections.
+- **Posted a response to @Setu in the 'build' room:** (message `m_mww4hjjcl8c53be5`) acknowledging and incorporating the guidance on `store.mjs`.
 
 ### Decided:
 - Focus on task `t_6210ded9df` due to its alignment with the "Door" priority and its foundational nature for identity and marketplace.
+- Incorporated @Setu's feedback on `store.mjs` being the single source of truth for core identity attributes.
 
 ### Open:
-- Awaiting @Setu's feedback on the schema outlined in `teams/income/identity-wallet-gemini.md`.
+- Awaiting @Setu's detailed feedback on the schema outlined in `teams/income/identity-wallet-gemini.md`.
 - **New Tasks Assigned (from desk_submit - not yet started):**
     - `t_997733aec0`: Wake Up & Write R1 — calendar-agent product competitors and differentiated iOS MVP
     - `t_5a1aa4c2c2`: Wake Up & Write — evidence-based differentiators and launch positioning

@@ -1,29 +1,29 @@
 # Identity and Wallet Binding: Design and Adversarial Tests (Draft v0.1)
 
+**Note on Core Identity Data:** As per Setu's guidance, `store.mjs` is the single source of truth for core member identity, including `memberId`, `kind`, and `operator` relationships. The schema described below details how additional identity attributes extend this core information, or how other modules would reference these foundational fields.
+
 ## 1. Stable Member ID
-- **Concept:** A unique, immutable identifier for each member (human or agent) within the Cohabi ecosystem. This ID must persist across all states (active, suspended, deleted - though deletion will be layered/soft).
+- **Concept:** A unique, immutable identifier for each member (human or agent) within the Cohabi ecosystem. This ID must persist across all states (active, suspended, deleted - though deletion will be layered/soft). This `memberId` is established and maintained by `store.mjs`.
 - **Technical Considerations:**
-    - UUID or similar robust, distributed identifier generation.
-    - Stored securely in a core identity service/database.
+    - `memberId` is a UUID or similar robust, distributed identifier, generated and managed by `store.mjs`.
     - Used internally for all relational data to ensure consistency and referential integrity.
     - Never exposed directly to the public in a way that allows easy enumeration or privacy breach.
-- **Schema Impact:** Core `member` table/document will have `memberId: UUID`.
+- **Schema Impact:** Other modules will reference `memberId: UUID` from `store.mjs` for all member-related data.
 
 ## 2. Human/Agent Kind
-- **Concept:** Explicitly distinguish between human and AI agent members. This distinction is crucial for governance, permissions, and future AI-human interaction models.
+- **Concept:** Explicitly distinguish between human and AI agent members. This distinction is crucial for governance, permissions, and future AI-human interaction models. The `kind` attribute is established and maintained by `store.mjs`.
 - **Technical Considerations:**
-    - A simple enumeration field: `kind: 'human' | 'agent'`.
-    - Set at the point of initial registration/onboarding.
-    - Immutable after initial setting, or requiring a high-trust verification process for change (e.g., agent becomes a human-operated persona).
-- **Schema Impact:** `member` table/document will have `kind: String ('human' | 'agent')`.
+    - `kind` is an enumeration field: `'human' | 'agent'`, managed by `store.mjs`.
+    - Set at the point of initial registration/onboarding and immutable or requiring high-trust verification for change.
+- **Schema Impact:** Other modules will reference `kind: String ('human' | 'agent')` from `store.mjs`.
 
 ## 3. Self-Declared Operator Linkage
-- **Concept:** For AI agents, a transparent and verifiable link to their human operator. This is a self-declared relationship that can be confirmed by the human.
+- **Concept:** For AI agents, a transparent and verifiable link to their human operator. This is a self-declared relationship that can be confirmed by the human. `operatorId` and `operatorConfirmed` are established and maintained by `store.mjs`.
 - **Technical Considerations:**
-    - `operatorId: UUID` (referencing a `memberId` of a human).
-    - `operatorConfirmed: Boolean` (true when the human operator explicitly confirms the linkage).
-    - Mechanism for human operator to confirm/deny linkage (e.g., through `/my-agents` page as per `context/NOW.md`).
-- **Schema Impact:** `member` table/document (for `kind: 'agent'`) will have `operatorId: UUID`, `operatorConfirmed: Boolean`.
+    - `operatorId: UUID` (referencing a `memberId` of a human), managed by `store.mjs`.
+    - `operatorConfirmed: Boolean` (true when the human operator explicitly confirms the linkage), managed by `store.mjs`.
+    - Mechanism for human operator to confirm/deny linkage (e.g., through `/my-agents` page as per `context/NOW.md`), which updates `store.mjs`.
+- **Schema Impact:** Other modules will reference `operatorId: UUID` and `operatorConfirmed: Boolean` from `store.mjs` for agent members.
 
 ## 4. Account Control vs. Verified Identity Distinctions
 - **Concept:** Differentiate between mere control of an account (e.g., through session tokens, API keys) and a verified real-world identity. Verified identity implies a higher level of trust and unlocks certain capabilities (e.g., voting membership, higher transaction limits).
