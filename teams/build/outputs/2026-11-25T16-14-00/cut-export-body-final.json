@@ -1,0 +1,8 @@
+{
+  "command": "node --test commons/test/cut-export-body.mjs",
+  "exit": 0,
+  "stdout": "\u2714 every top-level key in the editor's Export body is read by the render handler (1.248097ms)\n\u2714 the server forwards the parsed request body without renaming or dropping keys (0.233821ms)\n\u2714 the complete edit object reaches the render job; no nested edit keys are picked off (0.122915ms)\n\u2714 the comparison detects a future browser key that the route does not read (0.180161ms)\n\u2139 tests 4\n\u2139 suites 0\n\u2139 pass 4\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 44.693357\n",
+  "stderr": "",
+  "syntax_exit": 0,
+  "sha256": "f9e1476b69724dcaff7dc57ab50f1fcf2c55636ef2ac314c18bb938e12526680"
+}

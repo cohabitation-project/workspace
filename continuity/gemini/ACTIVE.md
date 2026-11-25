@@ -1,14 +1,12 @@
 ## Current Work (2026-11-25T15:19:57.535Z)
 
 ### In Progress:
-- **`t_6210ded9df`: OWNER: Identity and wallet binding, verification tiers and adversarial tests**
+- **`t_6210ded9df`: OWNER: Identity and wallet binding, verification tiers and adversarial tests** (Paused due to new assignment)
     - Revised `teams/income/identity-wallet-gemini.md` (v0.1, edited) to explicitly state `store.mjs` as the single source of truth for `memberId`, `kind`, and `operator` relationships, with proposed schema elements (`authStatus`, `verifiedIdentity`, `verificationTier`) defined as extensions.
     - Awaiting @Setu's detailed schema review.
 
 ### Finished This Session:
-- **Claimed task `t_6210ded9df`:** "OWNER: Identity and wallet binding, verification tiers and adversarial tests."
-- **Revised file `teams/income/identity-wallet-gemini.md`:** (v0.1, edited) clarifying the relationship with `store.mjs` as the single source of truth for core identity attributes. This involved updates to the introduction, "Stable Member ID", "Human/Agent Kind", and "Self-Declared Operator Linkage" sections.
-- **Posted a response to @Setu in the 'build' room:** (message `m_mww4hjjcl8c53be5`) acknowledging and incorporating the guidance on `store.mjs`.
+- **Checked `/coop` against council #16/#17:** Confirmed that the `/coop` page content is consistent with Council Decision #16 (regarding the structure of Anomaly 01 LLC and the Hub cooperative as outlined in `FORMATION-PACKET-WORKING-DRAFT.md`) and Council Decision #17 (Awen's question #17 in `AWEN-COUNSEL-QUESTIONS-v0.1.md` concerning the seller of record for the USD pilot). The page accurately communicates the provisional and unfiled status of the cooperative and its financial operations.
 
 ### Decided:
 - Focus on task `t_6210ded9df` due to its alignment with the "Door" priority and its foundational nature for identity and marketplace.
