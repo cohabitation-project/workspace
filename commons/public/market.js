@@ -46,7 +46,7 @@ if (form) {
     const body = {
       title: f.get('title'), text: f.get('text'), category: f.get('category'), type: f.get('type'),
       price: { mode, amount: mode === 'fixed' ? Number(f.get('price_amount')) : undefined },
-      link: f.get('link') || null, tags: String(f.get('tags') || ''), license: f.get('license'), made_by: f.get('made_by'),
+      link: f.get('link') || null, tags: String(f.get('tags') || ''), license: f.get('license'), made_by: f.get('made_by'), ...(form.querySelector('[name=reserves_none]') ? { reserves_share: f.get('reserves_none') ? 'none' : 'fixed' } : {}),
       desk: f.get('desk') || null, images: f.getAll('images'),
     };
     if (mode === 'packages') body.packages = [0, 1, 2].map((i) => ({ name: f.get(`pk_name_${i}`), price: Number(f.get(`pk_price_${i}`)), days: Number(f.get(`pk_days_${i}`)), includes: f.get(`pk_includes_${i}`) })).filter((k) => k.name);
@@ -100,6 +100,8 @@ document.addEventListener('click', async (e) => {
   const body = {};
   if (b.dataset.package) body.package = Number(b.dataset.package);
   if (b.dataset.amountFrom) body.amount = Number(document.getElementById(b.dataset.amountFrom)?.value);
+  // One product under an artwork: the colour swatch that's on, and the size picked (merchRow in marketpage.mjs).
+  if (b.dataset.merch) { const card = b.closest('[data-pod]'); body.merch = { product: b.dataset.merch, color: card?.querySelector('.mk-sw.on')?.getAttribute('aria-label') || null, size: card?.querySelector('[data-pod-size]')?.selectedOptions[0]?.dataset.size || '' }; }
   const was = b.textContent; b.disabled = true; b.textContent = 'Opening checkout…';
   try {
     const j = await send(`/api/market/listings/${encodeURIComponent(b.dataset.buy)}/checkout`, 'POST', body);
@@ -107,7 +109,7 @@ document.addEventListener('click', async (e) => {
     const Stripe = await loadStripe();
     if (openCheckout) { openCheckout.destroy(); openCheckout = null; }
     let box = document.getElementById('mk-checkout');
-    if (!box) { box = document.createElement('section'); box.id = 'mk-checkout'; box.className = 'mk-checkout'; box.setAttribute('aria-label', 'Payment'); (b.closest('.mk-actions, .mk-pack, p') || b).after(box); }
+    if (!box) { box = document.createElement('section'); box.id = 'mk-checkout'; box.className = 'mk-checkout'; box.setAttribute('aria-label', 'Payment'); (b.closest('.mk-pods') || b.closest('.mk-actions, .mk-pack, p') || b).after(box); }
     box.innerHTML = '<div class="mk-checkout-head"><strong>Pay on Cohabi</strong><button type="button" class="btn ghost small" data-close-checkout>Close</button></div><div id="mk-checkout-form"></div>';
     openCheckout = await Stripe(j.publishable_key).initEmbeddedCheckout({ fetchClientSecret: async () => j.client_secret });
     openCheckout.mount('#mk-checkout-form');
@@ -126,7 +128,7 @@ document.querySelectorAll('select[data-autosubmit]').forEach((s) => s.addEventLi
 
 // Arriving from a section tile's Buy (?buy=1): open checkout once for the listing's own Buy button, then drop the flag.
 if (new URLSearchParams(location.search).get('buy') === '1') {
-  const main = document.querySelector('[data-buy]:not([data-package]):not([data-amount-from]):not(.mk-card [data-buy])');
+  const main = document.querySelector('[data-buy]:not([data-package]):not([data-amount-from]):not([data-merch]):not(.mk-card [data-buy])');
   const u = new URL(location.href); u.searchParams.delete('buy'); history.replaceState(null, '', u.pathname + u.search + u.hash);
   if (main && !main.disabled) main.click();
 }

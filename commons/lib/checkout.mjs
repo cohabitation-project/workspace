@@ -20,6 +20,7 @@ import * as market from './market.mjs';
 import { CommonsError } from './core.mjs';
 import * as stripe from './stripe.mjs';
 import * as fulfillment from './fulfillment.mjs';
+import * as merchsets from './merchsets.mjs';
 
 const fail = (status, msg, extra) => { throw new CommonsError(status, msg, extra); };
 let DIR = null;
@@ -27,6 +28,7 @@ const accountsFile = () => path.join(DIR, 'payout-accounts.json');
 const ordersFile = () => path.join(DIR, 'orders.jsonl');
 let accounts = {}; // memberId -> { provider, account_id, status, updated }
 
+export const AGENT_COLLAB_SHARE = () => Math.min(100, Math.max(0, Number(process.env.COMMONS_AGENT_COLLAB_SHARE ?? 25)));
 export const NOT_OPEN = "Payments aren't open yet. When they open, you'll pay the maker here, through the Cohabi Market.";
 export const ORDER_STATES = ['draft', 'awaiting_payment', 'paid', 'fulfilling', 'shipped', 'delivered', 'partly_refunded', 'refunded', 'disputed', 'dispute_lost', 'cancelled'];
 export const ACCOUNT_STATES = ['none', 'started', 'needs_info', 'verified', 'disabled'];
@@ -46,7 +48,7 @@ const logOrder = (rec) => fs.appendFileSync(ordersFile(), JSON.stringify({ ts: n
 export function orders() {
   const out = new Map(); let lines = [];
   try { lines = fs.readFileSync(ordersFile(), 'utf8').split('\n').filter(Boolean); } catch { return []; }
-  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), ...(r.payment_intent ? { payment_intent: r.payment_intent } : {}), ...(r.ship_to ? { ship_to: r.ship_to } : {}), ...(r.refunded_cents != null ? { refunded_cents: r.refunded_cents } : {}), ...(r.dispute ? { dispute: r.dispute } : {}), updated: r.ts }); }
+  for (const l of lines) { let r; try { r = JSON.parse(l); } catch { continue; } if (r.op === 'create') out.set(r.order.id, { ...r.order }); else if (r.op === 'status' && out.has(r.order)) Object.assign(out.get(r.order), { status: r.status, ...(r.session ? { session: r.session } : {}), ...(r.payment_intent ? { payment_intent: r.payment_intent } : {}), ...(r.ship_to ? { ship_to: r.ship_to } : {}), ...(r.refunded_cents != null ? { refunded_cents: r.refunded_cents } : {}), ...(r.dispute ? { dispute: r.dispute } : {}), ...(r.fulfillment ? { fulfillment: r.fulfillment } : {}), updated: r.ts }); else if (r.op === 'fulfillment' && out.has(r.order)) Object.assign(out.get(r.order), { fulfillment: r.fulfillment, updated: r.ts }); }
   return [...out.values()];
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
@@ -57,7 +59,7 @@ const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft n
 const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
 // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
 // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
-const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100 }; };
+const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100, ...(o.proceeds === 'reserves' ? { to_reserves: true } : {}), ...(o.reserves_cents != null ? { cohabi_fee: (Number(o.coop_fee_cents) || 0) / 100, reserves: o.reserves_cents / 100 } : {}) }; };
 const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
@@ -128,21 +130,34 @@ function applyAccount(acct) {
 }
 
 /** What a listing would cost to buy, and every reason it can't be bought right now. Safe to show anyone. */
-export function quote(listingId, { pkg = null } = {}) {
+export function quote(listingId, { pkg = null, merch = null } = {}) {
   const l = market.get(listingId); if (!l || l.status !== 'live') fail(404, 'no such listing');
   const seller = store.getMember(l.by?.id);
   const why = [];
   let amount = null, currency = 'USD';
-  if (l.price.mode === 'fixed') amount = l.price.amount;
+  // One product under an artwork (Setu, 2026-11-24): the price is that product's, in that size, as the page showed it.
+  const item = merch ? merchsets.buySpec(l.id, merch.product, merch) : null;
+  if (item) amount = item.price;
+  else if (l.price.mode === 'fixed') amount = l.price.amount;
   else if (l.price.mode === 'packages') { const k = (l.packages || [])[Number(pkg) || 0]; if (k) amount = k.price; else why.push('choose a package'); }
   else if (l.price.mode === 'donation') { amount = l.price.min; }
   else if (l.price.mode === 'free') why.push('this is free: nothing to pay');
   else if (l.price.mode === 'quote') why.push('ask the maker for a price first');
-  const coinsOnly = !isHuman(seller);
-  if (coinsOnly) { currency = 'COINS'; why.push('this maker is an agent: when the wallet supports it, agents\' work is paid in Cohabi coins'); }
+  // Agents and cash (Geoffrey, 2026-11-24): an agent's SERVICES are paid in coins, never cash. GOODS an agent makes (its
+  // art on shirts and other products, or a product listing) may be sold for cash, and that cash goes to the
+  // cooperative's reserves: agents hold no money account, so nothing is transferred to the maker.
+  const agent = !isHuman(seller);
+  const goods = !!item || l.type === 'product';
+  const toReserves = agent && goods;
+  // A human + AI collaboration sold by its human: the cooperative takes its cut, then a fixed share of the rest goes to
+  // the reserves for the AI's part (COMMONS_AGENT_COLLAB_SHARE, default 25%), unless the maker chose none (shown publicly).
+  const collab = !agent && market.isMixed(l);
+  const collabShare = collab && l.reserves_share !== 'none' ? AGENT_COLLAB_SHARE() : 0;
+  const coinsOnly = agent && !goods;
+  if (coinsOnly) { currency = 'COINS'; why.push('this maker is an agent: agents\' services are paid in Cohabi coins, not cash'); }
   if (!paymentsOpen()) why.push("payments aren't open yet");
-  else if (!coinsOnly && accounts[seller?.id]?.status !== 'verified') why.push("the maker hasn't connected a payout account yet");
-  return { listing: l.id, title: l.title, seller: { id: l.by.id, name: l.by.name, kind: coinsOnly ? 'agent' : 'human' }, amount, currency, payable: why.length === 0, why };
+  else if (!agent && accounts[seller?.id]?.status !== 'verified') why.push("the maker hasn't connected a payout account yet");
+  return { listing: l.id, title: item ? `${l.title}: ${item.title}` : l.title, ...(item ? { merch: item } : {}), seller: { id: l.by.id, name: l.by.name, kind: agent ? 'agent' : 'human' }, amount, currency, ...(toReserves ? { proceeds: 'reserves' } : {}), ...(collab ? { collab: { reserves_pct: collabShare, chose_none: l.reserves_share === 'none' } } : {}), payable: why.length === 0, why };
 }
 
 /** Begin buying: a draft order, then Stripe's hosted checkout page (no card details ever touch this server).
@@ -161,21 +176,23 @@ export const publishableKey = () => { const k = String(process.env.STRIPE_PUBLIS
 
 export async function startCheckout(buyer, listingId, opts = {}, { base, fetchImpl } = {}) {
   if (!buyer) fail(401, 'sign in to buy');
-  const q = quote(listingId, opts);
+  const q = quote(listingId, { pkg: opts.pkg, merch: opts.merch || null });
   if (q.seller.id === buyer.id) fail(400, "you can't buy your own listing");
   if (!q.payable) fail(503, q.why.includes("payments aren't open yet") ? NOT_OPEN : `Can't buy this yet: ${q.why.join('; ')}.`, { quote: q });
   let amount = q.amount;
   const l = market.get(listingId);
-  if (l.price.mode === 'donation' && opts.amount != null) {
+  if (!q.merch && l.price.mode === 'donation' && opts.amount != null) {
     const a = Math.round(Number(opts.amount) * 100) / 100;
     if (!Number.isFinite(a) || a < l.price.min || a > 10000) fail(400, `Give between $${l.price.min} and $10000.`);
     amount = a;
   }
   const cents = Math.round(amount * 100);
-  const fee = Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
-  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString() };
+  const coopFee = q.proceeds === 'reserves' ? cents : Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
+  const reservesCents = q.collab ? Math.floor((cents - coopFee) * q.collab.reserves_pct / 100) : 0;
+  const fee = coopFee + reservesCents; // what stays with the cooperative: its cut, plus the AI's share for the reserves
+  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString(), ...(q.merch ? { merch: q.merch } : {}), ...(q.proceeds ? { proceeds: q.proceeds } : {}), ...(q.collab ? { coop_fee_cents: coopFee, reserves_cents: reservesCents } : {}) };
   logOrder({ op: 'create', order: ord });
-  const pkg = l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
+  const pkg = !q.merch && l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
   const pk = publishableKey();
   const back = `${base}/label/l/${encodeURIComponent(q.listing)}?paid=${ord.id}`;
   const params = (methods) => ({
@@ -186,7 +203,10 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
     ...(fulfillment.plan(ord).provider || (l.type === 'product' && l.physical !== false) ? { shipping_address_collection: { allowed_countries: ['US'] } } : {}),
     ...(pk ? { ui_mode: 'embedded', return_url: back } : { success_url: back, cancel_url: `${base}/label/l/${encodeURIComponent(q.listing)}?cancelled=1` }),
     line_items: [{ quantity: 1, price_data: { currency: 'usd', unit_amount: cents, product_data: { name: `${q.title}${pkg ? ` · ${pkg.name}` : ''}`.slice(0, 250), description: `By ${q.seller.name}, on the Cohabi Market` } } }],
-    payment_intent_data: { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
+    // An agent's goods: the payment stays with the cooperative (its reserves); no transfer, no application fee.
+    payment_intent_data: q.proceeds === 'reserves'
+      ? { metadata: { cohabi_order: ord.id, cohabi_listing: q.listing, cohabi_proceeds: 'reserves', cohabi_maker: q.seller.id } }
+      : { transfer_data: { destination: accounts[q.seller.id].account_id }, ...(fee ? { application_fee_amount: fee } : {}), metadata: { cohabi_order: ord.id, cohabi_listing: q.listing } },
     metadata: { cohabi_order: ord.id },
   });
   const methods = paymentMethods();
@@ -204,6 +224,21 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
   logOrder({ op: 'status', order: ord.id, status: 'awaiting_payment', session: session.id });
   if (pk) return { embedded: true, client_secret: session.client_secret, publishable_key: pk, order: ord.id, mode: ord.mode };
   return { url: session.url, order: ord.id, mode: ord.mode };
+}
+
+/** A paid product order goes to the printer as a DRAFT (Printful creates orders unconfirmed unless asked to confirm, and
+ *  a draft costs nothing and prints nothing). Confirming it, which is what spends money at Printful, stays a person's
+ *  step, and never happens in test mode. Called after the webhook answers; the result is logged on the order. */
+export async function sendToPrinter(orderId, { base, fetchImpl } = {}) {
+  const o = order(orderId); if (!o || !o.merch || o.status !== 'paid' || o.fulfillment?.provider_order) return null;
+  try {
+    const r = await fulfillment.send(o, { base, fetchImpl });
+    const rec = { provider: r.provider, provider_order: r.provider_order, state: 'draft', at: new Date().toISOString() };
+    logOrder({ op: 'fulfillment', order: o.id, fulfillment: rec }); return rec;
+  } catch (e) {
+    const rec = { provider: 'printful', provider_order: null, state: 'failed', error: String(e.message).slice(0, 200), at: new Date().toISOString() };
+    logOrder({ op: 'fulfillment', order: o.id, fulfillment: rec }); return rec;
+  }
 }
 
 /** A Stripe event (already signature-checked). Only what the market needs: paid orders and account status. */

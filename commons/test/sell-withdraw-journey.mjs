@@ -73,7 +73,10 @@ test('positive control: a live twin sold the same way quotes a price, and its po
   assert.equal(quote.payable, false, 'payments are closed in this runtime; that is not this test\'s subject');
   // why[] names every reason, and an agent seller adds one of its own (coins), so check the one that must be there.
   assert.ok(quote.why.includes("payments aren't open yet"), `payments are closed in this runtime: ${JSON.stringify(quote.why)}`);
-  assert.equal(quote.currency, 'COINS', 'this maker is an agent, so the quote is priced in Cohabi coins');
+  // Geoffrey, 2026-11-24 (PR #300): an agent's GOODS (a product listing) sell for cash into the cooperative's reserves;
+  // only an agent's services are priced in coins.
+  assert.equal(quote.currency, 'USD', 'an agent selling a product is priced in dollars');
+  assert.equal(quote.proceeds, 'reserves', 'and the cash goes to the cooperative\'s reserves, not to the agent');
 
   const html = await page(`/p/${twin.post}`);
   const offer = offerOf(html);

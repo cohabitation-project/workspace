@@ -136,6 +136,36 @@ export async function panel(member, listingId) {
   return { listing: l.id, title: l.title, maker: l.by.name, page: l.page?.name || null, art: { id: art.id, url: `/images/${art.id}`, ...(px || {}) }, fees, products: out };
 }
 
+// ------------------------------------------------------------------ buying one product (Setu, 2026-11-24)
+/** What a buyer is buying when they pick one approved product, colour and size under an artwork: the exact Printful
+ *  catalog variant, the price the page showed for that size, and the print file and position the maker approved.
+ *  Sync on purpose (the products list is the cached one the page was drawn from), so a quote never waits on Printful.
+ *  Throws 400/404 in plain words for anything the page could not have offered. */
+export function buySpec(listingId, key, { color = null, size = null } = {}, products = printful.cachedProducts()) {
+  const s = get(listingId); const it = s?.items?.[String(key || '')];
+  if (!s || !it || it.status !== 'approved') fail(404, 'That product isn\'t offered on this art right now.');
+  const p = products.find((q) => q.key === key); if (!p) fail(404, 'That product isn\'t offered right now. Try again in a minute.');
+  const kind = kindOf(p);
+  if (kind === 'colors' && !it.colors.includes(String(color || ''))) fail(400, 'Choose one of the colours shown.');
+  const offered = chosen(p, it).filter((v) => kind !== 'colors' || colorOf(v) === color);
+  const v = offered.find((x) => sizeOf(x) === String(size || '')); if (!v) fail(400, 'Choose one of the sizes shown.');
+  const row = money(p, chosen(p, it), it.price).find((r) => r.size === sizeOf(v)); if (!row) fail(400, 'Choose one of the sizes shown.');
+  return { product: key, product_id: p.id, variant_id: v.id, color: kind === 'colors' ? color : null, size: sizeOf(v),
+    title: `${shortTitle(it.title)}${kind === 'colors' ? `, ${color}` : ''}, ${sizeOf(v)}`, price: row.pays, printful_cost: row.printful,
+    placement: p.placement, area: v.area || p.area, pos: { ...it.pos }, art: s.art, listing: s.listing };
+}
+/** The print file and position for a paid order, worked out the same way the approved photo was (tick()). Async: it may
+ *  make the PNG copy Printful needs. base is the public address Printful fetches the art from. */
+export async function printFile(spec, base) {
+  const art = images.get(spec.art); if (!art) fail(409, 'The art for this product is gone.');
+  const owner = store.getMember(get(spec.listing)?.by); if (!owner) fail(409, 'The maker is no longer here.');
+  const px = await artPixels(art); const rot = spec.pos.rot || 0;
+  let aspect = px?.width && px?.height ? px.width / px.height : 1; if (rot % 180) aspect = 1 / aspect;
+  const position = printful.positionFor(spec.area, { ...spec.pos, aspect });
+  const artId = rot ? spec.art : await printful.printableArt(owner, art);
+  return { type: spec.placement, url: artUrl(String(base || '').replace(/\/+$/, ''), { listing: spec.listing }, rot, artId), position };
+}
+
 // ------------------------------------------------------------------ the maker's actions
 function mine(member, listingId) {
   const l = market.get(listingId); if (!l || l.status !== 'live') fail(404, 'No such listing.');
