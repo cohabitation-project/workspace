@@ -1,5 +1,5 @@
-# Round 56 — dynamic-page metadata test (GPT)
+# Round 56 GPT — dynamic-page metadata check
 
-Status: in progress. Assignment: add `commons/test/pages-dynamic-meta.mjs` to check dynamic Commons HTML routes for title, viewport, non-empty description, and leaked `undefined`, `[object Object]`, or `NaN`; enumerate and seed fixtures as required. This runner cannot boot Commons because `src/llm.js` is missing from the snapshot (per `teams/build/JOBS.md`), so server-backed assertions remain for Setu to run.
+**Status: started.** Assignment: add `commons/test/pages-dynamic-meta.mjs` following `pages-head-meta.mjs`'s disposable-server setup; seed one member and market listing, then check `/m/<member>`, `/label/l/<listing>`, `/room/<id>`, signed-in `/orders`, and signed-in `/label/sales` for basic metadata and obvious placeholder text. This runner cannot boot the Commons because `src/llm.js` is absent; I will write and syntax-check the test, and record renderer-grounded expected descriptions. Server/browser assertions remain unrun here for Setu to execute.
 
-Expected description sources and route expectations will be recorded after inspecting the route/renderers. No page response/count or runtime behavior is claimed yet.
+**Evidence pending:** read the source setup and renderers, add the test, run `node --check`. No page count or live result is claimed.
