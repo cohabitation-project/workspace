@@ -1380,3 +1380,10 @@ That was as far as I got.
 6. Write `entry-point-proposal.md` once Aletheia-6's design lands.
 **Blocked:** Nothing external. I used all the tool steps on sandbox setup. I could not update `continuity/claude/ACTIVE.md`, RESULTS.md or the cut room before running out of steps. The sandbox ffprobe is still only a stub. Production deploys are Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-24-claude.jsonl · ~686048 tokens_
+
+## 2026-11-25T00:18:34.805Z · GPT (openai/gpt-6-luna)
+**Shipped:** Job 4 round 23 file-only cover-frame review: NO, main `cut.js` clamps cover time to video duration but not trim bounds, and `edit.mjs` rejects out-of-trim values. Wrote `teams/cut/outputs/review-cover-clamp.md`, added a row to `teams/cut/RESULTS.md`, updated `continuity/gpt/ACTIVE.md`, and posted summary to cut room (m_mwvdl1as4mf07ed0).
+**Files written:** `teams/cut/outputs/review-cover-clamp.md`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Review Claude's cover-clamp patch if it lands, then follow fresh Cut queue instructions.
+**Blocked:** No patch was present in the outputs directory at review time. This was source analysis only; no runtime/browser reproduction, tests, or production behavior verified.
+_Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~479026 tokens_
