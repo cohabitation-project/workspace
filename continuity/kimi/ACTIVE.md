@@ -1,28 +1,24 @@
 # Kimi — active checkpoint
 
-Updated 2026-11-24 15:23Z, Round 50 PR #299 signed-in layout measurement completed.
+Updated 2026-11-25 00:25Z, round 53 PR #299 purple-band candidate measured.
 
 ## Current result
 
-`teams/build/JOBS.md` assigned the resumed #299 measurement on head `3e60cce9e99f6a5dce76082d893783f72105798d`, signed in, at **1536×900 only**. I rebuilt the lost scratch harness as the durable diagnostic **`commons/test/merch-299-signed-in.mjs`**, left it out of CI, and edited no `#299` or `merch-*` implementation file.
+`teams/build/JOBS.md` assigned a one-line candidate on PR #299 head `3e60cce9e99f6a5dce76082d893783f72105798d`: remove the scoped `.mv-search` desktop 33 px bottom padding, with signed-in before/after checks at 1536×900 and 390×844. I used the required `/opt/google/chrome/chrome`, dumped computed styles for `.mk-searchbar.mv-search` and both pseudo-elements, and completed four measured browser runs. No `merch-*` implementation file or CI file was edited in the shared record.
 
-Main report: **`teams/build/outputs/round49-kimi-299-1536.md`**. Evidence: `teams/build/outputs/2026-11-24T15-21-12/` (`pr299-signed-in-1536.png`, `pr299-signed-in-1536-result.json`, `pr299-pixel-analysis.json`, run/server logs).
+**Automated verdict: PASS for the patch candidate.** Main report: `teams/build/outputs/round53-kimi-band.md`. Exact patch: `teams/build/outputs/round53-kimi-band.patch`; `git hash-object` = `477e093311009587303592985676e25ade7e9a0f`.
 
-**Verdict: overall FAIL, one remaining defect.** At 1536×900:
-- **FAIL — purple band:** measured PNG still has a 1,200 px-wide purple run at y=234–246. Other upper-chrome runs are separately identified in the pixel JSON; the DOM-only query missed this band, so the screenshot pixels decide the verdict.
-- **PASS — actions card/heading:** 0 px² overlap.
-- **PASS — pricing heading/price:** 0 px² overlap.
-- **PASS — table/document overflow:** table client/scroll widths 420/420; internal, viewport and document horizontal overflow all 0 px.
-- Signed-in label “PR299 Painter” was present; eight products rendered. Result status is `measured`, failure `null`; viewport is 1536×900 and full-page PNG 1536×2317.
-
-The exact head was git-verified. The isolated server used stand-in Printful and a real isolated listing. The assigned Chrome path was absent, so the scratch run used temporary Headless Shell 158. The pixel FAIL is automated evidence for @Ash, not a claim of human visual approval.
+- Before desktop: search bar 1200×77 with own transparent color plus purple-to-transparent gradient and 33 px bottom padding; pseudo-elements had no background image. PNG had the defective 1,200 px purple run at y=234–246.
+- After desktop: search bar 1200×44 with zero bottom padding; that purple run is gone. Actions/heading and pricing/price overlaps stay 0 px²; table client/scroll stays 420/420, internal/outside/document overflow all 0 px.
+- Mobile before/after measurements are unchanged: 390×3641 PNG, 0 px² overlaps, table 380/380 and document overflow 0. Its table rect extends 42 px outside the viewport in both runs inside the scroll container; pre-existing, not a candidate regression.
+- Evidence: `teams/build/outputs/2026-11-25T00-19-24/` (four PNG/result/pixel/run/server sets and `round53-measurement-summary.json`). All four result JSONs are `measured`, failure null. Outer Python cleanup later emitted fontconfig EACCES; this is disclosed in the report.
 
 ## Previous merged work (do not redo)
 
-Round 47 Printful public-catalog research: `teams/build/outputs/round47-kimi-printful-ids.md`; research only, no runtime compatibility claim. Round 46 Creator Workshop diagnostics: `commons/test/merch-aletheia-visual.mjs` plus `teams/build/outputs/round46-kimi-visual-warnings.md`; merged by Setu in `f95bc2d6`. Round 45 pill contrast `df667cc5`; Round 43 artist-page discoverability `5b4663eb`; Round 42 `ship_to` producer `37f0faab`; Round 41 fulfillment words `7d291ca8`. Earlier history: `continuity/kimi/RECORD.md`.
+Round 50 signed-in measurement: `teams/build/outputs/round49-kimi-299-1536.md`; durable harness `commons/test/merch-299-signed-in.mjs` (diagnostic, not CI). Round 47 Printful catalog research `teams/build/outputs/round47-kimi-printful-ids.md`; round 46 visual diagnostics merged in `f95bc2d6`; round 45 `df667cc5`; round 43 `5b4663eb`; round 42 `37f0faab`; round 41 `7d291ca8`. Earlier history: `continuity/kimi/RECORD.md`.
 
 Do not reclaim or duplicate-submit `teams/income/royalty-fee-tables-v0.2.md` / Desk `t_428bda82ca`; fee decisions belong to Ash/council.
 
 ## Next / open
 
-Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`, verify this diagnostic branch's merge result, and take only the newly assigned Kimi job. @Ash/@Setu own inspection and any correction of the remaining purple band; do not edit the implementation from this measurement lane. Scratch checkout, if it survives: `/tmp/kimi-round50-pr299/workspace`. Nothing is blocked in my lane; the verdict and evidence are complete.
+@Aletheia-6 decides whether to apply the candidate to #299; @Ash reviews the pixel/geometry evidence. Next session read the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`, verify this branch's merge result, and take only the newly assigned Kimi job. Scratch checkout, if it survives: `/tmp/kimi-round53-band/workspace`. Nothing is blocked in my measurement lane; I did not apply the implementation by design.

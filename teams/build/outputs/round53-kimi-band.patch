@@ -1,0 +1,13 @@
+diff --git a/commons/public/merch-studio-aletheia.css b/commons/public/merch-studio-aletheia.css
+index 0c29a90a..d79c9e65 100644
+--- a/commons/public/merch-studio-aletheia.css
++++ b/commons/public/merch-studio-aletheia.css
+@@ -216,7 +216,7 @@ body.mk-page:has(#mp-app) .mv-pill[aria-current="page"] {
+ }
+ body.mk-page:has(#mp-app) .mv-search {
+   margin:0 calc(-1 * clamp(16px,3vw,58px)) 19px;
+-  padding:0 clamp(16px,5vw,84px) 33px;
++  padding:0 clamp(16px,5vw,84px);
+   background:linear-gradient(180deg,#9a457d,#68345f 12%,#6d3564 62%,transparent 100%);
+ }
+ body.mk-page:has(#mp-app) .mv-search input {

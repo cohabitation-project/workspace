@@ -1,0 +1,19 @@
+{
+  "image_width": 1536,
+  "image_height": 2284,
+  "full_width_purple_runs": [
+    {
+      "top": 86,
+      "bottom": 154,
+      "min_pixels": 1324,
+      "max_pixels": 1536
+    },
+    {
+      "top": 162,
+      "bottom": 189,
+      "min_pixels": 1465,
+      "max_pixels": 1536
+    }
+  ],
+  "method": "measured pixels: R>45, B>65, B>1.25G, R>1.15G; >=65% of row width"
+}
