@@ -22,11 +22,11 @@ class HarmonyGenerator:
             self.track.append(Message('program_change', program=instrument_program, time=0))
 
     def get_major_scale_chords(self, root_note=60): # root_note as MIDI note for C4
-        \"\"\"
+        """
         Returns a dictionary of common diatonic chords for a major scale.
         Assumes 3-note chords (triads).
         Intervals for major scale: [0, 2, 4, 5, 7, 9, 11]
-        \"\"\"
+        """
         chords = {
             'I': [root_note, root_note + 4, root_note + 7], # Major triad
             'ii': [root_note + 2, root_note + 5, root_note + 9], # Minor triad
@@ -39,12 +39,12 @@ class HarmonyGenerator:
         return chords
 
     def get_minor_scale_chords(self, root_note=60, use_harmonic_minor_V=False): # root_note as MIDI note for C4
-        \"\"\"
+        """
         Returns a dictionary of common diatonic chords for a natural minor scale,
         with an option to use the harmonic minor V chord.
         Assumes 3-note chords (triads).
         Intervals for natural minor scale: [0, 2, 3, 5, 7, 8, 10]
-        \"\"\"
+        """
         # Natural minor chords
         chords = {
             'i': [root_note, root_note + 3, root_note + 7], # Minor triad

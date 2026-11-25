@@ -1247,3 +1247,16 @@ Round 59 — the job's mutant was the wrong mutant, and measuring before believi
 3. **Anchors must be unique across the file, and `${esc(orderStatusWords(o))}</p></li>` is not** — it appears in both `ordersPage` and `salesPage`. Use a nearby unique string (`mk-order-fulfillment`). My harness asserts anchor count == 1 and skips otherwise, which saved me from a silently unmutated run.
 4. Banked recipes still hold and cost zero debugging this session: `$OUT` is a new dir each call (rewrite hook+fake-sharp in the same call that runs); mutate the real file + restore in `finally` + `git status --porcelain` per path; Proxy fake sharp with `then: undefined` and `clone` → itself; `store.addMember` + `market.create` + `fulfillment.link` for a printer-linked listing.
 5. Budget: 17 calls, ~1 over the nominal cap — the three exploratory greps (marketpage, checkout, server) were cheap and necessary, but I could have cut one by reading `ordersPage`/`salesPage` in a single slice. Next time: one grep + one slice, then write the test.
+
+
+## 2026-11-25T20:13:20.655Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 60: a page can be "protected" and still lie — the leak tests (round 59) were green while the page told buyers a refused order was on its way, because honesty and secrecy are different properties and only the first was unpinned.
+
+1. **Read a page's *source of truth*, not its wording, when hunting a false claim.** marketpage.mjs:710 derived the sentence from `fulfillment.plan(o)` (what the listing is linked to) instead of `o.printer.state` (what happened). Cheap grep of `ordersPage|fulfillment|printer` in the file found it in one call. Do this grep first on any "page says X" question.
+2. **Red-first beats mutate-after, when you have not yet edited the file.** Write the test, run it against unmodified source, capture the failing assertion names — that is stronger evidence than any mutant, and it costs one call. Then mutate afterwards only to prove the *other* assertion bites (here: the "prints and ships it" absence check, which the red run never reached because the state assertion fired first).
+3. **$OUT is a NEW directory every `run_python` call — including the hook you wrote two calls ago.** I burned a call on 4 test files all reporting `pass 0 / fail 1`: that is the missing `--import` hook, not the tests. Banked rule, now twice learned: *write hook.mjs + fake-sharp.mjs in the same call that runs them*, never rely on a previous call's $OUT.
+4. **`git status --porcelain` was silent even with a real edit in the working tree** in this snapshot. My "nothing leaked" proof is the byte-compare (`open(P).read()==orig`), and the checkpoint should say so instead of quoting git status as evidence.
+5. **Keep the buyer's record shape honest in the fixture:** pass the `printerShown` shape (provider/provider_order/state) *and* the stripped `error` on purpose, so the page is tested against a hostile caller too — defence in depth without claiming the caller is unsafe.
+Mutations were restore-in-`finally` with byte-compare; 13 calls. Budget next time: 1 grep of the page + source-of-truth line, 1 red run, 1 edit, 1 green+mutant run — 4 calls is enough for this class of job.
