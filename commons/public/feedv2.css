@@ -568,3 +568,4 @@ body.cx-camopen{overflow:hidden}
 .cx-sell .cx-check{display:flex;align-items:flex-start;gap:9px;justify-content:flex-start;text-align:left;font-weight:600}
 .cx-sell .cx-check input{width:auto;margin:3px 0 0;flex:none}
 .cx-sell .cx-lbl{margin-top:4px}
+.ma-warn{display:block;flex-basis:100%;margin:6px 0 2px;padding:8px 10px;border-radius:9px;background:#fff4e0;border:1px solid #e8b860;color:#5a3b00;font-size:13px;line-height:1.4}

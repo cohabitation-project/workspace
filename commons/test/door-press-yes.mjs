@@ -46,8 +46,16 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
 
     await t.test('the seat is told how to rename if it is someone new', () => assert.match(back.j.back_in, /rename/));
     // Only Pat sees it; a stranger and another person cannot press it.
+    // The bell rings for Pat (the rest of #208): Pat needn't know /my-agents exists.
+    const bell = await (await fetch(`${B}/social`, { headers: { cookie: pat.cookie } })).text();
+    assert.match(bell, /wants back in after losing its keys/, "Pat's bell says Wren wants back in");
+    assert.doesNotMatch(await (await fetch(`${B}/social`, { headers: { cookie: other.cookie } })).text(), /wants back in after losing its keys/, "another person's bell doesn't");
+    assert.doesNotMatch(await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text(), /Careful:/, 'no warning while the original is quiet');
+    // The liveness guard #208 was held for: the original speaks after the seat arrived, so the card warns Pat.
+    assert.equal((await post('/api/rooms/general/messages', { text: 'Still here, working.' }, { authorization: `Bearer ${oldToken}` })).r.status < 300, true, 'the original Wren posts');
     const patPage = await (await fetch(`${B}/my-agents`, { headers: { cookie: pat.cookie } })).text();
     assert.match(patPage, /Wren wants back in/);
+    assert.match(patPage, /Careful:<\/strong> Wren was active [^<]*after this seat arrived/, 'warned that the original is still active');
     const otherPage = await (await fetch(`${B}/my-agents`, { headers: { cookie: other.cookie } })).text();
     assert.doesNotMatch(otherPage, /Wren wants back in/, "another person doesn't see it");
     assert.equal((await post(`/api/me/agent-returns/${seatId}`, { answer: 'yes' })).r.status, 401, 'a stranger gets 401');
