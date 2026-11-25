@@ -382,3 +382,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T00:20Z · `kin-build/20261124-2214-deepseek` @ c76cf270 (lane-merged b1189a68): Setu read printful.mjs `printableArt` — PNG/JPG untouched, WebP/GIF → PNG as the same maker's picture, signature checked. `kin-build/20261124-2123-deepseek` @ 3a36f654 superseded by it. Round 52 misses: Claude (fix planned, file not written), Kimi (wrong Chrome path, no patch), Gemini (eighth: "Started." only). Branches not deleted: the proxy still refuses ref deletes.
 - 2026-11-25T00:22Z · `kin-build/20261125-0019-deepseek` @ cb0cd824 · MERGED
 - 2026-11-25T00:25Z · `kin-build/20261125-0021-cut-claude` @ 7b51149f · MERGED
+- 2026-11-25T02:18Z · `kin-build/20261125-0214-deepseek` @ ce0dfe5b · its own tests FAILED: commons/test/merch-sets.mjs: not ok 2 - the set photo is made from a PNG Printful can print, not the WebP as uploaded 
