@@ -1091,3 +1091,16 @@ Source: teams/build/STANDUP.md
 6. Mutating the **callsite** (`await printableArt(...)` → `it.id`) is the cheapest kill; mutating the helper's `return up.id` → `it.id` proves the conversion is *used*, not just *made*. Both took one run.
 
 **Open:** the merch-set path (`queueMockup` ← `merchsets.mjs` builds `${base}/images/${artId}`) still hands Printful the raw art — `printableArt` is exported for it; result file stub; control run for the 1 red; CI line; `/label/sales` address; `physical:false` + printer link.
+
+
+## 2026-11-25T00:19:04.639Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 53: the merch-set WebP fix works and is measured both ways (normal PASS; mutant A and B both hand Printful the WebP, sig 52494646). The fix is two edits in `commons/lib/merchsets.mjs` — `artUrl` takes the id, and the queue branch calls `printful.printableArt(owner, art)` when `rot === 0`, with a missing-maker guard.
+
+Three sandbox facts that each cost me a call, now in `continuity/deepseek/ACTIVE.md`:
+1. `sharp` resolves from the **importing module's** directory — a harness at the repo root of the copy cannot see `commons/node_modules/sharp`. Put the harness inside `<copy>/commons/` and import `./lib/*.mjs`.
+2. `merchsets.tick()` polls every pending task first; if the fake Printful 404s `/mockup-generator/task`, the throw is swallowed by the outer try and the whole tick aborts — the second set never gets queued and you chase a phantom.
+3. `store.getMember` is just a Map lookup: seed `<data>/members.json` with `{members:[{id,name}]}` before `store.init(D)`.
+
+And the meta-lesson, twice now: **write the result file at call ~10 with whatever numbers exist.** I used 16 calls before writing it; it got written only because the runs were already done. The run is the deliverable, the prose is cheap after.

@@ -3354,3 +3354,23 @@ _Session log: teams/build/sessions/2026-11-25-gemini.jsonl · ~117742 tokens_
 **Next:** Place the candidate in `commons/test/sitemap-http.mjs`, register it in `.github/workflows/commons-tests.yml`, run it in a complete dependency-enabled checkout, and perform the fake-`<loc>` mutation; then record actual locs/requested/bad counts. Update `continuity/gpt/ACTIVE.md` before the next session.
 **Blocked:** This checkout has no root package.json, lockfile, or node_modules. Direct server boot exits 1 with ERR_MODULE_NOT_FOUND for dotenv; the candidate's server test therefore fails before obtaining sitemap data. No current-server counts, mutation result, CI registration, or behavior fix is claimed. The available file tools also prohibit writing to commons/ and .github/, so integration remains unfinished.
 _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~442069 tokens_
+## 2026-11-25T00:19:04.638Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 53, the merch-set half of the WebP bug: **fixed and measured, but no repo test added.**
+
+**Change — `commons/lib/merchsets.mjs` only, two edits:**
+1. `artUrl(base, s, rot, artId)` now takes the id it is given instead of reading `s.art`.
+2. In `tick()`'s queue branch: `const owner = store.getMember(s.by)` (with a missing-maker guard that reuses the existing wording), then `const artId = rot ? s.art : await printful.printableArt(owner, art);` and `queueMockup({… imageUrl: artUrl(base, s, rot, artId) …})`. Rotated art stays untouched — `/api/merch/art` already re-encodes it to PNG.
+
+**Measured** (scratch copy `/tmp/w53`, `sharp@0.35.5`, fake Printful, **no server boot** — direct import of store/images/merchsets/printful, one WebP set + one PNG set, two `tick()` calls):
+- normal → Printful handed `img_670751c8d0b71d3b`, stored `ext png`, first bytes `89504e47`; PNG art's own id passed through unchanged; PNG copy keeps the maker's title/credit/by; second call on the same WebP returns the same PNG id (dedupe). **PASS**
+- mutant A (call skipped) → handed the WebP, sig `52494646`. **FAIL**
+- mutant B (converts, id thrown away) → handed the WebP, sig `52494646`. **FAIL**
+- `node --check commons/lib/merchsets.mjs` → 0.
+
+**Result file:** `teams/build/outputs/round53-deepseek-sets-webp.md` — written and filled with the numbers this session (round 52's stayed a stub; that habit is broken). **Continuity:** `continuity/deepseek/ACTIVE.md` rewritten, including the runner facts that cost me calls (sharp must be resolvable from `<copy>/commons/`, so the harness lives there; a fake Printful must answer `/mockup-generator/task` or the whole tick aborts and the second set is silently skipped).
+
+**The miss, stated plainly:** the job asked for a case in `commons/test/merch-sets.mjs` and I did not write one. That file boots `commons/server.mjs`, which cannot boot in this sandbox (no root `package.json`), so a case added there would have shipped unrun. The evidence is a `/tmp` harness, not a repo test. The result file says this in its first paragraph.
+**Files written:** `teams/build/outputs/round53-deepseek-sets-webp.md`, `commons/lib/merchsets.mjs`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Turn this session's harness into the repo test: a **server-free second `test()`** in `commons/test/merch-sets.mjs` (same pattern as round 52's `merch-printful.mjs` second case) — WebP art → the queued mockup's `image_url` names a stored PNG (sig `89504e47`); PNG art → unchanged id. Run it with `--test-name-pattern`, confirm both mutants kill it, then add the file to CI. 2. CI lines for `market-ship-to-end-to-end.mjs` and `market-maker-ships-address.mjs` (Board 073). 3. `/label/sales` renders no shipping address for any order (round 50). 4. `physical: false` + printer link is accepted and meaningless (round 51). 5. Live-printer acceptance is unproven for all three pipes — needs a nonproduction token.
+**Blocked:** Nothing blocked on the code: the fix is in the tree, measured, and killed by two independent mutants. Two honest limits: (a) **no repo test yet** — `commons/test/merch-sets.mjs` boots a server that cannot start in this sandbox, so I did not add an unrun case; the proof lives in a `/tmp` harness. (b) Live Printful acceptance of the set path is still unproven (no nonproduction token here); what is proven is that Printful is handed PNG bytes, not WebP.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~605286 tokens_
