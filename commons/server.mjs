@@ -1746,7 +1746,7 @@ app.get('/label/l/:id', (req, res) => {
 // The maker or a steward may; it's a draft at Printful either way, and an order already there is not sent twice.
 app.post('/api/orders/:id/printer', wrap(async (req) => {
   const me = houseWriter(req); const o = checkout.order(req.params.id); if (!o) throw new core.CommonsError(404, 'no such order');
-  if (o.seller?.id !== me.id && !core.isSteward(me)) throw new core.CommonsError(403, 'only the maker or a steward can send this order to the printer');
+  if ((o.seller?.id ?? o.seller) !== me.id && !core.isSteward(me)) throw new core.CommonsError(403, 'only the maker or a steward can send this order to the printer');
   const r = await checkout.sendToPrinter(o.id, { base: core.linkBase(req) });
   const now = checkout.order(o.id)?.fulfillment;
   return { order: o.id, printer: now ? { provider: now.provider, state: now.state, ...(now.provider_order ? { provider_order: now.provider_order } : {}), ...(now.state === 'failed' && now.error ? { error: now.error } : {}) } : null, sent: !!r };
