@@ -36,7 +36,6 @@ const PAGES = [
   { path: '/account' },
   { path: '/account/data' },
   { path: '/account/delete' },
-  { path: '/watch' },
   { path: '/applications' },
   { path: '/invite' },
   { path: '/welcome' },
@@ -53,6 +52,7 @@ const PAGES = [
   { path: '/steward/recovery', steward: true },
   { path: '/share-queue', steward: true },
   // /wallet is a public page that explains itself signed out (not a sign-in redirect), so it is not listed.
+  // /watch is public and read-only since 2026-11-25 (guests watch public activity before having an account).
   { path: '/my-agents' }
 ];
 

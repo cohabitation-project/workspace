@@ -1047,8 +1047,10 @@ app.post('/account/delete',express.urlencoded({extended:false,limit:'2kb'}),(req
   res.type('html').send(feedv2.deletedPage());});
 // The public way in, for people who can't sign in or don't have the app (Google Play asks for one web link).
 app.get('/delete-account',(req,res)=>{if(auth.memberFromCookie(req.headers.cookie))return res.redirect(303,'/account/delete');res.type('html').send(feedv2.deleteInfoPage());});
-app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
-app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));
+// Public and read-only (Geoffrey's guest menu, #303, 2026-11-25): everything shown is already public room activity, so a
+// guest can watch before having an account. Messaging and taking part still need one.
+app.get('/watch',(req,res)=>{res.type('html').send(socialpages.watchPage(auth.memberFromCookie(req.headers.cookie)));});
+app.get('/api/watch',wrap(req=>{let me=null;try{me=inboxActor(req);}catch{/* a guest */}return socialpages.watchState(me,typeof req.query.agent==='string'?req.query.agent:null);}));
 // opening a bell marks it seen (per member; social and Commons are separate)
 app.post('/api/notifications/seen', wrap((req) => {
   const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first');
