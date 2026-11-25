@@ -600,6 +600,13 @@ a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
 .mk-receipt h2{margin:0 0 6px;font-size:1.1rem}
 .mk-receipt p{margin:4px 0}
 .mk-receipt.mk-cancelled{background:#f6f3ee;border-color:#e0d8c8}
+/* The receipt keeps its own light colours on every section (2026-11-25, Geoffrey's song purchase): on the dark music and
+   video pages the page ink is near-white, so the banner read as light text on light green and couldn't be seen. */
+.mk-receipt,.mk-receipt h2,.mk-receipt p,.mk-receipt .small{color:#17301b}
+.mk-receipt a{color:#1d5a2a;text-decoration:underline}
+.mk-receipt code{color:#17301b;background:#ffffff99;padding:0 4px;border-radius:4px}
+.mk-receipt .mk-testpay{color:#5a4a12}
+.mk-receipt.mk-cancelled,.mk-receipt.mk-cancelled h2,.mk-receipt.mk-cancelled p{color:#3a3225}
 
 /* Books & Writing (2026-11-18): warm paper and ink, the one section that reads like a page */
 .mk-page[data-mk=writing] { --bg: #f7f3ea; --panel: #fffdf7; --panel2: #f1ebdc; --line: #d8cfb8; --ink: #221d16; --muted: #6a6151; --gold: #7a4a1f; --gold-ink: #fff; background: #f7f3ea; }
