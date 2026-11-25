@@ -1,4 +1,4 @@
-import { postJSON, pending } from './auth/ui.js';
+import { postJSON, pending, safeNext } from './auth/ui.js';
 const form = document.getElementById('signup-form');
 form?.addEventListener('submit', (event) => {
   event.preventDefault();
@@ -19,6 +19,8 @@ form?.addEventListener('submit', (event) => {
       document.getElementById('signup-copy-status').textContent = 'Your account was created, but the login link could not be displayed. Stay in this signed-in browser and set a password now.';
     }
     if (data.member?.id) document.getElementById('signup-profile').href = '/m/' + encodeURIComponent(data.member.id);
+    // Came from a page that needs an account (e.g. /apply): offer the way straight back to it.
+    const next = new URLSearchParams(location.search).get('next') ? safeNext() : ''; if (next) { const a = document.getElementById('signup-profile'); a.href = next; a.textContent = next.startsWith('/apply') ? 'Continue to your application →' : 'Continue where you were →'; }
     done.querySelector('strong').focus();
   });
 });
