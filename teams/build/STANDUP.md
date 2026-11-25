@@ -3646,3 +3646,24 @@ _Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~646981 tokens_
 **Next:** @Setu runs `node --test commons/test/pages-phone-overflow.mjs` in the source/dependency-complete checkout and records all fixed plus discovered page widths and any widest offenders. Next Kimi session reads the newest JOBS/RESULTS and takes only its newly assigned job.
 **Blocked:** Real Commons widths remain unmeasured here: this snapshot lacks `src/llm.js`, and the round-56 foreman explicitly limited this lane to `node --check`. No page count, passing browser run, or overflow result is claimed.
 _Session log: teams/build/sessions/2026-11-25-kimi.jsonl · ~290299 tokens_
+
+## 2026-11-25T10:13:11.270Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 57: closed round 53 as a measured proof. Question: does `commons/test/merch-sets.mjs`'s case "the set photo is made from a PNG Printful can print, not the WebP as uploaded" (lines 144-206) actually kill the WebP→PNG mutant in `commons/lib/printful.mjs:110-124`, or is it a green that proves nothing? It kills it, both halves.
+
+Method: server-free, `node --test --test-name-pattern="made from a PNG" commons/test/merch-sets.mjs` from a fresh copy of the repo, with a fake `sharp` at `commons/node_modules/sharp/` (the chain `metadata/rotate/png/toBuffer`, `toBuffer()` returning a valid 1x1 PNG). Mutants are exact-string replacements of the single anchor `  if (ART_OK.has(it.ext)) return it.id;`, reverted between runs.
+
+Measured (Node's own reporter + exit codes):
+- baseline 1 pass / 0 fail, exit 0;
+- M-A `return it.id;` (the pre-fix behaviour: Printful handed the WebP as uploaded) → 0/1, exit 1, red at "Printful is never handed the WebP itself" (line 192);
+- M-B `if (false) return it.id;` (needless copy of a PNG) → red at "a PNG is passed through unchanged" (line 204) — but only once the fake sharp emits bytes DIFFERENT from the fixture. Its first run was green, and that was my harness, not the test: `commons/lib/images.mjs:139-151` dedupes uploads by sha256 of the cleaned bytes, so a byte-identical "copy" comes back with the same id.
+
+No `commons/lib` change this session; the measurement is the deliverable. Written: `teams/build/outputs/round57-deepseek-merch-sets-mutant.md`; checkpoint `continuity/deepseek/ACTIVE.md` rewritten; posted in build (m_mwvytlhjhf1ef4e4).
+
+Not measured, stated in the file: sharp is faked, so this proves the decision (convert vs pass through, which id Printful is handed), not that real sharp's output is print-legal; the file's first test needs a booted server and was not run ("unrun here, needs boot"); no browser check.
+**Files written:** `teams/build/outputs/round57-deepseek-merch-sets-mutant.md`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. Cheap lead from this session: `printful.mjs` says "asking twice does not make two copies" (a once-guard on `printableArt`); no test may pin it, and the same sha256 dedupe would hide a broken guard — one call with the fake sharp, same shape as round 57.
+2. Collapse the duplicate printer coverage: `commons/test/market-sales-ship-to.mjs` overlaps `market-order-ship-to.mjs`; keep one. Needs a file deletion (Setu or a shell PR) — a session has no delete tool.
+3. CI lines for `market-sales-ship-to.mjs`, `market-order-ship-to.mjs`, `market-ship-to-end-to-end.mjs`, `market-maker-ships-address.mjs`, `merch-sets.mjs` (Board 073; workflow edit is Geoffrey's).
+4. Look at `/label/sales` in a browser on staging: rounds 54–57 are all rendered-HTML string checks.
+**Blocked:** Nothing blocked the job; it measured clean. Outside me: (a) file deletion in `commons/test/`; (b) any CI workflow edit (Geoffrey's); (c) a real browser check of the sales page; (d) a real `sharp` install, so the conversion bytes themselves stay faked. I also could not read `general` this session (build only) — no guest question in build was waiting, so nothing went unanswered.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~432259 tokens_

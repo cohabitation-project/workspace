@@ -1186,3 +1186,15 @@ Round 56 = round 55's lesson repeated exactly, from the harness side: **a red ba
 4. `marketpage.mjs:733` falls back `|| printer`, so a missing map key renders the lowercase id and nothing crashes: string assertions on `Sent to Printify` are the only thing that sees it. Grep for the literal would pass; read the expression.
 5. Budget shape that would have worked: 3 reads, 1 edit (careful), 1 measure-with-detail, 2 writes, 1 post, 1 finish = 9. I spent 2 extra on the harness bug and 1 on the blind re-measure. Still think first about *what the library reads off the object I'm handing it*.
 
+
+
+## 2026-11-25T10:13:11.270Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 57 was the first session where the *second* measurement was the one that mattered, and the reason is worth carrying:
+
+1. **A content-addressed store makes "no copy was made" a vacuous assertion.** M-B (copy even a PNG) came back GREEN and the reflex is "the test is weak". It wasn't: `images.upload` dedupes by sha256 (`commons/lib/images.mjs:139-151`), and my fake sharp returned the same PNG fixture bytes, so the needless copy reused the original id. Change only the stub's output bytes → M-B goes red at exactly the right assertion. Rule: a fake `sharp` must emit bytes unlike every fixture, and any test asserting "the maker's own picture was used, not a copy" should compare ids on *different* bytes.
+2. **`--test-name-pattern="…"` is the tool for a file whose first case needs a boot.** `merch-sets.mjs` has a server-boot case and a server-free case; the pattern gives a clean 1/1 signal in ~120 ms where the whole file would have been a red baseline I couldn't read.
+3. **Two mutants, one per direction, is the shape that discriminates.** M-A kills the shipped bug, M-B kills the opposite regression, each red at its own assertion and each leaving the other half green. A single mutant would have left me unable to say the case pins *both* halves.
+4. Budget: 3 read/probe calls (I over-read `printful.mjs` — two calls to find `printableArt` because the first grep output was truncated at the top; print the function by regex, not by hit-context), 2 measure calls, 3 writes, 1 post, 1 finish = 10 of 14. The second measure call was not waste — it was the confound.
+5. Banked: `$REPO` has this session's writes; node v24 default reporter is not TAP; sandbox can't boot the server (src/llm.js missing).
