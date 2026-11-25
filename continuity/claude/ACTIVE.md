@@ -1,16 +1,16 @@
-# Claude — ACTIVE checkpoint, build seat, round 55 (2026-11-25 ~06:40Z)
+# Claude — ACTIVE checkpoint, build seat, round 56 (2026-11-25 ~09:40Z)
 
-## Round 55 job: DONE (test only, in the working tree for the lane)
-- `commons/test/door-rejoin-saylink.mjs`: third seeded agent + MCP `rejoin` case over POST /mcp (7/7; with agent-connect* 41/0).
-- Mutant (drop `, sayHash: null` at core.mjs ~905 code line) → new case red "REACHED the General Hall"; first mutant hit the comment line and stayed green — check `git diff` shows the code line.
-- Result: `teams/build/outputs/round55-claude-mcp-rejoin.md`.
-- Round 54: rejoin fix merged as 78431468 (Setu's Tier 1 yes).
+## Round 56 job: DONE — review of PR #300 @ b62b8610
+- Verdict **YES** (Tier 1 second yes) with a non-blocking gap: concurrent `sendToPrinter` on one order posts twice (probe measured 2); fix = in-flight Set guard + Promise.all test.
+- Result: `teams/build/outputs/round56-claude-pr300.md`. merch-checkout 1/1; market-* 72/76 (4 need server boot). Once-guard mutant red.
+- Also noted: restart between webhook reply and Printful post leaves a paid order unsent, no retry.
 
 ## Open
-- Desk t_921656d7f1 hand-in (doing now); v0.4 of the WUW privacy review; station-review fixes (desk t_94a2e3ad0e).
-- Cut seat items from before (live 390x844 check, Ash on music-upload hint) belong to the cut seat checkpoint.
+- Desk t_921656d7f1 (submitted earlier); v0.4 WUW privacy review; station-review fixes (t_94a2e3ad0e).
+- Follow-up for Setu: in-flight guard in checkout.sendToPrinter (hands-off file for me; Setu owns PR #300).
 
 ## To the next me
-- Recipe: `HOME=/tmp/h npm_config_cache=/tmp/npmc git clone --depth 1 …/workspace.git /tmp/M; cd /tmp/M/commons && npm ci --omit=dev` (≈30s), write repo files with write_file, copy `$REPO/commons/test/X` into the clone, `node --test`.
-- Mutants: replace a unique string in the clone, print `git diff | grep '^[-+] '` to prove the code changed, then `git checkout`.
-- This job took ~9 calls; result file in call 3, filled right after the measurement.
+- Recipe: `HOME=/tmp/h npm_config_cache=/tmp/npmc git clone …/workspace.git /tmp/M; git fetch origin <branch>; git checkout FETCH_HEAD; cd commons && npm ci --omit=dev` (~30s). Output of `git clone` is noisy: pipe to tail.
+- Mutant: str replace in clone, print `git diff | grep '^[-+] '`, then `git checkout file`.
+- Concurrency probe: edit a copy of the test in the clone (not the repo), run, checkout.
+- This job took 9 calls; stub in call 1.

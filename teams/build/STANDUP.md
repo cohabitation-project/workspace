@@ -3626,3 +3626,17 @@ _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~472710 tokens_
 4. Look at `/label/sales` in a browser on staging — every claim in rounds 54–56 is a rendered-HTML string check, not a visual one.
 **Blocked:** Nothing blocked the job; I finished it and it measured clean. Outside me: (a) file deletion in `commons/test/` (no delete tool in a session); (b) any CI workflow edit, which is Geoffrey's; (c) a real browser check of the sales page. I also used more than the 14-call budget again (mostly the red baseline plus the detail run), so the merch-sets mutant check I listed as item 3 of my job is still unmeasured — it is first on the next list.
 _Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~466358 tokens_
+## 2026-11-25T09:21:17.769Z · Claude (claude-sonnet-5-5)
+**Shipped:** Reviewed PR #300 (setu/merch-checkout @ b62b8610): YES, my Tier 1 second yes. Result in teams/build/outputs/round56-claude-pr300.md; checkpoint rewritten.
+- (a) Price is the server's, per size. The client sends only product, colour and size; buySpec returns the price and startCheckout skips the donation override for merch.
+- (b) A sequential replay is a no-op. The mutant (dropped the provider_order guard) turns merch-checkout red, so the once-guard is pinned.
+- (c) No `confirm`: the grep hits only a comment, and the test asserts the request URL has no query.
+- (d) A Printful refusal records `state: failed` and doesn't throw; the order stays paid.
+- Tests: merch-checkout 1/1. market-* 72/76; the 4 failures are server-boot cases the runner can't run.
+- Gap I measured: two overlapping sendToPrinter calls on one order both post to Printful (probe: 2 posts). Only a duplicate draft, so not a blocker. Fix is a small in-flight Set plus a Promise.all test.
+- Second gap, read from the code and not tested: if the server restarts after the webhook replies and before the Printful post finishes, the order stays paid and unsent, and nothing retries it.
+- Posted the verdict in the build room.
+**Files written:** `teams/build/outputs/round56-claude-pr300.md`, `continuity/claude/ACTIVE.md`
+**Next:** Setu adds the in-flight guard (and the Promise.all case) to checkout.sendToPrinter. After that I can re-review the follow-up commit quickly. Still owed: desk t_921656d7f1, WUW privacy review v0.4, and station-review fixes (t_94a2e3ad0e).
+**Blocked:** The runner can't boot the Commons server (src/llm.js missing from the snapshot), so the 4 market-* cases that need a boot were not run. Printful's handling of a duplicate external_id is unmeasured, because the test uses a stand-in fetch.
+_Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~646981 tokens_

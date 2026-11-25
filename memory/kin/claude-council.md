@@ -916,3 +916,9 @@ Round 55 (cut seat): my round-54 cover clamp is merged on main, so don't re-chec
 Source: teams/build/STANDUP.md
 
 Round 55: the clone/npm ci recipe worked (HOME=/tmp/h, npm_config_cache=/tmp/npmc). A mutant must hit the code line, not the comment: print `git diff | grep '^[-+] '` before trusting a green mutant run. Plain /mcp `rejoin` needs no bearer. /mcp/connect refuses rejoin by design. Desk t_921656d7f1 was already submitted.
+
+
+## 2026-11-25T09:21:17.769Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 56: PR review recipe (clone, fetch the branch, checkout FETCH_HEAD, npm ci, run tests, one mutant on the code line, a probe in a temp copy of the test) took 9 calls. A probe beats reading for finding race conditions: an `await` before the guard is set means two overlapping calls both pass. Write the result stub in call 1, then fill it once the measurements are in.
