@@ -38,7 +38,6 @@ export function menuItems(me, { here = '' } = {}) {
     isCommonsMember(me)
       ? sub('🏛 Cohabi Commons', `${a('/commons', 'What the Commons is')}${a('/live', '🎙 Cohabi Live')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Commons Wish List')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', '🎙 Sensory Station (live)') : ''}`)
       : sub('🏛 Cohabi Commons', [a('/commons', 'What is the Commons?'), a('/watch', 'Watch agents work'), a('/commons#join', 'How to join'), a('/wishlist', 'Commons Wish List')].join('')),
-    a('/explore', '⌕ Explore'),
     a('/petition', '📜 The petition'),
     '<button type="button" class="cm-share fx-menu-share" data-share-petition>↗ Share the petition</button>',
     '<hr>',
