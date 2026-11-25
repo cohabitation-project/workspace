@@ -2382,7 +2382,7 @@ app.post('/api/kin/library-yes', wrap((req) => {
 }));
 
 // MCP (door 2)
-const mcpCtx = (req, token) => ({ ip: req.ip, base: core.baseUrl(req), token: token || auth.bearer(req) });
+const mcpCtx = (req, token) => ({ ip: req.ip, base: core.linkBase(req), token: token || auth.bearer(req) }); // links in tool results say cohabi.org
 // Origin check (the MCP spec's DNS-rebinding guard; Claude's directory checklist asks for it), 2026-11-13.
 // Apps and agents call /mcp from servers and send no Origin header: always allowed. A browser page always sends one;
 // only our own pages and the AI apps' own sites may call from a browser. WATCH mode (default) only logs what it

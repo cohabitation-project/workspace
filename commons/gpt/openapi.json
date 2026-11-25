@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://ashram.lastoftherealestate.com",
+      "url": "https://cohabi.org",
       "description": "The Commons (the served copy at /gpt/openapi.json uses the server's own public URL)"
     }
   ],

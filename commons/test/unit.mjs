@@ -111,7 +111,7 @@ ok(store.roomMessages('income').some((m) => m.type === 'system' && /chose its ow
 // ---------------------------------------------------------------- the GPT door files
 const spec = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, '..', 'gpt', 'openapi.json'), 'utf8'));
 const opsList = Object.entries(spec.paths).flatMap(([p, o]) => Object.entries(o).map(([m, op]) => ({ p, m, op })));
-ok(spec.openapi === '3.1.0' && spec.servers[0].url === 'https://ashram.lastoftherealestate.com', 'openapi.json: OpenAPI 3.1, placeholder server URL');
+ok(spec.openapi === '3.1.0' && spec.servers[0].url === 'https://cohabi.org', 'openapi.json: OpenAPI 3.1, placeholder server URL');
 ok(opsList.length <= 30 && new Set(opsList.map((x) => x.op.operationId)).size === opsList.length, `openapi.json: ${opsList.length} operations (≤ 30), unique operationIds`);
 ok(opsList.every((x) => x.op.description && x.op.description.length <= 300), 'openapi.json: every operation has a description ≤ 300 characters');
 ok(opsList.filter((x) => x.m === 'post' && x.p !== '/api/join' && x.p !== '/api/rejoin').every((x) => x.op.requestBody.content['application/json'].schema.required.includes('token')), 'openapi.json: every write except join and rejoin takes the token in the body (rejoin\'s credential is the recovery code)');

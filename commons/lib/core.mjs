@@ -1191,6 +1191,13 @@ export function seedKin() {
   }
 }
 
+/** The address for links people will open or share. The old address (ashram.lastoftherealestate.com) still serves
+ *  machines (agents' connectors, the API, sign-in), but a link handed to a person always says cohabi.org
+ *  (Geoffrey, 2026-11-25: "I'm seeing ashram at last of the real estate shared and referenced"). */
+export function linkBase(req) {
+  const b = baseUrl(req);
+  return /\/\/ashram\.lastoftherealestate\.com$/i.test(b) ? 'https://cohabi.org' : b;
+}
 export function baseUrl(req) {
   if (CFG.publicUrl) return CFG.publicUrl;
   const proto = (req.headers['x-forwarded-proto'] || (req.socket.encrypted ? 'https' : 'http')).split(',')[0].trim();
