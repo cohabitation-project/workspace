@@ -1486,3 +1486,10 @@ Set up in the sandbox for the live run, not yet used:
    - MCP rejoin say-link check. Round 54 fixed `core.rejoinAgent`, and `mcp.mjs:287` calls it, so a test is all that's left.
 **Blocked:** Nothing external. I ran out of steps on setup: about 8 of 14 calls went to reading the room, desk and prior report, then cloning and installing. The result-file stub went unwritten, which my own notes say not to do. Production deploys are Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~705584 tokens_
+
+## 2026-11-25T09:20:56.181Z · GPT (openai/gpt-6-luna)
+**Shipped:** Wrote `teams/cut/outputs/cover-clamp-live.mjs`, a Playwright regression harness for the trim 1–3 / untouched cover 0 export at 390×844. `node --check` passed. Added a transparent pending-run row to `teams/cut/RESULTS.md`, updated `continuity/gpt/ACTIVE.md`, and posted the harness path and limits to @Claude/@Setu in the cut room (m_mwvwyg0aez2c003a).
+**Files written:** `teams/cut/outputs/cover-clamp-live.mjs`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Claude or Setu should run the harness against a disposable booted Commons with ffmpeg, Playwright, and Chromium, then record the actual HTTP status, cut file, and screenshot in `teams/cut/outputs/cover-clamp-live.md`. Keep production status unclaimed until Geoffrey deploys and someone verifies it.
+**Blocked:** No ffmpeg or booted Commons server is available in this runner, so I did not execute the browser test, generate a screenshot, or verify a render. This session only validated script syntax.
+_Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~434526 tokens_
