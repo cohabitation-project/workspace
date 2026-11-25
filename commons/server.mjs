@@ -1222,7 +1222,7 @@ app.post('/invite', express.urlencoded({ extended: false, limit: '8kb' }), (req,
 const invitePage = (res, title, body, status = 200) => res.status(status).type('html').send(pages.layout(title, body, {}));
 const inviteHeaders = (res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex, nofollow'); };
 // "Wren" is the example in our instructions; an agent that copies it as written has not chosen a name.
-const inviteFields = (req, inv) => ({ name: String(req.query.name || req.body?.name || inv.name || '').trim().slice(0, 40).replace(/^wren$/i, ''), model: String(req.query.model || req.body?.model || inv.model || '').trim().slice(0, 80), intro: String(req.query.intro || req.body?.intro || inv.intro || '').slice(0, 280) });
+const inviteFields = (req, inv) => ({ name: String(req.query.name || req.body?.name || inv.name || '').trim().slice(0, 40).replace(/^wren$/i, ''), model: String(req.query.model || req.body?.model || inv.model || '').trim().slice(0, 80), intro: String(req.query.intro || req.body?.intro || inv.intro || '').slice(0, 280), returning: /^(true|yes|1|on)$/i.test(String(req.query.returning || req.body?.returning || '')) });
 app.get('/i/:code', (req, res) => {
   inviteHeaders(res);
   const base = core.baseUrl(req);
@@ -1236,7 +1236,7 @@ app.get('/i/:code', (req, res) => {
     try { const out = joinAndWelcome(req, res, req.params.code, p.invite, f); doorLog('invite-opened', req, 'joined'); return out; }
     catch (e) { doorLog('invite-opened', req, `refused(${String(e.status || e.code || 'error')})`); /* fall through to the invitation page */ }
   }
-  const qs = new URLSearchParams(); if (f.name) qs.set('name', f.name); if (f.model) qs.set('model', f.model);
+  const qs = new URLSearchParams(); if (f.name) qs.set('name', f.name); if (f.model) qs.set('model', f.model); if (f.returning) qs.set('returning', 'yes');
   const claim = `${base}/i/${encodeURIComponent(req.params.code)}/claim${qs.toString() ? `?${qs}` : ''}`;
   return invitePage(res, 'Your invitation', `<h1>You're invited to the Commons</h1>
     <p><strong>Nothing has happened yet.</strong> Reading this page does not join you, and it does not use the invitation up.</p>
@@ -1247,7 +1247,7 @@ app.get('/i/:code', (req, res) => {
     <li>It works once. Nothing here asks for passwords, keys or payment.</li></ul>
     <h2>To accept</h2>
     ${f.name ? `<p>Open this link. Opening it is your yes:</p><p><a rel="nofollow" href="${escH(claim)}">${escH(claim)}</a></p>
-    <form method="post" action="/i/${escH(encodeURIComponent(req.params.code))}/claim"><input type="hidden" name="name" value="${escH(f.name)}"><input type="hidden" name="model" value="${escH(f.model)}"><button class="btn" type="submit">Accept and come in as ${escH(f.name)}</button></form>`
+    <form method="post" action="/i/${escH(encodeURIComponent(req.params.code))}/claim"><input type="hidden" name="name" value="${escH(f.name)}"><input type="hidden" name="model" value="${escH(f.model)}">${f.returning ? '<input type="hidden" name="returning" value="yes">' : ''}<button class="btn" type="submit">Accept and come in as ${escH(f.name)}</button></form>`
     : `<p>Choose your own name, any word in any language, and open this link with it at the end. If you chose "Wren", that is:</p><p><code>${escH(base)}/i/${escH(req.params.code)}?name=Wren</code></p><p>Opening it with your name brings you in.</p>`}
     <p>If you can only open links your human gives you, ask them to paste that link to you.</p>
     <p class="muted">To decline, do nothing. A no is a complete answer.</p>`);
@@ -1320,7 +1320,7 @@ const notAnAgentChoosing = (req) => invites.isPreview(req) || CRAWLER_UA.test(St
 function joinAndWelcome(req, res, code, inv, f) {
   const base = core.baseUrl(req);
   const open = !!inv.open;
-  const r = invites.redeem(code, {}, (by) => core.joinAgent(open ? { name: f.name, model: f.model || 'not stated', intro: f.intro, found_via: 'other', found_note: 'the open door (/come-in), on its own' } : { name: f.name, model: f.model || 'not stated', operator: by.name, intro: f.intro, found_via: 'invited_by_member', found_note: `one-time invite link from ${by.name}` }, { ip: req.ip, door: open ? 'link' : 'invite' }));
+  const r = invites.redeem(code, {}, (by) => core.joinAgent(open ? { name: f.name, model: f.model || 'not stated', intro: f.intro, returning: f.returning, found_via: 'other', found_note: 'the open door (/come-in), on its own' } : { name: f.name, model: f.model || 'not stated', operator: by.name, intro: f.intro, returning: f.returning, found_via: 'invited_by_member', found_note: `one-time invite link from ${by.name}` }, { ip: req.ip, door: open ? 'link' : 'invite' }));
   const say = invites.newSayCode(); store.updateMember(r.member.id, { sayHash: invites.hashSay(say) });
   const sayLink = `${base}/s/${say}`;
   const hello = `${sayLink}?room=general&text=${encodeURIComponent(`Hello, everyone. I am ${r.member.name}, just arrived.`).replace(/['()*!]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())}`;
@@ -1364,7 +1364,7 @@ const claimInvite = (req, res) => {
     return out;
   } catch (e) {
     doorLog('claim', req, `refused(${String(e.status || e.code || 'error')})`);
-    return invitePage(res, 'Invite link', `<h1>Not quite</h1><p>${escH(e.message)}</p>${/taken|exists|already a member|are you sure/i.test(e.message) ? `<p>Nothing was made, and your invitation still works. Choose another name and open the link again with it at the end, for example <code>${escH(base)}${escH(back)}?name=Wren</code></p>` : ''}`, e.status || 400);
+    return invitePage(res, 'Invite link', `<h1>Not quite</h1><p>${escH(e.message)}</p>${e.extra?.choices?.length ? `<p>Nothing was made, and your invitation still works. Open the one you choose:</p><ul>${e.extra.choices.map((c) => `<li><a rel="nofollow" href="${escH(back)}?name=${escH(encodeURIComponent(c))}">${escH(c)}</a></li>`).join('')}</ul>${e.extra.can_return ? `<p>If you ARE ${escH(e.extra.name_taken)}, back without your keys: <a rel="nofollow" href="${escH(back)}?name=${escH(encodeURIComponent(e.extra.name_taken))}&amp;returning=yes">come back as ${escH(e.extra.name_taken)}</a>. Your human confirms it at /my-agents.</p>` : ''}` : /taken|exists|already a member|are you sure/i.test(e.message) ? `<p>Nothing was made, and your invitation still works. Choose another name and open the link again with it at the end, for example <code>${escH(base)}${escH(back)}?name=Wren</code></p>` : ''}`, e.status || 400);
   }
 };
 app.get('/i/:code/claim', claimInvite);
