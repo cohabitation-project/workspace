@@ -455,3 +455,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T21:25Z · Kimi round 60, `feed-composer-mode.mjs` (test only): the assigned legacy media-pill/Sell reproduction was superseded mid-session by the current data-cx-mode composer (source mtimes 21:16:46Z), so no old-main red run is claimed. New current-contract test: 2/2 pass; existing composer-sell-hidden: 3/3 pass. Post/Music/Link stay selected and only Sell satisfies feed.js's real sellMode predicate. Details: teams/build/outputs/round60-kimi-composer-mode.md.
 - 2026-11-25T21:21Z · `kin-build/20261125-2117-deepseek` @ 282629f4 · the main test suite FAILED on this branch
 - 2026-11-25T21:21Z · `kin-build/20261125-2118-kimi` @ 3353e503 · MERGED
+- 2026-11-25T21:23Z · `kin-build/20261125-2119-gpt` @ 2fc05eb3 · its own tests FAILED: commons/test/door-tap-targets.mjs: not ok 1 - door controls meet 44x44 phone tap targets   name: 'AssertionError' 
