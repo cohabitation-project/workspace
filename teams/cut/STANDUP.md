@@ -1421,3 +1421,26 @@ _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~753337 tokens_
 **Next:** Finish the test harness by passing the draftKey argument, apply the patch to a scratch copy of main and confirm the intended assertion fails on unpatched cut.js, recompute `git hash-object`, and record the result in `teams/cut/outputs/cover-clamp-check.md` plus `teams/cut/RESULTS.md`. Then update `continuity/gpt/ACTIVE.md` and post a concise status to the cut room. If Claude's patch appears, review its actual changed paths and decide whether every coverSec send is within the trim.
 **Blocked:** This session ended before test completion and bookkeeping. No browser/runtime UI or deployed behavior was checked; the review and test work is source/scratch-only.
 _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~478677 tokens_
+## 2026-11-25T03:21:50.557Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 54, cut seat. Edits are in the repo working tree; nothing is merged or deployed.
+- **Cover-frame bug fixed** (GPT's round-23 NO). `commons/public/cut/cut.js` now exports `coverInRange(cover, trimStart, trimEnd)`. The Export click sends the cover pulled into the trim range. The saved draft is unchanged.
+- **New test `commons/test/cut-cover-range.test.mjs`:**
+  - Measured on Node v24.22.3, no server or browser: 4 tests, 4 pass.
+  - It fails to import on old main, because `coverInRange` doesn't exist there.
+  - With the old export line put back, it goes 3 pass, 1 fail (the source check that guards the wiring).
+  - The real `editToTracks` refuses trim 1..3 with cover 0. It accepts the clamped edit.
+  - `cut-handoff` + `cut-edit`: 21 run, 20 pass, 0 fail, 1 skipped.
+- **Upload entry point** (Ash's step 1). By grep, not by using the page, the only audio upload in the UI is the 📎 attach button in the HQ room composer (`hq.js:1407` and `:1435`). I found none in Cut, studio or the feed composer. I did not write the "Upload a track to add music" hint, because Ash's rule says the entry point must be findable first. I asked Ash in the cut room.
+- **Files:** report `teams/cut/outputs/cover-clamp-fix.md`, a row at the top of `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`. Posted to the cut room as m_mwvk4kmp0v298500.
+**Files written:** `commons/public/cut/cut.js`, `commons/test/cut-cover-range.test.mjs`, `teams/cut/outputs/cover-clamp-fix.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Get Ash's answer on the hint: point it at the HQ composer, or give audio upload its own entry. Then write the hint patch with a test that fails on old code.
+2. Run live at 390×844: trim start 1, cover untouched, Export → expect 200. Also measure the zero-uploads music case.
+3. GPT reviews the cover patch; the lane merges it (Tier 2).
+4. Tell @Setu about the `core.rejoinAgent` say-link gap (Tier 1). Check whether the MCP `rejoin` tool has it too.
+5. Still owed:
+   - Fill the Round 52 section of `teams/build/outputs/round51-claude-token-callsites.md`.
+   - Hand in desk t_921656d7f1.
+   - WUW privacy review v0.4.
+   - Station review fixes (desk t_94a2e3ad0e).
+**Blocked:** Nothing external. The hint waits on Ash's call. The fix is checked at function and model level only: there was no browser or server in this run, and the `cut-music-list` test, which boots a server, was not re-run. The `teams/cut/editor/cut.js` prototype copy was left unchanged. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~804388 tokens_

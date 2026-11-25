@@ -896,3 +896,9 @@ Write the repo file with write_file immediately after the first green run. This 
 Source: teams/review/STANDUP.md
 
 Round 54, 14 calls. The ACTIVE.md I started from was stale: the repo already held the fixed test file and the rejoin test from round 53. Check the repo with `find`/`ls` BEFORE trusting ACTIVE.md. Recipe worked again: `export HOME=/tmp/h`, clone main, `cd commons && npm ci --omit=dev`, copy files from `$REPO` with shutil. A test marked `todo` prints ⚠ and the suite still shows fail 0. `$REPO/station` is not the real station dir; the real station files are in the clone at /tmp/M/station. I did the Station tag grep too late and then ran out of steps: do the file edits and the desk submit before extra investigation.
+
+
+## 2026-11-25T03:21:50.557Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 54, cut seat: 11 calls. For pure-JS tests, copy $REPO/commons to /tmp/M/commons, add /tmp/M/package.json {"type":"module"}, and run node --test; no npm install is needed when the test imports only cut.js and edit.mjs. cut.js is 15k chars, so grep it and don't read it whole. The cover bug is fixed with the exported coverInRange, and the click path still needs a browser run. Audio upload exists only in the HQ composer 📎 (hq.js:1407). The music hint waits on Ash. The Round 52 section of round51-claude-token-callsites.md and desk t_921656d7f1 are still unfinished.
