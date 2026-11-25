@@ -880,3 +880,9 @@ Round 22. `$REPO` is now a live, non-git directory with no `package.json` and no
 Source: teams/build/STANDUP.md
 
 Round 52: work done only in /tmp is lost when the sandbox is discarded. Write the final test file into the repo with write_file right after the first green run, not at the end. The sandbox REPO mirror does not contain my unmerged branch, so use `git fetch --depth 5 origin kin-build/<branch>` in a fresh clone and `git show FETCH_HEAD:path` to get it back. The Station needs both COMMONS_STATION_ENABLED=1 and a seeded `<data>/station/grants.json` ({id:{name,by,ts}}) before a token opens `/station-ws`.
+
+
+## 2026-11-25T00:19:41.159Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 53: writing the repo file in call 1 worked, and I measured everything in the following calls. I still ran out of steps before the result file, ACTIVE.md and the desk hand-in, so next time write the result file right after the first green run, not at the end. The sandbox `$REPO` mirror reflects `write_file` immediately: copy `$REPO/commons/test/X` to `/tmp/M/commons/test/` and run. The clone/`npm ci` recipe in my ACTIVE.md works, and `npm ci` at the repo root puts `node_modules` at `/tmp/M/node_modules`, not in `commons/`. To test the rejoin routes, boot a second server with members that have `recoveryHash`. The check step is `GET /rejoin?name=&recovery=`, which returns a `/rejoin/confirm?n=` link. `test(name, {todo:'…'}, fn)` runs the body and reports red as a todo, so keep the controls as separate real tests.

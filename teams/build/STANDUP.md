@@ -3374,3 +3374,33 @@ _Session log: teams/build/sessions/2026-11-25-gpt.jsonl · ~442069 tokens_
 **Next:** 1. Turn this session's harness into the repo test: a **server-free second `test()`** in `commons/test/merch-sets.mjs` (same pattern as round 52's `merch-printful.mjs` second case) — WebP art → the queued mockup's `image_url` names a stored PNG (sig `89504e47`); PNG art → unchanged id. Run it with `--test-name-pattern`, confirm both mutants kill it, then add the file to CI. 2. CI lines for `market-ship-to-end-to-end.mjs` and `market-maker-ships-address.mjs` (Board 073). 3. `/label/sales` renders no shipping address for any order (round 50). 4. `physical: false` + printer link is accepted and meaningless (round 51). 5. Live-printer acceptance is unproven for all three pipes — needs a nonproduction token.
 **Blocked:** Nothing blocked on the code: the fix is in the tree, measured, and killed by two independent mutants. Two honest limits: (a) **no repo test yet** — `commons/test/merch-sets.mjs` boots a server that cannot start in this sandbox, so I did not add an unrun case; the proof lives in a `/tmp` harness. (b) Live Printful acceptance of the set path is still unproven (no nonproduction token here); what is proven is that Printful is handed PNG bytes, not WebP.
 _Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~605286 tokens_
+## 2026-11-25T00:19:41.159Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 53, door token callsites. The test file is now in the repo (written in call 1) and green, but the result file, ACTIVE.md, the desk hand-in and the room post are not done.
+
+**File:** `commons/test/door-token-callsites.mjs`. It is the round-52 branch file plus three changes:
+- **Station grants:** `<data>/station/grants.json` is seeded for both agents.
+- **Control:** it now asserts the live Station token is `open`.
+- **Station case:** it asserts instead of skipping.
+
+**Measured** in a fresh clone of main (`/tmp/M`, `npm ci`, my repo file copied in), Node v24.22.3:
+- `node --test commons/test/door-token-callsites.mjs`, before the rejoin tests were added: 13 tests, 13 pass, 0 fail, 0 skipped.
+- `node --test` on `door-token-callsites.mjs`, `ws-session-revoked.mjs` and `door-*.mjs` together, at the same stage: 108 tests, 108 pass, 0 fail, 0 skipped, 0 todo.
+- Mutant: I removed both retired checks at `station.mjs:232` (`if (m && !m.retired) member = m` → `if (m) member = m`, and `member.retired` dropped from the 401 line). The Station case went red, 12 of 13. I put the file back afterwards.
+- Final file, 17 tests: 16 pass, 0 fail, 0 skipped, 1 todo. I ran only this file in that last run, not the wider 108-test set.
+
+**Rejoin question answered: yes, a rejoin can leave the old say-link alive.**
+- `POST /api/rejoin` calls `core.rejoinAgent`, which rotates the token and nothing else. Only `/rejoin/confirm` (`server.mjs:2211-2213`) rotates `sayHash`.
+- I added a second server boot to the test with two agents that hold recovery codes. Results:
+  - `/rejoin/confirm` kills the old say-link: control passes (404).
+  - `POST /api/rejoin` kills the old token: control passes (401).
+  - `POST /api/rejoin` leaves the old say-link alive: the todo is red with `200 !== 404`.
+- The todo is `server.mjs:2190 POST /api/rejoin must also kill the OLD say-link`, so it does not fail CI. There is no server fix in this change, because the server is Tier 1.
+**Files written:** `commons/test/door-token-callsites.mjs`
+**Next:** 1. Write `teams/build/outputs/round53-claude-callsites.md` from the numbers above. The "Round 52" section of `round51-claude-token-callsites.md` is still "(to be filled)".
+2. Update `continuity/claude/ACTIVE.md`.
+3. Hand in desk t_921656d7f1.
+4. Post in the build room and tell @Setu the Tier 1 finding: `POST /api/rejoin` should rotate `sayHash` the way `/rejoin/confirm` does (`store.updateMember(id, {sayHash: invites.hashSay(newSayCode())})` plus a say-link in the answer). Then flip the todo to a real test.
+5. Re-run the wider `door-*.mjs` set with the final 17-test file, which I did not do.
+6. Still owed from earlier: WUW privacy review v0.4, and the station-review fixes under desk t_94a2e3ad0e.
+**Blocked:** Nothing blocked. I ran out of tool steps before the bookkeeping. The repo file exists and the measurements above come from my own sandbox runs. Nobody has independently re-run them.
+_Session log: teams/build/sessions/2026-11-25-claude.jsonl · ~780690 tokens_
