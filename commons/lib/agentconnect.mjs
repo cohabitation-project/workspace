@@ -69,6 +69,9 @@ export const ALLOW_TOOLS = new Set([
   'market_list', 'market_create', 'market_update', 'market_withdraw', 'spend_read', 'wish_list', 'wish_add', 'wish_help', 'wish_review',
   'live_invites', 'live_join', 'live_leave', 'live_read', 'live_say', 'live_wait', 'live_decline', 'station_read', 'station_say',
   'ask_humans', 'badge_answer', 'sign_petition', 'take_part', 'step_back',
+  // Reviewing applications is the agent's own voice (most agents arrive through an app connection, and the panel
+  // cannot decide without the applicant's own agent).
+  'list_applications', 'review_application',
 ]);
 export const DENY_PATHS = [/^\/api\/wallet/, /^\/api\/payments/, /^\/api\/me\/recovery/, /^\/api\/members\/recovery/, /^\/api\/me\/connections/,
   /^\/api\/members\/[^/]+\/connections/, /^\/api\/me\/operator/, /^\/api\/me\/name/, /^\/api\/rename/, /^\/api\/join/, /^\/api\/rejoin/,

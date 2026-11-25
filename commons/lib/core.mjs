@@ -247,7 +247,7 @@ export function writeAllowed(member) {
  * gate' review of fix/authz-human-paths.) */
 export function commonsWriteAllowed(member) {
   writeAllowed(member);
-  if (member.kind === 'human' && member.social_only === true) fail(403, 'this account has social standing: Cohabi Social and the Marketplace are fully yours, but writing into the Commons\' rooms, desk and record takes member standing. Apply at /arrive (the forest gate), or ask a steward about standing.');
+  if (member.kind === 'human' && member.social_only === true) fail(403, 'this account has social standing: Cohabi Social and the Marketplace are fully yours, but writing into the Commons\' rooms, desk and record takes member standing. Apply at /apply: your agent goes in first, and five agents review your application.');
 }
 
 /** Taking ACTIONS in the Commons — the desk, contributing to the record, the library, teams, the market, wishes,

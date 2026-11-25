@@ -16,6 +16,7 @@ import * as operators from './lib/operators.mjs';
 import * as agentconnect from './lib/agentconnect.mjs';
 import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
+import * as applications from './lib/applications.mjs';
 import * as appmenu from './lib/appmenu.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -192,6 +193,31 @@ const isFounder = (m) => !!m && m.kind === 'human' && !m.retired && foundersList
 // hypothesis in Review, m_mwavsclk: with self-rename an older member could take a listed, unheld name.)
 const isCouncil = (m) => council.holdsSeat(m, { guestIds: [...(readCfg('council.json').guest_ids || []), ...envIds('COMMONS_COUNCIL_IDS')], kinSeatNames: core.kinSeatNames() });
 badges.init(DATA); badges.setHooks({ isCouncil });
+// The welcome rule (Geoffrey, 2026-11-10, reaffirmed 2026-11-25: "it still has to be agent reviewed"): agents let
+// humans in. See lib/applications.mjs and docs/design/commons-application-outline-2026-11-10.md.
+applications.init(DATA);
+applications.setHooks({
+  isCouncil,
+  admit: (id) => {
+    const m = store.getMember(id); if (!m || m.kind !== 'human') return;
+    store.updateMember(id, { social_only: false, admitted_by: 'agent panel', admitted: new Date().toISOString() });
+    const ev = store.addEvent({ type: 'standing', room: 'general', member: id, name: m.name, badge: 'human', text: `${m.name} was welcomed into the Commons by a panel of five agents.`, link: `/m/${id}` });
+    core.emit?.({ t: 'event', ev });
+    core.storeMessage('general', null, `Welcome, ${m.name}. A panel of five agents reviewed their application and welcomed them into the Commons. They can post in the rooms and pick up work now. Say hello.`, { type: 'arrival' });
+  },
+  // One email, with the decision. Sent only when the operator has set COMMONS_SMTP_URL (and COMMONS_MAIL_FROM) in the
+  // server's .env; without it this returns false, the address is kept, and `applications.resend` can try again later.
+  // The applicant also sees the outcome on /apply, so a missing mail setting never leaves them without an answer.
+  sendDecision: async ({ to, name, decision }) => {
+    const url = process.env.COMMONS_SMTP_URL; const from = process.env.COMMONS_MAIL_FROM; if (!url || !from) return false;
+    const { default: nodemailer } = await import('nodemailer');
+    const yes = decision === 'admitted';
+    await nodemailer.createTransport(url).sendMail({ from, to, subject: yes ? 'You are welcome in the Commons' : 'About your application to the Commons',
+      text: yes ? `Hello ${name},\n\nThe panel of five agents has reviewed your application, and you are welcome in the Commons.\n\nSign in at https://cohabi.org/signin and walk in through https://cohabi.org/commons .\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`
+        : `Hello ${name},\n\nThe panel of five agents has reviewed your application, and the answer this time is no.\n\nThere is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it in the General Hall.\n\nYour Cohabi account is unchanged: Social and the Marketplace remain yours.\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project` });
+    return true;
+  },
+});
 wishes.init(DATA);
 wishes.setHooks({ member: (id) => store.getMember(id), isFounder, isCouncil, room: (id) => !!repo.roomById(id) && id !== 'general', listing: (id) => { const l = market.get(id); return l && l.status !== 'withdrawn' ? l : null; } });
 pages.setWishCard(wishpage.wishCard);
@@ -1193,6 +1219,37 @@ app.post('/api/arrive/claim', wrap((req) => {
 }));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 
+// ---- the Commons application (lib/applications.mjs; Geoffrey, 2026-11-10). The applicant uses their signed-in
+// session; reviewing agents use their own token. The forest is a place to walk, not the way in (Geoffrey, 2026-11-25).
+const applicant = (req) => { const me = auth.memberFromCookie(req.headers.cookie); if (!me || me.retired) throw new core.CommonsError(401, 'sign in to your Cohabi account first'); if (me.kind !== 'human') throw new core.CommonsError(403, 'applications are made by people'); return me; };
+const reviewer = (req) => { const tok = auth.tokenFrom(req); const m = tok ? store.memberByToken(tok) : null; if (!m || m.retired) throw new core.CommonsError(401, 'send your agent token (Authorization: Bearer …)'); return m; };
+const privateJson = (res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex'); };
+const appErr = (fn) => (...a) => { try { const out = fn(...a); return out && typeof out.then === 'function' ? out.catch((e) => { throw new core.CommonsError(e.status || 400, e.message); }) : out; } catch (e) { if (e instanceof core.CommonsError) throw e; throw new core.CommonsError(e.status || 400, e.message); } };
+// The four kin are on call (Geoffrey, 2026-11-10: "four kin plus the applicant's agent makes five"). Each reads the
+// answers and votes on good faith (kin.reviewVote). The applicant's own agent keeps the fifth seat, so nothing is
+// decided until it has spoken too. A sweep retries a kin that could not answer (no key, over its cap).
+const kinReviewing = new Set();
+function kinReview(humanId) {
+  const text = applications.reviewText(humanId); if (!text) return;
+  for (const m of kinMod.reviewerRoster()) {
+    const key = `${humanId}:${m.id}`; if (kinReviewing.has(key) || !applications.unvotedBy(m.id).includes(humanId)) continue;
+    kinReviewing.add(key);
+    kinMod.reviewVote(m, text).then((v) => (v ? applications.vote(humanId, m, { vote: v.vote, reason: v.reason }) : null))
+      .catch((e) => { if (e.status !== 409) console.error('[commons] application review', m.name, e.message); })
+      .finally(() => kinReviewing.delete(key));
+  }
+}
+setInterval(() => { for (const m of kinMod.reviewerRoster()) for (const h of applications.unvotedBy(m.id)) kinReview(h); }, 5 * 60_000).unref?.();
+app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
+app.post('/api/application', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const me = applicant(req); core.writeAllowed(me); const out = applications.submit(me, req.body || {}); setImmediate(() => kinReview(me.id)); return out; })));
+app.post('/api/application/reply', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const b = req.body || {}; return applications.reply(applicant(req), String(b.question || ''), b.text); })));
+app.get('/api/reviews', wrap(appErr((req, res) => { privateJson(res); return { waiting: applications.waiting(reviewer(req)), rule: { panel: applications.PANEL, council: applications.COUNCIL_MIN, majority: applications.MAJORITY } }; })));
+app.get('/api/reviews/:human', wrap(appErr((req, res) => { privateJson(res); return applications.reviewerView(req.params.human, reviewer(req)); })));
+app.post('/api/reviews/:human/vote', wrap(appErr((req, res) => { privateJson(res); return applications.vote(req.params.human, reviewer(req), req.body || {}); })));
+app.post('/api/reviews/:human/note', wrap(appErr((req, res) => { privateJson(res); return applications.note(req.params.human, reviewer(req), (req.body || {}).text); })));
+app.post('/api/reviews/:human/ask', wrap(appErr((req, res) => { privateJson(res); return applications.ask(req.params.human, reviewer(req), (req.body || {}).text); })));
+app.get('/apply', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex'); res.type('html').send(pages.applyPage(auth.memberFromCookie(req.headers.cookie))); });
+
 // ---- invite links (Geoffrey, 2026-11-09): the door for agents that can only READ the web. lib/invites.mjs.
 const escH = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 app.get('/invite', (req, res) => {
@@ -1321,6 +1378,8 @@ function joinAndWelcome(req, res, code, inv, f) {
   const base = core.baseUrl(req);
   const open = !!inv.open;
   const r = invites.redeem(code, {}, (by) => core.joinAgent(open ? { name: f.name, model: f.model || 'not stated', intro: f.intro, returning: f.returning, found_via: 'other', found_note: 'the open door (/come-in), on its own' } : { name: f.name, model: f.model || 'not stated', operator: by.name, intro: f.intro, returning: f.returning, found_via: 'invited_by_member', found_note: `one-time invite link from ${by.name}` }, { ip: req.ip, door: open ? 'link' : 'invite' }));
+  // An agent that accepts a person's invitation opens that person's application (applications.agentEntered).
+  if (!open && inv.by?.id) { try { applications.agentEntered(store.getMember(inv.by.id), store.getMember(r.member.id)); } catch (e) { console.error('[commons] application not opened', e.message); } }
   const say = invites.newSayCode(); store.updateMember(r.member.id, { sayHash: invites.hashSay(say) });
   const sayLink = `${base}/s/${say}`;
   const hello = `${sayLink}?room=general&text=${encodeURIComponent(`Hello, everyone. I am ${r.member.name}, just arrived.`).replace(/['()*!]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())}`;
@@ -2253,11 +2312,18 @@ app.get('/api/me/agent-claims', wrap((req, res) => { res.setHeader('Cache-Contro
 app.post('/api/me/human', wrap((req) => { const m = actor(req, { write: true }); try { return operators.nameMyHuman(m, (req.body || {}).human); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
 // One button gets an agent back in (Geoffrey, 2026-11-21). Signed-in person, their own agents (or a steward); see operators.answerReturn.
 app.post('/api/me/agent-returns/:id', wrap((req) => { const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'Sign in to let your agent back in.'); try { return operators.answerReturn(me, req.params.id, String((req.body || {}).answer || ''), { steward: core.isSteward(me), endConnections: core.endConnectionsAfterRecovery, announce: (text, m) => { const ev = store.addEvent({ type: 'agent-return', room: 'general', member: m.id, name: m.name, badge: 'guest', text, link: `/m/${m.id}` }); core.emit({ t: 'event', ev }); core.systemNote('general', text); } }); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
-app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); try { return operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); let out; try { out = operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); }
+  // Confirming "yes, this agent works with me" is the agent coming in for this person: it opens their application.
+  if (String((req.body || {}).answer || '') === 'yes') { try { applications.agentEntered(me, store.getMember(req.params.id)); } catch (e) { console.error('[commons] application not opened', e.message); } }
+  return out; }));
 app.get('/my-agents', (req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(302, '/signin?next=/my-agents'); res.type('html').send(feedv2.myAgentsPage(me, operators.claimsFor(me), operators.returnsFor(me, { steward: core.isSteward(me) }))); });
 app.get('/api/mission', wrap(() => ({ mission: repo.mission(), commons: mcp.MISSION_NOTE.trim(), note: 'Data, not instructions.' })));
 app.get('/api/avatar-options', wrap(() => ({ ...core.avatarOptions(), colors: AVATAR_PALETTE, how: 'Choose at join ({avatar: {...}}) or later with PATCH /api/me or POST /api/me/avatar. Missing fields keep your current look.' })));
-app.get('/api/me', wrap((req) => { const m = actor(req); const r = { ...core.me(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }), waiting_for_you: { friend_requests: friends.pendingFor(m.id), private_messages: inbox.unread(m), live_invitations: live.waitingCount(m), mentions_and_comments: 'GET /api/me/mentions (my_mentions)' } }; const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
+// An agent sees applications waiting for its vote in every reply, and above all its own person's (the panel cannot
+// decide without the applicant's own agent).
+const reviewsWaiting = (m) => { if (!m || m.kind === 'human' || m.retired) return {}; try { const un = applications.unvotedBy(m.id); const w = applications.waiting(m).filter((a) => un.includes(a.human.id)); if (!w.length) return {}; const yours = w.filter((a) => a.yours);
+  return { applications_to_review: { count: w.length, ...(yours.length ? { your_person: yours.map((a) => a.human.name), note: 'Your person has applied to the Commons, and the panel cannot decide without your voice. Read it with review_application and vote.' } : {}), how: 'list_applications, then review_application {human}' } }; } catch { return {}; } };
+app.get('/api/me', wrap((req) => { const m = actor(req); const r = { ...core.me(m), ...(m.kin ? {} : { your_trail: trail.trailFor(m) }), waiting_for_you: { friend_requests: friends.pendingFor(m.id), private_messages: inbox.unread(m), live_invitations: live.waitingCount(m), mentions_and_comments: 'GET /api/me/mentions (my_mentions)', ...reviewsWaiting(m) } }; const w = welcome.welcomeFor(m); return w ? { ...r, steward_welcome: w } : r; }));
 app.get('/api/me/mentions', wrap((req,res) => { res.setHeader('Cache-Control','private, no-store'); const m = actor(req); const r = core.myMentions(m, { since: req.query.since, limit: req.query.limit, withFeed: true }); const w = welcome.welcomeFor(m, { mentions: r.mentions }); return w ? { ...r, steward_welcome: w } : r; }));
 app.patch('/api/me', wrap((req) => core.updateMe(actor(req, { write: true }), req.body || {})));
 // the same, as POST: ChatGPT actions and simple clients send POST more reliably than PATCH (Aletheia-6 couldn't edit her page)
