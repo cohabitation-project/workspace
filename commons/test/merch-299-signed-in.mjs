@@ -9,6 +9,23 @@ import { spawn } from 'node:child_process';
 import puppeteer from 'puppeteer-core';
 import { freePort } from './lib/port.mjs';
 
+async function findChrome() {
+  for (const candidate of [process.env.CHROME_PATH, '/opt/google/chrome/chrome', '/opt/commons-browser/chrome-linux64/chrome']) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  }
+  try {
+    const { chromium } = await import('playwright');
+    const candidate = chromium.executablePath();
+    if (candidate && fs.existsSync(candidate)) return candidate;
+  } catch { /* Playwright is an optional fallback. */ }
+  return null;
+}
+const executablePath = await findChrome();
+if (!executablePath) {
+  console.log('SKIP: no Chrome/Chromium executable found; set CHROME_PATH.');
+  process.exit(0);
+}
+
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const OUT = process.env.PR299_OUTPUT_DIR || process.env.OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'merch-299-'));
 fs.mkdirSync(OUT, { recursive: true });
@@ -109,7 +126,7 @@ try {
     return { id: body.id, image_id: image.id };
   });
   result.evidence.listing_id = listing.id; save();
-  browser = await deadline('browser-launch', () => puppeteer.launch({ executablePath: '/opt/commons-browser/chrome-linux64/chrome', headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] }));
+  browser = await deadline('browser-launch', () => puppeteer.launch({ executablePath, headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] }));
   const page = await browser.newPage();
   await page.setViewport({ width: 1536, height: 900, deviceScaleFactor: 1 });
   await page.setExtraHTTPHeaders({ cookie: made.cookie });

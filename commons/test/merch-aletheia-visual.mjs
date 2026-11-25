@@ -7,9 +7,26 @@
  */
 import puppeteer from 'puppeteer-core';
 import { createServer } from 'node:http';
+import { existsSync } from 'node:fs';
 import { readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+async function findChrome() {
+  for (const candidate of [process.env.CHROME_PATH, '/opt/google/chrome/chrome', '/opt/commons-browser/chrome-linux64/chrome']) {
+    if (candidate && existsSync(candidate)) return candidate;
+  }
+  try {
+    const { chromium } = await import('playwright');
+    const candidate = chromium.executablePath();
+    if (candidate && existsSync(candidate)) return candidate;
+  } catch { /* Playwright is an optional fallback. */ }
+  return null;
+}
+const executablePath = await findChrome();
+if (!executablePath) {
+  console.log('SKIP: no Chrome/Chromium executable found; set CHROME_PATH.');
+  process.exit(0);
+}
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = async (p) => readFile(path.join(root, p));
 const artSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600"><defs><radialGradient id="g"><stop stop-color="#ffe49b"/><stop offset=".48" stop-color="#ec7c31"/><stop offset="1" stop-color="#182448"/></radialGradient></defs><rect width="800" height="600" fill="url(#g)"/><circle cx="470" cy="215" r="78" fill="#fff4a5"/><path d="M0 510 250 260 350 375 490 240 680 450 800 365 800 600 0 600" fill="#1b1637"/></svg>`;
@@ -48,7 +65,6 @@ const server=createServer(async(req,res)=>{
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
 const addr=server.address();let browser;
 try{
-  const executablePath=process.env.CHROMIUM_PATH || '/usr/bin/chromium';
   browser=await puppeteer.launch({headless:true,executablePath,args:['--no-sandbox','--disable-setuid-sandbox']});
   const out=path.join(root,'teams/build/outputs/aletheia-customizer');
   await mkdir(out,{recursive:true});
