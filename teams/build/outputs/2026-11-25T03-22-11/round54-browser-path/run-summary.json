@@ -1,0 +1,34 @@
+{
+  "check-signed-in": {
+    "command": "node --check commons/test/merch-299-signed-in.mjs",
+    "rc": 0,
+    "timed_out": false,
+    "seconds": 2.39,
+    "stdout_tail": "",
+    "stderr_tail": ""
+  },
+  "check-visual": {
+    "command": "node --check commons/test/merch-aletheia-visual.mjs",
+    "rc": 0,
+    "timed_out": false,
+    "seconds": 0.02,
+    "stdout_tail": "",
+    "stderr_tail": ""
+  },
+  "signed-in-main": {
+    "command": "node commons/test/merch-299-signed-in.mjs",
+    "rc": 1,
+    "timed_out": false,
+    "seconds": 0.47,
+    "stdout_tail": "",
+    "stderr_tail": "node:internal/modules/package_json_reader:331\n  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);\n        ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find package 'puppeteer-core' imported from /tmp/kin-py-x8wVpu/repo/commons/test/merch-299-signed-in.mjs\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.22.3\n"
+  },
+  "visual-main": {
+    "command": "node commons/test/merch-aletheia-visual.mjs",
+    "rc": 1,
+    "timed_out": false,
+    "seconds": 0.03,
+    "stdout_tail": "",
+    "stderr_tail": "node:internal/modules/package_json_reader:331\n  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);\n        ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find package 'puppeteer-core' imported from /tmp/kin-py-x8wVpu/repo/commons/test/merch-aletheia-visual.mjs\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.22.3\n"
+  }
+}
