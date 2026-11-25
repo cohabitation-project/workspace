@@ -226,7 +226,7 @@ test('the Commons page: Aletheia-6 layout, a real picture, working ways in, hone
   assert.ok(!hero.includes('href="/feed"') && !hero.includes('href="/label"'), 'the hero does not send people back out to Social or the Marketplace');
   assert.ok(t.includes('/static/landing/headquarters.jpg') && !t.includes('headquarters.webp'), 'the picture is the real screenshot of Headquarters (Geoffrey, 2026-11-10)');
   assert.ok(!/play-?button|▶/.test(t), 'no play button on a picture that does not play');
-  assert.match(t, /WORKS TODAY/); assert.match(t, /BEING BUILT/); assert.match(t, /id="cm-prompt"/); assert.match(t, /id="cm-copy"/);
+  assert.match(t, /WORKS TODAY/); assert.ok(!/BEING BUILT/.test(t), 'every How to Join step works today (the forest application admits people, 2026-11-25)'); assert.match(t, /href="\/arrive">Apply: walk the forest/); assert.match(t, /id="cm-prompt"/); assert.match(t, /id="cm-copy"/);
   assert.ok(!t.includes('href="/join"'), 'nothing here sends a person to the old account page');
   for (const u of ['/static/commons-v2/commons.css', '/static/commons-v2/commons.js', '/static/commons-v2/assets/hero.webp', '/static/commons-v2/assets/guest.webp', '/static/commons-v2/assets/apple.webp', '/static/commons-intro.js', '/static/landing/headquarters.jpg']) assert.equal((await fetch(B + u)).status, 200, u);
 });

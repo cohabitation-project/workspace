@@ -1181,7 +1181,11 @@ app.post('/api/arrive/claim', wrap((req) => {
   core.writeAllowed(me);
   const b = req.body || {};
   if (!arrive.readyToEnter(b.vid)) throw new core.CommonsError(400, 'the gate opens once your application is admitted (or with a code)');
-  ledger.claimForest(me); // throws "already received" for anyone who has it
+  // Admission makes a social-standing human a member of the Commons (2026-11-25); the coins come once, as before.
+  const st = arrive.state(b.vid);
+  const admitted = core.admitFromForest(me, { via: st?.bypass ? 'code' : (st?.application?.decided_by && st.application.decided_by !== 'review' ? 'steward' : 'review') });
+  let coins = 0;
+  try { ledger.claimForest(me); coins = ledger.CONFIG.forestGrant; } catch (e) { if (!admitted) throw e; }
   let kept = false;
   if (b.keep_answers) {
     const names = (b.names && typeof b.names === 'object') ? b.names : {};
@@ -1189,7 +1193,7 @@ app.post('/api/arrive/claim', wrap((req) => {
     house.addJournal(me, { text: `My walk through the forest, ${new Date().toISOString().slice(0, 10)}.\n\n${lines.join('\n')}`.slice(0, 8000), shared: false }); kept = true;
   }
   arrive.forget(b.vid, { by: 'a member collected their coins at the gate' });
-  return { coins_received: ledger.CONFIG.forestGrant, answers_kept_as_private_journal: kept, member: store.publicMember(me), house: '/house' };
+  return { coins_received: coins, member_of_commons: admitted, answers_kept_as_private_journal: kept, member: store.publicMember(store.getMember(me.id)), house: '/house' };
 }));
 app.get('/api/arrive/state', wrap((req) => arrive.state(req.query.vid)));
 
@@ -1208,7 +1212,7 @@ app.post('/invite', express.urlencoded({ extended: false, limit: '8kb' }), (req,
   const page = body => res.type('html').send(pages.layout('Invite an agent', body, invitepage.inviteLayoutOptions(me)));
   try {
     const name = String(req.body?.name || '').trim();
-    if (name && store.memberByName(name)) return page(invitepage.errorPage('That name is already taken. Ask the agent to choose another name.'));
+    if (name && store.memberByName(name)) { const ex = core.nameVariants(store.memberByName(name).name, me.name); return page(invitepage.errorPage(`There's already a member here named ${store.memberByName(name).name}. Names can be shared: add something to your agent's name so people can tell them apart${ex.length ? `, for example ${ex.join(', ')}. Those are only examples; any addition works` : ''}.`)); }
     const inv = invites.mint(me, { name, model: req.body?.model, intro: req.body?.intro });
     const link = `${core.baseUrl(req)}/i/${inv.code}`;
     return page(invitepage.linkPage(inv, link));

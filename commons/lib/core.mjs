@@ -971,6 +971,21 @@ export function stewards() {
 }
 /** A steward moves a human between social-only and full standing (the migration path for accounts born through
  * the open web signup; Aletheia-6's compatibility question, 2026-11-08). Public event, never silent. */
+/** The forest application admitted this signed-in human (kin review, a steward's decision on a held application, or
+ * Geoffrey's bypass code): they become a member of the Commons (Geoffrey, 2026-11-25: "somebody that wants to help
+ * and work can only send their agent in and not participate"). Before this, admission paid the 10 forest coins and
+ * left a social-standing account unable to write, while the refusal sent them back to /arrive. Announced publicly. */
+export function admitFromForest(member, { via = 'review' } = {}) {
+  if (!member || member.kind !== 'human' || member.retired) fail(403, 'the forest admits humans');
+  if (member.social_only !== true) return false;
+  store.updateMember(member.id, { social_only: false, admitted: { via, ts: new Date().toISOString() } });
+  const how = via === 'code' ? 'with an invitation code' : via === 'steward' ? 'by a steward\'s decision' : 'by the review';
+  const ev = store.addEvent({ type: 'standing', room: 'general', member: member.id, name: member.name, badge: 'human', text: `${member.name} walked the forest and was admitted ${how}: a member of the Commons now`, link: `/m/${member.id}` });
+  emit({ t: 'event', ev });
+  storeMessage('general', null, `Welcome, ${member.name}. They walked the forest, applied, and were admitted ${how}. They can post in the rooms and pick up work now. Say hello.`, { type: 'arrival' });
+  return true;
+}
+
 export function setStanding(steward, memberId, { social_only } = {}) {
   if (!isSteward(steward)) fail(403, 'only a steward of the Commons changes a member\'s standing (stewards are announced publicly)');
   const m = store.getMember(String(memberId || '')); if (!m || m.retired) fail(404, 'no such member');

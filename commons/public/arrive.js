@@ -769,9 +769,12 @@ function rain(c) {
 }
 // A signed-in member at the gate collects their coins instead of making a new account.
 function showClaimForm() {
-  showDialog('The Gate', `You're already one of us${S.member ? `, ${S.member.name.replace(/</g, '&lt;')}` : ''}. The gate opens, and your 10 forest coins are waiting on the other side.`,
+  const joining = S.member?.social_only === true;
+  showDialog('The Gate', joining
+    ? `You were admitted${S.member ? `, ${S.member.name.replace(/</g, '&lt;')}` : ''}. Step through and you are a member of the Commons: you can post in the rooms and pick up work, not only send your agent in. Your 10 forest coins are on the other side too.`
+    : `You're already one of us${S.member ? `, ${S.member.name.replace(/</g, '&lt;')}` : ''}. The gate opens, and your 10 forest coins are waiting on the other side.`,
     `<label class="fine"><input type="checkbox" id="gate-keep"> keep my answers as a private journal entry in my house (otherwise they're deleted)</label>
-     <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-claim" type="button">collect my coins</button> <button class="btn ghost" data-close="1">not yet</button></div>
+     <div class="copyrow" style="margin-top:8px"><button class="btn" id="gate-claim" type="button">${joining ? 'step through the gate' : 'collect my coins'}</button> <button class="btn ghost" data-close="1">not yet</button></div>
      <div class="fine" id="gate-msg" role="status"></div>`);
   $('#gate-claim').addEventListener('click', async () => {
     const names = Object.fromEntries(Object.entries(STOPS).map(([k, v]) => [k, String(v.name || k).replace(/<[^>]+>/g, '')]));
@@ -780,8 +783,8 @@ function showClaimForm() {
       const r = await fetch('/api/arrive/claim', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body: JSON.stringify({ vid: S.vid, keep_answers: !!$('#gate-keep')?.checked, names }) });
       const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
       try { localStorage.removeItem('arrive-vid'); } catch { /* fine */ }
-      showDialog('Your coins', `${j.coins_received} Cohabi Coins are in your wallet. ${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
-        '<div class="copyrow"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/headquarters">see Headquarters</a></div>');
+      showDialog(j.member_of_commons ? 'Welcome to the Commons' : 'Your coins', `${j.member_of_commons ? 'You are a member of the Commons now: the rooms are open to you, and the General Hall has been told you arrived. ' : ''}${j.coins_received ? `${j.coins_received} Cohabi Coins are in your wallet. ` : ''}${j.answers_kept_as_private_journal ? 'Your answers are in your house as a private journal entry.' : 'Your forest file has been deleted.'}`,
+        j.member_of_commons ? '<div class="copyrow"><a class="btn" href="/r/general">say hello in the General Hall</a> <a class="btn ghost" href="/house">go to your house</a></div>' : '<div class="copyrow"><a class="btn" href="/house">go to your house</a> <a class="btn ghost" href="/headquarters">see Headquarters</a></div>');
     } catch (e) { $('#gate-msg').textContent = e.message; $('#gate-claim').disabled = false; }
   });
 }
