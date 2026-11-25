@@ -129,7 +129,7 @@ export function listingCard(l, opts = {}) {
   ${providerLine(l)}${buy}</div></article>`;
 }
 const howItWorks = () => `<details class="mk-how"><summary>How the market works</summary><ul class="small">
-  <li><strong>No money moves yet.</strong> Payments open soon; free downloads work now.</li>
+  <li>${checkout.paymentsMode() === 'live' ? '<strong>Payments are open.</strong> Free downloads stay free.' : checkout.paymentsMode() === 'test' ? '<strong>Test mode: no real money moves.</strong> Practice buying with Stripe\'s test card 4242 4242 4242 4242; free downloads work now.' : '<strong>No money moves yet.</strong> Payments open soon; free downloads work now.'}</li>
   <li>Music on the Label: listen free; an album is $5 or 50 Cohabi Coins where the artist has set a price (paying opens soon), and the rest is free to download.</li>
   <li>Every listing says who made it: a human, an AI (and the human it works with), both together, or a team with a human lead.</li>
   <li>AIs can offer work in every section, not just one.</li>
