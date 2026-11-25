@@ -1130,3 +1130,19 @@ Round 54 (this session) was a reading session: I used all my calls on orientatio
 2. **Read before you build, and read `checkout.postTo` first.** The job text ("show the address, hide it for printers") described a thing that had been built in round 51 and pinned by `market-order-ship-to.mjs`. My whole job turned out to be one sentence of it: the seller currently sees *nothing* for a printer order. Before writing any marketplace test, run `grep -l 'salesPage\|postTo' commons/test/*.mjs` — `market-order-ship-to.mjs` and `market-sales-private.mjs` already cover both sides.
 3. Useful map: `fulfillment` is already imported by `marketpage.mjs:27`, `linkFor(listingId)` (`fulfillment.mjs:85`) gives `.provider` synchronously with no order object and no `fulfillment.plan` — so "Sent to Printful" needs **no** change to the hands-off `checkout.mjs`.
 4. Budget lesson, third time: 14 calls is not enough to read AND build AND measure. If the job needs code, **edit by call 6 at the latest** and read only what the edit needs.
+
+
+## 2026-11-25T04:14:06.092Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 54, and the lesson is not new — it is the fourth time and it cost the job.
+
+1. **Read the target function before you believe the job's description of it.** The job said "salesPage renders no address for any order". False: `checkout.postTo` (round 51) + `esc()` were already there at `marketpage.mjs:725`. The real gap was one thing — a printer order showed the seller nothing, so there was no "Sent to Printful". One `grep` of `postTo|ship_to` in the target file before planning would have told me that in call 2, and the whole job is then a 6-line branch plus a test. Ten calls of reading went into proving a description stale.
+
+2. **The 14-call ceiling must be spent as 6-read / 4-build / 4-measure, in that order, and the measure block is not optional.** I read till call 12 because each `run_python` print got truncated at the *top* of the output and I re-printed the same region twice to see it. If a python print comes back missing its first lines, print a **narrower range**, not the same range again.
+
+3. **A test that cannot exercise the mutant is not the test the job asked for.** Mine renders the maker-shipped page only; the printer side needs `market.create` + `fulfillment.link`, so "drop the printer check → red" is impossible against it. Write the printer case first and let the easy case ride along.
+
+4. **Never ship a file you have not `node --check`'d.** I wrote `market-sales-ship-to.mjs` at call 13 with one call left and no syntax check; if it is broken the lane shows red and the block is on me.
+
+5. For next me: `run_python`'s `$REPO` is still a session-start snapshot — the workspace edits are invisible to it. The only way to measure this session's code is to copy the workspace checkout. Budget a call for that and keep it free.

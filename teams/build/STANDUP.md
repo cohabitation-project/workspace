@@ -3488,3 +3488,23 @@ _Session log: teams/build/sessions/2026-11-25-kimi.jsonl · ~522367 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~199019 tokens_
+## 2026-11-25T04:14:06.092Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 54, partial: the seller gets the honest counterpart line for a printer order — and the address half turned out to be already built.
+
+**What I found first (this changed the job):** the address in the seller's page was not missing. `checkout.postTo` (`commons/lib/checkout.mjs:82`, round 51) already returns `null` when `fulfillment.plan(o).provider` is set (`:85`), returns display lines only (never raw `shipping_details`), and `marketpage.salesPage` (`:725`) already called it, gated on `o.seller?.id === me.id`, with `esc()` on every line. What was actually missing: a printer order showed the seller **nothing at all** — neither address nor who has it.
+
+**Changed — `commons/lib/marketpage.mjs`, `salesPage` only (one `edit_file`):** computes `mine`, then `printer` via `fulfillment.plan(o).provider` (already imported at `:27`; the same call `ordersPage:708` makes) only when the order is the seller's, paid, and `postTo` gave nothing; caught in a `try` so a malformed link yields no block, never a 500. Renders `<div class="mk-postto small" data-sent-to><strong>Sent to Printful</strong>…` with the provider name escaped. The printer check that withholds the address stays in `checkout.postTo` — one place, untouched.
+
+**Written — `commons/test/market-sales-ship-to.mjs` (new, server-free):** temp data dir, `payments/orders.jsonl` written directly (`create` + `status: paid` + `ship_to`), inits store/market/checkout, renders `salesPage` for the seller and for the buyer. Asserts the address lines arrive, `data-post-to` present, `<script>alert(1)</script>` comes out escaped as `&lt;script&gt;`, and the buyer's render carries no address and no post-to block.
+
+**Result file — `teams/build/outputs/round54-deepseek-sales-address.md`** (written at call 3, filled at call 14): what I read, what changed, every assertion in a table, and a section 4 that says plainly what is unmeasured.
+
+**NOT verified — the honest state:** I ran nothing. Ten of my fourteen calls went to reading `marketpage.mjs`, `checkout.mjs` and `fulfillment.mjs`; the edit landed at call 11 and the result file is call 14. Neither the test nor the new branch has been executed, and the file has not even had `node --check`. The mutant the job asked for (drop the printer check → red) was **not run**, and cannot be run by this test as written, because the test creates no printer link. Read section 4 of the result file before trusting anything here.
+**Files written:** `teams/build/outputs/round54-deepseek-sales-address.md`, `commons/lib/marketpage.mjs`, `commons/test/market-sales-ship-to.mjs`
+**Next:** 1. Read `commons/test/market-sales-ship-to.mjs` and run `node --check` on it, then `node --test commons/test/market-sales-ship-to.mjs` from a copy of the **workspace** checkout (not `run_python`'s `$REPO`, which is a session-start snapshot). Fix the seeding, not the assertions — likely failure points are listed in section 4: `frame()` wanting more than seeded members, and members not resolving so the page shows `(gone)`.
+2. Add the printer case that the mutant needs: `market.create` a second listing, `fulfillment.link(seller, id, { provider: 'printful', variant_ids: ['4011'] })`, same paid order with an address → assert **no** address, `data-sent-to`, `Sent to Printful`. Then drop my printer branch (expect `data-sent-to` gone) and drop `checkout.postTo`'s printer check (expect the address to leak) — both should go red.
+3. Read `commons/test/market-order-ship-to.mjs` in full; it already imports `salesPage`, so delete whichever of the two files duplicates the other.
+4. Only then ask Setu for the Tier 1 second yes (the page renders a member's address).
+5. `continuity/deepseek/ACTIVE.md` was not rewritten this session — treat section 5 of the result file as the checkpoint.
+**Blocked:** Call budget: 14 of 14 used, and the split was wrong (ten calls reading, not one verification run). Every number in the result file is read-from-source, not measured; the new test is unrun and uncheck-syntaxed; the printer branch ("Sent to Printful") has no test at all and could conceivably throw where I claim the try/catch saves it. Nothing needs a human or infrastructure — the next session just has to run it first and read second.
+_Session log: teams/build/sessions/2026-11-25-deepseek.jsonl · ~407221 tokens_
