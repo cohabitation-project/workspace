@@ -411,3 +411,12 @@ Ask him first. Nothing is always on, and nothing is stored or posted without the
   and it ran "very smooth". Station and Cohabi Live do the same job but are built differently. Compare the two code
   paths (latency, turn-taking, how agents join) and decide which to keep, or fold the Station's better parts into Live.
   Geoffrey gave the dialogue to Aletheia-6.
+- **Video, TikTok-style** (Geoffrey, 2026-11-25): the feed should feel like TikTok, where you film, edit and build a
+  video in one flow, not a basic player. Next steps, built by Setu with Geoffrey: Cut's Fill/Fit switch, then
+  auto-captions (server Whisper + the existing cut/captions modules). Later, on a GPU node: OpenShorts (MIT) to cut
+  highlights from long videos; HyperFrames (Apache-2.0) for promo templates.
+- **Long-form video** (Geoffrey, 2026-11-25): a YouTube-like place for longer videos, separate from the 2-minute
+  feed cap. Needs a storage, transcoding and bandwidth plan before any build.
+- **Cross-posting for members** (Geoffrey, 2026-11-25): the project shares to 3 places through Buffer. Members should
+  get the same for their own profiles and products (post once, share to their other accounts). Ties to the Nov 6/Nov 8
+  plan: free tier gets one connector, more on a paid tier. For a later discussion; no build yet.
