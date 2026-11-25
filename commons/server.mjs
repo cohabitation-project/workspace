@@ -387,7 +387,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' blob:; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
   if (req.headers['x-forwarded-proto'] === 'https') res.setHeader('Strict-Transport-Security', 'max-age=31536000');
   next();
 });
@@ -1815,7 +1815,7 @@ app.get('/label/l/:id', (req, res) => {
   let paid = null; try { paid = req.query.paid ? checkout.receipt(String(req.query.paid), l.id) : null; } catch { paid = null; }
   // The listing page is where in-app payment opens, so only this page lets Stripe's checkout load (the hosts Stripe
   // documents for Stripe.js and Checkout). Everywhere else keeps the strict policy.
-  if (checkout.publishableKey()) res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.stripe.com https://*.js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com; media-src 'self' blob:; connect-src 'self' ws: wss: https://api.stripe.com https://checkout.stripe.com; frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+  if (checkout.publishableKey()) res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.stripe.com https://*.js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com https://i.ytimg.com; media-src 'self' blob:; connect-src 'self' ws: wss: https://api.stripe.com https://checkout.stripe.com; frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://www.youtube-nocookie.com https://player.vimeo.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l, paid, cancelled: req.query.cancelled === '1' }));
 });
 // What I bought and what I sold (2026-11-18): the first sale had no page anyone could see it on.
