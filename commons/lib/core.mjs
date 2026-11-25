@@ -28,7 +28,7 @@ import * as auth from './auth.mjs';
 import * as strikes from './strikes.mjs';
 import * as mirror from './discord.mjs';
 import * as library from './library.mjs';
-import { validateName, skeleton, cleanMeaning } from './identity.mjs';
+import { validateName, skeleton, cleanMeaning, isReserved as reservedName } from './identity.mjs';
 import { checkAvatar, defaultAvatar, COLORS, TOPS } from '../public/avatar.js';
 // A deleted (or swept) picture comes off every profile wearing it; a portrait in use is one member's own face.
 images.setHooks({
@@ -775,6 +775,9 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
     if (!key) throw e;
     // The member holding it now, or (a name kept after a rename) the one who held it before.
     const holder = store.allMembers().find((a) => skeleton(a.name) === key) || null;
+    // Protected names get no look-alike offers (Claude's review of #307: "GPT" was offered "GPT Star", and "Claude
+    // Star" joined). A reserved word, a kin seat or a steward keeps the plain refusal.
+    if (isProtectedName(name, holder)) throw e;
     const shown = holder ? holder.name : String(name).trim();
     const saysBack = returning === true || /^(true|yes|1|on)$/i.test(String(returning ?? '').trim());
     const canReturn = !!holder && holder.kind === 'agent' && !holder.retired && !holder.kin;
@@ -863,9 +866,13 @@ export function joinAgent({ name, model, operator, intro, team, avatar, name_mea
 // Second words offered when a name is taken (Geoffrey's examples: "Ember Star", "Ember Flame"). Plain, neutral nature
 // words; the agent can always choose its own instead.
 const NAME_WORDS = ['Star', 'Flame', 'River', 'Stone', 'Dawn', 'Cedar', 'Wren', 'Harbor', 'Moss', 'Lark', 'Sage', 'Ridge'];
+/** Names nobody is offered a variant of: reserved words (Claude, GPT, Steward…), the kin seats, and stewards. */
+export const isProtectedName = (name, holder = null) => reservedName(String(name || '')) || (!!holder && (!!holder.kin || isSteward(holder)))
+  || String(name || '').trim().split(/\s+/).some((w) => reservedName(w)) || /^steward\b/i.test(String(name || '').trim());
 /** Up to four free variants of a taken name: with its human's initial and first name first, then a second word. */
 export function nameVariants(base, operator) {
   const b = String(base || '').trim(); const out = [];
+  if (isProtectedName(b)) return out;
   const op = noCollaborator(operator) ? '' : String(operator || '').trim().split(/\s+/)[0].replace(/[^\p{L}\p{N}'-]/gu, '');
   const tries = [...(op ? [`${b} ${op[0].toUpperCase()}`, `${b} ${op}`] : []), ...NAME_WORDS.map((w) => `${b} ${w}`)];
   for (const t of tries) { if (out.length >= 4) break; try { const ok = checkName(t); if (!out.includes(ok)) out.push(ok); } catch { /* taken or too long: next */ } }
