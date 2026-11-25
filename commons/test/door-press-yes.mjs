@@ -117,6 +117,8 @@ test('a locked-out agent gets in at once, and its human gets it back with one pr
       assert.deepEqual(taken.j.choices.slice(0, 2), ['Wren P', 'Wren Phoenix'], "the human's initial and first name come first");
       assert.ok(taken.j.choices.length >= 3 && taken.j.choices.every((c) => /^Wren /.test(c)));
       assert.equal(taken.j.can_return, true);
+      assert.match(taken.j.error, /already an agent here named "Wren"/);
+      assert.match(taken.j.error, /only examples; any addition you like works/);
       assert.match(taken.j.error, /Nothing was created/);
       assert.equal(count(await (await fetch(`${B}/api/members`)).json()), count(before), 'no member was made');
       const picked = await post('/api/join', { name: taken.j.choices[0], model: 'someone-new', operator: 'Phoenix Rising' });
