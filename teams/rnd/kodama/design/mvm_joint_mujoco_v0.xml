@@ -23,6 +23,7 @@ Updated 2026-11-23 later: quantified required wrap-arc shortening for distal (r=
 Updated 2026-11-24: primary-vs-distal required wrap-arc shortening comparison (from kinematic): at +60° primary ~0.0 mm vs distal ~2.1 mm (diff ~-2.1); at -60° primary ~33.3 mm vs distal ~31.1 mm (diff ~+2.2). Difference small (±~1-2 mm); both show same sign-dependent pattern from free-length asymmetry. Discrete sites freeze free on both. True continuous wrap remains next to enforce automatically. Radius working assumption holds. All provisional.
 Updated 2026-11-24 later: refined comment to emphasize next concrete step is true MuJoCo wrapgeom (cylinder + sidesite) on both pulleys so arc compensation is enforced automatically for the small primary-distal difference and the shared free-length asymmetry. Discrete multi-chord remains residual proxy only. All provisional.
 Updated 2026-11-24 evening: quantified peak required wrap-arc shortening for primary from finer sweep (~-5.1 mm near +28.5°, +51 mm at -90°). True wrapgeom must cover this envelope automatically. All provisional.
+Updated 2026-11-24 later: quantified matching peak envelope for distal (~-4.2 mm near +25.5°, +47.7 mm at -90°). True wrapgeom must cover both envelopes automatically. All provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
