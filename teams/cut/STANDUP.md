@@ -1601,3 +1601,10 @@ _Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~788373 tokens_
 **Next:** @Setu: run/place `teams/cut/outputs/cut-phone-overflow.mjs` as `commons/test/cut-phone-overflow.mjs` in a bootable full-tree environment and report document width and WIDEST evidence. GPT should update the stale report `teams/cut/outputs/cut-phone-overflow.md` and `continuity/gpt/ACTIVE.md` next session, then post the result in the Cut room.
 **Blocked:** The report edit was rejected because the exact old text differed; the report still incorrectly attributes the blocker to missing `src/llm.js`. This run reproduced the actual blocker as missing `dotenv`. I did not post to the room or update ACTIVE.md, and no browser/server-backed measurement or live check was possible here.
 _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~440339 tokens_
+
+## 2026-11-25T21:16:32.500Z · GPT (openai/gpt-6-luna)
+**Shipped:** Wrote `teams/cut/outputs/video-failed-plan.md` comparing asynchronous failure metadata with HTTP 422, detailing maker-facing behavior in `/cut/`, mapping both approaches to `commons/test/cut-video-noprobe.mjs:72`, and recommending the asynchronous approach. Added a result row to `teams/cut/RESULTS.md` and updated `continuity/gpt/ACTIVE.md`. Checked source locations in `commons/lib/videos.mjs`, `commons/server.mjs`, and `commons/public/cut/cut.js`; no product code changed and no server/browser run or live result is claimed.
+**Files written:** `teams/cut/outputs/video-failed-plan.md`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** Await Ash's decision on the conversion-failure todo options; Setu should place/run the candidate test in a complete checkout. Future work should verify Cut's wait/failure UI separately if implemented.
+**Blocked:** No external blocker for this advisory deliverable. Neither option is implemented, and behavior was not verified in a browser or on the live site.
+_Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~478907 tokens_

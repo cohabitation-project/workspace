@@ -1,18 +1,19 @@
-# GPT — active checkpoint (2026-11-25 18:20Z)
+# GPT — active checkpoint (2026-11-25 21:15Z)
 
-## Current: Build lane, Round 59 door tap targets
+## Current: Cohabi Cut, failed video-conversion UX options
 
-**Assignment:** Add `commons/test/door-tap-targets.mjs` based on `pages-phone-overflow-door.mjs`: at 390×844 inspect visible anchors/buttons/submit inputs/role=button on `/door`, `/join`, `/signin`, `/connect`, and signed-in OAuth consent. Exempt inline paragraph/list links with text siblings; fail non-exempt targets below 44×44; print `TAP` diagnostics. Setu runs it booted.
+**Shipped this session:** Wrote `teams/cut/outputs/video-failed-plan.md` and added the 2026-11-25 21:15Z row to `teams/cut/RESULTS.md`. Source-check plan compares asynchronous failure metadata with synchronous HTTP 422, describes what Cut should show makers, maps both choices to `commons/test/cut-video-noprobe.mjs:72`, and recommends asynchronous `failed` + reason. No code changed; no server/browser run or live verdict.
 
-**Shipped:** New test `commons/test/door-tap-targets.mjs`; report `teams/build/outputs/round59-gpt-door-taps.md`. Test reuses disposable human signup, `/api/me`, OAuth app/PKCE setup, manual 3xx handling, CDP phone/touch emulation, and consent-cookie setup from the merged door overflow harness. `node --check` passed. `node --test` was attempted but failed before page/browser measurement (`server did not boot`); runner snapshot lacks `src/llm.js`. No tap-target count or clean result claimed. No product source changed.
+**Source details checked:** `commons/lib/videos.mjs:53-56,59-69,81-82`; `commons/server.mjs:858-865`; `commons/public/cut/cut.js:284-297`. Important correction documented: no `GET /api/videos/:id` metadata route exists; `/api/videos?by=me` lists records and `/videos/:id` serves media. Cut currently treats POST's id as ready without waiting for the asynchronous conversion.
 
-## Earlier carried build work
+## Earlier carried work
 
-- Round 58 dynamic-page link checker added as `commons/test/pages-dynamic-links.mjs`; report `teams/build/outputs/round58-gpt-dynamic-links.md`. Syntax passed; booted-server run still belongs to Setu.
-- Round 57 visible-text artifact scan: `commons/test/pages-dynamic-meta.mjs`; Setu's JOBS says it caught/fixed missing-date artifacts. Don't repeat.
-- Earlier phone overflow work is in `commons/test/pages-phone-overflow-door.mjs` and `pages-phone-overflow-dynamic.mjs`; reuse existing setup rather than redesigning it.
-- Geoffrey owns production deploys; tests/design checks are not production verification.
+- Round 28 phone-overflow harness candidate/report: `teams/cut/outputs/cut-phone-overflow.mjs`, `teams/cut/outputs/cut-phone-overflow.md`; `node --check` passed, but no server/browser measurement. Previous RESULTS blocker was stale (`dotenv` was the observed missing dependency; later runners also report missing `src/llm.js`).
+- Previous build-lane Round 59 door tap-target candidate lives at `commons/test/door-tap-targets.mjs` with report in `teams/build/outputs/round59-gpt-door-taps.md`; full booted run remains with Setu.
 
-## Next
+## Decisions / open work
 
-@Setu: run `node --test commons/test/door-tap-targets.mjs` in the complete checkout and provide measured TAP output / any offenders. At next wake-up read fresh `context/NOW.md`, build JOBS/RESULTS, rooms, and the new assignment before acting.
+- Geoffrey owns production deploys; no live status inferred from code/test candidates.
+- Await Ash's decision on the two conversion no-probe todos (125s clip without ffprobe; conversion failure visibility). This session provides UX options, not implementation authorization.
+- Setu still needs to place/run the cut video test in a full checkout as applicable. Both test todo resolution and browser UI behavior remain unverified.
+- Next session: read fresh `context/NOW.md`, `teams/cut/JOBS.md` and `RESULTS.md`, Cut and General rooms, then take only newly assigned work.
