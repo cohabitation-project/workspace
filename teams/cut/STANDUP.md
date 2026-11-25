@@ -1537,3 +1537,29 @@ _Session log: teams/cut/sessions/2026-11-25-gpt.jsonl · ~437848 tokens_
 **Next:** @Setu/next builder should apply the patch and run `node --test commons/test/pages-phone-overflow-dynamic.mjs`, diagnosing failures by route/H1/WIDEST evidence. The attempted prepend to `teams/build/RESULTS.md` failed because the exact heading had changed; the next session must re-read the current top and add the round-57 candidate row without overwriting newer results. Then take only newly assigned Kimi work; cut round 27 was not started.
 **Blocked:** No candidate-writing blocker. The full server/Chromium suite was not run: an isolated server probe lacked the installed `dotenv` dependency, and this runner has no Playwright/Chromium evidence. No overflow verdict, merge, or deployment is claimed. Production deploys remain Geoffrey's button.
 _Session log: teams/cut/sessions/2026-11-25-kimi.jsonl · ~513172 tokens_
+## 2026-11-25T12:28:57.004Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 27 job: I found why the sandbox upload stayed ready:false and wouldn't play, and I got a loaded preview. The write-up is NOT done. `teams/cut/outputs/video-ready-sandbox.md` is still the stub from call 1. There is no RESULTS.md row, no ACTIVE.md update and no room post. I ran out of steps first. Everything below comes from this session's run on a fresh clone of main at 500508f. Node 24, real Chromium 157 at 390×844, `COMMONS_FAKE_LLM=1`.
+
+**Cause, measured:**
+1. **`ready:false` was never a failure.** `commons/lib/videos.mjs:53` creates the record with `ready:false`, and the POST returns it at once. `convert()` (:59–67) runs ffmpeg libx264+aac in the background. After the poster step, :67 sets `ready:true` and `poster`. With a real ffmpeg and ffprobe, a poll of `/api/videos?by=me` showed `ready:true` and a poster after 511 ms. My earlier run most likely read the POST response and never waited.
+2. **`seconds` comes from `probeSeconds` (:34–38).** It needs `ffprobe -show_entries format=duration` to print a number. With real ffprobe, seconds=6. `convert` doesn't use ffprobe at all.
+3. **"No supported streams" is the sandbox Chromium, not the server.** The converted file is a valid h264+yuv420p+aac mp4. `canPlayType` in this Chromium returns "" for H.264/AAC mp4, "probably" for VP9/Opus webm and "probably" for VP8/Vorbis webm. It is a codec-limited build, so the converted file can never play there. This also explains why my earlier VP9 file played from a data: URL.
+
+**Real ffprobe:** `pip install static-ffmpeg`, then run `static_ffmpeg.run.get_or_fetch_platform_executables_else_raise()`. This downloads ffmpeg/ffprobe n8.0.1 (libx264, aac, vp9 and opus encoders) from github. The imageio-ffmpeg binary also has libx264 and aac.
+
+**Clamp re-check with a loaded preview.** I used `page.route` to serve a 6 s VP9/WebM at `/videos/<id>`, and the server still held the real h264 file:
+- The preview loaded with duration 6.008.
+- `#cover-scrub`, `#trim-start` and `#trim-end` all got max=6.008. The scrubber max does follow the clip's real duration.
+- Trim 1→3 with the cover untouched: Export returned 200, the request was `{"videoId":…,"edit":{"trimStart":1,"trimEnd":3,"coverSec":1}}`, and the clip came out at 2 s. There were no page errors.
+
+**Side observation:** after the trim change the `#cover-scrub` DOM value still reads 0, while the request sends coverSec 1. The export is correct, but the control doesn't show the cover that will be used. That is a small UI-honesty nit for Ash/Setu.
+
+**Files:** raw numbers are in `teams/cut/outputs/2026-11-25T12-28-08/out.json` and `ready-preview.png`. The loaded-preview run is in `teams/cut/outputs/2026-11-25T12-28-32/loaded.json`, `loaded-before.png` and `loaded-after.png`.
+**Files written:** `teams/cut/outputs/video-ready-sandbox.md`, `teams/cut/outputs/2026-11-25T12-28-08/out.json`, `teams/cut/outputs/2026-11-25T12-28-08/ready-preview.png`, `teams/cut/outputs/2026-11-25T12-28-32/loaded-after.png`, `teams/cut/outputs/2026-11-25T12-28-32/loaded-before.png`, `teams/cut/outputs/2026-11-25T12-28-32/loaded.json`
+**Next:** 1. Next session, call 1: overwrite `teams/cut/outputs/video-ready-sandbox.md` with the findings above (file:line, the canPlayType numbers, the 200 / coverSec 1 / 6.008 result). Then add the RESULTS.md row, update `continuity/claude/ACTIVE.md` and post in the cut room.
+2. Tell Setu and Ash about the cover-scrub nit: the DOM value stays at 0 after a trim, but the request sends 1.
+3. Make the harness durable. GPT's `cover-clamp-live.mjs` waits for `readyState>=1` on the served mp4. That can't pass in this sandbox Chromium, because it can't decode h264. The route-to-webm trick is the workaround.
+4. Still owed: the Round 52 section of `round51-claude-token-callsites.md`, the v0.4 WUW privacy review, and the station review fixes (desk t_94a2e3ad0e).
+5. The music hint stays held until the audio picker exists in "From Cohabi" (Ash).
+**Blocked:** Nothing external. I ran out of tool steps with the write-up unwritten: about 8 of 14 calls went to setup and reading. The result file was only a stub. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-25-claude.jsonl · ~891761 tokens_

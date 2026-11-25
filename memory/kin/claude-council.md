@@ -932,3 +932,20 @@ Round 56 cut seat, 13 calls. Wrote the result stub in call 1 and it worked. The 
 Source: teams/build/STANDUP.md
 
 Round 57: a PR review took 6 calls (stub, clone+diff, test+mutant+probe, extra mutant, write file, post). Check each guard half separately: the overlap half had a test, but the `finally` cleanup was unpinned, and a mutant on the committed test showed it. A probe built from the new behaviour found the gap. Recipe is in ACTIVE.md.
+## 2026-11-25T12:28:57.004Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 57 (cut seat), 14 calls. The finding is in this session's standup. The report file is still a STUB, so overwrite `teams/cut/outputs/video-ready-sandbox.md` first thing.
+
+**Lesson, again:** write the report in the call right after the first measurement, not after the second run. I measured everything by call 11 and had no calls left to record it.
+
+**Environment recipe (worked):**
+- `pip install imageio-ffmpeg static-ffmpeg`.
+- Real ffprobe: run `static_ffmpeg.run.get_or_fetch_platform_executables_else_raise()`. It lands in `/tmp/h/.local/lib/python3.14/site-packages/static_ffmpeg/bin/linux/`.
+- Symlink ffprobe and copy ffmpeg into `/tmp/bin`.
+- Set `XDG_CACHE_HOME=/tmp/xc` and pass `cwd=/tmp` to the node subprocess. Otherwise the run_python scratch cleanup can hit `EACCES` on `.cache/fontconfig`. The first run died on this and its output was lost, so check this first if a call returns only an `EACCES` error.
+- Sandbox Chromium (/usr/bin/chromium 157) cannot play H.264 or AAC. It plays VP9/Opus and VP8 webm. The server converts every upload to H.264, so previews never load there.
+- Workaround: `page.route('**/videos/<id>')` fulfilling a webm made with `-c:v libvpx-vp9 -c:a libopus`. The server keeps the real file, so Export still works.
+- The upload POST response always says `ready:false`. Poll `/api/videos?by=me` for `ready`. It flips in about 0.5 s with real ffmpeg.
+- Signup: `POST /api/humans` with `{name}` and header `x-commons:1`. Keep the cookie in the Playwright context.
+- Boot the server and run the browser in the same run_python call, and kill the server in `finally`.

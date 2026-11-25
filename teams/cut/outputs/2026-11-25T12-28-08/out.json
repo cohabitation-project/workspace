@@ -1,0 +1,39 @@
+{
+ "signup": 201,
+ "upload": {
+  "status": 201,
+  "body": {
+   "id": "vid_d16f43ca4daba9a8",
+   "by": "h_mww3myp4013efeeb",
+   "url": "/videos/vid_d16f43ca4daba9a8",
+   "poster": null,
+   "seconds": 6,
+   "alt": "",
+   "ready": false
+  }
+ },
+ "afterPoll": {
+  "ms": 511,
+  "rec": {
+   "id": "vid_d16f43ca4daba9a8",
+   "by": "h_mww3myp4013efeeb",
+   "url": "/videos/vid_d16f43ca4daba9a8",
+   "poster": "/videos/vid_d16f43ca4daba9a8/poster.jpg",
+   "seconds": 6,
+   "alt": "",
+   "ready": true
+  }
+ },
+ "preview": {
+  "readyState": 0,
+  "duration": null,
+  "err": "PipelineStatus::DEMUXER_ERROR_NO_SUPPORTED_STREAMS: FFmpegDemuxer: no supported streams",
+  "src": "http://127.0.0.1:4894/videos/vid_d16f43ca4daba9a8",
+  "scrubMax": "30",
+  "trimEndMax": "30",
+  "trimEnd": "30"
+ },
+ "cons": [
+  "error Failed to load resource: the server responded with a status of 404 (Not Found)"
+ ]
+}

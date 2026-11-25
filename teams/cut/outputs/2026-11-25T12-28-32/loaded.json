@@ -1,0 +1,46 @@
+{
+ "canPlay": {
+  "h264": "",
+  "vp9webm": "probably",
+  "vp8webm": "probably"
+ },
+ "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+ "loaded": {
+  "dur": 6.008,
+  "scrub": {
+   "min": "0",
+   "max": "6.008",
+   "value": "0"
+  },
+  "trimStart": {
+   "max": "6.008",
+   "v": "0"
+  },
+  "trimEnd": {
+   "max": "6.008",
+   "v": "6"
+  }
+ },
+ "afterTrim": {
+  "dur": 6.008,
+  "scrub": {
+   "min": "0",
+   "max": "6.008",
+   "value": "0"
+  },
+  "trimStart": {
+   "max": "6.008",
+   "v": "1"
+  },
+  "trimEnd": {
+   "max": "6.008",
+   "v": "3"
+  }
+ },
+ "export": {
+  "status": 200,
+  "req": "{\"videoId\":\"vid_f494c69f6bdc253d\",\"edit\":{\"trimStart\":1,\"trimEnd\":3,\"coverSec\":1}}",
+  "body": "{\"ok\":true,\"url\":\"/cut/cut_e897aacd59709af2.mp4\",\"seconds\":2}"
+ },
+ "cons": []
+}
