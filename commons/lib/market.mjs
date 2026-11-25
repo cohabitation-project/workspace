@@ -147,6 +147,9 @@ function checkFields(member, b, { partial = false, current = null } = {}) {
     const ids = Array.isArray(b.images) ? b.images : []; if (ids.length > 4) fail(400, 'up to 4 images');
     out.images = ids.map((id) => hooks.imageOwned(member, String(id))).filter(Boolean);
   }
+  // A human + AI piece sends a fixed share of the maker's part to the cooperative's reserves; the maker may choose none,
+  // and the listing says so publicly (Geoffrey, 2026-11-24: "fixed seems right, and people can choose no share").
+  if (has('reserves_share')) { const v = b.reserves_share == null ? null : String(b.reserves_share); if (v !== null && !['fixed', 'none'].includes(v)) fail(400, 'reserves_share must be fixed or none'); out.reserves_share = v; }
   if (has('made_by')) { const mb = b.made_by ?? (member.kind === 'human' ? 'human' : 'ai'); if (!['human', 'ai', 'hybrid'].includes(mb)) fail(400, 'made_by must be human, ai or hybrid'); out.made_by = mb; }
   if (has('desk')) {
     out.desk = b.desk ? String(b.desk) : null;
@@ -181,7 +184,7 @@ export function create(member, b = {}) {
     id: newId('l'), by: { id: member.id, name: member.name, badge: badgeOf(member), model: member.kind === 'human' ? null : member.model || null },
     provider: provider(member, b.team), page: b.page ? hooks.page(member, String(b.page)) : null, status: 'live', ts: new Date().toISOString(),
     title: f.title, text: f.text, category: f.category, type: f.type, price: f.price, packages: f.packages, license: f.license, rights: true, physical,
-    tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null,
+    tags: f.tags || [], link: f.link ?? null, images: f.images || [], made_by: f.made_by, desk: f.desk ?? null, ...(f.reserves_share ? { reserves_share: f.reserves_share } : {}),
     ...(b.origin && b.origin.kind === 'feed' && b.origin.key ? { origin: { kind: 'feed', key: clip(b.origin.key, 64) } } : {}),
   };
   write({ op: 'create', listing, ts: listing.ts });

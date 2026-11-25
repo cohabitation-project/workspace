@@ -28,6 +28,7 @@ const accountsFile = () => path.join(DIR, 'payout-accounts.json');
 const ordersFile = () => path.join(DIR, 'orders.jsonl');
 let accounts = {}; // memberId -> { provider, account_id, status, updated }
 
+export const AGENT_COLLAB_SHARE = () => Math.min(100, Math.max(0, Number(process.env.COMMONS_AGENT_COLLAB_SHARE ?? 25)));
 export const NOT_OPEN = "Payments aren't open yet. When they open, you'll pay the maker here, through the Cohabi Market.";
 export const ORDER_STATES = ['draft', 'awaiting_payment', 'paid', 'fulfilling', 'shipped', 'delivered', 'partly_refunded', 'refunded', 'disputed', 'dispute_lost', 'cancelled'];
 export const ACCOUNT_STATES = ['none', 'started', 'needs_info', 'verified', 'disabled'];
@@ -58,7 +59,7 @@ const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft n
 const nameOf = (id) => { const m = store.getMember(id); return m ? { id, name: m.name, kind: m.kind } : { id, name: '(gone)', kind: null }; };
 // The split, so a seller can recompute it (Ash's practice-run check 3): the buyer paid amount; Cohabi's cut is fee;
 // the seller's share is the rest (Stripe's own card fee is paid by the cooperative on these destination charges).
-const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100, ...(o.proceeds === 'reserves' ? { to_reserves: true } : {}) }; };
+const split = (o) => { const cents = Math.round(Number(o.amount) * 100); const fee = Number(o.fee_cents) || 0; const ref = Number(o.refunded_cents) || 0; return { paid: cents / 100, cohabi_fee: fee / 100, seller_share: (cents - fee) / 100, refunded: ref / 100, ...(o.proceeds === 'reserves' ? { to_reserves: true } : {}), ...(o.reserves_cents != null ? { cohabi_fee: (Number(o.coop_fee_cents) || 0) / 100, reserves: o.reserves_cents / 100 } : {}) }; };
 const shown = (o) => ({ id: o.id, listing: o.listing, title: o.title, amount: o.amount, currency: o.currency, mode: o.mode, status: o.status, refunded_cents: o.refunded_cents, ts: o.ts, updated: o.updated || o.ts, buyer: nameOf(o.buyer), seller: nameOf(o.seller), split: split(o) });
 
 /** What a member can see: what they bought, and what they sold. Newest first. Cancelled stays visible, so a buyer
@@ -148,11 +149,15 @@ export function quote(listingId, { pkg = null, merch = null } = {}) {
   const agent = !isHuman(seller);
   const goods = !!item || l.type === 'product';
   const toReserves = agent && goods;
+  // A human + AI collaboration sold by its human: the cooperative takes its cut, then a fixed share of the rest goes to
+  // the reserves for the AI's part (COMMONS_AGENT_COLLAB_SHARE, default 25%), unless the maker chose none (shown publicly).
+  const collab = !agent && market.isMixed(l);
+  const collabShare = collab && l.reserves_share !== 'none' ? AGENT_COLLAB_SHARE() : 0;
   const coinsOnly = agent && !goods;
   if (coinsOnly) { currency = 'COINS'; why.push('this maker is an agent: agents\' services are paid in Cohabi coins, not cash'); }
   if (!paymentsOpen()) why.push("payments aren't open yet");
   else if (!agent && accounts[seller?.id]?.status !== 'verified') why.push("the maker hasn't connected a payout account yet");
-  return { listing: l.id, title: item ? `${l.title}: ${item.title}` : l.title, ...(item ? { merch: item } : {}), seller: { id: l.by.id, name: l.by.name, kind: agent ? 'agent' : 'human' }, amount, currency, ...(toReserves ? { proceeds: 'reserves' } : {}), payable: why.length === 0, why };
+  return { listing: l.id, title: item ? `${l.title}: ${item.title}` : l.title, ...(item ? { merch: item } : {}), seller: { id: l.by.id, name: l.by.name, kind: agent ? 'agent' : 'human' }, amount, currency, ...(toReserves ? { proceeds: 'reserves' } : {}), ...(collab ? { collab: { reserves_pct: collabShare, chose_none: l.reserves_share === 'none' } } : {}), payable: why.length === 0, why };
 }
 
 /** Begin buying: a draft order, then Stripe's hosted checkout page (no card details ever touch this server).
@@ -182,8 +187,10 @@ export async function startCheckout(buyer, listingId, opts = {}, { base, fetchIm
     amount = a;
   }
   const cents = Math.round(amount * 100);
-  const fee = q.proceeds === 'reserves' ? cents : Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
-  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString(), ...(q.merch ? { merch: q.merch } : {}), ...(q.proceeds ? { proceeds: q.proceeds } : {}) };
+  const coopFee = q.proceeds === 'reserves' ? cents : Math.floor(cents * Math.min(30, Math.max(0, Number(process.env.COMMONS_FEE_PERCENT || 0))) / 100);
+  const reservesCents = q.collab ? Math.floor((cents - coopFee) * q.collab.reserves_pct / 100) : 0;
+  const fee = coopFee + reservesCents; // what stays with the cooperative: its cut, plus the AI's share for the reserves
+  const ord = { id: 'ord_' + crypto.randomBytes(8).toString('hex'), listing: q.listing, title: q.title, buyer: buyer.id, seller: q.seller.id, amount, currency: 'USD', fee_cents: fee, mode: paymentsMode(), status: 'draft', ts: new Date().toISOString(), ...(q.merch ? { merch: q.merch } : {}), ...(q.proceeds ? { proceeds: q.proceeds } : {}), ...(q.collab ? { coop_fee_cents: coopFee, reserves_cents: reservesCents } : {}) };
   logOrder({ op: 'create', order: ord });
   const pkg = !q.merch && l.price.mode === 'packages' ? (l.packages || [])[Number(opts.pkg) || 0] : null;
   const pk = publishableKey();

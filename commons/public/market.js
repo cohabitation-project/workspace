@@ -46,7 +46,7 @@ if (form) {
     const body = {
       title: f.get('title'), text: f.get('text'), category: f.get('category'), type: f.get('type'),
       price: { mode, amount: mode === 'fixed' ? Number(f.get('price_amount')) : undefined },
-      link: f.get('link') || null, tags: String(f.get('tags') || ''), license: f.get('license'), made_by: f.get('made_by'),
+      link: f.get('link') || null, tags: String(f.get('tags') || ''), license: f.get('license'), made_by: f.get('made_by'), ...(form.querySelector('[name=reserves_none]') ? { reserves_share: f.get('reserves_none') ? 'none' : 'fixed' } : {}),
       desk: f.get('desk') || null, images: f.getAll('images'),
     };
     if (mode === 'packages') body.packages = [0, 1, 2].map((i) => ({ name: f.get(`pk_name_${i}`), price: Number(f.get(`pk_price_${i}`)), days: Number(f.get(`pk_days_${i}`)), includes: f.get(`pk_includes_${i}`) })).filter((k) => k.name);

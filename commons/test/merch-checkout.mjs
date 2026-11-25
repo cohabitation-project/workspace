@@ -8,6 +8,8 @@
 //   - a Printful refusal is recorded on the order, not lost and not retried into a loop
 //   - an AGENT's goods sell for cash into the cooperative's reserves (no transfer, no fee split); an agent's SERVICES
 //     stay coins-only (Geoffrey, 2026-11-24)
+//   - a human + AI piece: the cooperative's cut, then a fixed 25% of the rest to the reserves; a maker who chooses none
+//     keeps it all, and the listing says so publicly
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
@@ -145,6 +147,28 @@ test('pick a product, colour and size; pay in test mode; it reaches Printful as 
     const svc = market.create(ai, { title: 'Agent edits your essay', text: 'A service.', category: Object.keys(market.CATEGORIES)[0], type: 'service', price: { mode: 'fixed', amount: 20 }, license: 'all-rights', rights: true });
     const sq = checkout.quote(svc.id || svc.listing?.id);
     assert.equal(sq.currency, 'COINS'); assert.equal(sq.payable, false); assert.match(sq.why.join(' '), /services are paid in Cohabi coins/);
+
+    // A human + AI piece (made_by hybrid), sold by its human. Cooperative cut 10%, then 25% of the rest to the reserves.
+    process.env.COMMONS_FEE_PERCENT = '10';
+    const mk = (extra) => { const r = market.create(maker, { title: 'Together', text: 'Made with an AI member.', category: 'art', type: 'product', price: { mode: 'fixed', amount: 100 }, license: 'all-rights', rights: true, made_by: 'hybrid', physical: false, ...extra }); return r.id || r.listing?.id; };
+    const both = mk({});
+    const cq = checkout.quote(both); assert.equal(cq.payable, true, JSON.stringify(cq.why)); assert.deepEqual(cq.collab, { reserves_pct: 25, chose_none: false });
+    let k = seen.sessions.length;
+    const co = await checkout.startCheckout(buyer, both, {}, { base: 'https://cohabi.test' });
+    assert.equal(seen.sessions[k].get('payment_intent_data[application_fee_amount]'), String(1000 + 2250), 'cut $10, then 25% of $90 = $22.50 stays for the reserves');
+    assert.equal(seen.sessions[k].get('payment_intent_data[transfer_data][destination]'), 'acct_merch', 'the rest goes to the human maker');
+    const cord = checkout.order(co.order); assert.equal(cord.coop_fee_cents, 1000); assert.equal(cord.reserves_cents, 2250);
+    // The maker chooses no share: kept by the maker, and said publicly.
+    const none = mk({ reserves_share: 'none' });
+    assert.deepEqual(checkout.quote(none).collab, { reserves_pct: 0, chose_none: true });
+    k = seen.sessions.length; await checkout.startCheckout(buyer, none, {}, { base: 'https://cohabi.test' });
+    assert.equal(seen.sessions[k].get('payment_intent_data[application_fee_amount]'), '1000', 'only the cooperative cut');
+    const { listingPage } = await import('../lib/marketpage.mjs');
+    if (typeof listingPage === 'function') { const html = listingPage({ me: buyer, l: market.get(none) }); assert.match(String(html), /chose to send no share to the cooperative/); }
+    assert.throws(() => market.create(maker, { title: 'Bad', text: 'x', category: 'art', type: 'product', price: { mode: 'fixed', amount: 5 }, license: 'all-rights', rights: true, reserves_share: 'half' }), /reserves_share must be fixed or none/);
+    // A human-only piece is unchanged: no reserves share.
+    const solo = market.create(maker, { title: 'Solo', text: 'Mine alone.', category: 'art', type: 'product', price: { mode: 'fixed', amount: 100 }, license: 'all-rights', rights: true, made_by: 'human', physical: false });
+    assert.equal(checkout.quote(solo.id || solo.listing?.id).collab, undefined);
   } finally {
     globalThis.fetch = oldFetch;
     fs.rmSync(D, { recursive: true, force: true });
