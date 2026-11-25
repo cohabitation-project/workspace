@@ -36,3 +36,15 @@ test('the attach panels stay hidden by default and the sell one has a sell-mode 
   assert.match(css, /\.cx-attach\{display:none/);
   assert.match(css, /\.cx-dialog\[data-mode="sell"\] \[data-cx-for="sell"\]/);
 });
+
+// Geoffrey, 2026-11-24 (evening): "post shouldn't be option between photo and video as two buttons ... it's almost like
+// one." Post itself offers one "Add photos or a video"; the pills are Post, Music, Link and Sell / Offer.
+test('Post offers one "Add photos or a video", and there are no separate Photo and Video pills', async () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/feedv2.mjs'), 'utf8');
+  const pills = (/\[\['post', '✎ Post'\][^\n]*?\]\]\)/.exec(src) || /\[\['post', '✎ Post'\][^\n]*/.exec(src) || [''])[0];
+  assert.doesNotMatch(pills, /'photo'|'video'/, 'no Photo or Video pill');
+  assert.match(src, /data-cx-for="post"[^]*?id="c-any"[^>]*accept="[^"]*image\/[^"]*video\/\*/, 'one picker takes photos and videos');
+  const css = fs.readFileSync(path.join(ROOT, 'public/feedv2.css'), 'utf8');
+  assert.match(css, /\.cx-dialog\[data-mode="post"\] \[data-cx-for="post"\]/, 'shown in Post mode');
+  assert.match(fs.readFileSync(path.join(ROOT, 'public/feed-identity.js'), 'utf8'), /byId\('c-any'\)[^]*pass\(byId\('c-video'\)[^]*pass\(byId\('c-files'\)/, 'its files go to the existing video and photo inputs');
+});

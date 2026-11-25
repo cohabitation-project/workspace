@@ -415,7 +415,7 @@ body.cx-open{overflow:hidden}
 .cx-text{display:block;width:100%;min-height:130px;padding:14px;border:1px solid var(--cx-line);border-radius:12px;background:#fffaf4;resize:vertical;font:15px/1.5 system-ui,sans-serif;color:var(--cx-ink)}
 .cx-text:focus{outline:3px solid var(--cx-plum);outline-offset:1px}
 .cx-attach{display:none;margin-top:12px}
-.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="sell"] [data-cx-for="sell"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
+.cx-dialog[data-mode="post"] [data-cx-for="post"],.cx-dialog[data-mode="photo"] [data-cx-for="photo"],.cx-dialog[data-mode="sell"] [data-cx-for="sell"],.cx-dialog[data-mode="video"] [data-cx-for="video"],.cx-dialog[data-mode="music"] [data-cx-for="music"],.cx-dialog[data-mode="link"] [data-cx-for="link"]{display:block}
 /* what you attached stays visible whichever tab is picked */
 .cx-dialog [data-cx-for="photo"]:has(#c-pics:not(:empty)),.cx-dialog [data-cx-for="video"]:has(#c-vid:not([hidden])),.cx-dialog [data-cx-for="video"]:has(#cx-cam:not([hidden])){display:block}
 .cx-drop{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px;border:1px dashed #b4a1b8;border-radius:13px;background:#fbf8f5;color:var(--cx-muted);font:12px system-ui,sans-serif;text-align:center;cursor:pointer;width:100%}
@@ -569,3 +569,5 @@ body.cx-camopen{overflow:hidden}
 .cx-sell .cx-check input{width:auto;margin:3px 0 0;flex:none}
 .cx-sell .cx-lbl{margin-top:4px}
 .ma-warn{display:block;flex-basis:100%;margin:6px 0 2px;padding:8px 10px;border-radius:9px;background:#fff4e0;border:1px solid #e8b860;color:#5a3b00;font-size:13px;line-height:1.4}
+/* Post mode: one "Add photos or a video" (cx-media); the photo and video blocks show only their previews here. */
+.cx-dialog[data-mode="post"] [data-cx-for="photo"]>.cx-drop,.cx-dialog[data-mode="post"] [data-cx-for="video"]>.cx-vbtns{display:none}

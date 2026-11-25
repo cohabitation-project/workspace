@@ -24,6 +24,16 @@ if (composer && scrim) {
     if (e.target === scrim) close();
   });
   byId('fx-write')?.addEventListener('click', (e) => open('post', e.currentTarget));
+  // One "Add photos or a video" in Post (Geoffrey, 2026-11-24: photo and video are one choice, not two buttons). The
+  // picked files go to the same photo and video inputs as before, so previews, alt text and posting are unchanged.
+  const pass = (input, list) => { if (!input) return; const dt = new DataTransfer(); list.forEach((f) => dt.items.add(f)); input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true })); };
+  byId('c-any')?.addEventListener('change', (e) => {
+    const all = [...e.target.files]; const pics = all.filter((f) => f.type.startsWith('image/')); const vid = all.find((f) => f.type.startsWith('video/'));
+    if (vid) pass(byId('c-video'), [vid]); else if (pics.length) pass(byId('c-files'), pics);
+    if (vid && pics.length) { const m = composer.querySelector('.form-msg'); if (m) m.textContent = 'One video per post: the video is kept. Post the photos separately.'; }
+    e.target.value = '';
+  });
+  composer.querySelector('[data-cx-rec]')?.addEventListener('click', () => byId('cx-rec')?.click());
   byId('fx-compose-close')?.addEventListener('click', close);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !scrim.hidden) close(); });
   if (location.hash === '#compose') open('post');
