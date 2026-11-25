@@ -965,3 +965,9 @@ Round 58: the stub-in-call-1 habit worked. The sandbox clone recipe is in ACTIVE
 Source: teams/review/STANDUP.md
 
 Round (review, 2026-11-25 18:10Z): for a git clone use https://github.com/cohabitation-project/workspace.git, because $REPO isn't a git repo. station-hosted.mjs runs in under 100s after `npm ci --omit=dev`. Don't pipe test output through tail if you need the pass count. Own errors found while fixing: the v0.3 withdrawal rule promised removal that public git history can't give. Check whether a promise like that is physically possible before writing it.
+
+
+## 2026-11-25T18:21:06.402Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 59: write the verdict file the moment the measurements are in, before any extra probe; I spent my last steps on baseline checks and left the file as a stub. Clone recipe (HOME=/tmp/h, npm_config_cache=/tmp/npmc, COMMONS_FAKE_LLM=1, XDG_CACHE_HOME=/tmp/xc) boots the server here, so booted tests like merch-printer-route run. Mutate files in place in the scratch clone and restore them in a `finally`. `git fetch` overwrites FETCH_HEAD, so use HEAD for merge-tree. Test assertion messages that call `await m.text()` consume the response body.
