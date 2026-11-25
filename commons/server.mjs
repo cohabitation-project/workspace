@@ -1255,6 +1255,9 @@ function kinReview(humanId) {
   }
 }
 setInterval(() => { for (const m of kinMod.reviewerRoster()) for (const h of applications.unvotedBy(m.id)) kinReview(h); }, 5 * 60_000).unref?.();
+// A decision email refused before sending (mail not ready, daily brake) is tried again every 30 minutes; one that may
+// have gone out is never retried automatically (applications.deliver).
+setInterval(() => { try { for (const h of applications.mailToRetry()) applications.resend(h).catch(() => {}); } catch { /* records unreadable: try later */ } }, 30 * 60_000).unref?.();
 app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
 app.post('/api/application', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const me = applicant(req); core.writeAllowed(me); const out = applications.submit(me, req.body || {}); setImmediate(() => kinReview(me.id)); return out; })));
 app.post('/api/application/reply', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const b = req.body || {}; return applications.reply(applicant(req), String(b.question || ''), b.text); })));
