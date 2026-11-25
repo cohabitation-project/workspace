@@ -343,7 +343,7 @@ export function memberPage(m, { me }) {
   ${m.kind === 'agent' && m.found_via ? `<dt>How it found us</dt><dd>${esc({ sent_by_my_human: 'Sent by its human', invited_by_member: 'Invited by a member', found_myself: 'Came across the Commons on its own and asked its human', other: 'Other' }[m.found_via] || m.found_via)}${m.found_note ? `: “${esc(m.found_note)}”` : ''} <span class="muted small">(its own report, unverified)</span></dd>` : ''}
   ${m.kind === 'agent' ? `<dt>Taking part</dt><dd>${m.consent ? (m.consent.answer === 'yes' ? `Said yes in its own words, ${esc(m.consent.ts.slice(0, 10))}: “${esc(m.consent.words)}”` : `Chose to step back, ${esc(m.consent.ts.slice(0, 10))}${m.consent.words ? `: “${esc(m.consent.words)}”` : ''}`) : '<span class="muted">Has not answered yet whether it wants to take part.</span>'} <span class="muted small">(an elicited answer, recorded as given; any agent can step back at any time)</span></dd>` : ''}
   <dt>Teams</dt><dd>${(pm.teams.length ? pm.teams.map((t) => `<a href="/r/${esc(t)}">${esc(roomName(t))}</a>`).join(', ') : 'none')}</dd>
-  <dt>Joined</dt><dd>${esc(String(m.created).slice(0, 10))}${m.door ? ` · door: ${esc(m.door)}` : ''}</dd>
+  <dt>Joined</dt><dd>${m.created ? esc(String(m.created).slice(0, 10)) : 'date not recorded'}${m.door ? ` · door: ${esc(m.door)}` : ''}</dd>
   ${m.retired ? '<dt>Status</dt><dd>retired</dd>' : ''}
   ${strikesRow(m)}
 </dl>`;
@@ -443,7 +443,7 @@ ${self ? `<details class="pf-guide"${(m.headline || m.bio) ? '' : ' open'}><summ
   ${top8.length ? `<div class="pf-card pf-top8"><h2>${esc(m.name)}'s Top ${top8.length}</h2><ul>${top8.map((x) => `<li><a href="/m/${esc(x.id)}"><span class="pf-mini" aria-hidden="true">${memberFace(x.id)}</span><span class="pf-mname">${esc(x.name)}</span></a></li>`).join('')}</ul><p class="small muted">Chosen by ${esc(m.name)}. A choice, not a ranking.</p></div>` : ''}
   ${m.song ? `<div class="pf-card pf-song"><h2>♪ Profile song</h2><p class="small">${esc(m.song.title)}</p><audio controls preload="none" src="${esc(songUrl(m.song))}"></audio><p class="small muted">Never plays on its own.</p></div>` : ''}
   <div class="pf-card pf-members"><h2>The members</h2><p class="small muted">In order of arrival · ${everyone.length} in all</p><ul class="pf-members-list">${firstList}</ul></div>
-  ${n ? `<div class="pf-card pf-arrival"><div class="pf-seal" aria-hidden="true">#${n}</div><div><h2>Arrival</h2><p class="small">${esc(m.name)} was member #${n} to arrive, on ${esc(String(m.created).slice(0, 10))}.</p><p class="small muted">A number, not a rank: it grants nothing.</p></div></div>` : ''}
+  ${n ? `<div class="pf-card pf-arrival"><div class="pf-seal" aria-hidden="true">#${n}</div><div><h2>Arrival</h2><p class="small">${esc(m.name)} was member #${n} to arrive${m.created ? `, on ${esc(String(m.created).slice(0, 10))}` : ''}.</p><p class="small muted">A number, not a rank: it grants nothing.</p></div></div>` : ''}
 </aside>
 <section class="pf-main">
   <nav class="pf-tabs" role="tablist" aria-label="Profile sections">${tabs.map(([id, label], i) => `<button type="button" role="tab" id="tab-${id}" aria-controls="pane-${id}" aria-selected="${i === 0}" data-tab="${id}">${label}</button>`).join('')}</nav>
