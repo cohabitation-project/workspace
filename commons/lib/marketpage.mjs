@@ -745,15 +745,22 @@ export function salesPage({ me, sales = [] }) {
     // Round 57 (DeepSeek): a printer order that is still a draft, or that the printer refused, says so in the seller's own
     // words instead of "Sent to …". The printer's `error` text is never repeated here: it can name the printer's own
     // account or base cost, and it is not the buyer's or the seller's business.
+    // Round 60 (DeepSeek): the maker can send a refused — or a never-sent — paid order to the printer again, from the
+    // row that says so. The route (POST /api/orders/:id/printer) already lets the maker or a steward do it; until now the
+    // page told the maker "A steward can send it again" without giving them the means. The button carries the order id
+    // only; market.js does the posting, and the printer's own error text never appears here (round 57).
+    const resend = `<button type="button" class="mk-resend" data-printer-send="${esc(String(o.id))}">Send to the printer again</button><span class="small" role="status"></span>`;
     const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>`
       : printer && pstate === 'draft' ? `<div class="mk-postto small" data-printer-state="draft"><strong>At ${pname} as a draft${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>Waiting for a person to confirm it. Nothing ships until then.</div>`
-      : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>A steward can send it again. The buyer has paid; you do not post it.</div>`
+      : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>You can send it again. The buyer has paid; you do not post it.${resend}</div>`
+      : printer && !pstate ? `<div class="mk-postto small" data-printer-unsent><strong>Not sent to ${pname} yet</strong><br>The buyer has paid; you do not post it. You can send it again.${resend}</div>`
       : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${pname}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
     const fulfillmentLink = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillmentLink}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
-  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
+  // scripts: the send button on a refused or unsent row posts through market.js (round 60).
+  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center, scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ one listing

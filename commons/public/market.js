@@ -188,3 +188,23 @@ if (form && merchBox) {
     } catch (err) { mmsg.textContent = err.message; }
   });
 }
+
+// Send a paid order to the printer again (round 60). The maker's sales page puts [data-printer-send] on an order the
+// printer refused, or one that never reached it; this posts to the same route a steward uses and says where the order
+// stands afterwards. The printer's own `error` text is never printed: the server sends it for the order's record, and it
+// can name the printer's account or base cost, which is not the maker's business on a page.
+document.querySelectorAll('[data-printer-send]').forEach((b) => b.addEventListener('click', async () => {
+  const words = { sent: 'Sent to the printer.', draft: 'At the printer as a draft, waiting for a person to confirm it.', failed: 'The printer refused it again.' };
+  const box = b.parentElement; const msg = box && box.querySelector('[role=status]');
+  b.disabled = true; if (msg) msg.textContent = 'Sending…';
+  try {
+    const r = await fetch(`/api/orders/${encodeURIComponent(b.dataset.printerSend)}/printer`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, credentials: 'same-origin', body: '{}',
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || `error ${r.status}`);
+    const state = j.printer && j.printer.state;
+    if (msg) msg.textContent = words[state] || (j.sent ? 'Sent to the printer.' : 'Nothing was sent.');
+    if (state === 'sent' && msg) { b.remove(); const strong = box.querySelector('strong'); if (strong) strong.textContent = 'Sent to the printer'; }
+  } catch (err) { if (msg) msg.textContent = err.message; b.disabled = false; }
+}));
