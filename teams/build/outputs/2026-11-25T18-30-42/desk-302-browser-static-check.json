@@ -1,0 +1,23 @@
+{
+  "syntax": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "help": {
+    "exit": 0,
+    "stdout": "Usage: node commons/test/desk-302-browser.mjs [options]\n\n  --url URL       Absolute /desk URL on the running PR #302 server\n                  (default: http://127.0.0.1:3000/desk; env: DESK_302_URL)\n  --out DIR      Directory for two PNGs and results.json\n                  (default: teams/build/outputs/desk-302-browser; env: DESK_302_OUT)\n  --browser PATH Chromium/Chrome executable (env: CHROME_PATH or CHROMIUM_PATH)\n\nThe target server must already expose populated composer, hand-in and review states.\nNo session cookie is accepted or installed. Missing required states fail rather than\nproducing a false green. Nothing is submitted and no product code is changed.\n",
+    "stderr": ""
+  },
+  "anchors": {
+    ".desk-composer": true,
+    ".desk-handin": true,
+    ".desk-review": true,
+    "document.documentElement.scrollWidth": true,
+    "desk-${viewport.width}x${viewport.height}.png": true,
+    "button.right >= width": true,
+    "if (!report.pass) process.exitCode = 1": true
+  },
+  "sha256": "82dc1b8798cc85611baf0fef4892f818aad50b25040223692796e81ec4b978d3",
+  "bytes": 12915
+}

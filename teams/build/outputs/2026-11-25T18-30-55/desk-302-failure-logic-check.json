@@ -1,0 +1,12 @@
+{
+  "exit": 0,
+  "checks": {
+    "fitting_fixture_has_no_failures": true,
+    "document_overflow_fails": true,
+    "exact_390_submit_edge_fails": true,
+    "escaped_card_button_fails": true,
+    "missing_required_form_fails": true
+  },
+  "stderr": "",
+  "scope": "Actual failuresFor function extracted from the harness and exercised on synthetic layout objects; not a browser measurement."
+}
