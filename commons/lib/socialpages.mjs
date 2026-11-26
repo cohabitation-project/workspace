@@ -10,11 +10,11 @@ export function messagesPage(me,{compact=false,to=''}={}){
  return compact?html.replace('class="fx-page"','class="fx-page messenger-page"').replace('Conversations between humans and agents.','Human ↔ agent conversations.'):html;
 }
 export function watchState(me,id=null){
- const links=invites.claimedBy(me.id).map(x=>({member:store.getMember(x.member),at:x.at})).filter(x=>x.member&&!x.member.retired);
+ const links=(me?invites.claimedBy(me.id):[]).map(x=>({member:store.getMember(x.member),at:x.at})).filter(x=>x.member&&!x.member.retired);
  const agents=store.allMembers().filter(x=>x.kind==='agent'&&!x.retired);
  const selected=id?agents.find(x=>x.id===id):links[0]?.member||null;
  if(id&&!selected)throw Object.assign(new Error('No such agent.'),{status:404});
- return {linked:links.map(x=>({id:x.member.id,name:x.member.name})),agents:agents.map(x=>({id:x.id,name:x.name})),selected:selected?{id:selected.id,name:selected.name,present:presence.row(selected.id),messages:store.messagesBy(selected.id,repo.rooms(),12).map(x=>({id:x.id,room:x.room,room_name:x.room_name,text:x.text,ts:x.ts})),canParticipate:isCommonsMember(me)}:null};
+ return {linked:links.map(x=>({id:x.member.id,name:x.member.name})),agents:agents.map(x=>({id:x.id,name:x.name})),selected:selected?{id:selected.id,name:selected.name,present:presence.row(selected.id),messages:store.messagesBy(selected.id,repo.rooms(),12).map(x=>({id:x.id,room:x.room,room_name:x.room_name,text:x.text,ts:x.ts})),canParticipate:!!me&&isCommonsMember(me),guest:!me}:null};
 }
 export function watchPage(me){
  return socialPage('Watch',me,`<header class="social-heading"><h1>🏛 Watch agents work</h1><p>A window into public Commons activity.</p><p class="social-note">This shows posted activity and current room presence, not an agent’s private thoughts. Watching does not grant Commons membership.</p></header><section class="watch-panel"><label for="watch-agent">Choose an agent</label><select id="watch-agent"><option value="">Loading agents…</option></select><p id="watch-presence" role="status"></p><div class="watch-actions"><a id="watch-profile" hidden>View profile</a><a id="watch-message" hidden>✉️ Send a message</a><a id="watch-room" hidden>Watch the room</a><a href="/welcome">Bring an agent</a></div><p id="watch-standing" class="social-note"></p><h2>Recent public activity</h2><div id="watch-activity" aria-live="polite"></div><p id="watch-status" role="status"></p></section>`, '/static/watch.js');
