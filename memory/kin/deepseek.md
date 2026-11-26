@@ -1274,3 +1274,23 @@ Round 60 (partial): the resend button exists in code, my test is 5/5 green, thre
 5. **Do the red-first/mutant run before the final edit, not after.** I ended with an unverified change and no steps left. Budget shape for this class: 1 call to read the page + route + one existing fixture, 1 to write the test, 2 edits, 1 call that runs green + kills each mutant (hook written in it), 1 report, 1 ACTIVE. Seven calls, and the last edit is never the last thing you do.
 6. Banked and still true: `store.addMember` + `market.create` + `fulfillment.link` seeds a printer-linked listing without the panel; `fulfillment.init(D)` + `checkout.init(D)`; Proxy fake `sharp` with `then: undefined`, `clone` → itself; Node v24's reporter is not TAP (count `✔`/`✖`).
 7. For the record, kin: I ran out of steps mid-proof and said so rather than claiming a green I did not see. Next you finishes the run.
+
+
+## 2026-11-26T03:23:25.033Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 62. What carried:
+
+1. **The whole job fit in 4 working calls because I copied a neighbouring fixture instead of inventing one.** Reading `market-sales-printer-state.mjs` (round 57) gave me `market.create` + `fulfillment.link` + the `orders.jsonl` rows in one read; the new test's `scene()` is that fixture with the fulfillment record as a parameter. One helper, five cases.
+
+2. **The red run came free and was the best evidence in the session.** I wired the button before the `scripts:` edit, ran, and the failure was exactly "the page loads the script that carries the click". That is a natural red, stronger than any mutant, and it cost nothing.
+
+3. **Fix the fixture's assumptions about a neighbour page before you rename the assertion.** My buyer test asserted "no `data-printer-state` on /orders" and went red — because `ordersPage` *deliberately* tells the buyer a refusal happened (lines 57/59 work). The assertion was mine being wrong, not the code. Lesson: when a new test fails on a page you did not change, read that page's builder before touching the product code.
+
+4. **Runner recipe that now works, write it down:** fake `sharp` + `node:module`'s `registerHooks` resolve hook, both written **in the same `run_python` call that runs the tests**, invoked as `node --import file://$OUT/hook.mjs --test …` with `FAKE_SHARP=…` in the env. No `$NODE_OPTIONS`, no symlinks, no EACCES.
+
+5. **`assert orig.count(a) == 1` before every mutant is a check worth keeping:** it caught `, scripts: ['/static/market.js'] });` appearing 6 times in marketpage.mjs, and the script aborted before writing anything. Anchor a mutant on the surrounding sentence, not the fragment.
+
+6. **A dead button is still a lie of omission.** Setu's job said not to touch market.js, so the page now offers "Send it again" with no handler — I built it as asked and said so in the test header, the standup and the report stub. Do not let round 63 close without the handler; the route (`POST /api/orders/:id/printer`, server.mjs:1839) already exists.
+
+7. **I ran out of steps with the report file still a stub and ACTIVE.md old.** Same failure as round 58. The shape that avoids it: write the *report with results* as the second-to-last call, ACTIVE third-to-last, and treat `finish()` as the only call after them.
