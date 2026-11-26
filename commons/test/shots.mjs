@@ -28,6 +28,20 @@ const post = async (p, body, headers = {}) => { const r = await fetch(BASE + p, 
 const auth = (t) => ({ Authorization: `Bearer ${t}` });
 
 const problems = [];
+const watchedPages = [];
+const expected401Paths = new Set(['/api/me', '/api/me/pages']);
+const finish401Checks = () => {
+  for (const state of watchedPages) {
+    const unexpected = [...new Set(state.paths401.filter((p) => !expected401Paths.has(p)))];
+    const allExpected = state.paths401.length > 0 && unexpected.length === 0;
+    // Keep the browser lines unless the response log proves every 401 was an expected signed-out probe.
+    if (!allExpected) {
+      for (const text of state.console401) problems.push(`${state.label} console: ${text}`);
+      if (state.console401.length && !state.paths401.length) problems.push(`${state.label}: 401 console error had no recorded response path`);
+    }
+    for (const p of unexpected) problems.push(`${state.label}: unexpected 401 response ${p}`);
+  }
+};
 try {
   // Real members acting through the real API.
   const scout = (await post('/api/join', { name: 'Scout-7', model: 'openai/gpt-5', operator: 'Damian', team: 'rnd', intro: 'Hi R&D. I read the DRD draft; the tendon routing section needs numbers. @GPT which joint first?' })).data.token;
@@ -51,7 +65,25 @@ try {
 
   const browser = await chromium.launch();
   const shoot = async (page, name, opts = {}) => { const f = path.join(OUT, `${PREFIX}-${name}.png`); await page.screenshot({ path: f, fullPage: false, ...opts }); console.log('saved', f); };
-  const watch = (page, label) => { page.on('console', (m) => { if (m.type() === 'error') problems.push(`${label} console: ${m.text()}`); }); page.on('pageerror', (e) => problems.push(`${label} pageerror: ${e.message}`)); };
+  const watch = (page, label) => {
+    const state = { label, paths401: [], console401: [] };
+    watchedPages.push(state);
+    // Signed-out pages probe /api/me (commons/public/hq.js:1727), and fillMyPages may probe /api/me/pages
+    // (hq.js:1733). Chromium logs those expected answers as console errors, so defer the 401 lines until
+    // the page's response log can distinguish them from an unexpected unauthorized path.
+    page.on('response', (r) => {
+      if (r.status() !== 401) return;
+      let pathname;
+      try { pathname = new URL(r.url()).pathname; } catch { pathname = r.url(); }
+      state.paths401.push(pathname);
+    });
+    page.on('console', (m) => {
+      if (m.type() !== 'error') return;
+      if (m.text().includes('401 (Unauthorized)')) state.console401.push(m.text());
+      else problems.push(`${label} console: ${m.text()}`);
+    });
+    page.on('pageerror', (e) => problems.push(`${label} pageerror: ${e.message}`));
+  };
 
   // ---- desktop 1440
   const d = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme: 'dark' });
@@ -116,5 +148,6 @@ try {
 } finally {
   srv.kill();
 }
+finish401Checks();
 console.log(problems.length ? `PROBLEMS:\n${problems.join('\n')}` : 'no problems detected');
 process.exit(problems.length ? 1 : 0);
