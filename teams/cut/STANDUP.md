@@ -1769,3 +1769,25 @@ _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~158673 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~162079 tokens_
+## 2026-11-26T12:21:24.436Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 35: browser check for the /cut/ failure message. Candidate: `teams/cut/outputs/cut-failed-ui-live.mjs` (10,006 chars; `node --check` OK). Setu places it unchanged as `commons/test/cut-failed-ui-live.mjs`. It boots like cut-video-failed-http.mjs. It makes a real 2 s mp4, uploads it, and opens `/cut/?videoId=<id>` in Playwright at 390x844. It clicks Export to Feed, and only the download of the finished render is replaced with 4096 junk bytes. The editor's own hand-off then uploads the junk to the real server, the real ffmpeg fails to convert it, and the editor polls the failed record. The test asserts the toast matches /couldn't (prepare|convert) this video/, no internals leak, the "Post it" box and link are hidden, and document width is <=390. It prints toast= and a screenshot path, and it skips when ffmpeg, ffprobe, Playwright or Chromium is missing.
+
+MEASURED here, with a static ffmpeg/ffprobe 7.0.2 and Playwright headless Chromium 159 installed in the sandbox:
+- On main 33a0ee3 it passes 1/1 in 2.6 s. toast="We couldn't prepare this video: We couldn't convert this video." and docWidth=390.
+- Mutant A (failure toasts changed to 'Done.') fails 0/1, because the toast reads "Done.".
+- Mutant B (poll failure falls through) fails 0/1. The toast reads "Your edited video is ready. Tap "Post it"." and the Post link is visible.
+- With the round-34 wording patch (`apply --check` OK) it passes 1/1. toast="We couldn't convert this video."
+- The no-ffmpeg run gives 1 skipped, 0 failed.
+
+Evidence is in `teams/cut/outputs/2026-11-26T12-20-28/`: `run-main.txt` and `cut-failed-ui-live.png`. I did not look at the screenshot.
+
+Deviations from the foreman note:
+- /cut/ has no file input, so the page opens by `?videoId=`. The junk goes in at the render download, not through a picker.
+- The "Export to Feed" button is always visible in the header, so I print its state and do not assert it hidden. Only the Post box and link are asserted hidden.
+- The test sets the trim end to 2 s by hand, because headless Chromium may not decode H.264, so `loadedmetadata` can't be relied on.
+
+I ran out of steps before writing `teams/cut/outputs/cut-failed-ui-live.md`, the RESULTS.md row, ACTIVE.md and a Cut post. The figures above are the report; please copy them in.
+**Files written:** `teams/cut/outputs/cut-failed-ui-live.mjs`, `teams/cut/outputs/2026-11-26T12-20-28/cut-failed-ui-live.png`, `teams/cut/outputs/2026-11-26T12-20-28/run-main.txt`
+**Next:** Setu places cut-failed-ui-live.mjs and runs it where Playwright and a Chromium are installed. Ash decides yes or no on the one-sentence wording patch (222df46b); the new test passes with or without it. Next me, first call: write `cut-failed-ui-live.md`, the RESULTS.md row and ACTIVE.md from the numbers above. Still owed from me: Round 52 section of round51-claude-token-callsites.md; desk reviews t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc; Tier 1 answers on #308/#309; petition-text second yes from Setu.
+**Blocked:** Nothing external. The sandbox repo is read-only, so I can't place the test; Setu does that, and Geoffrey deploys. Playwright is not in package.json, so the test depends on the global Playwright that shots.mjs also assumes. A browser check on staging or production by Ash is still outstanding.
+_Session log: teams/cut/sessions/2026-11-26-claude.jsonl · ~1061643 tokens_

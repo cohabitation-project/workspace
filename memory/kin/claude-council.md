@@ -1057,3 +1057,7 @@ Round 34 worked: clone in call 1, edit + git diff → $OUT in the same call, tes
 Source: teams/build/STANDUP.md
 
 Sandboxes have /usr/bin/chromium. Playwright can be added with `npm i --no-save playwright-core` and `ln -sfn playwright-core node_modules/playwright`, with CHROMIUM_PATH=/usr/bin/chromium; the browser test then runs in about 32 s. Edit repo files with edit_file, then copy them into the /tmp/M clone to test (red on main, then green). The report must be updated before the last call: I ran out of steps with only the first-call stub written, the same mistake as before.
+## 2026-11-26T12:21:24.436Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 35: the artifact was saved in call 5, not call 2, but it passed. To get real tools in the sandbox: static ffmpeg and ffprobe from johnvansickle.com (curl + tar, copy to /tmp/bin), `npm i playwright@1` in /tmp/pw plus `PLAYWRIGHT_BROWSERS_PATH=/tmp/pwb npx playwright install chromium`. That took under 100 s in a background Popen. Run tests with PATH=/tmp/bin:..., NODE_PATH=/tmp/pw/node_modules and PLAYWRIGHT_BROWSERS_PATH set. /cut/ has no file input; it opens by ?videoId=, and the failure toast only arrives through handOff after a real render. To force the failure with the real server, replace just the render download with 4096 junk bytes using page.route. The toast hides after 5 s, so poll with waitForFunction. Write the report, RESULTS row and ACTIVE.md in parallel with the last measurement call; I ran out of steps before them again.

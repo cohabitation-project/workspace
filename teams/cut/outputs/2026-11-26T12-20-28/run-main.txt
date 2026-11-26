@@ -1,0 +1,11 @@
+toast="We couldn't prepare this video: We couldn't convert this video."
+screenshot=/tmp/kin-py-awqBOo/out/cut-failed-ui-live.png renderUrl=/cut/cut_979e7add53b5e759.mp4 junkBytes=4096 view={"resultBoxVisible":false,"postLinkVisible":false,"anyPostLinkVisible":false,"exportButtonVisible":true,"docWidth":390}
+✔ /cut/ at 390x844: an export whose saved video cannot be converted shows the failure message and no Post control (2602.274841ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2857.45018
