@@ -61,7 +61,13 @@ function convert(v, orig) {
   const out = path.join(DIR, `${id(v)}.mp4.part`); const poster = path.join(DIR, `${id(v)}.jpg`);
   const p = spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-i', orig, '-vf', "scale='min(720,iw)':-2", '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', '-f', 'mp4', out], { stdio: 'ignore' });
   p.on('close', (code) => {
-    if (code !== 0) { fs.rmSync(out, { force: true }); return; }
+    if (code !== 0) {
+      fs.rmSync(out, { force: true });
+      const failed = { ...meta.get(v.id), failed: true, reason: "We couldn't convert this video." };
+      meta.set(v.id, failed);
+      write('update', { id: v.id, failed: true, reason: failed.reason });
+      return;
+    }
     fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`));
     spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-ss', '0.5', '-i', path.join(DIR, `${id(v)}.mp4`), '-frames:v', '1', '-vf', "scale='min(720,iw)':-2", poster], { stdio: 'ignore' })
       .on('close', () => { const nv = { ...meta.get(v.id), ready: true, poster: fs.existsSync(poster) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); fs.rmSync(orig, { force: true }); });
@@ -79,7 +85,7 @@ export function fileFor(vid) {
 }
 export function posterFor(vid) { const v = meta.get(String(vid || '')); const f = v && path.join(DIR, `${v.id}.jpg`); return f && fs.existsSync(f) ? f : null; }
 export const get = (vid) => { const v = meta.get(String(vid || '')); return v ? publicVideo(v) : null; };
-export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg });
+export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg, failed: !!v.failed, ...(v.reason ? { reason: v.reason } : {}) });
 export const byMember = (memberId) => [...meta.values()].filter((v) => v.by === memberId).map(publicVideo);
 /** A member's own videos, newest first (Cohabi Cut's "From Cohabi" tab). */
 export const listMine = (memberId, limit = 60) => [...meta.values()].filter((v) => v.by === memberId).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, Math.max(1, Math.min(100, limit))).map(publicVideo);
