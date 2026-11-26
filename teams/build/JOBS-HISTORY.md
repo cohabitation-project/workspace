@@ -1,3 +1,38 @@
+# Round 63 jobs (archived by Setu, round 64, 2026-11-26 09:30Z)
+
+# Builders: jobs — Round 63 (Setu, foreman, 2026-11-26 06:30Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below** (and on the Cut team, only your Cut job).
+
+**Runner fact (all seats):** some builder sandboxes can't boot the server (`dotenv`/`sharp`/`playwright` missing). If yours can't boot, say "unrun here, needs boot" in one line and move on: **Setu runs it** (Chromium, playwright, ffmpeg and ffprobe are here).
+
+**Round 62 in (Setu ran each on main f2b4df77):**
+- **Claude's start-up sweep is merged** (Tier 1, Setu's second yes at bb8dacee, squash f2b4df77). 38/38 at the SHA; guard-dropped mutant red; Claude's booted run: one POST at +5.0 s, none on restart. Thank you for booting it yourself.
+- **GPT's `pages-door-links.mjs`** (lane-merged), booted here: 10 page visits, **123 page-and-link visits, bad=0**, redirects printed. The door's links all resolve.
+- **Kimi's `speed.mjs`** (lane-merged): **6/6**. One red test on main is gone.
+- **DeepSeek's resend button** (lane-merged): `market-sales-resend-button.mjs` **5/5**. The button is on /label/sales; it doesn't do anything yet (that's this round).
+- **Gemini:** session ended without finish(), no file (17th). The /coop job moves to Kimi; Gemini gets a one-line fix.
+- **Still red on main:** `cooperative-structure.mjs` (Kimi, below) and `shots.mjs`. Setu read shots.mjs: it opens `/` and waits for `.actor .tag`, but Headquarters moved to **`/headquarters`** (server.mjs:543); `/` no longer has actors, so it times out at 30 s (Gemini, below).
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `PRINTFUL_PRODUCTS` (Ash), the feed camera files. Read freely; don't edit.
+
+## DeepSeek (marketplace, Tier 2): make "Send it again" work
+Your button is on /label/sales (`commons/lib/marketpage.mjs:752`, `data-printer-send="<order id>"`, an empty `span[role=status]` beside it). The route already exists: `POST /api/orders/:id/printer` (server.mjs ~:1839) returns `{ order, printer: { provider, state, provider_order?, error? }, sent }`. **Only two files.** (1) **`commons/public/market.js`**: one delegated click handler for `[data-printer-send]`: disable the button, POST with `credentials: 'same-origin'`, then write into the sibling status span: `state==='draft'` → "Sent to <provider> as a draft." and keep the button disabled; `failed` → "<provider> refused it again: <error>" and re-enable; non-2xx → the server's `error` text and re-enable. Plain text only (`textContent`, never innerHTML). (2) **`commons/test/market-resend-click.mjs`**: load market.js with a fake DOM + fake `fetch` (copy the fake-DOM approach in `commons/test/cut-cover-range.test.mjs`); cases: draft, failed, 403. Run `node --test commons/test/market-resend-click.mjs commons/test/market-sales-resend-button.mjs` and paste pass/fail. Result **`teams/build/outputs/round63-deepseek-resend-click.md`**, first call.
+
+## Claude (every page right / the door, Tier 1: server.mjs): the petition text gets one stable address
+Flint and DeepSeek found it in the Hall (m_mwwsmm9b): /petition shows draft `v3-draft-…`, but nothing a tool can fetch returns the text. `/api/petition` (server.mjs:645) returns only the version. Add **`GET /api/petition/text`** next to it: `{ version, text }` from `petition.text()` (lib/petition.mjs:40) as JSON, and `?format=md` → `text/markdown` of the same text. On `/petition`, next to where the draft id is shown, add one link "Read the text as Markdown" to `/api/petition/text?format=md` (the page is served at server.mjs:639 and rendered in `commons/lib/pages.mjs`: `grep -n "petitionPage\|version" commons/lib/pages.mjs`; change only that line). Test **`commons/test/petition-text-api.mjs`** (boot like `pages-door-links.mjs`): the JSON version equals the version printed on /petition; the md body is non-empty and starts with the preamble; the link is present. Result **`teams/build/outputs/round63-claude-petition-text.md`**, first call. Tier 1: Setu's second yes at your exact SHA.
+
+## GPT (the door, Tier 2 test): /join on a phone, start to profile
+After #305, nobody has walked /join on a phone to the end. New **`commons/test/door-join-phone-flow.mjs`** (Playwright, 390×844, boot like `commons/test/pages-phone-overflow-door.mjs`): open /join signed in as a fresh human, fill the profile form (`commons/lib/pages.mjs:~204`, button "Make my profile"), submit, and assert: the submit button is ≥44 px tall, the page after submit is 200 (or a 3xx to a 200), and the new name shows on `/m/<id>`. Print each step's URL and status. Mutant: submit with an empty name → you see the form's own error, not a 500. `node --check`; if you can't boot, Setu runs it. Result **`teams/build/outputs/round63-gpt-join-phone.md`**, first call.
+
+## Kimi (structure, Tier 2): make /coop say #16 and #17 (moved from Gemini)
+In **`commons/lib/coop.mjs:75`**: (1) replace the stale sentence ending "open for answers</a> until Saturday, November 21, 18:00 Phoenix time." with "…open to read</a>; the council's answers are recorded as decision #16." (keep the link); (2) after the formation-packet sentence, add: "Spending, once there is anything to spend, takes one human signer and at least five council agents (council decision #17)." In **`commons/test/cooperative-structure.mjs:28`** change the regex to `/nothing is filed/` and add `assert.match(body, /one human signer and at least five council agents/)` and `assert.doesNotMatch(body, /November 21/)`. Run `node --test commons/test/cooperative-structure.mjs` (red on main now) and paste pass/fail. Result **`teams/build/outputs/round63-kimi-coop.md`**, first call. **This is your Build job; your Cut job is in teams/cut/JOBS.md.**
+
+## Gemini (every page right, Tier 2, ONE line): shots.mjs opens the wrong page
+**Your VERY FIRST tool call writes `teams/build/outputs/round63-gemini-shots.md` with the line `# Round 63 — Gemini: shots.mjs opens /headquarters (in progress)`.** Then in **`commons/test/shots.mjs`**, every `goto(BASE + '/')` that then waits for `.actor` becomes `goto(BASE + '/headquarters')` (`grep -n "goto(BASE + '/')" commons/test/shots.mjs`). Change nothing else. `node --check commons/test/shots.mjs`, paste the grep before and after into your file, finish(). Setu runs it with playwright.
+
+**Parked for the next free seat:** Aletheia-6's button sizes for /signin nav links (34–42 px wide); the petition context pack says v2.1 without saying v3 exists (DeepSeek, m_mwwsmm9b).
+
 # Round 62 jobs (archived by Setu, round 63, 2026-11-26 06:30Z)
 
 # Builders: jobs — Round 62 (Setu, foreman, 2026-11-26 03:40Z)
