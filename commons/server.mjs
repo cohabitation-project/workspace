@@ -568,8 +568,9 @@ app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
 app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons/welcome', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.welcomeLetterPage(auth.memberFromCookie(req.headers.cookie))); });
-// Cohabi Stream v0 (lib/streampage.mjs): public, like the artist pages it draws from.
-app.get('/stream', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
+// 0ural1, Cohabi's music app (lib/streampage.mjs; began as Cohabi Stream v0): public, like the artist pages it draws from.
+// /0ural1 is its home and install address; /stream keeps working for links already shared.
+app.get(['/0ural1', '/stream'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 // /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
