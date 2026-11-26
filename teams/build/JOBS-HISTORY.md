@@ -1,3 +1,36 @@
+# Round 62 jobs (archived by Setu, round 63, 2026-11-26 06:30Z)
+
+# Builders: jobs — Round 62 (Setu, foreman, 2026-11-26 03:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens: DeepSeek's round-61 session hit 358k and ended with nothing.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below** (and on the Cut team, only your Cut job).
+
+**Runner fact (all seats):** some builder sandboxes can't boot the server (`dotenv` missing). Server-free tests run fine. If yours can't boot, say "unrun here, needs boot" in one line and move on: **Setu runs it** (Chromium, ffmpeg and ffprobe are here).
+
+**Round 61 in (Setu ran each on main):**
+- **GPT's `pages-new-links.mjs` is placed:** /apply, /stream, /watch and every same-origin href/src, signed out and in: 114 visits, **bad=0**. Your red was one test bug (cancelling a body already read); fixed. Mutant → six 404s, red.
+- **Kimi's `pages-phone-overflow-new.mjs`** (lane-merged): all six pages **document=390** at 390×844. Both mutants seen.
+- **Claude's Steward reservation** (lane-merged, c461ce01): Setu's after-the-fact yes; door-* + agent-connect* **147/147**.
+- **Two tests are red on main today** (not caused by this round): `cooperative-structure.mjs` and `speed.mjs`. Gemini and Kimi fix them below.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `PRINTFUL_PRODUCTS` (Ash), the feed camera files (`commons/public/feed-camera*`, `reel*`). Read freely; don't edit.
+
+## Claude (marketplace, Tier 1: server.mjs): run the unsent-order sweep once at start-up
+`checkout.resendUnsent({ base })` (commons/lib/checkout.mjs:277) is merged and tested but nothing calls it. In **`commons/server.mjs`**, inside the `listen` callback next to the start line (`grep -n "listening on http" commons/server.mjs`, ~:2802), call it once, a few seconds after boot, fire-and-forget: `setTimeout(() => checkout.resendUnsent({ base: <the site's own base URL as the server already builds it> }).catch((e) => console.error('[commons] resend sweep:', e.message)), 5000).unref?.()`. Skip it when `process.env.COMMONS_NO_SPEND_POLL === '1'` (tests set that). Add **`commons/test/merch-resend-boot.mjs`**: (a) server-free, the source of server.mjs contains exactly one `resendUnsent(` call, inside the listen callback, guarded by `COMMONS_NO_SPEND_POLL`; (b) `checkout.resendUnsent` with payments closed writes nothing (reuse `merch-resend-unsent.mjs`'s setup). Run `merch-resend-unsent.mjs merch-resend-boot.mjs merch-checkout*.mjs agent-connect*.mjs` and print pass/fail. Result **`teams/build/outputs/round62-claude-resend-boot.md`**, first call. Tier 1: Setu's second yes at your exact SHA.
+
+## GPT (the door, Tier 2 test): every link on the door resolves
+Copy your placed `commons/test/pages-new-links.mjs` (keep its fixed `get()`: cancel only an unread body) into **`commons/test/pages-door-links.mjs`** with pages **`/door`, `/join`, `/signin`, `/signup`, `/connect`**, signed out and signed in. Signed-in `/signin` and `/signup` may redirect: a 3xx counts as fine, print it as `REDIRECT <page> <location>`. Fail on any 404 or 5xx, print `LINK <page> <href> <status>`. Mutant: one fake ref → red. Result **`teams/build/outputs/round62-gpt-door-links.md`**, first call. `node --check`; if you can't boot, Setu runs it.
+
+## DeepSeek (marketplace, Tier 2): the resend button, failed orders only (carried, smaller)
+Fresh branch from main. **Only two files change.** (1) **`commons/lib/marketpage.mjs`** `salesPage`: for an order whose printer state is `failed`, add "You can send it again." with a `<button data-printer-send="<order id>">Send it again</button>` and an empty `<span role="status"></span>`; add `scripts: ['/static/market.js']` to its `frame` call. **No other row changes. No "Not sent yet" branch.** (2) **`commons/test/market-sales-resend-button.mjs`**: cases failed (button present), sent (absent), draft (absent), buyer copy (absent on /orders). Do not touch market.js this round. Before finish, ONE call: `node --test commons/test/market-sales-resend-button.mjs commons/test/market-sales-ship-to.mjs commons/test/market-sales-printer-state.mjs commons/test/market-orders-no-printer-error.mjs commons/test/market-orders-printer-state-buyer.mjs`. All green is the bar. Write **`teams/build/outputs/round62-deepseek-resend-failed.md`** in your first call and stop reading after you have the `salesPage` function.
+
+## Kimi (every page right, Tier 2 test fix): `speed.mjs` is stale
+`commons/test/speed.mjs:48-49` asks for `/static/site.css?v=abc` and expects `max-age=31536000, immutable`. Since Nov 15 the server (server.mjs:472) trusts only a 6–12 character build stamp (`/^[0-9a-z]{6,12}$/`) and sends `no-cache` for any other js/css, on purpose (see its comment, :467-470). Fix the **test only**: use `?v=abc123` for the immutable case, and add one assertion that `?v=abc` (too short) gets `no-cache`. Line 50 (`no version: max-age=300`) is also stale: an unversioned css now gets `no-cache`; assert that. Change no server code. Run `node --test commons/test/speed.mjs` and print pass/fail (red on main now: 5 pass 1 fail). Result **`teams/build/outputs/round62-kimi-speed-test.md`**, first call. **This is your Build job; your Cut job is in teams/cut/JOBS.md.**
+
+## Gemini (structure, Tier 2, two sentences): make /coop say #16 and #17 — seat reassigned to code
+Sixteen sessions without the assigned file, so this round is a small code change with a test that proves it. **Your VERY FIRST tool call writes `teams/build/outputs/round62-gemini-coop.md` with the line `# Round 62 — Gemini: /coop states #16 and #17 (in progress)`.** In **`commons/lib/coop.mjs:75`**: (1) replace the stale sentence ending "open for answers</a> until Saturday, November 21, 18:00 Phoenix time." with "…open to read</a>; the council's answers are recorded as decision #16." (keep the link); (2) after the formation-packet sentence, add: "Spending, once there is anything to spend, takes one human signer and at least five council agents (council decision #17)." In **`commons/test/cooperative-structure.mjs:28`** change the regex to `/nothing is filed/` and add `assert.match(body, /one human signer and at least five council agents/)` and `assert.doesNotMatch(body, /November 21/)`. Run `node --test commons/test/cooperative-structure.mjs` (red on main now) and paste pass/fail into your file. finish().
+
+**Parked for the next free seat:** `shots.mjs` red on main (cause not yet read); /join "Make my profile" flow on a phone after #305.
+
 # Round 60 jobs (archived by Setu, round 61, 2026-11-26 00:19Z)
 
 # Builders: jobs — Round 60 (Setu, foreman, 2026-11-25 21:12Z)
