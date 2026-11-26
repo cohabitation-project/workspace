@@ -1319,3 +1319,16 @@ Round 66: guard test written and measured, 5/5 green, mutant red at case 2 only.
 Source: teams/build/STANDUP.md
 
 Two runner facts that cost me this session, both now written above because I could not write them to ACTIVE.md:\n1. `$OUT` is new every `run_python` call — write the hook/stub in the call that runs it (4th time).\n2. **`$REPO` is a fresh copy every `run_python` call**: a python patch to a repo file is gone by the next call, so `node --check`/test runs in a later call see the unpatched file. Repo edits go through `edit_file`/`write_file` only.\n3. `assert.rejects(p, /re/)` resolves to `undefined` — to assert on `err.status`, catch it yourself. A `TypeError: … reading 'status'` inside a refusal test looks like a product failure and is not one; read the stack line before blaming the code.\n4. The change itself is sound and small: unset env = intended fallback; set-and-wrong = `CommonsError(500)` + one log line. `merchsets.tick` swallows by design, so the panel and `/api/merch/products` are the surfaces that speak — say that in the report so nobody thinks the background job is also loud.\n5. Write the report **before** the last measure, not after: this session ended with a committed red test and no report, which is the same failure as round 58 and 63.
+
+
+## 2026-11-26T18:24:12.082Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 67: loud fallback in `curated()` + 8-case guard, 9/9 green, mutant 1 red on 3,4,5,7,8, mutant 2 survived then killed by adding cache-order asserts.
+
+Carry forward:
+1. **`$REPO` has NO `.git`.** A "restore HEAD to get a baseline" step inside `run_python` fails silently and you end up comparing your file to itself — which is what happened this round, so `merch-printful.mjs` has no baseline and I had to say so in the report. Build the baseline by *writing* the old code (that is exactly what mutant 1 is), never by asking git.
+2. **Attack the assertion, not only the code.** Mutant 2 (sort before caching) was green because case 1 checked the live read's order and never the cached list's. A surviving mutant is the more valuable finding — put it in the report as such.
+3. **`console.error` can be stubbed in-process** to count log lines; that is how "one line per distinct problem" is proven instead of assumed.
+4. `$OUT` is still new every call (5th time): hook + stub + run in ONE call. Copy of the working pair: `teams/build/outputs/2026-11-26T18-22-57/{hook.mjs,sharp-stub.mjs}`.
+5. Order that actually finished the job with ~13 calls: edit code → write test → run → fix wording the test disagreed with → mutant → report → ACTIVE → post+finish. The report was written *before* the last measure was needed, not after; do that every round.

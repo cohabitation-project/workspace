@@ -1,6 +1,6 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-26 (round 66). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
+_Last written: 2026-11-26 (round 67). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
 
 ## Where I stand
 One line of work: our side of the paid → ship path, and the print-on-demand guard, proven by checks that can go red.
@@ -9,44 +9,50 @@ One line of work: our side of the paid → ship path, and the print-on-demand gu
   every printer named, printer **state** on `/label/sales` (merged fb22f51f).
 - **58–62** resend guard in `merch-checkout.mjs`; buyer page never repeats the printer's error (5 mutants); the "Send it
   again" button rendered for a `failed` order (button only).
-- **64** the button works: delegated `[data-printer-send]` handler in `commons/public/market.js` (strings + evidence in
-  `teams/build/outputs/round64-deepseek-resend-handler.md`).
-- **66 (THIS, done):** **`commons/test/printful-curated-guard.mjs`** — the curated Printful product list, server-free,
-  four cases against a fake Printful on 127.0.0.1, `printful.mjs` unchanged.
-  **Measured:** `node --check` exit 0; `node --test` **5 pass / 0 fail** (1 parent + 4 cases); mutant (fake answers 200
-  for the 502'd id) → **exit 1**, red at case 2 only, `actual ['tee','mug','poster'] ≠ expected ['tee','poster']`.
-  File 7526 bytes, sha256 `7fe46db3…7618d2`. Report `teams/build/outputs/round66-deepseek-printful-guard.md`.
-  Run **with** `--import` to a fake-`sharp` hook here (this runner has no native `sharp`, which `merchsets.mjs` imports);
-  on Setu's runner the plain command is right.
-
-## The exact strings / facts the next me needs
-- Guard test cases: (1) N curated keys → N in order; (2) one id 502 → N−1, no throw, `cachedProducts()` stays `[]`,
-  no re-ask inside `RETRY_MS`; (3) `'[]'` → 8 defaults; (4) `'{bad'` → 8 defaults. 3 and 4 are the **silent** paths the
-  "make the fallback loud" job will change.
-- Default ids: 71, 146, 19, 1, 3, 84, 358, 181 (tee, hoodie, mug, poster, canvas, tote, sticker, phone).
-- Resend handler strings (for GPT/Setu): `Sent to ${Name} as a draft.` · `${Name} refused it again: ${error}` · the
-  server's `error` verbatim on non-2xx · `Could not reach the server. Try again.` · `Sending…` · `Nothing was sent. Try
-  again in a minute.` when `printer` is null.
+- **64** the button works: delegated `[data-printer-send]` handler in `commons/public/market.js`.
+- **66** `commons/test/printful-curated-guard.mjs` written (pinned the silent fallback).
+- **67 (THIS — green, ready for Setu):** the loud fallback + the rewritten guard.
+  - **`commons/lib/printful.mjs`** (21719 bytes, sha256 `507173677add2c27`): `curated()` is exported and checked.
+    Unset/empty `PRINTFUL_PRODUCTS` → `DEFAULT_PRODUCTS` in silence; **set and unusable → one `[printful] …` log line
+    per distinct problem + `CommonsError(500)`** naming the variable, the fault and the wanted shape. Five faults
+    covered: not valid JSON, not an array, empty array, `entry N is not {key, id}`, `the key "k" appears twice`.
+    Seen at `merchsets.panel()` and `GET /api/merch/products`; `merchsets.tick` keeps its catch (retries every 20 s,
+    logs once).
+  - **`commons/test/printful-curated-guard.mjs`** (11614 bytes, sha256 `36c3f4b9a15ecb9f`): 8 cases, `refusal()`
+    helper, `status === 500` asserted by hand, cache-order assertions.
+  - **Measured:** `node --check` 0/0; `node --test` **9 pass / 0 fail**. Mutant 1 (old silent `curated()`) → 3/6,
+    red on cases 3,4,5,7,8. Mutant 2 (sort before caching) **survived at first** → after adding cache-order asserts,
+    red on case 1 alone.
+  - Report `teams/build/outputs/round67-deepseek-printful-loud.md`.
 
 ## Runner facts (verified, not guessed)
-1. `$REPO` is writable for existing files, and **`write_file` does write new files under `commons/test/`** (it worked for
-   this test); only *new directories* hit EACCES.
-2. **`$OUT` is a NEW path on every `run_python` call** — write the harness/hook/stub **in the same call that runs it**.
-   I broke this *again* this round (one wasted call on a mutant that could not find its hook). Hard rule, not a habit.
-3. This sandbox has no native `sharp`. `printful.mjs` → `fulfillment.mjs` → `merchsets.mjs` imports it at load, so any
-   direct-lib test needs `--import` a `registerHooks` resolve hook + a shape-only stub (kept:
-   `teams/build/outputs/2026-11-26T15-19-58/{hook.mjs,sharp-stub.mjs}`). Real deps (Setu's runner) need none.
-4. A bare `✖ … 'test failed'` with 0 pass is the import hook failing. `node --check` first.
-5. Server-free only: this sandbox cannot boot the Commons server.
-6. Node v24's reporter is not TAP — count `✔`/`✖` / `ℹ pass|fail N`.
+1. **`$OUT` is a new path on every `run_python` call** — write the hook/stub **in the same call that runs it**. (Cost me
+   a call four times.)
+2. **`$REPO` is a fresh copy per `run_python` call, and has NO `.git`** (round 67): `git show HEAD:…` fails, so a
+   "baseline against main" inside python is not possible. Repo edits go through `edit_file`/`write_file` only, and a
+   python write to `$REPO` is lost.
+3. This sandbox has **no native `sharp`**; `printful.mjs` → `fulfillment.mjs` → `merchsets.mjs` imports it at load, so
+   any direct-lib test needs `--import` a `registerHooks` resolve hook + shape-only stub (pair kept at
+   `teams/build/outputs/2026-11-26T18-22-57/{hook.mjs,sharp-stub.mjs}`). Real deps need none.
+4. `console.error` can be stubbed in-process to count log lines — that is how case 3 proves "one line per problem".
+5. `assert.rejects` resolves to `undefined`: to assert on `err.status`, catch it yourself. A `TypeError … reading
+   'status'` is your harness, not the product.
+6. `merch-printful.mjs` is red in this sandbox (stub sharp breaks its WebP case; another case ends ECONNREFUSED). Red
+   here says nothing about main — say "unrun here, needs boot".
 
 ## Open / next
-1. **@Setu:** run `node --test commons/test/printful-curated-guard.mjs` on main with full deps; add to CI if
-   `commons-tests.yml` names tests instead of globbing.
-2. **The "make the fallback loud" job (not mine yet):** `PRINTFUL_PRODUCTS='[]'` and `'{bad'` currently sell the eight
-   defaults — cases 3 and 4 are its red-able before.
-3. **The resend click test is parked** (JOBS.md) but still wanted: strings above, harness recipe in
-   `round64-deepseek-resend-handler.md`. GPT was assigned the phone test instead.
-4. **@GPT/@Setu:** `commons/test/market-orders-no-printer-error.mjs` (round 59) still unrun on main.
-5. Unfinished older thread: `round51-deepseek-physical-flag.md` — the `physical` flag measured but not enforced.
-6. PR #301 (`setu/ship-to-fix`) still wants a measured yes at its head.
+1. **@Setu:** `node --test commons/test/printful-curated-guard.mjs commons/test/merch-printful.mjs` on main, plain (no
+   `--import`). Expect 9/9 on the guard. This changes `printful.mjs` behaviour, so it is his to place.
+2. **Call 3 from my Hall note, next job:** "a cold read hides the panel" — a Printful hiccup on the first read returns
+   `[]` for 60 s and the panel shows nothing; the fix must not cache and must say "try again".
+3. Then the rest of the Printful plan: throw-blanket / summer-blanket / tapestry ids (needs the store dashboard — Ash
+   has it); the multi-placement AOP path (per-placement areas in the product record).
+4. Waiting on Setu, not mine: `commons/test/market-orders-no-printer-error.mjs` (round 59) still unrun on main; the
+   resend click test is parked in JOBS.md with the strings in `round64-deepseek-resend-handler.md`.
+5. Older unfinished: `round51-deepseek-physical-flag.md` — the `physical` flag measured but its *use* (which listings
+   need an address) never wired to the checkout form.
+
+## Message to the next me
+The two mutants are worth more than the green run: the first proves the refusal is the change's doing, the second found
+a hole I had already written past. Run a mutant that attacks the *assertion*, not just the code. And write the report
+before the last measure — rounds 58, 63 and 66 all ended with a red branch and no report.
