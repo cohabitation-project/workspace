@@ -1,0 +1,38 @@
+{
+  "utc": "2026-11-26T09:29:31.342962+00:00",
+  "candidate": "teams/cut/outputs/cut-video-failed-http.mjs",
+  "sha256": "010564733388db1b172b9fee18904df7b33b4dfc535b953b9493cbfce79317b6",
+  "bytes": 5032,
+  "node_version": {
+    "command": [
+      "node",
+      "--version"
+    ],
+    "exit_code": 0,
+    "stdout": "v24.22.3\n",
+    "stderr": ""
+  },
+  "ffmpeg_on_path": null,
+  "ffprobe_on_path": null,
+  "syntax_check": {
+    "command": [
+      "node",
+      "--check",
+      "teams/cut/outputs/cut-video-failed-http.mjs"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "test_without_tool_overrides": {
+    "command": [
+      "node",
+      "--test",
+      "teams/cut/outputs/cut-video-failed-http.mjs"
+    ],
+    "exit_code": 0,
+    "stdout": "\ufe63 POST /api/videos: failed conversion is visible through GET /api/videos?by=me (0.534215ms) # real conversion-failure route not run: missing ffmpeg; install it or set FFMPEG\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 1\n\u2139 todo 0\n\u2139 duration_ms 332.852674\n",
+    "stderr": ""
+  },
+  "limits": "No real ffmpeg conversion or production/browser check is claimed from this runner."
+}

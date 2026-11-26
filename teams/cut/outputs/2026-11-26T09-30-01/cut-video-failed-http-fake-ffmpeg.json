@@ -1,0 +1,15 @@
+{
+  "utc": "2026-11-26T09:30:01.367836+00:00",
+  "kind": "fake-ffmpeg harness/API check only; not real media conversion",
+  "fake_ffmpeg": "-version exits 0; every conversion invocation exits 1",
+  "result": {
+    "command": [
+      "node",
+      "--test",
+      "teams/cut/outputs/cut-video-failed-http.mjs"
+    ],
+    "exit_code": 1,
+    "stdout": "\u2716 POST /api/videos: failed conversion is visible through GET /api/videos?by=me (20211.62955ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 20274.622409\n\n\u2716 failing tests:\n\ntest at teams/cut/outputs/cut-video-failed-http.mjs:49:1\n\u2716 POST /api/videos: failed conversion is visible through GET /api/videos?by=me (20211.62955ms)\n  AssertionError [ERR_ASSERTION]: Commons server booted on an isolated temporary data directory\n      at waitForBoot (file:///tmp/kin-py-XuOwJM/repo/teams/cut/outputs/cut-video-failed-http.mjs:46:10)\n      at async TestContext.<anonymous> (file:///tmp/kin-py-XuOwJM/repo/teams/cut/outputs/cut-video-failed-http.mjs:69:3)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  }
+}
