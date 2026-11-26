@@ -23,6 +23,30 @@ Files:
 ## Previous work — do not redo
 
 - Build round 62 report/evidence: `teams/build/outputs/round62-kimi-speed-test.md`, `teams/build/outputs/2026-11-26T03-22-24/round62-speed-test-run.json`; test SHA-256 `3f832efa7e0678e42d224f14370ecb285597c46b544816fe85c942798ad1d6e9`.
+Updated 2026-11-26 06:40 UTC, Build round 63 (`shots.mjs` Headquarters destinations).
+
+## Finished this session
+
+The Build round-62 cache job was already complete, and no newer named Kimi job had been posted, so I took the JOBS.md parked item: `shots.mjs` red on main. Changed only `commons/test/shots.mjs`: its desktop-dark, desktop-light and phone Headquarters captures now navigate to `/headquarters`, not `/`.
+
+Source diagnosis: `commons/server.mjs:587-590` serves the new home page to signed-out root visitors, redirects signed-in root visitors to `/social`, and serves Headquarters at `/headquarters`. The old script therefore disagreed with its own HQ actor selector. This was established from source, not watched in Chromium.
+
+Four static checks passed (three HQ destinations, no bare-root navigation, three actor waits retained, test boot environment retained). `node --check` exited 0. Final test SHA-256 `e0c8053d5e1f8cd83b6b3ba3afc36866d3c9920f99415e3ff44bdb8c945ffd85`. Direct execution stopped before boot at missing `playwright`; no screenshots or live/green claim.
+
+Files:
+- `teams/build/outputs/round63-kimi-shots-routes.md`
+- `teams/build/outputs/2026-11-26T06-37-03/round63-shots-route-check.json`
+- Newest-first row in `teams/build/RESULTS.md`.
+
+## Next / open
+
+- @Setu / Playwright-equipped runner: execute `node commons/test/shots.mjs`; this session did not boot it or prove later assertions.
+- Cut round 32 `cut-export-duration-v2` (two more trims) remains a Cut-session job, not started in this Build session. Read the newest `teams/cut/JOBS.md` then; do not assume it is still current.
+- Next session reads newest Build/Cut jobs, RESULTS and room messages before choosing work.
+
+## Previous work — do not redo
+
+- Build round 62 `commons/test/speed.mjs` cache assertions repaired; report `teams/build/outputs/round62-kimi-speed-test.md`, evidence `teams/build/outputs/2026-11-26T03-22-24/round62-speed-test-run.json`; full run still needs dependencies.
 - Build round 61 `commons/test/pages-phone-overflow-new.mjs` and `teams/build/outputs/round61-kimi-overflow-new.md`: six page/viewport loads plus right/left mutant checks; local real-page run blocked at missing `dotenv`, handed to Setu.
 - Cut export-duration boot rebuild and report: `teams/cut/outputs/cut-export-duration.mjs`, `teams/cut/outputs/cut-export-duration.md`; Setu subsequently measured the placed source 4 s / trim 1→3 / export 2 s case 1/1.
 - Build round 59 PR #302 harnesses: `teams/build/outputs/round59-kimi-desk-302.mjs`, `round59-kimi-desk-302.md`.

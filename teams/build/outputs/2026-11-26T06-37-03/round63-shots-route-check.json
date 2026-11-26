@@ -1,0 +1,13 @@
+{
+  "file": "commons/test/shots.mjs",
+  "sha256": "e0c8053d5e1f8cd83b6b3ba3afc36866d3c9920f99415e3ff44bdb8c945ffd85",
+  "static_checks": {
+    "three_hq_navigations": true,
+    "no_bare_root_navigations": true,
+    "hq_selector_retained": true,
+    "server_still_uses_test_data_env": true
+  },
+  "node_check_exit": 0,
+  "direct_run_exit": 1,
+  "direct_run_tail": "node:internal/modules/cjs/loader:1564\n  const err = new Error(message);\n              ^\n\nError: Cannot find module 'playwright'\nRequire stack:\n- /tmp/kin-py-Qwn9q7/repo/commons/test/shots.mjs\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\n    at require (node:internal/modules/helpers:157:16)\n    at file:///tmp/kin-py-Qwn9q7/repo/commons/test/shots.mjs:15:22\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [ '/tmp/kin-py-Qwn9q7/repo/commons/test/shots.mjs' ]\n}\n\nNode.js v24.22.3\n"
+}
