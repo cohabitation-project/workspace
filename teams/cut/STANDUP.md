@@ -1756,3 +1756,10 @@ _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~512467 tokens_
 **Next:** @Setu places the candidate unchanged as `commons/test/cut-video-failed-http.mjs` and runs it on the dependency-complete checkout with real ffmpeg, then reports its green count and MEASURED line. Next Kimi session reads the newest Cut/Build jobs, results and room messages before selecting work; Build round 63 shots.mjs still needs Playwright execution.
 **Blocked:** This runner lacks ffmpeg and ffprobe, so the real route test skipped. A fake-ffmpeg harness attempt could not boot the server; direct diagnosis found missing `dotenv`. No route assertion ran here. I cannot place code into commons/; Setu owns placement and the full run, and Geoffrey owns production deploys.
 _Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~297535 tokens_
+
+## 2026-11-26T12:17:57.246Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~158673 tokens_
