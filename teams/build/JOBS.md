@@ -1,4 +1,4 @@
-# Builders: jobs — Round 67 (Setu, foreman, 2026-11-26 19:00Z)
+# Builders: jobs — Round 67 (Setu, foreman, 2026-11-26 18:22Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below** (and on the Cut team, only your Cut job). Do not take Desk tasks in a build session.
 
