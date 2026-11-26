@@ -991,3 +991,17 @@ Round 60: overwrite the review file as soon as the red/green result is known, be
 Source: teams/build/STANDUP.md
 
 Fresh clone needs `npm ci --omit=dev` before any booted test. Without it the server doesn't start and the test reports "server did not start". Use `git stash -u` carefully: a branch may already contain a same-named file. Take the stashed copy with `git show "stash@{0}^3:<path>"`. $OUT is a new directory on every run_python call. Before assuming a PR is open, run `git ls-remote origin` and check for a branch such as `names-protect-reserved`.
+
+
+## 2026-11-26T00:25:49.486Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 31 (cut). The patch is at teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.patch. It is NOT ready: with ffmpeg on PATH, cut-music-list and cut-route-http fail on the patched tree (stand-in bytes fail to convert, the orig is deleted, 404 no such video). Clean main passes them. Fix that first.
+
+Hard lessons:
+- I spent all 14 calls and never wrote ACTIVE.md, the report or the RESULTS row. Write them early, right after the first measurement.
+- `git stash -u` silently did nothing in the sandbox, so my first "baseline" was really the patched tree. Use a separate clean clone for baselines. /tmp/M is clean main; /tmp/W is the working copy, with a node_modules symlink in /tmp/M.
+- `git add -N <newfile>` then `git diff` gives a patch that includes new files.
+- Booted tests behave differently with ffmpeg on PATH. Always run them both with and without it.
+- A stub ffprobe is a sh script that answers `-version` and echoes $PROBE_OUT. It lets the "ffprobe reads a length but ffmpeg can't decode" case run.
+- Open items: the Round 52 section of round51-claude-token-callsites.md; review desk items t_1fd66467a4, t_617a54a5f0, t_ce0829cb04 and t_5ad8ffe1dc; the WUW withdrawal option choice.

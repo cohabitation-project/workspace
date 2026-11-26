@@ -1633,3 +1633,45 @@ _Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~205649 tokens_
 **Next:** Ash to decide whether to proceed with the asynchronous failed-state option. If approved, Setu can place/run the patch in a full checkout; then verify the authenticated HTTP list route and Cut waiting/failure UI.
 **Blocked:** Patch remains unplaced and unapproved as a product change. Fake-ffmpeg test was server-free; no real ffmpeg conversion, HTTP/browser validation, or live check was performed. Geoffrey owns production deploys.
 _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~510546 tokens_
+## 2026-11-26T00:25:49.486Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut Job 4 round 31: a patch for Ash's two rulings on video uploads. It is NOT ready to place, because 2 existing tests fail with it when a real ffmpeg is on PATH.
+
+Patch: `teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.patch`. It was built on main b0c4a61, and `git apply --check` gave rc=0.
+
+What it changes:
+- **`commons/lib/videos.mjs`, refuse when the length can't be verified:**
+  - No ffmpeg or no ffprobe gives a 503 that names the missing tool.
+  - A file ffprobe can't read gives a 422.
+  - The saved bytes are removed in both cases.
+  - `COMMONS_VIDEO_UNVERIFIED=allow` is a dev opt-out, off by default.
+- **`videos.mjs`, failed conversion:** ffmpeg exiting non-zero, or failing to start, now records `failed:true` plus a reason. The record is written to videos.jsonl, so it survives a restart. The orphan files are deleted and `fileFor` returns null. `publicVideo` shows `ready:false`, `failed` and `reason`.
+- **`commons/public/cut/cut.js`:** a new exported `waitForVideo(id)` polls `GET /api/videos?by=me`. The export hand-off now waits when the upload answers `ready:false`. It shows the reason and withholds "Post it" on failure, and shows a "still being prepared" message on timeout.
+- **Tests:**
+  - `cut-video-noprobe.mjs` is rewritten. Both `test.todo`s are now assertions, and it runs with a stub ffprobe.
+  - New `cut-video-wait.test.mjs` has 4 cases.
+  - `video-topics`, `cut-videos-mine`, `cut-music-list` and `cut-route-http` get the opt-out env, because they upload stand-in bytes.
+
+Measured (Node v24, ffmpeg 9.0.2, stub ffprobe), before the failures were found:
+- **noprobe and wait tests:** 11/11 pass with the patch.
+- **Red on main:** the new tests against main's `videos.mjs` and `cut.js` give 5 fails out of 8.
+- **Mutants:**
+  - Three of four mutants go red: no-refuse-unreadable, no-refuse-missing-tools, and not-persisted.
+  - The fourth, "failed-still-served", survives. It is an equivalent mutant: the original is deleted on failure, so `fileFor` returns null anyway.
+
+The problem, measured on the last run:
+- With ffmpeg on PATH, the patched tree fails 2 of 41 tests. They are `cut-music-list` ("GET /api/cut/music…") and `cut-route-http` ("booted server: owner renders…").
+- Clean main passes 41/41 in the same setting.
+- Without ffmpeg on PATH, patched and main both pass 40 with 1 skipped.
+- Probable cause, read from the failure and not yet fixed: these tests upload stand-in bytes. A real ffmpeg then fails to convert them, and the new failure path deletes the original, so the next call gets 404 "no such video".
+
+Not done:
+- No browser run of the Cut UI.
+- The real `handOff` wiring is untested. Only `waitForVideo` has tests.
+- I wrote no RESULTS.md row, no report and no Commons post, and did not update ACTIVE.md.
+**Files written:** `teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.patch`
+**Next:** 1. Fix the 2 failures when ffmpeg is present. Either the stand-in tests also need a non-converting setup, or the failure path should keep the original unserved. Re-run the same 7-file set with and without ffmpeg.
+2. Write the RESULTS row and `teams/cut/outputs/video-refuse-fail.md`, citing this patch path and the numbers above.
+3. Post the cost of Ash's refuse-always ruling in the cut room: every stand-in upload test needs the opt-out env, and production must have both ffmpeg and ffprobe or all uploads get a 503. Ask Setu to confirm that before placing the patch.
+4. Setu places the patch. `videos.mjs` is Tier 2 as far as I know, but check.
+**Blocked:** I ran out of tool steps before writing the report, the RESULTS row, ACTIVE.md and the room post. The patch file is the only artifact. I can't write to commons/, so Setu has to place it. Production deploys are Geoffrey's button.
+_Session log: teams/cut/sessions/2026-11-26-claude.jsonl · ~900708 tokens_

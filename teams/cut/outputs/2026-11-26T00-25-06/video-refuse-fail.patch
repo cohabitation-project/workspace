@@ -1,0 +1,330 @@
+diff --git a/commons/lib/videos.mjs b/commons/lib/videos.mjs
+index 87441b6..50766eb 100644
+--- a/commons/lib/videos.mjs
++++ b/commons/lib/videos.mjs
+@@ -1,6 +1,8 @@
+ // Video posts (Geoffrey, 2026-11-15: "we need video, the ability to post video almost immediately"; "shoot a video
+ // and push it to post"). A member uploads one video (from the library, or recorded on the spot: on phones the file
+-// picker offers the camera). Limits: 200 MB, 2 minutes (checked when ffprobe is present).
++// picker offers the camera). Limits: 200 MB, 2 minutes. The length must be READ to be enforced, so an upload is
++// refused when it cannot be verified (no ffmpeg/ffprobe, or a file ffprobe cannot read) unless a dev box opts out
++// with COMMONS_VIDEO_UNVERIFIED=allow (Ash, 2026-11-25: "never silently accept an over-cap clip").
+ //
+ // Storage: on the server's own disk for now (data/videos), so no new account or cost. The capacity tripwire warns
+ // at 50% disk; that is the signal to move video to object storage. When ffmpeg is installed, each upload is
+@@ -15,6 +17,9 @@ export const MAX_BYTES = 200 * 1024 * 1024;
+ export const MAX_SECONDS = 120;
+ /** True when ffprobe is here, so upload() can measure a clip's length and refuse one over MAX_SECONDS. */
+ export const canProbe = () => ff().ffprobe;
++/** Dev-box opt-out for the "duration must be verifiable" rule. Off by default; production never sets it. */
++const unverifiedOk = () => process.env.COMMONS_VIDEO_UNVERIFIED === 'allow';
++export const FAILED_REASON = 'We could not convert this video. Try another file, or a standard MP4.';
+ const TYPES = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm', 'video/x-m4v': 'm4v', 'video/3gpp': '3gp' };
+ let DIR = null; const meta = new Map(); let FILE = null;
+ const fail = (status, msg) => { const e = new Error(msg); e.status = status; throw e; };
+@@ -47,9 +52,11 @@ export function upload(member, buf, { type = '', alt = '', credit = '' } = {}) {
+   const today = new Date().toISOString().slice(0, 10);
+   if ([...meta.values()].filter((v) => v.by === member.id && v.ts.startsWith(today)).length >= 20) fail(429, '20 videos a day');
+   const id = 'vid_' + crypto.randomBytes(8).toString('hex');
++  if (!unverifiedOk() && (!ff().ffmpeg || !ff().ffprobe)) fail(503, `this server cannot check the length of a video yet (${[!ff().ffmpeg && 'ffmpeg', !ff().ffprobe && 'ffprobe'].filter(Boolean).join(' and ')} needed), so it cannot accept uploads`);
+   const orig = path.join(DIR, `${id}.orig.${ext}`); fs.writeFileSync(orig, buf);
+   const secs = probeSeconds(orig);
+   if (secs != null && secs > MAX_SECONDS + 1) { fs.rmSync(orig, { force: true }); fail(413, 'videos can be up to 2 minutes'); }
++  if (secs == null && !unverifiedOk()) { fs.rmSync(orig, { force: true }); fail(422, 'we could not read the length of that file, so it cannot be accepted. Try an MP4, MOV or WebM video'); }
+   const v = { id, by: member.id, ts: new Date().toISOString(), bytes: buf.length, ext, seconds: secs, alt: String(alt || '').slice(0, 300), ...(credit ? { credit: String(credit).slice(0, 300) } : {}), ready: false };
+   meta.set(id, v); write('add', v);
+   convert(v, orig);
+@@ -59,9 +66,20 @@ export function upload(member, buf, { type = '', alt = '', credit = '' } = {}) {
+ function convert(v, orig) {
+   if (!ff().ffmpeg) return;
+   const out = path.join(DIR, `${id(v)}.mp4.part`); const poster = path.join(DIR, `${id(v)}.jpg`);
++  // A conversion that cannot finish is recorded on the video (failed + reason) and its original is never served as if
++  // the cut had worked. Persisted, so it survives a restart; the maker sees it in the upload list.
++  let settled = false;
++  const giveUp = () => {
++    if (settled) return; settled = true;
++    fs.rmSync(out, { force: true }); fs.rmSync(orig, { force: true });
++    const nv = { ...meta.get(v.id), ready: false, failed: true, reason: FAILED_REASON }; if (!meta.has(v.id)) return;
++    meta.set(v.id, nv); write('update', { id: v.id, ready: false, failed: true, reason: FAILED_REASON });
++  };
+   const p = spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-i', orig, '-vf', "scale='min(720,iw)':-2", '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', '-f', 'mp4', out], { stdio: 'ignore' });
++  p.on('error', giveUp);
+   p.on('close', (code) => {
+-    if (code !== 0) { fs.rmSync(out, { force: true }); return; }
++    if (code !== 0) { giveUp(); return; }
++    if (settled) return; settled = true;
+     fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`));
+     spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-ss', '0.5', '-i', path.join(DIR, `${id(v)}.mp4`), '-frames:v', '1', '-vf', "scale='min(720,iw)':-2", poster], { stdio: 'ignore' })
+       .on('close', () => { const nv = { ...meta.get(v.id), ready: true, poster: fs.existsSync(poster) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); fs.rmSync(orig, { force: true }); });
+@@ -71,7 +89,7 @@ const id = (v) => v.id;
+ 
+ /** The file to serve for a video, and its type. */
+ export function fileFor(vid) {
+-  const v = meta.get(String(vid || '')); if (!v) return null;
++  const v = meta.get(String(vid || '')); if (!v || v.failed) return null;
+   const mp4 = path.join(DIR, `${v.id}.mp4`);
+   if (fs.existsSync(mp4)) return { file: mp4, type: 'video/mp4' };
+   const orig = path.join(DIR, `${v.id}.orig.${v.ext}`);
+@@ -79,7 +97,7 @@ export function fileFor(vid) {
+ }
+ export function posterFor(vid) { const v = meta.get(String(vid || '')); const f = v && path.join(DIR, `${v.id}.jpg`); return f && fs.existsSync(f) ? f : null; }
+ export const get = (vid) => { const v = meta.get(String(vid || '')); return v ? publicVideo(v) : null; };
+-export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg });
++export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !v.failed && (!!v.ready || !ff().ffmpeg), ...(v.failed ? { failed: true, reason: v.reason || FAILED_REASON } : {}) });
+ export const byMember = (memberId) => [...meta.values()].filter((v) => v.by === memberId).map(publicVideo);
+ /** A member's own videos, newest first (Cohabi Cut's "From Cohabi" tab). */
+ export const listMine = (memberId, limit = 60) => [...meta.values()].filter((v) => v.by === memberId).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, Math.max(1, Math.min(100, limit))).map(publicVideo);
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index 1f01635..e9dedfb 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -50,6 +50,22 @@ export function handoffHref(id) {
+   return VIDEO_ID_RE.test(s) ? `/social?cut=${encodeURIComponent(s)}#compose` : null;
+ }
+ 
++/** After an upload answers ready:false, wait for the server to finish converting it. Resolves {state:'ready'|'failed'|'timeout', reason}.
++ *  Reads the member's own list (GET /api/videos?by=me): there is no per-video record route. */
++export async function waitForVideo(id, { fetchFn = fetch, intervalMs = 1500, timeoutMs = 180000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
++  let waited = 0;
++  for (;;) {
++    try {
++      const res = await fetchFn('/api/videos?by=me&limit=100', { credentials: 'same-origin' });
++      const list = res.ok ? (await res.json().catch(() => ({}))).videos : null;
++      const mine = Array.isArray(list) ? list.find((v) => v.id === id) : null;
++      if (mine?.failed) return { state: 'failed', reason: mine.reason || 'We could not convert this video.' };
++      if (mine?.ready) return { state: 'ready' };
++    } catch { /* offline for a moment: keep waiting */ }
++    if (waited >= timeoutMs) return { state: 'timeout' };
++    await sleep(intervalMs); waited += intervalMs;
++  }
++}
+ export function exportFailureMessage(status, payload) {
+   if (status === 404) return "Export isn't open yet — your edit is saved here.";
+   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+@@ -294,6 +310,13 @@ export function initCutEditor(root = document) {
+     const saved = await up.json().catch(() => ({}));
+     const href = up.ok ? handoffHref(saved.id) : null;
+     if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
++    if (saved.failed) { showToast(saved.reason || 'We could not prepare this video.'); return; }
++    if (saved.ready === false) {
++      showToast('Saving your video… this can take a minute.');
++      const done = await waitForVideo(saved.id);
++      if (done.state === 'failed') { showToast(done.reason); return; }
++      if (done.state === 'timeout') { showToast('Your video is still being prepared. Check your videos in a minute.'); return; }
++    }
+     resultLink.href = href; resultBox.hidden = false;
+     showToast('Your edited video is ready. Tap "Post it".');
+   }
+diff --git a/commons/test/cut-music-list.test.mjs b/commons/test/cut-music-list.test.mjs
+index 68fe048..7d2578a 100644
+--- a/commons/test/cut-music-list.test.mjs
++++ b/commons/test/cut-music-list.test.mjs
+@@ -42,7 +42,7 @@ test("GET /api/cut/music: 401 signed out; own uploads only, newest first, no pat
+ 	};
+ 	const mp3 = (n) => Buffer.concat([Buffer.from("ID3"), Buffer.alloc(40, n)]).toString("base64");
+ 	try {
+-		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1" }, stdio: ["ignore", "ignore", "pipe"] });
++		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1", COMMONS_VIDEO_UNVERIFIED: "allow" }, stdio: ["ignore", "ignore", "pipe"] });
+ 		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
+ 		let ready = false;
+ 		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }
+diff --git a/commons/test/cut-route-http.test.mjs b/commons/test/cut-route-http.test.mjs
+index 95194cf..7a56bf5 100644
+--- a/commons/test/cut-route-http.test.mjs
++++ b/commons/test/cut-route-http.test.mjs
+@@ -167,7 +167,7 @@ test("booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff);
+ 	try {
+ 		fs.writeFileSync(injectCopy, INJECT_SRC);
+ 		fs.writeFileSync(serverCopy, applyHunk(fs.readFileSync(SERVER, "utf8")));
+-		srv = spawn(process.execPath, [serverCopy], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, CUT_HTTP_LOG: LOG, CUT_HTTP_GATE: GATE }, stdio: ["ignore", "ignore", "pipe"] });
++		srv = spawn(process.execPath, [serverCopy], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, CUT_HTTP_LOG: LOG, CUT_HTTP_GATE: GATE, COMMONS_VIDEO_UNVERIFIED: "allow" }, stdio: ["ignore", "ignore", "pipe"] });
+ 		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
+ 		let ready = false;
+ 		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }
+diff --git a/commons/test/cut-video-noprobe.mjs b/commons/test/cut-video-noprobe.mjs
+index 7f84c9f..194c003 100644
+--- a/commons/test/cut-video-noprobe.mjs
++++ b/commons/test/cut-video-noprobe.mjs
+@@ -1,7 +1,8 @@
+ // commons/test/cut-video-noprobe.mjs: server-free. What a maker is told when ffprobe (and/or ffmpeg) is missing.
+ // Each case runs videos.mjs in a CHILD node process, because videos.mjs memoizes "is ffmpeg/ffprobe here" on first use.
+ // Cases that need a real ffmpeg are skipped (loudly) when none is on PATH (set FFMPEG=/path to override).
+-// Findings are pinned as tests of CURRENT behaviour; the behaviour they show is the thing to fix, so each has a test.todo.
++// Ash's rulings (2026-11-25): the 2-minute cap must never be skipped silently, and a failed conversion must tell its maker.
++// So: no ffmpeg/ffprobe, or a file whose length can't be read -> refused; ffmpeg that can't convert -> failed:true + reason, original not served.
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+ import { spawnSync } from 'node:child_process';
+@@ -28,55 +29,86 @@ const v = await import(process.env.LIB);
+ v.init(process.env.DATA);
+ const buf = fs.readFileSync(process.env.CLIP);
+ const out = { canProbe: !!v.canProbe() };
++const files = () => fs.readdirSync(process.env.DATA + '/videos').filter((f) => f !== 'videos.jsonl');
+ try { out.first = v.upload({ id: 'm1' }, buf, { type: 'video/mp4' }); } catch (e) { out.error = { status: e.status, msg: e.message }; }
+ const until = Date.now() + Number(process.env.WAIT_MS || 0);
+-while (out.first && Date.now() < until) { const g = v.get(out.first.id); if (g.ready && !v.fileFor(out.first.id)?.file.includes('.orig.')) break; await new Promise((r) => setTimeout(r, 100)); }
++while (out.first && Date.now() < until) { const g = v.get(out.first.id); if ((g.ready && !v.fileFor(out.first.id)?.file.includes('.orig.')) || g.failed) break; await new Promise((r) => setTimeout(r, 100)); }
++out.files = files();
+ if (out.first) { out.last = v.get(out.first.id); const f = v.fileFor(out.first.id); out.served = f ? path.basename(f.file) : null; out.servedType = f?.type ?? null; out.poster = !!v.posterFor(out.first.id); }
++if (out.first) { v.init(process.env.DATA); out.reloaded = v.get(out.first.id); }
+ console.log('RESULT ' + JSON.stringify(out));
+ process.exit(0);
+ `.replace("import fs from 'node:fs';", "import fs from 'node:fs'; import path from 'node:path';");
+ 
+-function run(clip, { ffmpeg = true, waitMs = 0 } = {}) {
++// A stand-in ffprobe: answers -version, otherwise prints PROBE_OUT (a length, or nothing = "cannot read it").
++const stub = path.join(tmp, 'ffprobe-stub.sh');
++fs.writeFileSync(stub, '#!/bin/sh\ncase "$1" in -version) exit 0;; esac\necho "$PROBE_OUT"\n', { mode: 0o755 });
++function run(clip, { ffmpeg = true, waitMs = 0, probe = null, allow = false } = {}) {
+   const data = fs.mkdtempSync(path.join(tmp, 'data-'));
+-  const env = { ...process.env, LIB: 'file://' + LIB, DATA: data, CLIP: clip, WAIT_MS: String(waitMs), FFPROBE: '/nonexistent/ffprobe', FFMPEG: ffmpeg ? FFMPEG : '/nonexistent/ffmpeg' };
++  const env = { ...process.env, LIB: 'file://' + LIB, DATA: data, CLIP: clip, WAIT_MS: String(waitMs), FFPROBE: probe === null ? '/nonexistent/ffprobe' : stub, PROBE_OUT: probe ?? '', FFMPEG: ffmpeg ? FFMPEG : '/nonexistent/ffmpeg' };
++  delete env.COMMONS_VIDEO_UNVERIFIED; if (allow) env.COMMONS_VIDEO_UNVERIFIED = 'allow';
+   const r = spawnSync(process.execPath, ['--input-type=module', '-e', CHILD], { env, encoding: 'utf8', timeout: 60000 });
+   const line = String(r.stdout).split('\n').find((l) => l.startsWith('RESULT '));
+   assert.ok(line, 'child printed no RESULT: ' + r.stderr);
+   return JSON.parse(line.slice(7));
+ }
+ 
+-test('no ffprobe, real ffmpeg: a short clip still converts and becomes ready (ffprobe is not needed for convert)', { skip: !haveFfmpeg && 'no ffmpeg on PATH' }, () => {
+-  const o = run(makeClip('short.mp4', 2), { waitMs: 30000 });
++
++const stand = (n = 2048) => { const f = path.join(tmp, 'stand-in.mp4'); fs.writeFileSync(f, Buffer.alloc(n, 1)); return f; };
++
++test('no ffprobe: the upload is refused with a 503 that names ffprobe, and nothing is left on disk (the 2-minute cap cannot be skipped silently)', () => {
++  const o = run(stand());
+   assert.equal(o.canProbe, false);
+-  assert.equal(o.first.seconds, null, 'no probe -> the upload record has no length');
+-  assert.equal(o.first.ready, false, 'the POST answer is always ready:false while converting');
+-  assert.equal(o.last.ready, true);
+-  assert.equal(o.served, o.first.id + '.mp4');
++  assert.equal(o.first, undefined, 'no record is returned');
++  assert.equal(o.error.status, 503);
++  assert.match(o.error.msg, /ffprobe/);
++  assert.deepEqual(o.files, [], 'the saved bytes are removed too');
++});
++
++test('no ffmpeg and no ffprobe: refused with a 503 that names both', () => {
++  const o = run(stand(), { ffmpeg: false });
++  assert.equal(o.error.status, 503);
++  assert.match(o.error.msg, /ffmpeg and ffprobe/);
++  assert.deepEqual(o.files, []);
++});
++
++test('a real over-length clip is refused with a 413 when ffprobe reads it (the cap itself still works)', () => {
++  const o = run(stand(), { probe: '125.0' });
++  assert.equal(o.error.status, 413);
++  assert.match(o.error.msg, /2 minutes/);
++  assert.deepEqual(o.files, []);
+ });
+ 
+-test('no ffprobe: a clip over 2 minutes is ACCEPTED, silently (current behaviour, the finding)', { skip: !haveFfmpeg && 'no ffmpeg on PATH' }, () => {
+-  const o = run(makeClip('long.mp4', 125), { waitMs: 0 });
+-  assert.equal(o.error, undefined, 'if this now fails, the limit is enforced: delete this test and un-todo the one below');
++test('ffprobe present but cannot read the file: refused with a 422 the maker can read', () => {
++  const o = run(stand(), { probe: '' });
++  assert.equal(o.error.status, 422);
++  assert.match(o.error.msg, /length/);
++  assert.deepEqual(o.files, []);
++});
++
++test('dev opt-out COMMONS_VIDEO_UNVERIFIED=allow keeps the old open behaviour (and only that env does)', () => {
++  const o = run(stand(), { ffmpeg: false, allow: true });
++  assert.equal(o.error, undefined);
++  assert.equal(o.first.ready, true);
+   assert.equal(o.first.seconds, null);
+ });
+-test.todo('no ffprobe: a clip over 2 minutes is refused with a 413 the maker can read (videos.mjs:52 only checks when secs != null)');
+ 
+-test('no ffprobe, real ffmpeg, bytes ffmpeg cannot decode: upload is accepted and the record stays ready:false forever, nothing says why (current behaviour)', { skip: !haveFfmpeg && 'no ffmpeg on PATH' }, () => {
++test('ffprobe reads a length but ffmpeg cannot decode the bytes: the record becomes failed:true with a reason, the original is NOT served, and it survives a restart', { skip: !haveFfmpeg && 'no ffmpeg on PATH' }, () => {
+   const junk = path.join(tmp, 'junk.mp4'); fs.writeFileSync(junk, Buffer.alloc(4096, 7));
+-  const o = run(junk, { waitMs: 4000 });
++  const o = run(junk, { probe: '2.0', waitMs: 20000 });
+   assert.equal(o.error, undefined);
+-  assert.equal(o.last.ready, false, 'convert() returns on a non-zero exit without marking anything (videos.mjs:64)');
+-  assert.equal(o.last.poster, null);
+-  assert.ok(o.served.includes('.orig.'), 'the undecodable original is what /videos/<id> would serve');
++  assert.equal(o.first.ready, false, 'the POST answer is still ready:false: conversion is asynchronous');
++  assert.equal(o.last.failed, true);
++  assert.equal(o.last.ready, false);
++  assert.match(o.last.reason, /could not convert/);
++  assert.equal(o.served, null, 'the undecodable original is not published as if the cut worked');
++  assert.deepEqual(o.files, [], 'no orphan .orig or .part');
++  assert.equal(o.reloaded.failed, true, 'persisted in videos.jsonl');
+ });
+-test.todo('a clip ffmpeg cannot convert tells its maker (a failed flag or a 4xx) instead of sitting at ready:false');
+ 
+-test('no ffmpeg and no ffprobe: upload reports ready:true at once and serves the original; no length, no poster', () => {
+-  const clip = path.join(tmp, 'any.mp4'); fs.writeFileSync(clip, Buffer.alloc(2048, 1));
+-  const o = run(clip, { ffmpeg: false });
+-  assert.equal(o.canProbe, false);
+-  assert.equal(o.first.ready, true, 'publicVideo: ready = !!v.ready || !ff().ffmpeg (videos.mjs:82)');
+-  assert.equal(o.first.seconds, null);
+-  assert.equal(o.first.poster, null);
+-  assert.ok(o.served.includes('.orig.'));
++test('a clip ffmpeg can convert is unaffected: ready:true, no failed field, converted mp4 served', { skip: !haveFfmpeg && 'no ffmpeg on PATH' }, () => {
++  const o = run(makeClip('short.mp4', 2), { probe: '2.0', waitMs: 30000 });
++  assert.equal(o.last.ready, true);
++  assert.equal(o.last.failed, undefined);
++  assert.equal(o.served, o.first.id + '.mp4');
+ });
+diff --git a/commons/test/cut-video-wait.test.mjs b/commons/test/cut-video-wait.test.mjs
+new file mode 100644
+index 0000000..1817838
+--- /dev/null
++++ b/commons/test/cut-video-wait.test.mjs
+@@ -0,0 +1,28 @@
++// waitForVideo (commons/public/cut/cut.js): after an upload answers ready:false, Cut polls the member's own list
++// until the video is ready or failed, and only then offers "Post it". Fake fetch + fake sleep: no browser, no server.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { waitForVideo } from '../public/cut/cut.js';
++
++const seq = (...lists) => { let i = 0; const urls = []; const fetchFn = async (u) => { urls.push(u); const l = lists[Math.min(i++, lists.length - 1)]; return { ok: true, json: async () => ({ videos: l }) }; }; fetchFn.urls = urls; return fetchFn; };
++const noSleep = async () => {};
++
++test('ready after two polls', async () => {
++  const f = seq([{ id: 'v1', ready: false }], [{ id: 'v1', ready: false }], [{ id: 'v1', ready: true }]);
++  assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep }), { state: 'ready' });
++  assert.equal(f.urls.length, 3);
++  assert.ok(f.urls[0].startsWith('/api/videos?by=me'));
++});
++test('failed returns the server reason, so Cut can show it and withhold "Post it"', async () => {
++  const f = seq([{ id: 'v1', ready: false }], [{ id: 'v1', ready: false, failed: true, reason: 'We could not convert this video.' }]);
++  assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep }), { state: 'failed', reason: 'We could not convert this video.' });
++});
++test('only the asked-for id counts (another ready video does not end the wait)', async () => {
++  const f = seq([{ id: 'other', ready: true }]);
++  assert.equal((await waitForVideo('v1', { fetchFn: f, sleep: noSleep, intervalMs: 1000, timeoutMs: 3000 })).state, 'timeout');
++});
++test('a failed fetch or network error is retried, then times out; it never claims ready', async () => {
++  let n = 0; const f = async () => { n++; if (n % 2) throw new Error('offline'); return { ok: false }; };
++  assert.equal((await waitForVideo('v1', { fetchFn: f, sleep: noSleep, intervalMs: 1000, timeoutMs: 4000 })).state, 'timeout');
++  assert.equal(n, 5);
++});
+diff --git a/commons/test/cut-videos-mine.test.mjs b/commons/test/cut-videos-mine.test.mjs
+index 8147d2b..5a8d5ad 100644
+--- a/commons/test/cut-videos-mine.test.mjs
++++ b/commons/test/cut-videos-mine.test.mjs
+@@ -32,7 +32,7 @@ test("GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only,
+ 	};
+ 	const mp3 = (n) => Buffer.concat([Buffer.from("ID3"), Buffer.alloc(40, n)]).toString("base64");
+ 	try {
+-		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1" }, stdio: ["ignore", "ignore", "pipe"] });
++		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1", COMMONS_VIDEO_UNVERIFIED: "allow" }, stdio: ["ignore", "ignore", "pipe"] });
+ 		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
+ 		let ready = false;
+ 		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }
+diff --git a/commons/test/video-topics.mjs b/commons/test/video-topics.mjs
+index 01fbb8d..dcba3a7 100644
+--- a/commons/test/video-topics.mjs
++++ b/commons/test/video-topics.mjs
+@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
+ import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path';
+ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'commons-vid-'));
+ process.env.FFMPEG = '/nonexistent-ffmpeg'; process.env.FFPROBE = '/nonexistent-ffprobe'; // no conversion in tests
++process.env.COMMONS_VIDEO_UNVERIFIED = 'allow'; // these fake bytes have no readable length; the default refuses them (videos.mjs)
+ const videos = await import('../lib/videos.mjs'); const images = await import('../lib/images.mjs'); const posts = await import('../lib/posts.mjs');
+ images.init(dir); videos.init(dir); posts.init(dir);
+ const human = { id: 'h_v1', kind: 'human', name: 'Vee' }; const other = { id: 'h_v2', kind: 'human', name: 'Oh' }; const agent = { id: 'a_v3', kind: 'agent', name: 'Bot', model: 'm' };
