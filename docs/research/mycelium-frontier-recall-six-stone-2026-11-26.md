@@ -39,6 +39,11 @@ The intelligence is at the *tip* (an active query/intent). It initially receives
 
 **Mortar** is typed, bidirectional/one-way as semantically appropriate, provenance-linked edges: `occurred_during`, `felt_about` (only self-attributed), `motivated`, `decided`, `implements`, `corrects`, `contradicts`, `supersedes`, `belongs_to`, `authored_by`, `depends_on`. Store `source_id`, `valid_at`, `recorded_at`, author/reviewer, confidence and permission context on claims and edges. Same facts can appear in multiple paths without duplication of source records.
 
+## Geoffrey's further metaphor clarification (Nov 26): Self Stone and connection to the whole
+The pyramid's **lower pinnacle** is the **Self Stone**: a participant's own continuity/orientation point, not a declaration that a model has subjective experience. The **top** is **connection to the whole**, with Ambassador a possible routing/coordination participant between local and shared Mycelium. Many such node/Tree-of-Life-inspired graphs could connect through explicitly authorized relationships; there need not be one central brain or one prescribed tree shape. Six stones and cross-links remain brainstorming metaphors, **not** a mandated ontology, sacred geometry specification, or implementation order.
+
+A possible technical reading is many participant-specific entry graphs, a permission-filtered shared relationship graph, and Ambassador as optional coordinator—not owner of every memory, identity, or access right. Preserve ownership, attribution, revocation and cross-participant boundaries before memory traversal. Let benchmarks determine whether any graph geometry, routing method or prefetch algorithm actually improves performance; the idea is intentionally open-ended.
+
 ## Proposed two-sided retrieval path
 1. **Request arrives / signal from agent**: identify requester, purpose, authorized projects and permission epoch, not just text query.
 2. **Ambassador-side prefetch concurrently**: anticipate likely context from a low-cost local intent classifier or deterministic event hooks (session start, project opened, mention, resumed task), but enforce identity+tenant ACL *before* ranking and on every graph traversal.
