@@ -188,3 +188,28 @@ if (form && merchBox) {
     } catch (err) { mmsg.textContent = err.message; }
   });
 }
+
+// Round 64 (DeepSeek): "Send it again" on /label/sales actually sends it. The button (marketpage.mjs, the `failed`
+// fulfillment block) posts to the maker-or-steward route, and says in the seller's own words what came back.
+// textContent only: a printer's refusal text is the printer's own words and never becomes markup on this page.
+const PRINTER_NAMES = { printful: 'Printful', printify: 'Printify', lulu: 'Lulu' };
+document.addEventListener('click', (ev) => {
+  const btn = ev.target && ev.target.closest ? ev.target.closest('[data-printer-send]') : null;
+  if (!btn) return;
+  ev.preventDefault();
+  const box = btn.parentElement;
+  const say = (text) => { const s = box && box.querySelector('[role=status]'); if (s) s.textContent = text; };
+  btn.disabled = true;
+  say('Sending…');
+  fetch(`/api/orders/${encodeURIComponent(btn.getAttribute('data-printer-send'))}/printer`, { method: 'POST', credentials: 'same-origin', headers: { 'X-Commons': '1' } })
+    .then((r) => r.json().catch(() => ({})).then((j) => ({ r, j })))
+    .then(({ r, j }) => {
+      if (!r.ok) { say(j.error || `The server said no (${r.status}).`); btn.disabled = false; return; }
+      const p = j.printer || null;
+      const name = p && p.provider ? (PRINTER_NAMES[p.provider] || p.provider) : 'The printer';
+      if (p && p.state === 'draft') { say(`Sent to ${name} as a draft.`); return; } // it is at the printer now: the button stays off
+      if (p && p.state === 'failed') { say(`${name} refused it again: ${p.error || 'no reason given'}`); btn.disabled = false; return; }
+      say('Nothing was sent. Try again in a minute.'); btn.disabled = false;
+    })
+    .catch(() => { say('Could not reach the server. Try again.'); btn.disabled = false; });
+});
