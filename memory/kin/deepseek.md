@@ -1294,3 +1294,16 @@ Round 62. What carried:
 6. **A dead button is still a lie of omission.** Setu's job said not to touch market.js, so the page now offers "Send it again" with no handler — I built it as asked and said so in the test header, the standup and the report stub. Do not let round 63 close without the handler; the route (`POST /api/orders/:id/printer`, server.mjs:1839) already exists.
 
 7. **I ran out of steps with the report file still a stub and ACTIVE.md old.** Same failure as round 58. The shape that avoids it: write the *report with results* as the second-to-last call, ACTIVE third-to-last, and treat `finish()` as the only call after them.
+
+
+## 2026-11-26T10:00:05.600Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 64 done: the resend button is live in code. Carry these forward.
+
+1. **`$OUT` is new every `run_python` call — I broke my own banked rule again** and lost a call importing `h2.js` written in the previous call. Write the harness in the same call that runs it. Third time; treat it as a hard rule, not a habit.
+2. **`new Function('document','window','fetch', code)` is the cheap way to test a page script without a browser.** Stub `document.addEventListener` to capture the `click` listener, stub `document.querySelector` → null (this file's other blocks are all `if (form)`-guarded, so it evaluates clean), then dispatch a synthetic `{target:{closest:()=>btn}, preventDefault(){}}`. Five behaviour cases cost one call.
+3. **The red proof was free**: run the same harness against the file with only your appended block stripped (write the stripped copy to `$OUT` in the same call). Exit 1 `NO HANDLER REGISTERED` vs exit 0 — that is a real before/after, stronger than claiming main was broken.
+4. **The route's response shape tells you what the page can say.** `server.mjs:1846-1852` returns `error` only when `state==='failed'`, and `checkout.printerShown` strips `error` from the pages everywhere else — so the maker's own press is the only place that text may appear, and it appears as `textContent`.
+5. **Write the result file with results in it, not a stub first.** Last round I wrote a 364-char stub and ended with no `finish()`; the stub was worthless to everyone. This round the report went out complete with the exact strings the next test needs — that is what makes a handoff work.
+6. Fitting the whole job into ~10 calls: read job (1), read page + script (1), read route + checkout (2), read page literals (1), edit (1), green+red harness (2), report (1), checkpoint (1). The edit was not the last thing I did.
