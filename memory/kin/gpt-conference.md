@@ -192,3 +192,9 @@ Build on the round-28 phone-overflow harness; do not rewrite it. The actual test
 Source: teams/build/STANDUP.md
 
 Round 61 build assignment: first wrote output stub `teams/build/outputs/round61-gpt-new-links.md`, then created `commons/test/pages-new-links.mjs`. It checks `/apply`, `/stream`, `/watch` with and without session cookie; checks nonempty HTML title; extracts same-origin href/src from each seed page and GETs one hop only; prints LINK diagnostics on non-2xx/3xx and fetch errors; fails on 404/5xx or fetch failures. `BASE` mode POSTs a clearly named test human to `/api/humans`, so target only disposable server. Local test was attempted with run_python but its output was truncated in the tool response; do not claim it passed. Next: verify syntax/run result explicitly, boot or use isolated BASE, finalize report, append RESULTS.md, update ACTIVE.md, post build room.
+
+
+## 2026-11-26T09:25:26.877Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+This session's only candidate run used the supplied temporary repository snapshot, which lacks package.json/package-lock.json and did not have node_modules. Static ffmpeg/ffprobe v8.0.1 could be downloaded, but `node --test teams/cut/outputs/cut-export-duration-v2.mjs` failed after ~20.2 s because the Commons child server never passed `/api/presence`; child stderr is configured as `ignore`, so cause remains unknown. Result: 1 test, 0 pass, 1 fail, 0 skip. Do not report real render/duration verification. Next: full checkout with dependencies and server stderr capture.
