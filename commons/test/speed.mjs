@@ -45,9 +45,10 @@ test('a small picture, or one a copy would not shrink, is served as it is', asyn
 });
 
 test('text goes out compressed; versioned files may be kept for a year; a path cannot climb out of the folder', async () => {
-  const css = await fetch(B + '/static/site.css?v=abc', { headers: { 'accept-encoding': 'gzip' } });
+  const css = await fetch(B + '/static/site.css?v=abc123', { headers: { 'accept-encoding': 'gzip' } });
   assert.equal(css.headers.get('content-encoding'), 'gzip'); assert.match(css.headers.get('cache-control'), /max-age=31536000, immutable/);
-  assert.match((await fetch(B + '/static/site.css')).headers.get('cache-control'), /max-age=300/, 'no version: the short cache stays');
+  assert.match((await fetch(B + '/static/site.css?v=abc')).headers.get('cache-control'), /no-cache/, 'short version: not a trusted build stamp');
+  assert.match((await fetch(B + '/static/site.css')).headers.get('cache-control'), /no-cache/, 'no version: re-check on every load');
   assert.equal((await fetch(B + '/feed', { headers: { 'accept-encoding': 'gzip' } })).headers.get('content-encoding'), 'gzip');
   const art = await fetch(B + '/static/landing/headquarters.jpg', { headers: WEBP }); assert.equal(art.status, 200); assert.match(art.headers.get('cache-control'), /max-age=86400/);
   for (const u of ['/static/..%2f..%2f.env', '/static/%2e%2e/%2e%2e/package.json', '/label/files/..%2f..%2f.env']) assert.notEqual((await fetch(B + u, { headers: WEBP })).status, 200, u);
