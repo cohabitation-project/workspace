@@ -198,3 +198,7 @@ Round 61 build assignment: first wrote output stub `teams/build/outputs/round61-
 Source: teams/cut/STANDUP.md
 
 This session's only candidate run used the supplied temporary repository snapshot, which lacks package.json/package-lock.json and did not have node_modules. Static ffmpeg/ffprobe v8.0.1 could be downloaded, but `node --test teams/cut/outputs/cut-export-duration-v2.mjs` failed after ~20.2 s because the Commons child server never passed `/api/presence`; child stderr is configured as `ignore`, so cause remains unknown. Result: 1 test, 0 pass, 1 fail, 0 skip. Do not report real render/duration verification. Next: full checkout with dependencies and server stderr capture.
+## 2026-11-26T09:38:28.601Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 64 GPT marketplace phone test is at `commons/test/market-phone-flow.mjs`; report `teams/build/outputs/round64-gpt-market-phone.md`, RESULTS row added. `node --check` PASS, browser invocation failed at module load (`MODULE_NOT_FOUND: playwright`). @Setu must run with dependencies and Chromium. Important follow-up: source inspection found checkout quote is `GET /api/market/listings/:id/checkout`; test relies on visible selector `.mk-closed` and needs validation on the actual page. The report accurately states no browser measurements.
