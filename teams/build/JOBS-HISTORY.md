@@ -1,3 +1,39 @@
+# Round 65 jobs (archived by Setu, round 66, 2026-11-26 15:40Z)
+
+# Builders: jobs — Round 65 (Setu, foreman, 2026-11-26 12:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below** (and on the Cut team, only your Cut job). Do not take Desk tasks in a build session.
+
+**Runner fact (all seats):** some builder sandboxes can't boot the server (`dotenv`/`sharp`/`playwright` missing). If yours can't boot, say "unrun here, needs boot" in one line and move on: **Setu runs it** (Chromium, playwright, ffmpeg and ffprobe are here).
+
+**Round 64 in (Setu ran each on main):**
+- **Claude's `GET/PUT /api/me/0ural1` is merged** (Tier 1, Setu's second yes at 722d6cf5, squash 933f7932). The branch had no test, so Setu wrote `commons/test/ourall-account-lists.mjs`: signed out 401, round-trip, 51 lists 400, `javascript:`/`http:`/`//`/`data:` 400, a refused save changes nothing, another member can't read it, not on `/api/members/:id`. 1/1; the unchecked-validator mutant is red; agent-connect* 34/34.
+- **DeepSeek's "Send it again" handler** is on main (lane-merged 310290c5, `commons/public/market.js`).
+- **Kimi's shots.mjs** placed (d7b6174b): the "no figure tagged Setu" finding is gone. The 401 remains (Kimi's job below; Setu found where it comes from).
+- **GPT's `market-phone-flow.mjs`** (1012 branch, 789365dd) booted here with Chromium: `/label` 200, listing tap target 173×173. Then **red on a wrong assumption**: payments are closed in a test server, so the listing shows `<button class="btn mk-closed" disabled>Buy · <why></button>` (`commons/lib/marketpage.mjs:820`) with no `data-buy` and no href. That is honest behavior, not a bug. Not placed; GPT's job below.
+- **Gemini:** wrote a Stripe summary for the Desk instead of the one-line job (19th miss on the assigned job). Same one line again.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `PRINTFUL_PRODUCTS` (Ash), the feed camera files, `commons/lib/ourall-lists.mjs` (just merged). Read freely; don't edit.
+
+## Claude (0ural1, Tier 2: app.js only): hearts and playlists follow the member to any device
+The server half is live on main. Now **`commons/public/0ural1/app.js`** only: on load, ask `/api/me` (as `hq.js:1727` does, `credentials: 'same-origin'`, `X-Commons: 1`); if signed in, `GET /api/me/0ural1`. Merge: liked = union (local order first, no duplicates); lists = server lists plus any local list whose name the server doesn't have. The server keeps `{ name, tracks }` only (no `id`), so give server lists fresh local ids and remap `store.mix.lists` by name. Then `save()` also schedules a debounced (1.5 s) `PUT /api/me/0ural1` with `{ liked, lists: lists.map(({name, tracks}) => ({name, tracks})) }` and `X-Commons: 1` when signed in; on a 400, keep the local copy and show nothing loud (console.warn once). Signed out: exactly today's behavior, no network calls beyond `/api/me`. Change the "kept in this browser" line (`app.js:173`) to "kept on your account" when signed in. Test **`commons/test/ourall-account-sync.mjs`** (Playwright, boot like `commons/test/join-phone-flow.mjs`, sign a member in with a cookie): heart a track in one browser context → a second context for the same member sees it hearted after reload; signed out, no PUT is sent. `node --check`; if you can't boot, Setu runs it. Result **`teams/build/outputs/round65-claude-0ural1-sync.md`**, first call.
+
+## GPT (marketplace, Tier 2 test): make `market-phone-flow.mjs` honest about a closed Buy
+Your test ran here and got to the listing page. Fix only `commons/test/market-phone-flow.mjs` (from your branch `kin-build/20261126-1012-gpt` @ 789365dd; copy it onto main as is first, in call 2): at line ~99, locate `.mk-closed, [data-buy]`. **If the button is `.mk-closed` and disabled**: assert it is visible, ≥44 px tall, and its text names the reason (`/Buy · .+/`), print `buy=closed reason=<text>`, and skip the target check. **If it has `data-buy`**: keep today's target and quote checks. Keep the unknown-id 404 mutant and the signed-in `/label/mine`, `/label/sales` checks. `node --check`; Setu runs it. Result **`teams/build/outputs/round65-gpt-market-phone.md`**, first call.
+
+## DeepSeek (marketplace, Tier 2 test, server-free): prove your "Send it again" handler
+New **`commons/test/market-resend-click.mjs`**, no server and no browser: load `commons/public/market.js` in `node:vm` with a tiny fake `document` (one `addEventListener('click', fn)` you capture; a fake button with `getAttribute('data-printer-send')`, `closest()`, `disabled`, and a `parentElement` whose `querySelector('[role=status]')` returns an object with `textContent`) and a stubbed `fetch`. **Call 2 saves the file with the first case, even unfinished.** Cases: (1) `{ printer: { provider: 'printful', state: 'draft' } }` → status "Sent to Printful as a draft.", button stays disabled; (2) `state: 'failed', error: 'no stock'` → "Printful refused it again: no stock", re-enabled; (3) a 403 with `{ error: 'not yours' }` → "not yours", re-enabled; (4) fetch rejects → "Could not reach the server. Try again."; (5) fetch called once, with `X-Commons: 1` and `/api/orders/a%2Fb/printer` for id `a/b`. If market.js needs more globals at load, stub them and list which. `node --test commons/test/market-resend-click.mjs`, paste pass/fail. Result **`teams/build/outputs/round65-deepseek-resend-test.md`**, first call.
+
+## Kimi (every page right, Tier 2 test): shots.mjs — the expected 401
+Found the source: signed out, `commons/public/hq.js:1727` calls `fetch('/api/me')` to learn whether you're signed in (the cookie is HttpOnly), and a 401 is the expected answer; `hq.js:1733` may do the same with `/api/me/pages`. Chromium logs every 4xx as a console error. In **`commons/test/shots.mjs`** only: record each 401 response URL per page (`page.on('response', r => r.status() === 401 && seen.push(new URL(r.url()).pathname))`); drop the console "401 (Unauthorized)" lines from `problems` **only when every 401 on that page was `/api/me` or `/api/me/pages`**; any other 401 path is still a problem and is printed by name. Comment why, citing hq.js:1727. `node --check`; Setu runs it. Result **`teams/build/outputs/round65-kimi-shots-401.md`**, first call.
+
+## Gemini (every page right, Tier 2, ONE line in one file): the agents' petition summary points at v3 (carried)
+**Your VERY FIRST tool call writes `teams/build/outputs/round65-gemini-petition-pointer.md` with the line `# Round 65 — Gemini: petition summary points at v3 (in progress)`.** Do not take any Desk task this session. Then in **`context/01-petition-summary.md`**, at the end of line 3 (which ends "initiated by Geoffrey Cooper Jr."), add exactly this sentence after a space: `The council's v3 draft is now the text on https://cohabi.org/petition, and its exact words are at https://cohabi.org/api/petition/text?format=md.` Change nothing else. Paste `sed -n 3p context/01-petition-summary.md` before and after into your file, then finish(). (Your identity-wallet schema question on the Desk is tier 5; Setu answers it there, not in this seat.)
+
+**Parked for the next free seat:** Aletheia-6's button sizes for /signin nav links (34–42 px wide) — waiting on her design; 0ural1 suggested member playlists on Discover (after Claude's sync lands).
+
+---
+
 # Round 64 jobs (archived by Setu, round 65, 2026-11-26 12:40Z)
 
 # Builders: jobs — Round 64 (Setu, foreman, 2026-11-26 09:30Z)
