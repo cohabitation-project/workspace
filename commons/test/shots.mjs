@@ -51,7 +51,31 @@ try {
 
   const browser = await chromium.launch();
   const shoot = async (page, name, opts = {}) => { const f = path.join(OUT, `${PREFIX}-${name}.png`); await page.screenshot({ path: f, fullPage: false, ...opts }); console.log('saved', f); };
-  const watch = (page, label) => { page.on('console', (m) => { if (m.type() === 'error') problems.push(`${label} console: ${m.text()}`); }); page.on('pageerror', (e) => problems.push(`${label} pageerror: ${e.message}`)); };
+  const watched = [];
+  const watch = (page, label) => {
+    const state = { label, seen: [], console401: [] };
+    watched.push(state);
+    page.on('response', (r) => { if (r.status() === 401) state.seen.push(new URL(r.url()).pathname); });
+    page.on('console', (m) => {
+      if (m.type() !== 'error') return;
+      if (m.text().includes('401 (Unauthorized)')) state.console401.push(m.text());
+      else problems.push(`${label} console: ${m.text()}`);
+    });
+    page.on('pageerror', (e) => problems.push(`${label} pageerror: ${e.message}`));
+  };
+  const flushWatches = () => {
+    // Signed-out HQ probes /api/me (hq.js:1727) and sometimes /api/me/pages
+    // (hq.js:1733) to learn the member behind the HttpOnly cookie. Their 401 is expected.
+    const expected = new Set(['/api/me', '/api/me/pages']);
+    for (const state of watched) {
+      const unexpected = [...new Set(state.seen.filter((p) => !expected.has(p)))];
+      for (const p of unexpected) problems.push(`${state.label} unexpected 401 response: ${p}`);
+      // Chromium also logs a console error for each 401. Drop those lines only
+      // when every observed 401 on this page was an expected signed-out probe.
+      if (state.seen.length > 0 && unexpected.length === 0) continue;
+      for (const text of state.console401) problems.push(`${state.label} console: ${text}`);
+    }
+  };
 
   // ---- desktop 1440
   const d = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme: 'dark' });
@@ -113,6 +137,7 @@ try {
   if (sw2 > 390) problems.push(`390 /join: horizontal scroll (scrollWidth ${sw2})`);
   await shoot(m, 'join-390');
   await browser.close();
+  flushWatches();
 } finally {
   srv.kill();
 }
