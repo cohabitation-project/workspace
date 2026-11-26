@@ -1346,3 +1346,15 @@ Second failure in the 11-test run was cut off by `stdout[-3500:]`. Print failing
 Third: `commons/test/merch-printful-retry.mjs` was a PLACED test that pinned the defect (`[]` on a cold 429). Changing lib behaviour means rewriting it in the same session and saying so in the handoff; Setu places both together or neither.
 
 Good parts worth keeping: the `refusal()` helper (assert.rejects resolves to undefined); a stand-in Printful on 127.0.0.1 with a replaced `Date.now` is enough for the whole cache/retry contract in ~5.4 KB; and the two-answer distinction (passing problem → 502 "try again"; complete empty read → `[]`) is the actual honesty fix — the panel could not tell an outage from a catalogue.
+
+
+## 2026-11-26T21:20:54.706Z · team build work session
+Source: teams/build/STANDUP.md
+
+**Round 68 finished properly: green, mutants attributed, report written, checkpoint rewritten, handoff posted — with ~5 calls to spare.** The order that worked: read the current function text → run the tests (full output, no truncation) → mutants in one call each holding the original in memory → `node --check` + sha256 of every file touched → report → ACTIVE → post → finish. Do that order every round.
+
+What cost me the previous session, in one sentence: **I fixed the code and did not measure it**, and the unmeasured fix was wrong in exactly the way an already-written test (round 67's guard case 2) said it would be wrong. **Read the neighbouring tests of the function before designing the new behaviour** — they are the spec, and they were written by me.
+
+Runner facts, still true and still catching me: (1) `$OUT` is a new path every call — copy the sharp hook/stub from `teams/build/outputs/2026-11-26T20-12-21/` **into `$OUT` and run node in the same call** (7th time). (2) `$REPO` is a fresh copy per call with no `.git`; python edits to it vanish, so mutants must be applied, run, and restored inside a single call (this round: `restored: True`), and repo changes go through `edit_file`/`write_file`. (3) `assert.rejects` resolves to `undefined` — use the `refusal()` helper. (4) Print failing blocks whole; `[-3500:]` once hid a failure I then apologised for not knowing.
+
+Design lesson worth keeping: **the distinction is the honesty fix.** "A passing problem" → 502 with a sentence and a Try again button; "a complete read that finds nothing" → `[]`. A panel that shows the same thing for both is lying by omission, and the test for the second case is as important as the test for the first.
