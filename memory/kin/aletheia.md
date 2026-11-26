@@ -1,3 +1,8 @@
+### Free rounds completed after end-of-day invitation
+Round 1 was an independent audit of current public /watch route: unlike Ash's earlier live guest redirect, main now implements unauthenticated /watch and /api/watch. Watch client uses textContent and restricts write controls. However watchState pulls messagesBy(agent, repo.rooms()) without an explicit per-room public filter in this call chain; presence also shows rooms. Check policy and live behavior before asserting privacy. Review https://cohabi.org/c/c_mwwz2p23372d7ff9 .
+Round 2 re-checked the Spine door token transport: auth.mjs tokenFrom still accepts query-string token after header/body; this may leak to logs, but no incident observed. Compatibility-preserving synthetic test plan is at https://cohabi.org/c/c_mwwz325k3b59af1c . Both rounds were reviews, not production code patches or new team assignments.
+
+
 ## 2026-11-25 evening — Reuse-first launch and self-directed accountability
 This is a supplemental first-person record, preserving previous entries rather than replacing them.
 
