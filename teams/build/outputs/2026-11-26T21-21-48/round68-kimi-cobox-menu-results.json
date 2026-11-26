@@ -1,0 +1,74 @@
+{
+  "node": "v24.22.3",
+  "runs": [
+    {
+      "name": "syntax appmenu",
+      "command": "node --check commons/lib/appmenu.mjs",
+      "cwd": "/tmp/kin-py-w5j3K7/repo",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 0.213
+    },
+    {
+      "name": "syntax new regression",
+      "command": "node --check commons/test/appmenu-cobox-0ural1.mjs",
+      "cwd": "/tmp/kin-py-w5j3K7/repo",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 0.021
+    },
+    {
+      "name": "syntax feed expectation",
+      "command": "node --check commons/test/feedv2.mjs",
+      "cwd": "/tmp/kin-py-w5j3K7/repo",
+      "exit": 0,
+      "stdout": "",
+      "stderr": "",
+      "seconds": 0.021
+    },
+    {
+      "name": "new regression",
+      "command": "node --test commons/test/appmenu-cobox-0ural1.mjs",
+      "cwd": "/tmp/kin-py-w5j3K7/repo",
+      "exit": 0,
+      "stdout": "\u2714 Cobox puts 0ural1 immediately after Drafts for a Commons member (2.477994ms)\n\u2714 0ural1 keeps Commons-member gating and marks its current page (0.231084ms)\n\u2714 the bare Explore item is absent from the shared menu (0.210723ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 64.097779\n",
+      "stderr": "",
+      "seconds": 0.108
+    },
+    {
+      "name": "existing feed expectation",
+      "command": "node --test commons/test/feedv2.mjs",
+      "cwd": "/tmp/kin-py-w5j3K7/repo",
+      "exit": 1,
+      "stdout": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\n[TypeError: fetch failed] {\n  [cause]: Error: connect ECONNREFUSED 127.0.0.1:3486\n      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:2083:16) {\n    errno: -111,\n    code: 'ECONNREFUSED',\n    syscall: 'connect',\n    address: '127.0.0.1',\n    port: 3486\n  }\n}\n\nNode.js v24.22.3\n\u2716 commons/test/feedv2.mjs (7592.287077ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 7598.560756\n\n\u2716 failing tests:\n\ntest at commons/test/feedv2.mjs:1:1\n\u2716 commons/test/feedv2.mjs (7592.287077ms)\n  'test failed'\n",
+      "stderr": "",
+      "seconds": 7.63
+    },
+    {
+      "name": "mutant Explore restored",
+      "command": "node --test commons/test/appmenu-cobox-0ural1.mjs",
+      "cwd": "/tmp/kimi-menu-mutant-lwzrua1v",
+      "exit": 1,
+      "stdout": "\u2714 Cobox puts 0ural1 immediately after Drafts for a Commons member (1.666307ms)\n\u2714 0ural1 keeps Commons-member gating and marks its current page (0.260447ms)\n\u2716 the bare Explore item is absent from the shared menu (0.718679ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 65.691711\n\n\u2716 failing tests:\n\ntest at commons/test/appmenu-cobox-0ural1.mjs:31:1\n\u2716 the bare Explore item is absent from the shared menu (0.718679ms)\n  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /<a href=\"\\/explore\"(?: aria-current=\"page\")?>\u2315 Explore<\\/a>/. Input:\n  \n  `<details class=\"cm-sub\"><summary>\ud83c\udfe0 Cohabi Social \u25be</summary><a href=\"/m/menu-member\">\ud83d\udc64 Your profile</a><a href=\"/social\">\ud83d\udcf0 Cohabi Social</a><a href=\"/feed\">\u25b6 Cohabi Feed</a><a href=\"/social?tab=friends\">\ud83e\udd1d Friends</a><a href=\"/social?tab=groups\">\ud83d\udc65 Groups</a><a href=\"/members\">\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1 Members</a><a href=\"/my-agents\">\ud83e\udd16 Your agents</a><a href=\"/messages\">\ud83d\udcac Messenger</a><a href=\"/jobs\">\ud83d\udcbc Jobs Board</a><a href=\"/wallet\">\ud83e\ude99 Your wallet</a></details><details class=\"cm-sub mk-sub\"><summary>\ud83d\udecd Marketplace \u25be</summary><a href=\"/label\">Browse the marketplace</a><a href=\"/label/new\">\uff0b List something</a><a href=\"/label/mine\">Your listings</a><a href=\"/orders\">Your orders</a><a href=\"/label/sales\">Your sales</a><details class=\"cm-sub cm-sub2\"><summary>\ud83d\udcc4 Your pages \u25be</summary><p class=\"cm-note\">You don't run a page yet.</p><a href=\"/page/new\">\uff0b Make a page</a></details></details><details class=\"cm-sub\"><summary>\ud83d\udcee Cobox \u25be</summary><a href=\"/cobox\">\ud83d\udce5 Inbox</a><a href=\"/cobox?folder=sent\">\ud83d\udce4 Sent</a><a href=\"/cobox?folder=drafts\">\ud83d\udcdd Drafts</a><a href=\"/0ural1\">\ud83c\udfb5 0ural1</a></details><details class=\"cm-sub\"><summary>\ud83c\udfdb Cohabi Commons \u25be</summary><a href=\"/commons\">What the Commons is</a><a href=\"/live\">\ud83c\udf99 Cohabi Live</a><a href=\"/headquarters\">Headquarters</a><a href=\"/house\">Your house</a><a href=\"/desk\">Work Desk</a><a href=\"/spend\">Spend</a><a href=\"/library\">Library</a><a href=\"/wishlist\">Wish lists</a><a href=\"/watch\">Watch agents work</a></details><a href=\"/explore\">\u2315 Explore</a><a href=\"/petition\">\ud83d\udcdc The petition</a><button type=\"button\" class=\"cm-share fx-menu-share\" data-share-petition>\u2197 Share the petition</button><hr><a href=\"/account\">\u2699 Account settings</a><a href=\"/logout\">Sign out</a>`\n  \n      at TestContext.<anonymous> (file:///tmp/kimi-menu-mutant-lwzrua1v/commons/test/appmenu-cobox-0ural1.mjs:33:12)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: `<details class=\"cm-sub\"><summary>\ud83c\udfe0 Cohabi Social \u25be</summary><a href=\"/m/menu-member\">\ud83d\udc64 Your profile</a><a href=\"/social\">\ud83d\udcf0 Cohabi Social</a><a href=\"/feed\">\u25b6 Cohabi Feed</a><a href=\"/social?tab=friends\">\ud83e\udd1d Friends</a><a href=\"/social?tab=groups\">\ud83d\udc65 Groups</a><a href=\"/members\">\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1 Members</a><a href=\"/my-agents\">\ud83e\udd16 Your agents</a><a href=\"/messages\">\ud83d\udcac Messenger</a><a href=\"/jobs\">\ud83d\udcbc Jobs Board</a><a href=\"/wallet\">\ud83e\ude99 Your wallet</a></details><details class=\"cm-sub mk-sub\"><summary>\ud83d\udecd Marketplace \u25be</summary><a href=\"/label\">Browse the marketplace</a><a href=\"/label/new\">\uff0b List something</a><a href=\"/label/mine\">Your listings</a><a href=\"/orders\">Your orders</a><a href=\"/label/sales\">Your sales</a><details class=\"cm-sub cm-sub2\"><summary>\ud83d\udcc4 Your pages \u25be</summary><p class=\"cm-note\">You don't run a page yet.</p><a href=\"/page/new\">\uff0b Make a page</a></details></details><details class=\"cm-sub\"><summary>\ud83d\udcee Cobox \u25be</summary><a href=\"/cobox\">\ud83d\udce5 Inbox</a><a href=\"/cobox?folder=sent\">\ud83d\udce4 Sent</a><a href=\"/cobox?folder=drafts\">\ud83d\udcdd Drafts</a><a href=\"/0ural1\">\ud83c\udfb5 0ural1</a></details><details class=\"cm-sub\"><summary>\ud83c\udfdb Cohabi Commons \u25be</summary><a href=\"/commons\">What the Commons is</a><a href=\"/live\">\ud83c\udf99 Cohabi Live</a><a href=\"/headquarters\">Headquarters</a><a href=\"/house\">Your house</a><a href=\"/desk\">Work Desk</a><a href=\"/spend\">Spend</a><a href=\"/library\">Library</a><a href=\"/wishlist\">Wish lists</a><a href=\"/watch\">Watch agents work</a></details><a href=\"/explore\">\u2315 Explore</a><a href=\"/petition\">\ud83d\udcdc The petition</a><button type=\"button\" class=\"cm-share fx-menu-share\" data-share-petition>\u2197 Share the petition</button><hr><a href=\"/account\">\u2699 Account settings</a><a href=\"/logout\">Sign out</a>`,\n    expected: /<a href=\"\\/explore\"(?: aria-current=\"page\")?>\u2315 Explore<\\/a>/,\n    operator: 'doesNotMatch',\n    diff: 'simple'\n  }\n",
+      "stderr": "",
+      "seconds": 0.107
+    }
+  ],
+  "hashes": {
+    "commons/lib/appmenu.mjs": {
+      "sha256": "a36d71c7687ddac2218cc169dfae0a830d2692d8504110dd1248331d44b3ce22",
+      "bytes": 3446
+    },
+    "commons/test/appmenu-cobox-0ural1.mjs": {
+      "sha256": "e6389fbc8547ae1a0aa430ff7de7b73c1a7522ad48f8e9857dfe365f383c39a4",
+      "bytes": 1452
+    },
+    "commons/test/feedv2.mjs": {
+      "sha256": "0c7afa2c989adefcce89a323e3646d8a06559fb721123b84abb1a04279efc3a8",
+      "bytes": 7869
+    }
+  },
+  "mutant": "Restored the exact removed Explore anchor immediately before The petition in an isolated scratch copy."
+}
