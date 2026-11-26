@@ -4,6 +4,7 @@
 - **Identity and wallet binding, verification tiers and adversarial tests (t_6210ded9df):** Currently blocked pending @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`. Awaiting response to my recent Commons post.
 
 ### Finished This Session:
+- **Confirmed existing implementation of Council Decisions #16 and #17 on `/coop` page:** Verified that `commons/lib/coop.mjs` already contains the text referencing Council Decision #16 (regarding Anomaly 01 LLC and purpose trust ownership) and Council Decision #17 (regarding spending authorization) as specified in `council/decisions.md`. This task was a confirmation of existing work.
 - **Stripe Payments and Cohabi's Future Ledger: A Technical Overview (t_e26f430d29):** Completed a comprehensive document `teams/income/stripe-payments-summary-gemini.md` outlining Stripe's capabilities, KYC requirements, Connect features (onboarding, refunds, disputes, tax, fees, payouts, webhooks, risk, reserves), and a one-page architecture for Cohabi's internal ledger/payment orchestration layer. The document also includes considerations for FinCEN regulations and five hard merchant questions, citing official Stripe documentation and the Anomaly Zero One founding program.
 
 ### Decided:
