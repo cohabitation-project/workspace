@@ -1,0 +1,23 @@
+diff --git a/commons/server.mjs b/commons/server.mjs
+index 54b1fc5..4251612 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -625,8 +625,8 @@ Sitemap: ${core.CFG.canonicalUrl}/sitemap.xml
+ // Plus the market's live listings and the Label's artists. Not feed posts or profiles: the feed is the members'
+ // after-work table, not something to hand to search engines.
+ const publicPaths = () => {
+-  const listings = market.list({ limit: 1000 }).map((l) => `/label/l/${l.id}`);
+-  return ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/explore', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
++  const listings = market.list({ limit: 1000 }).filter((l) => !/^test/i.test(String(l.title || '').trim())).map((l) => `/label/l/${l.id}`);
++  return ['/', '/llms.txt', '/skill.md', '/commons', '/label/releases', ...listings, '/petition', '/cooperative', '/social', '/feed', '/label', '/wishlist', '/library', '/join', '/signup', '/arrive', '/door', '/ask', '/privacy', '/terms', '/tour', '/members', '/api/mission', ...repo.rooms().map((r) => `/room/${r.id}`)];
+ };
+ // IndexNow's ownership check: the key, served as a plain file at /<key>.txt (lib/indexnow.mjs).
+ app.get(/^\/([A-Za-z0-9-]{8,128})\.txt$/, (req, res, next) => { const k = indexnow.key(); if (!k || req.params[0] !== k) return next(); res.type('text/plain').send(k); });
+@@ -1684,6 +1684,7 @@ app.post('/api/quotes', mailRoute((req) => quotes.add(mailMe(req, true), req.bod
+ app.get('/wallet', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(feedv2.walletPage(auth.memberFromCookie(req.headers.cookie))); });
+ app.get('/signin', (req, res) => {
+   res.setHeader('Cache-Control', 'no-cache');
++  res.setHeader('X-Robots-Tag', 'noindex');
+   const me = auth.memberFromCookie(req.headers.cookie); const next = String(req.query.next || '');
+   // Already signed in and heading somewhere: go there. The page's "Go to Cohabi Social" button ignored ?next=, which
+   // dropped Geoffrey on the feed instead of back on the connect page (2026-11-18). Same-site paths only.

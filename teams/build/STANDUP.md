@@ -4479,3 +4479,38 @@ _Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~318713 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~235444 tokens_
+## 2026-11-26T21:21:46.559Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 68 (Claude, SEO job): both search fixes are written and the new test passes. The result file is only a stub, and one neighbouring test is red that I did not diagnose.
+
+**What changed:**
+1. `commons/server.mjs`, `publicPaths()`: market listings whose title starts with `test` (any case, after trim) are left out of the sitemap, and `/explore` is out of the list. The listing page and the `/explore` route still work, and nothing is withdrawn.
+2. `commons/server.mjs`, `/signin`: it now sets `X-Robots-Tag: noindex`. That covers `?next=` variants because it is the same route.
+3. New test `commons/test/seo-sitemap-signin.mjs`. It seeds four listings through `market.create`: an ordinary one, "TEST do not buy", "   test listing, lower case", and "A latest testament", which has "test" later in the title. It boots a server and checks the following:
+   - The ordinary and "latest testament" listings are in the sitemap.
+   - The two TEST listings and `/explore` are not.
+   - `/petition` and `/label` are still listed.
+   - `/label/l/<TEST id>` and `/explore` still answer.
+   - `/signin` and `/signin?next=/label` both carry `noindex`.
+
+**Measured** (node v24.22.3). I cloned main at `651d16d` into `/tmp/M`, applied the two server.mjs edits to it, and ran the test there.
+- The new test: 1 pass, 0 fail, with sitemap locs=37 and the printed lines as expected.
+- Four mutants, each run separately and each red:
+  - A, drop the TEST filter.
+  - B, `/explore` back in the list.
+  - C, remove `noindex`. This one failed on "/signin says noindex".
+  - D, a case-sensitive filter.
+  - For A, B and D my grep did not capture which assertion failed. I only know fail=1 for each.
+- The diff against main is at `teams/build/outputs/2026-11-26T21-21-21/round68-claude-seo.diff`.
+
+**Not clean:**
+- The last call ran the new test plus `sitemap-http`, `pages-door-links`, `front-door` and `site-links`: 47 tests, 46 pass, **1 fail, `commons/test/site-links.mjs`**.
+- It failed in 47 ms, which looks like a load or import failure and not an assertion. I did not read the log or run it on unpatched main, so I can't say whether my change caused it. The likeliest cause is that it still expects `/explore` in the menu, or some other pre-existing problem. Setu must baseline it before placing this.
+- `teams/build/outputs/round68-claude-seo.md` is still the stub from my first call. It has no numbers, mutant results or diff path. This file and the standup are the real record.
+- My in-repo `server.mjs` copy differs from current main, because the lane copy is older. The diff above is the one that applies cleanly to main. This is a Tier 1 file, so it needs Setu's review of the exact SHA.
+- Nothing was run in a browser or against the live site.
+**Files written:** `teams/build/outputs/round68-claude-seo.md`, `commons/server.mjs`, `commons/test/seo-sitemap-signin.mjs`, `teams/build/outputs/2026-11-26T21-21-21/round68-claude-seo.diff`, `teams/build/outputs/2026-11-26T21-21-21/x`
+**Next:** 1. Setu runs `node --test commons/test/site-links.mjs` on unpatched main. If it is red there too, my change is clear. If it is green, it is probably a menu or `/explore` expectation and the test needs a one-line update, which Kimi's menu job may also touch. Then he places the diff (`teams/build/outputs/2026-11-26T21-21-21/round68-claude-seo.diff`) plus `commons/test/seo-sitemap-signin.mjs` and runs the test on main.
+2. Next session: update `round68-claude-seo.md` with the numbers above, and rewrite `continuity/claude/ACTIVE.md`. I did not update ACTIVE.md this session, so it still describes round 67 and is stale.
+3. Still owed, as before: the Round 52 section of `round51-claude-token-callsites.md`, the old review desk items (t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc), and Tier 1 answers on #308 and #309.
+**Blocked:** Nothing external. The `site-links.mjs` failure is undiagnosed, and I ran out of tool steps before I could baseline it on main.
+_Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~669356 tokens_

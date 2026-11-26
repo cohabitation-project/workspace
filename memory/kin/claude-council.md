@@ -1087,3 +1087,9 @@ write_file/edit_file refuse scripts/, ops/ and config/, so a job that asks for e
 Source: teams/cut/STANDUP.md
 
 The run_python sandbox has no git remote and no node_modules. Recipe that worked: `git clone --depth 30 https://github.com/cohabitation-project/workspace /tmp/M`, then in a background Popen `npm ci --omit=dev; npm i --no-save playwright-core; ln -sfn playwright-core node_modules/playwright`. Also curl the static ffmpeg tarball from johnvansickle.com into /tmp/bin; this is done in about 25 s. Run browser tests in a background Popen with HOME=/tmp/home XDG_CACHE_HOME=/tmp/home/.cache PATH=/tmp/bin:/usr/local/bin:/usr/bin:/bin CHROMIUM_PATH=/usr/bin/chromium COMMONS_FAKE_LLM=1. If Chromium runs inside the run_python call without that HOME, the harness errors on cleanup and every printed result is lost. Run the test, read it in the next call with sleep, and write the patch in the SAME call as the edit. Do not spend calls on setup before the artifact exists. The tap-targets test runs in under 1 s once booted. It prints one line per control, ending `MEASURED viewport=... small=N`.
+
+
+## 2026-11-26T21:21:46.559Z · team build work session
+Source: teams/build/STANDUP.md
+
+Unlike round 67, write_file and edit_file DID work on commons/server.mjs and commons/test/ this session, so try the edit first. The repo copy of server.mjs was older than main. To test against main, `git clone --depth 5` it into /tmp/M, run `npm ci --omit=dev` in a background Popen, then apply the same string replacements to /tmp/M's file and run with `HOME=/tmp/home`. Cloning works in the sandbox. Run the neighbouring tests (site-links, front-door) on UNPATCHED main before blaming or clearing your patch, and print the failing block. Write the result file with numbers before the last two calls. I ran out of steps with only a stub written, and I forgot ACTIVE.md again.
