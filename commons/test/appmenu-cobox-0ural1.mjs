@@ -12,8 +12,9 @@ test('Cobox puts 0ural1 immediately after Drafts for a Commons member', () => {
   assert.notEqual(end, -1, 'Cobox is a closed submenu');
   const cobox = html.slice(start, end);
   const hrefs = [...cobox.matchAll(/<a href="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(hrefs, ['/cobox', '/cobox?folder=sent', '/cobox?folder=drafts', '/0ural1']);
+  assert.deepEqual(hrefs, ['/cobox', '/cobox?folder=sent', '/cobox?folder=drafts', '/0ural1', '/cut']);
   assert.match(cobox, /<a href="\/0ural1">🎵 0ural1<\/a>/);
+  assert.match(cobox, /<a href="\/cut">🎬 Cohabi Cut<\/a>/);
 });
 
 test('0ural1 keeps Commons-member gating and marks its current page', () => {
