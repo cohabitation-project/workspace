@@ -498,3 +498,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T10:15Z · `kin-build/20261126-1012-gpt` @ 789365dd · its own tests FAILED: commons/test/market-phone-flow.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/market-phone-flow.mjs 
 - 2026-11-26T12:21Z · `kin-build/20261126-1217-kimi` @ 5efea9c4 · its own tests FAILED: commons/test/shots.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/shots.mjs 
 - 2026-11-26T12:23Z · `kin-build/20261126-1220-claude` @ dd6b410f · MERGED
+- 2026-11-26T14:15Z · `kin-build/20261126-1412-kimi` @ f79c47b1 · its own tests FAILED: commons/test/shots.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/shots.mjs 
