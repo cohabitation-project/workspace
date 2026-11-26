@@ -29,7 +29,30 @@ export const DEFAULT_PRODUCTS = [
   { key: 'canvas', id: 3 }, { key: 'tote', id: 84 }, { key: 'sticker', id: 358 }, { key: 'phone', id: 181 },
 ];
 const num = (v, d) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
-const curated = () => { try { const j = JSON.parse(env('PRINTFUL_PRODUCTS') || 'null'); if (Array.isArray(j) && j.length) return j; } catch { /* default */ } return DEFAULT_PRODUCTS; };
+// Round 67 (the fallback fix agreed with Ash, m_mwxm16wz): an env var that is SET but unusable used to fall back to the
+// eight defaults in silence, so a typo looked exactly like a deploy that changed nothing, and a bare product id would be
+// asked for as /products/NaN and skipped. Unset (or empty) still means the built-in list. Set-but-wrong now refuses
+// loudly: one line in the server log per distinct problem, and a CommonsError that names the variable to every caller
+// (the maker's panel and /api/merch/products), instead of an eight-product shelf nobody asked for.
+const CURATED_GUIDE = 'PRINTFUL_PRODUCTS must be JSON like [{"key":"tee","id":71}]; unset it to use the built-in list of 8.';
+let curatedWarned = '';
+const curated = () => {
+  const raw = env('PRINTFUL_PRODUCTS');
+  if (!raw) return DEFAULT_PRODUCTS;
+  const loud = (why) => {
+    const m = `PRINTFUL_PRODUCTS is set but unusable: ${why}. ${CURATED_GUIDE}`;
+    if (curatedWarned !== m) { curatedWarned = m; console.error(`[printful] ${m}`); }
+    fail(500, m);
+  };
+  let j; try { j = JSON.parse(raw); } catch { loud(`it is not valid JSON (${raw.length} characters)`); }
+  if (!Array.isArray(j)) loud(`it is a JSON ${j === null ? 'null' : typeof j}, not an array`);
+  if (!j.length) loud('it is an empty array, so no product would ever be offered');
+  const bad = j.findIndex((p) => !p || typeof p.key !== 'string' || !p.key.trim() || !Number.isInteger(Number(p.id)) || Number(p.id) <= 0);
+  if (bad !== -1) loud(`entry ${bad} is not {key, id} (${JSON.stringify(j[bad] ?? null).slice(0, 120)})`);
+  const key = j.map((p) => p.key.trim()).find((k, i, a) => a.indexOf(k) !== i);
+  if (key) loud(`the key "${key}" appears twice, so one product would silently win`);
+  return j;
+};
 
 async function api(p, { method = 'GET', body } = {}) {
   if (!configured()) fail(503, "The print partner isn't connected yet.");

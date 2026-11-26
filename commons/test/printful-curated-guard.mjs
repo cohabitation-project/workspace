@@ -1,13 +1,13 @@
-// The curated Printful product list (round 66, DeepSeek): how many products survive a read, and what happens when a
-// product — or the whole PRINTFUL_PRODUCTS env — is wrong.
+// The curated Printful product list (round 66, DeepSeek; round 67 added the loud-fallback cases): how many products
+// survive a read, and what happens when a product — or the whole PRINTFUL_PRODUCTS env — is wrong.
 //
 // No server boot and no browser: `commons/lib/printful.mjs` is called directly against a fake Printful on 127.0.0.1,
-// the same stand-in `commons/test/merch-printful.mjs` uses. These cases PIN TODAY'S BEHAVIOUR and change nothing in
-// printful.mjs.
+// the same stand-in `commons/test/merch-printful.mjs` uses.
 //
-// Cases 3 and 4 are the SILENT paths: `PRINTFUL_PRODUCTS='[]'` and `PRINTFUL_PRODUCTS='{bad'` both quietly fall back
-// to the eight defaults. That is what the later "make the fallback loud" step (its own job) will turn into a refusal;
-// until then this test records exactly what a misconfigured server does, so that change has a before to go red from.
+// Round 66 pinned TODAY'S behaviour, including two SILENT paths: `PRINTFUL_PRODUCTS='[]'` and `PRINTFUL_PRODUCTS='{bad'`
+// both quietly fell back to the eight defaults. Round 67 makes that fallback loud (printful.mjs: `curated()`), so cases
+// 3, 4, 5 and 7 now assert a refusal that names the variable, and case 6 keeps the one fallback that is still intended:
+// the variable not set at all. The old silent behaviour is the mutant this change must fail against.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -20,10 +20,10 @@ import { freePort } from './lib/port.mjs';
 // silently agreeing with itself.
 const DEFAULT_IDS = [71, 146, 19, 1, 3, 84, 358, 181];
 const DEFAULT_KEYS = ['tee', 'hoodie', 'mug', 'poster', 'canvas', 'tote', 'sticker', 'phone'];
+const GUIDE = /must be JSON like \[\{"key":"tee","id":71\}\]/;
 
-// One fake Printful for all four cases. Any numeric product id gets a product, a print area and two in-stock variants;
-// an id in `broken` answers 502, the way Printful does when it is having a problem. `500s` counts the 502s served so a
-// case can prove the failing product was really asked for.
+// One fake Printful for all cases. Any numeric product id gets a product, a print area and two in-stock variants;
+// an id in `broken` answers 502, the way Printful does when it is having a problem.
 function fakePrintful(broken) {
   const seen = [];
   const server = http.createServer((req, res) => {
@@ -58,7 +58,7 @@ function fakePrintful(broken) {
   return { server, seen };
 }
 
-test('the curated Printful list: what survives a read, and what falls back', async (t) => {
+test('the curated Printful list: what survives a read, and what refuses', async (t) => {
   const saved = {};
   for (const k of ['COMMONS_DATA', 'PRINTFUL_TOKEN', 'PRINTFUL_API_URL', 'PRINTFUL_PRODUCTS', 'PRINTFUL_STORE_ID', 'PRINTFUL_MOCKUPS_PER_MINUTE']) saved[k] = process.env[k];
   const broken = new Set();
@@ -75,7 +75,7 @@ test('the curated Printful list: what survives a read, and what falls back', asy
 
     await t.test('1. every curated product answers: N products, in the order given', async () => {
       process.env.PRINTFUL_PRODUCTS = JSON.stringify([{ key: 'tee', id: 11 }, { key: 'mug', id: 12 }, { key: 'poster', id: 13 }, { key: 'tote', id: 14 }, { key: 'sticker', id: 15 }]);
-      printful.resetCache(); broken.clear();
+      printful.resetCache(); broken.clear(); seen.length = 0;
       const list = await printful.products();
       assert.equal(list.length, 5, `expected 5 products, got ${list.map((p) => p.key).join(',') || 'none'}`);
       assert.deepEqual(list.map((p) => p.key), ['tee', 'mug', 'poster', 'tote', 'sticker'], 'PRINTFUL_PRODUCTS order is kept');
@@ -85,7 +85,8 @@ test('the curated Printful list: what survives a read, and what falls back', asy
       assert.deepEqual(list[0].area, { width: 1800, height: 2400 }, 'the print area comes from the printfiles call');
       assert.equal(list[0].variants.length, 2, 'in-stock variants are carried through');
       assert.equal(printful.cachedProducts().length, 5, 'a complete read is the cache');
-      assert.ok(seen.every((p) => !p.startsWith('/products/') || true));
+      assert.deepEqual(seen.filter((p) => p.startsWith('/products/')), ['/products/11', '/products/12', '/products/13', '/products/14', '/products/15'],
+        'every curated id was asked for, once, in the order given');
     });
 
     await t.test('2. one product answers 502: the others still come back, nothing throws, and [] is not cached', async () => {
@@ -101,21 +102,44 @@ test('the curated Printful list: what survives a read, and what falls back', asy
       assert.equal(seen.length, askedBefore, 'inside RETRY_MS Printful is not asked again');
     });
 
-    await t.test("3. PRINTFUL_PRODUCTS='[]' silently falls back to the eight defaults (a silent path, by design today)", async () => {
+    await t.test("3. PRINTFUL_PRODUCTS='[]' refuses loudly (round 67: was the eight defaults, silently)", async () => {
       process.env.PRINTFUL_PRODUCTS = '[]';
       printful.resetCache(); broken.clear();
+      const err = await assert.rejects(() => printful.products(), /PRINTFUL_PRODUCTS is set but unusable: it is an empty array/);
+      assert.equal(err.status, 500, 'a misconfigured server says so as a server error, not a 400 for the person');
+      assert.match(err.message, GUIDE, 'the message says what the variable should look like');
+      assert.equal(printful.cachedProducts().length, 0, 'nothing is cached, so nothing stale is served after the fix');
+    });
+
+    await t.test("4. PRINTFUL_PRODUCTS='{bad' (broken JSON) refuses loudly too, by a different path from 3", async () => {
+      process.env.PRINTFUL_PRODUCTS = '{bad';
+      printful.resetCache(); broken.clear();
+      const err = await assert.rejects(() => printful.products(), /PRINTFUL_PRODUCTS is set but unusable: it is not valid JSON \(4 characters\)/);
+      assert.equal(err.status, 500);
+    });
+
+    await t.test('5. an entry that is not {key, id} refuses loudly instead of asking Printful for /products/NaN', async () => {
+      process.env.PRINTFUL_PRODUCTS = JSON.stringify([{ key: 'tee' }]);
+      printful.resetCache(); broken.clear(); seen.length = 0;
+      const err = await assert.rejects(() => printful.products(), /entry 0 is not \{key, id\}/);
+      assert.equal(err.status, 500);
+      assert.deepEqual(seen.filter((p) => p.startsWith('/products/')), [], 'Printful was never asked');
+    });
+
+    await t.test('6. PRINTFUL_PRODUCTS unset is still the eight defaults: that fallback is intended', async () => {
+      delete process.env.PRINTFUL_PRODUCTS;
+      printful.resetCache(); broken.clear();
       const list = await printful.products();
-      assert.deepEqual(list.map((p) => p.id), DEFAULT_IDS, "an empty list is not 'no products' today: it is the eight defaults");
+      assert.deepEqual(list.map((p) => p.id), DEFAULT_IDS, 'no env var means the built-in list, as before');
       assert.deepEqual(list.map((p) => p.key), DEFAULT_KEYS);
       assert.equal(list.length, 8);
     });
 
-    await t.test("4. PRINTFUL_PRODUCTS='{bad' (broken JSON) silently falls back to the eight defaults too", async () => {
-      process.env.PRINTFUL_PRODUCTS = '{bad';
+    await t.test('7. two entries with the same key refuse loudly: one would silently win', async () => {
+      process.env.PRINTFUL_PRODUCTS = JSON.stringify([{ key: 'tee', id: 11 }, { key: 'tee', id: 12 }]);
       printful.resetCache(); broken.clear();
-      const list = await printful.products();
-      assert.deepEqual(list.map((p) => p.id), DEFAULT_IDS, 'broken JSON is swallowed by curated() and the defaults are used');
-      assert.equal(list.length, 8, 'separate case from 3: an empty list and a broken one reach the same fallback by different code paths');
+      const err = await assert.rejects(() => printful.products(), /the key "tee" appears twice/);
+      assert.equal(err.status, 500);
     });
   } finally {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
