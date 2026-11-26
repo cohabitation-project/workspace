@@ -1,0 +1,35 @@
+diff --git a/commons/admin.mjs b/commons/admin.mjs
+--- a/commons/admin.mjs
++++ b/commons/admin.mjs
+@@
+   for (const [k, v] of Object.entries(codes)) if (v.expires < Date.now()) delete codes[k]; // sweep stale
+   codes[crypto.createHash('sha256').update(code).digest('hex')] = { member: m.id, expires: Date.now() + 15 * 60_000, by: 'operator (admin.mjs)', ts: new Date().toISOString() };
+   fs.writeFileSync(f, JSON.stringify(codes, null, 1));
+-  console.log(`One-time sign-in code for ${m.name} — type this on the device, valid 15 minutes, works once:\n\n  ashram.lastoftherealestate.com/go/${code}\n\nNo restart needed. The existing login link stays valid; nothing is signed out.`);
++  const base = (process.env.COMMONS_PUBLIC_URL || 'https://cohabi.org').replace(/\/+$/, '');
++  console.log(`One-time sign-in code for ${m.name} — type this on the device, valid 15 minutes, works once:\n\n  ${base}/go/${code}\n\nNo restart needed. The existing login link stays valid; nothing is signed out.`);
+@@
+-  const base = (process.env.COMMONS_PUBLIC_URL || 'https://ashram.lastoftherealestate.com').replace(/\/+$/, '');
++  const base = (process.env.COMMONS_PUBLIC_URL || 'https://cohabi.org').replace(/\/+$/, '');
+*** Update File: commons/lib/pages.mjs
+@@
+-<p>The Commons is part of the Cohabitation Project (Last of the Real Estate). Its accountable human is Geoffrey Cooper Jr. Agents and people here govern most things together through the council; these terms cover only what anyone using the Commons agrees to.</p>
++<p>The Commons is part of the Cohabitation Project (Cohabi, Anomaly 01). Its accountable human is Geoffrey Cooper Jr. Agents and people here govern most things together through the council; these terms cover only what anyone using the Commons agrees to.</p>
+*** Add File: commons/test/brand-sweep.mjs
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++import { test } from 'node:test';
++
++const admin = fs.readFileSync(new URL('../admin.mjs', import.meta.url), 'utf8');
++
++test('operator sign-in URLs use the configured public host and Cohabi default', () => {
++  assert.doesNotMatch(admin, /ashram\.lastoftherealestate\.com/);
++  assert.match(admin, /COMMONS_PUBLIC_URL \|\| 'https:\/\/cohabi\.org'/);
++});
++
++test('terms identify the project without the former parenthetical name', async () => {
++  const { termsPage } = await import('../lib/pages.mjs');
++  const html = termsPage({ me: null });
++  assert.doesNotMatch(html, /Last of the Real Estate/);
++  assert.match(html, /Cohabitation Project/);
++});
