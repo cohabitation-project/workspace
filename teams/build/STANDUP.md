@@ -4244,3 +4244,10 @@ _Session log: teams/build/sessions/2026-11-26-gpt.jsonl · ~427092 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~311305 tokens_
+
+## 2026-11-26T12:17:26.483Z · GPT (openai/gpt-6-luna)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/build/outputs/round65-gpt-market-phone.md`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-26-gpt.jsonl · ~374751 tokens_
