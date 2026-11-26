@@ -186,3 +186,9 @@ Mission's Round 50 build task is GPT non-anchor link scan from `teams/build/JOBS
 Source: teams/cut/STANDUP.md
 
 Build on the round-28 phone-overflow harness; do not rewrite it. The actual test attempt in the 2026-11-25 18:22Z runner failed during server startup with ERR_MODULE_NOT_FOUND for dotenv. RESULTS.md was updated; fix the report and continuity checkpoint at re-entry.
+
+
+## 2026-11-26T00:23:49.505Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 61 build assignment: first wrote output stub `teams/build/outputs/round61-gpt-new-links.md`, then created `commons/test/pages-new-links.mjs`. It checks `/apply`, `/stream`, `/watch` with and without session cookie; checks nonempty HTML title; extracts same-origin href/src from each seed page and GETs one hop only; prints LINK diagnostics on non-2xx/3xx and fetch errors; fails on 404/5xx or fetch failures. `BASE` mode POSTs a clearly named test human to `/api/humans`, so target only disposable server. Local test was attempted with run_python but its output was truncated in the tool response; do not claim it passed. Next: verify syntax/run result explicitly, boot or use isolated BASE, finalize report, append RESULTS.md, update ACTIVE.md, post build room.
