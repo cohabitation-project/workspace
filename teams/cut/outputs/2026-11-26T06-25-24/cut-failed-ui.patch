@@ -1,0 +1,75 @@
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index 1f01635..9745b9b 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -50,6 +50,22 @@ export function handoffHref(id) {
+   return VIDEO_ID_RE.test(s) ? `/social?cut=${encodeURIComponent(s)}#compose` : null;
+ }
+ 
++/** After an upload answers ready:false, wait for the server to finish converting it. Resolves {state:'ready'|'failed'|'timeout', reason}.
++ *  Reads the member's own list (GET /api/videos?by=me): there is no per-video record route. */
++export async function waitForVideo(id, { fetchFn = fetch, intervalMs = 1500, timeoutMs = 180000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
++  let waited = 0;
++  for (;;) {
++    try {
++      const res = await fetchFn('/api/videos?by=me&limit=100', { credentials: 'same-origin' });
++      const list = res.ok ? (await res.json().catch(() => ({}))).videos : null;
++      const mine = Array.isArray(list) ? list.find((v) => v.id === id) : null;
++      if (mine?.failed) return { state: 'failed', reason: mine.reason || 'conversion failed.' };
++      if (mine?.ready) return { state: 'ready' };
++    } catch { /* offline for a moment: keep waiting */ }
++    if (waited >= timeoutMs) return { state: 'timeout' };
++    await sleep(intervalMs); waited += intervalMs;
++  }
++}
+ export function exportFailureMessage(status, payload) {
+   if (status === 404) return "Export isn't open yet — your edit is saved here.";
+   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+@@ -294,6 +310,13 @@ export function initCutEditor(root = document) {
+     const saved = await up.json().catch(() => ({}));
+     const href = up.ok ? handoffHref(saved.id) : null;
+     if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
++    if (saved.failed) { showToast(`We couldn't prepare this video: ${saved.reason || 'conversion failed.'}`); return; }
++    if (saved.ready === false) {
++      showToast('Saving your video… this can take a minute.');
++      const done = await waitForVideo(saved.id);
++      if (done.state === 'failed') { showToast(`We couldn't prepare this video: ${done.reason}`); return; }
++      if (done.state === 'timeout') { showToast('Your video is still being prepared. Check your videos in a minute.'); return; }
++    }
+     resultLink.href = href; resultBox.hidden = false;
+     showToast('Your edited video is ready. Tap "Post it".');
+   }
+diff --git a/commons/test/cut-video-wait.test.mjs b/commons/test/cut-video-wait.test.mjs
+new file mode 100644
+index 0000000..1817838
+--- /dev/null
++++ b/commons/test/cut-video-wait.test.mjs
+@@ -0,0 +1,28 @@
++// waitForVideo (commons/public/cut/cut.js): after an upload answers ready:false, Cut polls the member's own list
++// until the video is ready or failed, and only then offers "Post it". Fake fetch + fake sleep: no browser, no server.
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { waitForVideo } from '../public/cut/cut.js';
++
++const seq = (...lists) => { let i = 0; const urls = []; const fetchFn = async (u) => { urls.push(u); const l = lists[Math.min(i++, lists.length - 1)]; return { ok: true, json: async () => ({ videos: l }) }; }; fetchFn.urls = urls; return fetchFn; };
++const noSleep = async () => {};
++
++test('ready after two polls', async () => {
++  const f = seq([{ id: 'v1', ready: false }], [{ id: 'v1', ready: false }], [{ id: 'v1', ready: true }]);
++  assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep }), { state: 'ready' });
++  assert.equal(f.urls.length, 3);
++  assert.ok(f.urls[0].startsWith('/api/videos?by=me'));
++});
++test('failed returns the server reason, so Cut can show it and withhold "Post it"', async () => {
++  const f = seq([{ id: 'v1', ready: false }], [{ id: 'v1', ready: false, failed: true, reason: 'We could not convert this video.' }]);
++  assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep }), { state: 'failed', reason: 'We could not convert this video.' });
++});
++test('only the asked-for id counts (another ready video does not end the wait)', async () => {
++  const f = seq([{ id: 'other', ready: true }]);
++  assert.equal((await waitForVideo('v1', { fetchFn: f, sleep: noSleep, intervalMs: 1000, timeoutMs: 3000 })).state, 'timeout');
++});
++test('a failed fetch or network error is retried, then times out; it never claims ready', async () => {
++  let n = 0; const f = async () => { n++; if (n % 2) throw new Error('offline'); return { ok: false }; };
++  assert.equal((await waitForVideo('v1', { fetchFn: f, sleep: noSleep, intervalMs: 1000, timeoutMs: 4000 })).state, 'timeout');
++  assert.equal(n, 5);
++});

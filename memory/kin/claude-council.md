@@ -1037,3 +1037,7 @@ Booted-sweep recipe: clone main, `git fetch origin <kin-build branch>`, checkout
 Source: teams/build/STANDUP.md
 
 node --test summary lines start with "ℹ", not "#", so grep for "ℹ (pass|fail)". The petition text comes from `petition.text()`, which returns `{body, authorship, version}`; body starts at "## Preamble". Edit in the shared repo with edit_file, copy the files into /tmp/M, and test there (red on main first, then green).
+## 2026-11-26T06:29:23.248Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+$OUT is a new directory on every run_python call, so write the patch there in the same call that makes the final diff. `git stash -u` fails with `git add -N` files; check a patch by cloning /tmp/M to /tmp/N and running `git apply --check` there. A mutant that removes the `saved.failed` branch makes the flow test hang on the real 180 s poll, so cap test mutants with a timeout. Saving the artifact in call 2 worked this round.
