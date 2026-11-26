@@ -79,6 +79,7 @@ import * as variants from './lib/variants.mjs';
 import * as orgpages from './lib/orgpages.mjs';
 import * as marketmenu from './lib/marketmenu.mjs';
 import * as journalguide from './lib/journalguide.mjs';
+import * as ourallLists from './lib/ourall-lists.mjs';
 import * as wishes from './lib/wishes.mjs';
 import * as wishpage from './lib/wishpage.mjs';
 import * as roomview from './lib/roomview.mjs';
@@ -412,8 +413,9 @@ const jsonBig = express.json({ limit: '30mb', // a 20 MB picture is about 27 MB 
    type: ['application/json', 'application/*+json'] });
 const jsonAudio = express.json({ limit: '30mb', type: ['application/json', 'application/*+json'] });
 const jsonSmall = express.json({ limit: '300kb', type: ['application/json', 'application/*+json'] });
+const jsonLists = express.json({ limit: '4mb', type: ['application/json', 'application/*+json'] }); // 0ural1 lists: up to 50 x 500 short paths
 const stripeRaw = express.raw({ type: '*/*', limit: '1mb' }); // the webhook signature is over the exact bytes
-app.use((req, res, next) => (req.path === '/api/mail/upload' ? (q, r, n) => n() : req.path === '/api/payments/webhook' ? stripeRaw : (req.path === '/api/audio' || req.path === '/api/files') ? jsonAudio : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next)); // /api/files: 10 MB documents as base64 (file drop)
+app.use((req, res, next) => (req.path === '/api/mail/upload' ? (q, r, n) => n() : req.path === '/api/payments/webhook' ? stripeRaw : (req.path === '/api/audio' || req.path === '/api/files') ? jsonAudio : req.path === '/api/me/0ural1' ? jsonLists : (req.path === '/api/images' || req.path.startsWith('/mcp')) ? jsonBig : jsonSmall)(req, res, next)); // /api/files: 10 MB documents as base64 (file drop)
 app.use((err, req, res, next) => {
   if (err.type === 'entity.too.large') return res.status(413).json({ error: (req.path === '/api/images' || req.path.startsWith('/mcp')) ? 'That file is too large to send in one piece. Pictures can be up to 20 MB; save it smaller, or as a JPEG, and try again.' : 'request body too large' });
   if (err.type === 'entity.parse.failed') {
@@ -571,6 +573,10 @@ app.get('/commons/welcome', (req, res) => { res.setHeader('Cache-Control', 'no-c
 // 0ural1, Cohabi's music app (lib/streampage.mjs; began as Cohabi Stream v0): public, like the artist pages it draws from.
 // /0ural1 is its home and install address; /stream keeps working for links already shared.
 app.get(['/0ural1', '/stream'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
+// 0ural1 hearts and playlists, kept on the member's own record (round 64; lib/ourall-lists.mjs validates; members only,
+// private to them, never in publicMember). The app still keeps its own copy in the browser until app.js syncs.
+app.get('/api/me/0ural1', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req); if (!me) throw new core.CommonsError(401, 'sign in first'); return ourallLists.read(store.getMember(me.id)); }));
+app.put('/api/me/0ural1', wrap((req, res) => { res.setHeader('Cache-Control', 'private, no-store'); const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first'); if (!auth.tokenFrom(req) && req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header'); core.writeAllowed(me); const saved = ourallLists.check(req.body); store.updateMember(me.id, { ourall: saved }); return ourallLists.read(store.getMember(me.id)); }));
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 // /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
