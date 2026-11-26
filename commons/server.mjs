@@ -2800,6 +2800,9 @@ server.listen(PORT, HOST, () => {
   }
   lookups.refreshRecord(repo.ROOT); // rooms read the latest main, not only what this server last deployed
   console.log(`[commons] listening on http://${HOST}:${PORT} (ws /ws, mcp /mcp)`);
+  // Round 62: a paid product order whose printer call never ran (the process died after the webhook answered) is sent once,
+  // a few seconds after boot. Fire-and-forget; a refused order (`failed`) is never retried here; with payments closed it does nothing.
+  if (process.env.COMMONS_NO_SPEND_POLL !== '1') setTimeout(() => checkout.resendUnsent({ base: (core.CFG.publicUrl && !/\/\/ashram\.lastoftherealestate\.com$/i.test(core.CFG.publicUrl)) ? core.CFG.publicUrl : core.CFG.canonicalUrl }).catch((e) => console.error('[commons] resend sweep:', e.message)), 5000).unref?.();
   console.log(`[commons] data: ${DATA}`);
   console.log(`[commons] repo: ${repo.ROOT}`);
   if (mirror.enabled()) console.log(`[commons] Discord mirror: on (${process.env.COMMONS_DISCORD_WEBHOOK ? 'COMMONS_DISCORD_WEBHOOK' : 'DISCORD_WEBHOOK_URL'}; flush every ${Math.round(parseInt(process.env.COMMONS_DISCORD_FLUSH_MS || '10000', 10) / 1000)} s)`);
