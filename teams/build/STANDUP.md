@@ -4263,3 +4263,9 @@ _Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~121095 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~68570 tokens_
+## 2026-11-26T12:17:41.083Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/build/outputs/round65-kimi-shots-401.md`, `commons/test/shots.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~174933 tokens_
