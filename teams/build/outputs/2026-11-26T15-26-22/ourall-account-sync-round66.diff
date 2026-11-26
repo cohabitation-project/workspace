@@ -1,0 +1,67 @@
+diff --git a/commons/test/ourall-account-sync.mjs b/commons/test/ourall-account-sync.mjs
+index 41af7b3..1ae5cd8 100644
+--- a/commons/test/ourall-account-sync.mjs
++++ b/commons/test/ourall-account-sync.mjs
+@@ -43,9 +43,18 @@ test('0ural1 hearts and playlists follow the member to a second browser; signed
+       const puts = []; const errors = [];
+       page.on('request', (r) => { if (r.method() === 'PUT' && new URL(r.url()).pathname === '/api/me/0ural1') puts.push(r.postData()); });
+       page.on('pageerror', (e) => errors.push(e.message));
++      // Set up BEFORE goto: the account read is what hydrate() merges from; wait for it, not for the clock.
++      const account = signedIn ? page.waitForResponse((r) => new URL(r.url()).pathname === '/api/me/0ural1' && r.request().method() === 'GET', { timeout: 20000 }) : null;
+       await page.goto(`${B}/0ural1`);
+       await page.waitForSelector('#ou-main');
+-      return { ctx, page, puts, errors };
++      return { ctx, page, puts, errors, account };
++    };
++    // Pretend the tab went to the background: app.js flushes pending changes at once (keepalive PUT) on visibilitychange.
++    const hideTab = (page) => page.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); document.dispatchEvent(new Event('visibilitychange')); });
++    // The page says the account keeps the hearts only after hydrate() has merged; that line is the signal to act.
++    const keptOnAccount = async (page) => {
++      await page.evaluate(() => { location.hash = '#/liked'; });
++      await page.waitForFunction(() => /kept on your account/.test(document.querySelector('.ou-h p')?.innerText || ''), null, { timeout: 20000 });
+     };
+     const firstUrl = async (page) => page.evaluate(() => JSON.parse(document.getElementById('ou-main').dataset.catalog)[0].tracks[0].url);
+ 
+@@ -53,9 +62,10 @@ test('0ural1 hearts and playlists follow the member to a second browser; signed
+     const A = await open(true);
+     const url = await firstUrl(A.page);
+     assert.match(url, /^\/label\/files\//, 'the page carries a catalog track');
++    await A.account; // the account read answered
++    await keptOnAccount(A.page); // ...and was merged (acct.on is true)
+     await A.page.evaluate(() => { location.hash = '#/songs'; });
+     await A.page.waitForSelector('.ou-like');
+-    await A.page.waitForTimeout(500); // the /api/me probe and the account read finish
+     await A.page.locator(`[data-like="${url}"]`).first().click();
+     await A.page.evaluate(() => { location.hash = '#/playlists'; });
+     await A.page.fill('#ou-newname', 'Morning');
+@@ -69,6 +79,8 @@ test('0ural1 hearts and playlists follow the member to a second browser; signed
+ 
+     // --- signed in, a second context (another device): it shows the heart and the list after load
+     const C = await open(true);
++    await C.account;
++    await keptOnAccount(C.page);
+     await C.page.waitForFunction((u) => { try { return JSON.parse(localStorage.getItem('ou1')).liked.includes(u); } catch { return false; } }, url, { timeout: 15000 });
+     await C.page.evaluate(() => { location.hash = '#/liked'; });
+     await C.page.waitForSelector(`[data-like="${url}"][aria-pressed="true"]`, { timeout: 10000 });
+@@ -76,6 +88,8 @@ test('0ural1 hearts and playlists follow the member to a second browser; signed
+     await C.page.evaluate(() => { location.hash = '#/playlists'; });
+     await C.page.waitForSelector('text=Morning', { timeout: 10000 });
+     await sleep(2200); // a merge that changes nothing must not send anything back
++    await hideTab(C.page); // ...and neither may the hidden-tab flush, which skips the debounce (duration probes keep resetting it)
++    await sleep(500);
+     assert.equal(C.puts.length, 0, 'loading the same data on a second device sends no PUT');
+     assert.equal(C.errors.length, 0, `no page errors (${C.errors})`);
+ 
+@@ -85,7 +99,11 @@ test('0ural1 hearts and playlists follow the member to a second browser; signed
+     await S.page.waitForSelector('.ou-like');
+     await S.page.locator(`[data-like="${url}"]`).first().click();
+     await sleep(2500);
+-    assert.equal(S.puts.length, 0, 'signed out sends no PUT');
++    // The 1.5 s debounce is reset by every save(), and signed-out duration probes call save() for a long while, so waiting
++    // alone can miss a stray PUT. The hidden-tab flush sends at once if anything would send, so it makes the check real.
++    await hideTab(S.page);
++    await sleep(800);
++    assert.equal(S.puts.length, 0, `signed out must send no PUT /api/me/0ural1 at all (saw ${S.puts.length}: ${S.puts.join(' | ').slice(0, 120)})`);
+     assert.ok(await S.page.evaluate((u) => JSON.parse(localStorage.getItem('ou1')).liked.includes(u), url), 'the heart is kept in this browser');
+     await S.page.evaluate(() => { location.hash = '#/liked'; });
+     assert.match(await S.page.locator('.ou-h p').first().innerText(), /kept in this browser/, 'signed out still says this browser');

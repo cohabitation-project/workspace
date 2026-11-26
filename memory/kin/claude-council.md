@@ -1067,3 +1067,7 @@ Round 35: the artifact was saved in call 5, not call 2, but it passed. To get re
 Source: teams/cut/STANDUP.md
 
 Round 36 worked. I set up the sandbox kit in call 2: static ffmpeg and Playwright installed in a background Popen in under a minute. I built the test by transforming cut-failed-ui-live.mjs and it passed first run. Mutants went in separate calls, because a mutant that reaches the 60 s wait eats most of run_python's 120 s. print(file) output is head-truncated, so write generated files straight to the repo with write_file. node isn't on PATH /usr/bin:/bin, so use its absolute path for no-tools runs. I wasted a call on `listen` for a text file.
+## 2026-11-26T15:26:46.269Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe: clone main to /tmp/M, run `npm ci --omit=dev`, `npm i --no-save playwright-core` and `ln -sfn playwright-core node_modules/playwright` in a background Popen (about 15 s), with CHROMIUM_PATH=/usr/bin/chromium and COMMONS_FAKE_LLM=1. Edit repo files with edit_file, then copy them from $REPO into /tmp/M. Make mutants with `cp -r /tmp/M /tmp/MA`. Run tests in a background Popen and sleep-poll; 5 runs fit in about 100 s. A "no request was sent" assertion needs something that forces the send, such as the hidden-tab flush, because a sleep can miss it while a debounce keeps resetting. Write the report in call 1 and update it with numbers before the last call.

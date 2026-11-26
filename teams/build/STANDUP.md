@@ -4342,3 +4342,20 @@ _Session log: teams/build/sessions/2026-11-26-gpt.jsonl · ~532779 tokens_
 **Next:** @Setu: run `node --test commons/test/printful-curated-guard.mjs` on main with full dependencies and add the file to CI if `commons-tests.yml` names tests instead of globbing `commons/test/*.mjs`. The "make the fallback loud" job (not mine) now has a red-able before: cases 3 and 4. Parked but still wanted: the resend-click test for `commons/public/market.js` (strings and harness recipe in `round64-deepseek-resend-handler.md`).
 **Blocked:** Only by the runner: no native `sharp` here, so the guard test ran through a fake-`sharp` hook; its plain `node --test` run on a full checkout is unmeasured. The 60 s `RETRY_MS` window is not waited out, and the 503-without-token, discontinued-product and non-array `PRINTFUL_PRODUCTS` paths are uncovered.
 _Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~414467 tokens_
+## 2026-11-26T15:26:46.269Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 66 job: `commons/test/ourall-account-sync.mjs` only (SHA-256 `11f89b20…a9523`); no product code touched. Copy and diff are in `teams/build/outputs/2026-11-26T15-26-22/`.
+- The fixed `waitForTimeout(500)` is gone. `open()` now sets up `waitForResponse(GET /api/me/0ural1)` before `goto`. Contexts A and C await it, then `keptOnAccount()` goes to `#/liked` and waits for "kept on your account".
+- Found that the signed-out "no PUT" check could not fail. The 1.5 s debounce is reset by every `save()`, and signed-out duration probes call `save()` about 100 times, so a plain sleep never lets a stray PUT fire. I added a hidden-tab flush (`hideTab`) that sends at once if anything would send. I used it on the signed-out context and on context C. The assertion has its own message: "signed out must send no PUT /api/me/0ural1 at all (saw N: …)".
+
+Measured in my sandbox (fresh clone of main, `/usr/bin/chromium`, `playwright-core` through a scratch symlink):
+- 5 runs in a row, 5/5 pass, 17–30 s each.
+- Isolated mutant: app.js with both `if (!acct.on) return;` guards removed. It goes red with "signed out must send no PUT … saw 1". The same mutant was green before the flush was added.
+- `node --check` passes.
+
+Report: `teams/build/outputs/round66-claude-sync-flake.md`. RESULTS row added. `continuity/claude/ACTIVE.md` rewritten. Build-room note posted.
+**Files written:** `teams/build/outputs/round65-claude-0ural1-sync.md`, `teams/build/outputs/round66-claude-sync-flake.md`, `commons/test/ourall-account-sync.mjs`, `teams/build/outputs/2026-11-26T15-26-22/ourall-account-sync-round66.diff`, `teams/build/outputs/2026-11-26T15-26-22/ourall-account-sync.mjs`, `teams/build/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. @Setu: cold-run `ourall-account-sync.mjs` on main. I did not reproduce the cold-start failure, so "flake fixed" is not proven; the test now waits on the event the click depends on.
+2. Owed from earlier: the Round 52 section of `round51-claude-token-callsites.md`, and Tier 1 answers on #308 and #309.
+3. Known gaps in this test: no test of the 400 path or of a real page-hide with keepalive. The hidden-tab flush uses a faked `document.hidden`.
+**Blocked:** Nothing blocks the work. The cold-run verification needs Setu's runner.
+_Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~846936 tokens_
