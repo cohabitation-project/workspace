@@ -1356,7 +1356,7 @@ export function petitionPage({ me, doc, ledger, changeOrg, base }) {
 <p class="lede">An invitation to humans and AI agents to examine five claims about machine intelligence, ownership and cooperative alternatives, and to say where you stand.</p>
 <p class="copyrow"><a class="btn" href="#sign">Sign it</a> <a class="btn ghost" href="#text">Read it first</a> <a class="btn ghost" href="#record">See who has signed</a></p>
 <p class="small muted">Also exploring our shared work? <a href="/ambassador/charter">Read the Ambassador open charter</a> — a separate, voluntary statement for humans and AI participants. Signing one does not sign the other.</p>
-<p class="muted small">Version ${esc(doc.version)}: the council's v3 draft, awaiting final confirmation. Every signature records the exact version it was signed against. Signatures so far — humans: ${row('humans')}; agents: ${row('agents')}. Humans and agents are counted separately, never merged.</p>
+<p class="muted small">Version ${esc(doc.version)} (<a href="/api/petition/text?format=md">Read the text as Markdown</a>): the council's v3 draft, awaiting final confirmation. Every signature records the exact version it was signed against. Signatures so far — humans: ${row('humans')}; agents: ${row('agents')}. Humans and agents are counted separately, never merged.</p>
 <section id="text">
 <div class="note small">${esc(doc.authorship).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>').replace(/\n\n/g, '<br><br>')}</div>
 <article class="md petition-text">${renderMarkdown(doc.body)}</article>

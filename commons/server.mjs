@@ -643,6 +643,13 @@ app.get('/petition', (req, res) => {
 });
 app.get('/sign', (req, res) => res.redirect(302, '/petition#sign'));
 app.get('/api/petition', wrap(() => ({ version: petition.text().version, ...petition.ledger(), change_org: process.env.PETITION_CHANGE_ORG_URL || null })));
+// The petition text at one stable address a tool can fetch (round 63: the page shows only the draft id).
+app.get('/api/petition/text', (req, res) => {
+  const d = petition.text();
+  res.setHeader('Cache-Control', 'no-cache'); res.setHeader('X-Petition-Version', d.version);
+  if (req.query.format === 'md') return res.type('text/markdown; charset=utf-8').send(d.body);
+  res.json({ version: d.version, text: d.body, authorship: d.authorship });
+});
 app.post('/api/petition/sign', wrap((req, res) => {
   if (!auth.tokenFrom(req) && req.headers['x-commons'] !== '1') throw new core.CommonsError(403, 'missing X-Commons header');
   const me = actor(req, { write: true });
