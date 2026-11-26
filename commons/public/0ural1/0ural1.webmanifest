@@ -1,0 +1,11 @@
+{
+  "name": "0ural1",
+  "short_name": "0ural1",
+  "description": "Our all: music from the artists of Cohabi, free to listen.",
+  "start_url": "/0ural1",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1416",
+  "theme_color": "#0b1416",
+  "icons": [{ "src": "/static/0ural1/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
