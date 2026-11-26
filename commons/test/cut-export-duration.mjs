@@ -1,6 +1,6 @@
-// commons/test/cut-export-duration.mjs
-// Real-server, real-ffmpeg export-duration check (Cut Job 5).
-// Candidate home: teams/cut/outputs/cut-export-duration.mjs. Setu places it at commons/test/.
+// Extends commons/test/cut-export-duration.mjs with full-range and past-EOF trims.
+// Real-server, real-ffmpeg export-duration checks (Cut Job 5, round 33).
+// Candidate home: teams/cut/outputs/cut-export-duration-v2.mjs. Setu places it over commons/test/cut-export-duration.mjs.
 // Run from a full checkout: node --test commons/test/cut-export-duration.mjs
 // Optional overrides: FFMPEG=/path/to/ffmpeg FFPROBE=/path/to/ffprobe.
 // No browser and no production requests. Missing ffmpeg OR ffprobe skips the real check loudly.
@@ -54,7 +54,7 @@ function probeSeconds(file) {
   return seconds;
 }
 
-test('POST /api/cut/render: a 4s source trimmed 1..3 exports a 2s MP4 (±0.1s)', {
+test('POST /api/cut/render: three trims reuse one 4s upload and export the expected durations', {
   skip: missing ? `real export not run: missing ${missing}; install it or set FFMPEG/FFPROBE` : false,
   timeout: 180_000,
 }, async (t) => {
@@ -106,24 +106,53 @@ test('POST /api/cut/render: a 4s source trimmed 1..3 exports a 2s MP4 (±0.1s)',
   }
   assert.ok(record?.ready, `upload did not become ready within 60s: ${JSON.stringify(record)}`);
 
-  const exported = await fetch(`${base}/api/cut/render`, {
-    method: 'POST',
-    headers: { Cookie: cookie, 'Content-Type': 'application/json', 'X-Commons': '1' },
-    body: JSON.stringify({ videoId: uploadBody.id, edit: { trimStart: 1, trimEnd: 3, coverSec: 1 } }),
-    signal: AbortSignal.timeout(90_000),
-  });
-  const exportBody = await exported.json();
-  assert.equal(exported.status, 200, JSON.stringify(exportBody));
-  assert.equal(exportBody.ok, true, JSON.stringify(exportBody));
-  assert.ok(/^\/cut\/.+\.mp4$/.test(exportBody.url), JSON.stringify(exportBody));
+  async function exportTrim({ start, end, coverSec, name }) {
+    const exported = await fetch(`${base}/api/cut/render`, {
+      method: 'POST',
+      headers: { Cookie: cookie, 'Content-Type': 'application/json', 'X-Commons': '1' },
+      body: JSON.stringify({ videoId: uploadBody.id, edit: { trimStart: start, trimEnd: end, coverSec } }),
+      signal: AbortSignal.timeout(90_000),
+    });
+    const exportBody = await exported.json();
+    assert.equal(exported.status, 200, JSON.stringify(exportBody));
+    assert.equal(exportBody.ok, true, JSON.stringify(exportBody));
+    assert.ok(/^\/cut\/.+\.mp4$/.test(exportBody.url), JSON.stringify(exportBody));
 
-  const videoResponse = await fetch(base + exportBody.url, { signal: AbortSignal.timeout(15_000) });
-  assert.equal(videoResponse.status, 200, `GET ${exportBody.url} returned ${videoResponse.status}`);
-  const output = path.join(tmp, 'export.mp4');
-  fs.writeFileSync(output, Buffer.from(await videoResponse.arrayBuffer()));
-  assert.ok(fs.statSync(output).size > 0, 'exported MP4 is empty');
-  const exportSeconds = probeSeconds(output);
-  assert.ok(Math.abs(exportSeconds - 2) <= 0.1, `expected 2s ±0.1s from trim 1..3; measured ${exportSeconds}s`);
-  if (exportBody.seconds != null) assert.ok(Math.abs(Number(exportBody.seconds) - 2) <= 0.1, `response seconds=${exportBody.seconds}`);
-  console.log(`MEASURED source=${sourceSeconds.toFixed(3)}s trim=1..3 export=${exportSeconds.toFixed(3)}s responseSeconds=${exportBody.seconds} tolerance=0.1s bytes=${fs.statSync(output).size}`);
+    const videoResponse = await fetch(base + exportBody.url, { signal: AbortSignal.timeout(15_000) });
+    assert.equal(videoResponse.status, 200, `GET ${exportBody.url} returned ${videoResponse.status}`);
+    const output = path.join(tmp, `export-${name}.mp4`);
+    fs.writeFileSync(output, Buffer.from(await videoResponse.arrayBuffer()));
+    const bytes = fs.statSync(output).size;
+    assert.ok(bytes > 0, 'exported MP4 is empty');
+    return { exportSeconds: probeSeconds(output), exportBody, bytes };
+  }
+
+  await t.test('trim 1..3 exports 2s ±0.1s', async () => {
+    const { exportSeconds, exportBody, bytes } = await exportTrim({ start: 1, end: 3, coverSec: 1, name: 'one-to-three' });
+    assert.ok(Math.abs(exportSeconds - 2) <= 0.1, `expected 2s ±0.1s from trim 1..3; measured ${exportSeconds}s`);
+    if (exportBody.seconds != null) assert.ok(Math.abs(Number(exportBody.seconds) - 2) <= 0.1, `response seconds=${exportBody.seconds}`);
+    console.log(`MEASURED source=${sourceSeconds.toFixed(3)}s trim=1..3 export=${exportSeconds.toFixed(3)}s responseSeconds=${exportBody.seconds} tolerance=0.1s bytes=${bytes}`);
+  });
+
+  await t.test('trim 0..4 exports the full 4s source ±0.1s on the same upload', async () => {
+    const { exportSeconds, exportBody, bytes } = await exportTrim({ start: 0, end: 4, coverSec: 0, name: 'zero-to-four' });
+    assert.ok(Math.abs(exportSeconds - 4) <= 0.1, `expected 4s ±0.1s from trim 0..4; measured ${exportSeconds}s`);
+    if (exportBody.seconds != null) assert.ok(Math.abs(Number(exportBody.seconds) - 4) <= 0.1, `response seconds=${exportBody.seconds}`);
+    console.log(`MEASURED source=${sourceSeconds.toFixed(3)}s trim=0..4 export=${exportSeconds.toFixed(3)}s responseSeconds=${exportBody.seconds} tolerance=0.1s bytes=${bytes}`);
+  });
+
+  await t.test('trim 3..9 (past the end of a 4s source) is refused with a plain 400, not clamped', async () => {
+    // Round 33 asked for a clamp; the server refuses instead (Setu measured it, 2026-11-26). Refusing is the safer contract.
+    const r = await fetch(`${base}/api/cut/render`, {
+      method: 'POST',
+      headers: { Cookie: cookie, 'Content-Type': 'application/json', 'X-Commons': '1' },
+      body: JSON.stringify({ videoId: uploadBody.id, edit: { trimStart: 3, trimEnd: 9, coverSec: 3 } }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const body = await r.json();
+    assert.equal(r.status, 400, JSON.stringify(body));
+    assert.match(String(body.error), /must lie within 0\.\.4 seconds/);
+    assert.doesNotMatch(String(body.error), /ffmpeg|stderr/i);
+    console.log(`MEASURED trim=3..9 status=${r.status} error=${JSON.stringify(body.error)}`);
+  });
 });

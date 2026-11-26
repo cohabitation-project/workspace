@@ -50,6 +50,22 @@ export function handoffHref(id) {
   return VIDEO_ID_RE.test(s) ? `/social?cut=${encodeURIComponent(s)}#compose` : null;
 }
 
+/** After an upload answers ready:false, wait for the server to finish converting it. Resolves {state:'ready'|'failed'|'timeout', reason}.
+ *  Reads the member's own list (GET /api/videos?by=me): there is no per-video record route. */
+export async function waitForVideo(id, { fetchFn = fetch, intervalMs = 1500, timeoutMs = 180000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  let waited = 0;
+  for (;;) {
+    try {
+      const res = await fetchFn('/api/videos?by=me&limit=100', { credentials: 'same-origin' });
+      const list = res.ok ? (await res.json().catch(() => ({}))).videos : null;
+      const mine = Array.isArray(list) ? list.find((v) => v.id === id) : null;
+      if (mine?.failed) return { state: 'failed', reason: mine.reason || 'conversion failed.' };
+      if (mine?.ready) return { state: 'ready' };
+    } catch { /* offline for a moment: keep waiting */ }
+    if (waited >= timeoutMs) return { state: 'timeout' };
+    await sleep(intervalMs); waited += intervalMs;
+  }
+}
 export function exportFailureMessage(status, payload) {
   if (status === 404) return "Export isn't open yet — your edit is saved here.";
   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
@@ -294,6 +310,13 @@ export function initCutEditor(root = document) {
     const saved = await up.json().catch(() => ({}));
     const href = up.ok ? handoffHref(saved.id) : null;
     if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
+    if (saved.failed) { showToast(`We couldn't prepare this video: ${saved.reason || 'conversion failed.'}`); return; }
+    if (saved.ready === false) {
+      showToast('Saving your video… this can take a minute.');
+      const done = await waitForVideo(saved.id);
+      if (done.state === 'failed') { showToast(`We couldn't prepare this video: ${done.reason}`); return; }
+      if (done.state === 'timeout') { showToast('Your video is still being prepared. Check your videos in a minute.'); return; }
+    }
     resultLink.href = href; resultBox.hidden = false;
     showToast('Your edited video is ready. Tap "Post it".');
   }
