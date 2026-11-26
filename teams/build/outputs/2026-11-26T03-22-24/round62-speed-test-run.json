@@ -1,0 +1,18 @@
+{
+  "results": [
+    {
+      "command": "node --check commons/test/speed.mjs",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "node --test commons/test/speed.mjs",
+      "exit": 1,
+      "stdout": "node:internal/modules/package_json_reader:331\n  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);\n        ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find package 'sharp' imported from /tmp/kin-py-KTmPG3/repo/commons/test/speed.mjs\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.22.3\n\u2716 commons/test/speed.mjs (47.683069ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 56.571677\n\n\u2716 failing tests:\n\ntest at commons/test/speed.mjs:1:1\n\u2716 commons/test/speed.mjs (47.683069ms)\n  'test failed'\n",
+      "stderr": ""
+    }
+  ],
+  "sha256": "3f832efa7e0678e42d224f14370ecb285597c46b544816fe85c942798ad1d6e9",
+  "diff": ""
+}
