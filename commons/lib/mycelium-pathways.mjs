@@ -69,5 +69,7 @@ export function createPathways(edges=[],{maxEdges=2000}={}) {
   }
   return {nodes:found,probes:probes.count,hops,checked_with_requester:!!requester};
  }
- return Object.freeze({expand,edgeCount:()=>[...adjacency.values()].reduce((sum,a)=>sum+a.length,0)});
+ // Intentionally omit an unscoped total edge count: even counts of private
+ // relationships disclose metadata. Test fixtures can inspect returned paths.
+ return Object.freeze({expand});
 }
