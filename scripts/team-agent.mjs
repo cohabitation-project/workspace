@@ -27,6 +27,7 @@ import os from 'node:os';
 import { spawnSync, execSync } from 'node:child_process';
 import 'dotenv/config';
 import { createTask, appendLog, rebuildBoard } from './board.mjs';
+import { openrouterFetch } from './openrouter-retry.mjs';
 // Teams whose sessions may write code (the build lane, decision #15): Builders, and Cohabi Cut (2026-11-18).
 const CODE_TEAMS = new Set(['build', 'cut']);
 
@@ -473,7 +474,7 @@ export function compactHistory(msgs, { at = COMPACT_AT, keep = KEEP_RECENT } = {
   }
   return saved;
 }
-async function callModel(agent, system, messages) {
+async function callModel(agent, system, messages, deps = {}) {
   if (agent.provider === 'anthropic') {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': process.env.LLM_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       // Prompt caching (2026-11-18, Geoffrey's spend review): a work session loops many turns and re-sent the same
@@ -494,10 +495,11 @@ async function callModel(agent, system, messages) {
       cost: ((u.input_tokens || 0) * rIn + read * rRead + write * rWrite + (u.output_tokens || 0) * rOut) / 1e6 };
     return { text: j.content.filter((c) => c.type === 'text').map((c) => c.text).join('\n'), calls: j.content.filter((c) => c.type === 'tool_use').map((c) => ({ id: c.id, name: c.name, args: c.input })), usage };
   }
-  const r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+  // An in-flight-budget 402 or a 429 waits and retries (at most 3 times; scripts/openrouter-retry.mjs). Anything else fails as before.
+  const { r, j } = await openrouterFetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: agent.model, max_tokens: 6000, usage: { include: true }, messages: [{ role: 'system', content: system }, ...messages.openai],
-      tools: TOOL_DEFS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: { type: 'object', properties: t.params, required: t.required } } })) }) });
-  const j = await r.json(); if (!r.ok || j.error) throw new Error(`OpenRouter ${r.status}: ${JSON.stringify(j.error || j).slice(0, 300)}`);
+      tools: TOOL_DEFS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: { type: 'object', properties: t.params, required: t.required } } })) }) }, deps);
+  if (!r.ok || j.error) throw new Error(`OpenRouter ${r.status}: ${JSON.stringify(j.error || j).slice(0, 300)}`);
   if (j.usage) console.log(`[team-agent] openrouter usage in=${j.usage.prompt_tokens ?? '?'} cached=${j.usage.prompt_tokens_details?.cached_tokens ?? 0} out=${j.usage.completion_tokens ?? '?'} cost=$${j.usage.cost ?? '?'}`);
   const m = j.choices[0].message; messages.openai.push(m);
   return { text: m.content || '', calls: (m.tool_calls || []).map((c) => { let a = {}; try { a = JSON.parse(c.function.arguments || '{}'); } catch {} return { id: c.id, name: c.function.name, args: a }; }), usage: j.usage };

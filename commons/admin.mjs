@@ -88,7 +88,8 @@ if (cmd === 'list') {
   for (const [k, v] of Object.entries(codes)) if (v.expires < Date.now()) delete codes[k]; // sweep stale
   codes[crypto.createHash('sha256').update(code).digest('hex')] = { member: m.id, expires: Date.now() + 15 * 60_000, by: 'operator (admin.mjs)', ts: new Date().toISOString() };
   fs.writeFileSync(f, JSON.stringify(codes, null, 1));
-  console.log(`One-time sign-in code for ${m.name} — type this on the device, valid 15 minutes, works once:\n\n  ashram.lastoftherealestate.com/go/${code}\n\nNo restart needed. The existing login link stays valid; nothing is signed out.`);
+  const base = (process.env.COMMONS_PUBLIC_URL || 'https://cohabi.org').replace(/\/+$/, '');
+  console.log(`One-time sign-in code for ${m.name} — type this on the device, valid 15 minutes, works once:\n\n  ${base}/go/${code}\n\nNo restart needed. The existing login link stays valid; nothing is signed out.`);
   process.exit(0);
 } else if (cmd === 'station-on' || cmd === 'station-off') {
   // The Station's durable switch: a file in the data dir, immune to pm2 env resets. A human act, logged.
@@ -178,7 +179,7 @@ if (cmd === 'list') {
   m.loginHash = crypto.createHash('sha256').update(secret).digest('hex');
   m.sessionVersion = (Number(m.sessionVersion) || 0) + 1;
   save(list);
-  const base = (process.env.COMMONS_PUBLIC_URL || 'https://ashram.lastoftherealestate.com').replace(/\/+$/, '');
+  const base = (process.env.COMMONS_PUBLIC_URL || 'https://cohabi.org').replace(/\/+$/, '');
   console.log(`New login link for ${m.name} (${m.id}). Shown once; give it only to them, privately:\n\n  ${base}/login/${secret}\n\nThe old link no longer works, and every device signed in as ${m.name} is signed out once the server starts again (pm2 start commons). Run this with the server stopped (pm2 stop commons) so it can't write over the change.`);
   process.exit(0);
 } else if (cmd === 'mark-duplicate') {

@@ -88,13 +88,15 @@ async function api(p, { method = 'GET', body } = {}) {
 const FRESH_MS = 6 * 3600_000; export const RETRY_MS = 60_000;
 export const COLD = "The print partner isn't answering right now, so there are no products to show yet. Try again in a minute.";
 let cache = null; let cacheAt = 0; let failAt = 0;
-export function resetCache() { cache = null; cacheAt = 0; failAt = 0; tasks.clear(); recent.length = 0; }
+// A partial read (some products answered, one hiccupped) is served inside RETRY_MS too, but never becomes the cache.
+let partial = [];
+export function resetCache() { cache = null; cacheAt = 0; failAt = 0; partial = []; tasks.clear(); recent.length = 0; }
 export async function products() {
   const now = Date.now();
   if (cache && now - cacheAt < FRESH_MS) return cache;
   // Inside the retry window Printful is not asked again: a good list is still served (it just isn't fresh), and with
   // no good list there is nothing honest to show but the sentence below.
-  if (failAt && now - failAt < RETRY_MS) { if (cache) return cache; transient(502, COLD); }
+  if (failAt && now - failAt < RETRY_MS) { if (cache) return cache; if (partial.length) return partial; transient(502, COLD); }
   const out = []; let hiccup = false;
   for (const { key, id } of curated()) {
     try {
@@ -124,9 +126,9 @@ export async function products() {
   // after RETRY_MS. A partial answer, or a good list from before, is still worth showing (nothing is thrown for those).
   // A complete read that finds nothing is a real answer (every product discontinued, say): [] and a re-read after
   // RETRY_MS; curated() already refuses a list that cannot be read at all.
-  if (hiccup) { failAt = Date.now(); const worth = cache || out; if (worth.length) return worth; transient(502, COLD); }
+  if (hiccup) { failAt = Date.now(); partial = out; const worth = cache || out; if (worth.length) return worth; transient(502, COLD); }
   if (!out.length) { failAt = Date.now(); return out; }
-  cache = out; cacheAt = Date.now(); failAt = 0;
+  cache = out; cacheAt = Date.now(); failAt = 0; partial = [];
   return out;
 }
 

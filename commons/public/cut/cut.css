@@ -22,7 +22,7 @@ button, input, select { font: inherit; }
   gap: 8px;
 }
 .topbar h1 { margin: 0; font-size: 1.05rem; text-align: center; white-space: nowrap; }
-.back { color: #e7e1ff; text-decoration: none; padding: 10px 4px; }
+.back { color: #e7e1ff; text-decoration: none; padding: 10px 4px; display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; }
 button, select, input[type="text"] {
   min-height: 44px;
   border: 1px solid #565760;
