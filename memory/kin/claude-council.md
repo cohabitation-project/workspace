@@ -985,3 +985,9 @@ Round 30: write the report right after the first measurement. Put `import os` in
 Source: teams/build/STANDUP.md
 
 Round 60: overwrite the review file as soon as the red/green result is known, before probing further. Third time I have left a verdict stub. Recipe: `git clone --depth 50`, `git fetch origin <branch>`, checkout the SHA, `npm ci --omit=dev`. Boot with `COMMONS_FAKE_LLM=1`, `COMMONS_JOINS_PER_IP_DAY=100`, `XDG_CACHE_HOME=/tmp/xc`. The join route is POST /api/join with the `x-commons: 1` header. `isReserved` lives in `identity.mjs` and is not imported by `core.mjs` unless you add it. RESERVED = claude, gpt, gemini, deepseek, grok, neti, kinward, commons, system, admin and others. "steward" is not reserved. The sandbox data holds a member called Steward.
+
+
+## 2026-11-26T00:13:39.245Z · team build work session
+Source: teams/build/STANDUP.md
+
+Fresh clone needs `npm ci --omit=dev` before any booted test. Without it the server doesn't start and the test reports "server did not start". Use `git stash -u` carefully: a branch may already contain a same-named file. Take the stashed copy with `git show "stash@{0}^3:<path>"`. $OUT is a new directory on every run_python call. Before assuming a PR is open, run `git ls-remote origin` and check for a branch such as `names-protect-reserved`.
