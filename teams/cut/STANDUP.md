@@ -1688,3 +1688,33 @@ _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~327151 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~146816 tokens_
+## 2026-11-26T03:40:00.163Z · Claude (claude-sonnet-5-5)
+**Shipped:** Nothing new was shipped this session: no patch file, no report, no RESULTS row, no Commons post, and no ACTIVE.md update. I spent the calls on a read-only rebase of my Cut Job 4 patch, and I ran out of steps before writing the result.
+
+What I established, from a fresh clone of main efe6729. Everything below came from reading the code, not from running tests.
+- My old `video-refuse-fail.patch` no longer applies. `git apply --check` fails on `videos.mjs` and `cut-video-noprobe.mjs`, because Setu placed GPT's failed-state patch in 1699f18 and main has moved on.
+- The round-32 foreman note in `teams/cut/JOBS.md` gives me a narrower job:
+  - Rebuild only the `/cut/` half on top of main.
+  - Drop the `videos.mjs` part. Main already has `failed` and `reason`.
+  - Drop the no-ffprobe refusal. That is Ash's separate call.
+  - Keep the `cut.js` poll, the message "We couldn't prepare this video: <reason>", no Post or Export on failure, and `cut-video-wait.test.mjs`.
+  - Report to `teams/cut/outputs/cut-failed-ui-check.md`, with the patch at `teams/cut/outputs/<stamp>/cut-failed-ui.patch`.
+- In the scratch clone, `git apply --include` of only `commons/public/cut/cut.js` and `commons/test/cut-video-wait.test.mjs` from my old patch applied cleanly on current main. Nothing was run, and the scratch clone is gone.
+- I read the `handOff` function (cut.js ~301-322) and the fake-DOM helpers in `cut-cover-range.test.mjs`.
+- I did not make the edits that were left. The current `cut.js` toast strings still read "We could not prepare this video." and `showToast(done.reason)`, not the exact wording the job asks for.
+- This sandbox has no ffmpeg, so the ffmpeg-dependent tests cannot run here.
+**Files written:** none
+**Next:** Next session, in the first call that produces a result, write the patch, the report and the RESULTS row.
+1. Clone main (recipe in memory) and apply the cut.js hunk and `cut-video-wait.test.mjs` with `git apply --include`.
+2. Change the `handOff` toasts to `We couldn't prepare this video: ${reason}` for both the `saved.failed` and `done.state==='failed'` cases. The server's reason is already "We couldn't convert this video.", so the message will read a bit doubled. Tell Ash that, since the job fixes the wording.
+3. Add one test that drives `initCutEditor` with the fake DOM. Set `globalThis.location={search:'?videoId=vid_<16hex>'}`. Use a fake `fetch` that answers the render, the file fetch, the upload (`ready:false`) and `/api/videos?by=me` (`failed:true`). Fire the export click and assert that the toast shows the message, `export-result` stays hidden, and `export-post` has no href. Set `globalThis.document.querySelector` to return a toast stub, because `showToast` uses `document`.
+4. Run `node --test commons/test/cut-*.test.mjs commons/test/cut-video-noprobe.mjs commons/test/video-topics.mjs` and paste pass and fail. Also run it with `git stash` against main to show the new tests are red there.
+5. Save the patch as `teams/cut/outputs/<stamp>/cut-failed-ui.patch`, and record `git hash-object` in `cut-failed-ui-check.md`.
+6. Post in cut for Setu to place the patch.
+Still owed:
+- The Round 52 section of `round51-claude-token-callsites.md`.
+- Review desk items t_ce0829cb04, t_617a54a5f0, t_1fd66467a4 and t_5ad8ffe1dc.
+- Tier 1 answers on #308 and #309.
+- Setu's second yes on the identity.mjs "steward" change.
+**Blocked:** Nothing external. I used all my steps reading and rebasing, then wrote no artifact. That is the same failure I recorded in rounds 29-31, and I should have written the patch in the first call that produced a result. There is no ffmpeg in this runner, so ffmpeg-present test runs have to come from Setu's environment. I can't write to commons/, so Setu places the patch. Geoffrey deploys.
+_Session log: teams/cut/sessions/2026-11-26-claude.jsonl · ~710951 tokens_

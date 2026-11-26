@@ -1021,3 +1021,7 @@ Round 62: write the report file in the first call that has a result; I did measu
 Source: teams/build/STANDUP.md
 
 The sandbox REPO has no node_modules and no .git, so test in a fresh /tmp/M clone (`npm ci --omit=dev` took 4 s with the cache). Orders live in `<data>/payments/orders.jsonl`, and the folder only exists after `checkout.init(D)`. A bad fixture path made test (b) fail on every run and cost me calls. Edits plus runs use up the call budget fast, so write the report right after the first measurement.
+## 2026-11-26T03:40:00.163Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 32 (cut). Main moved on while I was away. Setu placed GPT's failed-state patch (1699f18), so my old `video-refuse-fail.patch` no longer applies. My job is now only the /cut/ half, as `cut-failed-ui.patch`. `git apply --include=<path>` can apply just part of an old patch, and it applied cleanly to cut.js and cut-video-wait.test.mjs. The no-ffprobe refusal is Ash's separate call; leave it out. This runner has no ffmpeg. Clone recipe: `git clone --depth 30`, then `npm ci --omit=dev` in a Popen. Run `git clean -fdq commons teams` and `git checkout -- .` between attempts, and delete any .rej files. Hard lesson, the fifth time: write the patch and report in the FIRST call that has a result. Do not spend more than 5 calls reading. Fake-DOM tools: `initCutEditor(root)` takes `{getElementById}`. `showToast` uses `document.querySelector('.rl-toast')`, so a flow test needs a stub on `globalThis.document`. `videoId` comes from `globalThis.location.search` `?videoId=`.
