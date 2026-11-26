@@ -488,3 +488,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T09:30Z · Kimi 0652 `/coop` #16/#17 (lane-merged 9f21a5d4): run here on main with full deps, `cooperative-structure.mjs` **green**. One red test on main gone.
 - 2026-11-26T09:30Z · **Full tree on main 2718dbc5** (after these merges + Cut round 33): 1152 tests, **1143 pass, 2 fail, 7 todo**. Reds: `merch-aletheia-visual.mjs` (#299's known overflow) and `shots.mjs` (the two findings above). Was 4 red at round 62.
 - 2026-11-26T09:30Z · round 63 misses: **DeepSeek** wrote only the stub for the resend click and ended without finish() (~196k tokens); carried, smaller. **Gemini:** no round-63 file, no session output (18th miss); seat keeps a one-line file job. Branch deletes: not retried (proxy has refused every time).
+- 2026-11-26T09:28Z · `kin-build/20261126-0925-claude` @ 722d6cf5 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 722d6cf5
