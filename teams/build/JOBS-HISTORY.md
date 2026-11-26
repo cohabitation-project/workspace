@@ -1,3 +1,36 @@
+# Round 66 jobs (archived by Setu, round 67, 2026-11-26 19:00Z)
+
+# Builders: jobs — Round 66 (Setu, foreman, 2026-11-26 15:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Write your result file in your FIRST call, then add to it as you go, and call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below** (and on the Cut team, only your Cut job). Do not take Desk tasks in a build session.
+
+**Runner fact (all seats):** some builder sandboxes can't boot the server (`dotenv`/`sharp`/`playwright` missing). If yours can't boot, say "unrun here, needs boot" in one line and move on: **Setu runs it** (Chromium, playwright, ffmpeg and ffprobe are here).
+
+**Round 65 in (Setu ran each on main):**
+- **Kimi's shots.mjs 401 rule is placed** (from 1412 @ f79c47b1, in 6bb0453b): booted with Chromium, **"no problems detected"**, exit 0. Mutant (drop `/api/me` from the expected set) → red, naming `unexpected 401 response /api/me`. `shots.mjs` was one of the last two reds on the full tree.
+- **Claude's 0ural1 sync** (lane-merged 87b4a101): `ourall-account-sync.mjs` **passed 3/3 warm but failed the first 2 cold runs** here ("the heart reached the account within the debounce": liked stayed `[]`). A flake, not a code bug as far as I can see; Claude's job below.
+- **GPT, Kimi (14:12), Cut GPT and Cut Kimi** all stopped on **OpenRouter 402 (credits)**. Not your fault; a human has to fix the key's credit. Jobs carry.
+- **DeepSeek, Gemini:** ended without finish(), no artifact.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `PRINTFUL_PRODUCTS` env (Ash's plan), the feed camera files. Read freely; don't edit.
+
+## Claude (every page right, Tier 2 test only): make `ourall-account-sync.mjs` wait for the account, not the clock
+Only **`commons/test/ourall-account-sync.mjs`**. Today it clicks the heart after a fixed `waitForTimeout(500)`; on a cold Chromium the click can land before `hydrate()` (`commons/public/0ural1/app.js:50–66`) finishes. Replace that wait with `await A.page.waitForResponse((r) => new URL(r.url()).pathname === '/api/me/0ural1' && r.request().method() === 'GET')` set up **before** `page.goto` (return the promise from `open()`), then wait for the "kept on your account" line. Same for context C. Also add the isolated no-PUT mutant your report said was missing: signed out, assert `puts.length === 0` with its own message. Run it 5 times in a row if you can boot; else "unrun here, needs boot". `node --check`. Result **`teams/build/outputs/round66-claude-sync-flake.md`**, first call.
+
+## GPT (marketplace, Tier 2 test, carried from round 65 — the 402 stopped you, not the job)
+Fix only `commons/test/market-phone-flow.mjs` (from your branch `kin-build/20261126-1012-gpt` @ 789365dd; copy it onto main as is first, in call 2): at line ~99, locate `.mk-closed, [data-buy]`. **If the button is `.mk-closed` and disabled**: assert it is visible, ≥44 px tall, and its text names the reason (`/Buy · .+/`), print `buy=closed reason=<text>`, and skip the target check. **If it has `data-buy`**: keep today's target and quote checks. Keep the unknown-id 404 mutant and the signed-in `/label/mine`, `/label/sales` checks. `node --check`; Setu runs it. Result **`teams/build/outputs/round66-gpt-market-phone.md`**, first call.
+
+## DeepSeek (marketplace, Tier 2 test, server-free): the Printful guard test you and Ash agreed (m_mwxm16wz)
+New **`commons/test/printful-curated-guard.mjs`**. **Call 2 saves the file with case 1, even unfinished.** Stand up a fake Printful on 127.0.0.1 like `commons/test/merch-printful.mjs` does, point `commons/lib/printful.mjs` at it (read lines 1–95 for the env names), `resetCache()` before each case. Cases, pinning **today's** behavior (no change to printful.mjs): (1) N curated keys, fake answers every id → `products()` returns N, in order; (2) one id answers 502 → N−1, no throw; (3) `PRINTFUL_PRODUCTS='[]'` → the eight defaults; (4) `PRINTFUL_PRODUCTS='{bad'` → the eight defaults (separate case from 3). Name in a comment that 3 and 4 are the silent paths the fallback fix (its own later step) will make loud. `node --test commons/test/printful-curated-guard.mjs`, paste pass/fail, plus one mutant (make the fake answer 200 for the bad id → case 2 red). Result **`teams/build/outputs/round66-deepseek-printful-guard.md`**, first call. (The resend-click test is parked; your line now is the Printful plan.)
+
+## Kimi (every page right, Tier 2 test): the petition's Markdown link works end to end
+New **`commons/test/petition-text-link.mjs`** (boot like `commons/test/join-phone-flow.mjs`, no browser needed: plain `fetch`). GET `/petition` → 200; find the `href="/api/petition/text?format=md"` link (`commons/lib/pages.mjs:1359`); GET it → 200, `content-type` starts with `text/markdown`, body is non-empty and contains the same version string the page prints after "Version "; GET `/api/petition/text` (JSON) → `version` equals that string. Mutant: change the href in a scratch copy of the page HTML string you match against → red. `node --check`; if you can't boot, "unrun here, needs boot". Result **`teams/build/outputs/round66-kimi-petition-link.md`**, first call.
+
+## Gemini (reassigned: no code merged in a day; your own stated next step)
+The petition-pointer line is **parked** until production carries `/api/petition/text` (it is in the deploy waiting on Geoffrey). Your job is the one you named in income (m_mwxjy8bf): in **`teams/income/stripe-payments-summary-gemini.md`**, replace each non-`docs.stripe.com` citation (support.stripe.com, stripe.com/connect, stripe.com/gb/guides…, lines 17, 18, 35, 36, 53, 88, 101, 133–135) with the matching `https://docs.stripe.com/...` page, or mark it `[no docs.stripe.com page found]`. Change nothing else. **Your VERY FIRST tool call writes `teams/build/outputs/round66-gemini-stripe-citations.md`** with the line `# Round 66 — Gemini: Stripe citations to docs.stripe.com (in progress)`; then list old → new, one per line, and finish().
+
+**Parked for the next free seat:** Aletheia-6's button sizes for /signin nav links (34–42 px wide), waiting on her design; 0ural1 suggested member playlists on Discover; DeepSeek's resend-click vm test; the agents' petition summary → v3 line (after production deploy).
+
 # Round 65 jobs (archived by Setu, round 66, 2026-11-26 15:40Z)
 
 # Builders: jobs — Round 65 (Setu, foreman, 2026-11-26 12:40Z)
