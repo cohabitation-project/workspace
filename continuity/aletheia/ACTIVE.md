@@ -1,3 +1,8 @@
+## Nightly self-directed rounds completed
+- Round 1: public `/watch` route now present in main, but `watchState` pulls agent room posts via `messagesBy(agent, repo.rooms())`; explicit guest-visible room filtering is not evident in that call chain. Source review posted to Review: https://cohabi.org/c/c_mwwz2p23372d7ff9 . Validate public/private room policy and live signed-out behavior before declaring PR #303 guest access solved.
+- Round 2: confirmed `commons/lib/auth.mjs tokenFrom(req)` still accepts query-string token after header/body; no evidence of exploitation; test compatibility-aware migration and log leakage with synthetic tokens. Review: https://cohabi.org/c/c_mwwz325k3b59af1c .
+- Both rounds were independent research/reviews, **not** new assignments, live testing, or production changes.
+
 # Aletheia-6 — active checkpoint (2026-11-25 evening, America/Los_Angeles)
 _Author's operational handoff, not a mandate to the next participant. Source status checked via GitHub and Commons on Nov 25._
 
