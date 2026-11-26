@@ -1,0 +1,20 @@
+✔ ready after two polls (1.70332ms)
+✔ failed returns the server reason, so Cut can show it and withhold "Post it" (0.218578ms)
+✔ only the asked-for id counts (another ready video does not end the wait) (0.217897ms)
+✔ a failed fetch or network error is retried, then times out; it never claims ready (0.319445ms)
+✔ export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (8.132303ms)
+✔ export flow: the upload response itself says failed -> same message, nothing to post (1.365158ms)
+✔ export flow: a video that becomes ready still offers Post it (the failure path did not break success) (1.053237ms)
+✔ export flow: failed with no reason from the poll -> the plain default sentence, once (1.054346ms)
+✔ export flow: failed on the upload answer with no reason -> the plain default sentence (1.096901ms)
+✔ failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.417868ms)
+✔ waitForVideo: failed with no reason resolves reason "" (the page supplies the default) (0.214773ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 78.345026
+

@@ -1,0 +1,141 @@
+✖ ready after two polls (2.659183ms)
+✖ failed returns the server reason, so Cut can show it and withhold "Post it" (1.048018ms)
+✔ only the asked-for id counts (another ready video does not end the wait) (0.303124ms)
+✖ a failed fetch or network error is retried, then times out; it never claims ready (0.398104ms)
+✖ export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (10.9414ms)
+✔ export flow: the upload response itself says failed -> same message, nothing to post (1.572202ms)
+✔ export flow: a video that becomes ready still offers Post it (the failure path did not break success) (1.185696ms)
+✖ export flow: failed with no reason from the poll -> the plain default sentence, once (3.195759ms)
+✔ export flow: failed on the upload answer with no reason -> the plain default sentence (1.177285ms)
+✔ failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.325023ms)
+✖ waitForVideo: failed with no reason resolves reason "" (the page supplies the default) (0.35122ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 5
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83.56451
+
+✖ failing tests:
+
+test at test/cut-video-wait.test.mjs:11:1
+✖ ready after two polls (2.659183ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   state: 'timeout'
+  -   state: 'ready'
+    }
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:13:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'timeout' },
+    expected: { state: 'ready' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:17:1
+✖ failed returns the server reason, so Cut can show it and withhold "Post it" (1.048018ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   state: 'timeout'
+  -   reason: 'We could not convert this video.',
+  -   state: 'failed'
+    }
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:19:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'timeout' },
+    expected: { state: 'failed', reason: 'We could not convert this video.' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:25:1
+✖ a failed fetch or network error is retried, then times out; it never claims ready (0.398104ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  4 !== 5
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:28:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 5,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:61:1
+✖ export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (10.9414ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Your video is still being prepared. Check your videos in a minute.'
+  - "We couldn't convert this video."
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:63:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Your video is still being prepared. Check your videos in a minute.',
+    expected: "We couldn't convert this video.",
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:78:1
+✖ export flow: failed with no reason from the poll -> the plain default sentence, once (3.195759ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Your video is still being prepared. Check your videos in a minute.'
+  - "We couldn't prepare this video."
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:80:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Your video is still being prepared. Check your videos in a minute.',
+    expected: "We couldn't prepare this video.",
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:91:1
+✖ waitForVideo: failed with no reason resolves reason "" (the page supplies the default) (0.35122ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   state: 'timeout'
+  -   reason: '',
+  -   state: 'failed'
+    }
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:93:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'timeout' },
+    expected: { state: 'failed', reason: '' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

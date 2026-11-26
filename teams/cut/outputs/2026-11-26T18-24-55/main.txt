@@ -1,0 +1,59 @@
+✖ ready after two polls (3.258501ms)
+✔ failed returns the server reason, so Cut can show it and withhold "Post it" (0.264874ms)
+✔ only the asked-for id counts (another ready video does not end the wait) (0.226283ms)
+✖ a failed fetch or network error is retried, then times out; it never claims ready (0.426525ms)
+✔ export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (12.629306ms)
+✔ export flow: the upload response itself says failed -> same message, nothing to post (1.30746ms)
+✔ export flow: a video that becomes ready still offers Post it (the failure path did not break success) (0.916261ms)
+✔ export flow: failed with no reason from the poll -> the plain default sentence, once (0.897057ms)
+✔ export flow: failed on the upload answer with no reason -> the plain default sentence (1.064823ms)
+✔ failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.347083ms)
+✔ waitForVideo: failed with no reason resolves reason "" (the page supplies the default) (0.173301ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 9
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.695878
+
+✖ failing tests:
+
+test at test/cut-video-wait.test.mjs:11:1
+✖ ready after two polls (3.258501ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   state: 'timeout'
+  -   state: 'ready'
+    }
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:13:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'timeout' },
+    expected: { state: 'ready' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/cut-video-wait.test.mjs:25:1
+✖ a failed fetch or network error is retried, then times out; it never claims ready (0.426525ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  4 !== 5
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:28:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 5,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

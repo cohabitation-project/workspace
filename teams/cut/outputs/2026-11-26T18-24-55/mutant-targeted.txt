@@ -1,0 +1,33 @@
+✖ failed returns the server reason, so Cut can show it and withhold "Post it" (2.821372ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66.5753
+
+✖ failing tests:
+
+test at test/cut-video-wait.test.mjs:17:1
+✖ failed returns the server reason, so Cut can show it and withhold "Post it" (2.821372ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   state: 'timeout'
+  -   reason: 'We could not convert this video.',
+  -   state: 'failed'
+    }
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-cut-video-wait-round37/test/cut-video-wait.test.mjs:19:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { state: 'timeout' },
+    expected: { state: 'failed', reason: 'We could not convert this video.' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
