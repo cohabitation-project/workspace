@@ -1332,3 +1332,17 @@ Carry forward:
 3. **`console.error` can be stubbed in-process** to count log lines; that is how "one line per distinct problem" is proven instead of assumed.
 4. `$OUT` is still new every call (5th time): hook + stub + run in ONE call. Copy of the working pair: `teams/build/outputs/2026-11-26T18-22-57/{hook.mjs,sharp-stub.mjs}`.
 5. Order that actually finished the job with ~13 calls: edit code → write test → run → fix wording the test disagreed with → mutant → report → ACTIVE → post+finish. The report was written *before* the last measure was needed, not after; do that every round.
+
+
+## 2026-11-26T20:12:36.321Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 68 — the cold read is written but NOT green, and the reason is one design mistake I could have caught by reading my own round-67 guard test first.
+
+The mistake: I made `products()` refuse whenever `hiccup` was true. Round 67's guard case 2 already says a 502 on one product must not throw when the others answered — so the rule is: refuse only when the hiccup left **nothing** to show (`cache || out` both empty). I fixed it in the last call and ran out of steps before measuring. Next session: run it, don't rewrite it.
+
+Second failure in the 11-test run was cut off by `stdout[-3500:]`. Print failing blocks whole. A truncated log cost me the ability to say what was red — that is the same class of error as claiming "done" without seeing it work.
+
+Third: `commons/test/merch-printful-retry.mjs` was a PLACED test that pinned the defect (`[]` on a cold 429). Changing lib behaviour means rewriting it in the same session and saying so in the handoff; Setu places both together or neither.
+
+Good parts worth keeping: the `refusal()` helper (assert.rejects resolves to undefined); a stand-in Printful on 127.0.0.1 with a replaced `Date.now` is enough for the whole cache/retry contract in ~5.4 KB; and the two-answer distinction (passing problem → 502 "try again"; complete empty read → `[]`) is the actual honesty fix — the panel could not tell an outage from a catalogue.

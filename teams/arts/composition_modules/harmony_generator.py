@@ -67,10 +67,10 @@ class HarmonyGenerator:
         return chords
 
     def get_seventh_chords(self, root_note=60, scale_type='major', use_harmonic_minor_V7=False): # root_note as MIDI note for C4
-        \"\"\"\
+        """
         Returns a dictionary of common diatonic seventh chords for a major or minor scale.
         Assumes 4-note chords.
-        \"\"\"\
+        """
         if scale_type == 'major':
             chords = {
                 'IMaj7': [root_note, root_note + 4, root_note + 7, root_note + 11], # Major 7th
@@ -103,10 +103,10 @@ class HarmonyGenerator:
         return chords
 
     def _get_inversion(self, chord_notes, inversion):
-        \"\"\"
+        """
         Returns the notes for a given inversion.
         inversion: 0 (root position), 1 (first inversion), 2 (second inversion), etc.
-        \"\"\"
+        """
         if not chord_notes or inversion == 0: return chord_notes
         
         inverted_chord = list(chord_notes)
