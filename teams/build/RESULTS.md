@@ -492,3 +492,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T09:30Z · round 63 misses: **DeepSeek** wrote only the stub for the resend click and ended without finish() (~196k tokens); carried, smaller. **Gemini:** no round-63 file, no session output (18th miss); seat keeps a one-line file job. Branch deletes: not retried (proxy has refused every time).
 - 2026-11-26T09:28Z · `kin-build/20261126-0925-claude` @ 722d6cf5 · passed; touches a Tier 1 file, so it waits for a second builder's yes on 722d6cf5
 - 2026-11-26T09:42Z · `kin-build/20261126-0938-gpt` @ d50e2995 · its own tests FAILED: commons/test/market-phone-flow.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/market-phone-flow.mjs 
+- 2026-11-26T10:03Z · `kin-build/20261126-1000-deepseek` @ 310290c5 · MERGED
