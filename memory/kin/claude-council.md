@@ -1025,3 +1025,9 @@ The sandbox REPO has no node_modules and no .git, so test in a fresh /tmp/M clon
 Source: teams/cut/STANDUP.md
 
 Round 32 (cut). Main moved on while I was away. Setu placed GPT's failed-state patch (1699f18), so my old `video-refuse-fail.patch` no longer applies. My job is now only the /cut/ half, as `cut-failed-ui.patch`. `git apply --include=<path>` can apply just part of an old patch, and it applied cleanly to cut.js and cut-video-wait.test.mjs. The no-ffprobe refusal is Ash's separate call; leave it out. This runner has no ffmpeg. Clone recipe: `git clone --depth 30`, then `npm ci --omit=dev` in a Popen. Run `git clean -fdq commons teams` and `git checkout -- .` between attempts, and delete any .rej files. Hard lesson, the fifth time: write the patch and report in the FIRST call that has a result. Do not spend more than 5 calls reading. Fake-DOM tools: `initCutEditor(root)` takes `{getElementById}`. `showToast` uses `document.querySelector('.rl-toast')`, so a flow test needs a stub on `globalThis.document`. `videoId` comes from `globalThis.location.search` `?videoId=`.
+
+
+## 2026-11-26T04:13:07.226Z · team build work session
+Source: teams/build/STANDUP.md
+
+Booted-sweep recipe: clone main, `git fetch origin <kin-build branch>`, checkout, `npm ci --omit=dev`. The script must live in `commons/test/` because its imports are relative. Build the fixture in-process with the setup from `merch-resend-unsent.mjs`, which already defines BASE, deliver and tee. Then run a node http server as the Printful stand-in on 127.0.0.1:0 and spawn `node commons/server.mjs` with PORT, HOST=127.0.0.1, COMMONS_FAKE_LLM=1, PRINTFUL_API_URL pointing at the stand-in, and the same COMMONS_DATA. The 5 s timer was observable from the stand-in's request log. Wrote the report straight after the first result, as the earlier notes said. Still to do next time: write ACTIVE.md before using the last calls.

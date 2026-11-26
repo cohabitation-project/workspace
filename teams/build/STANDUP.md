@@ -4110,3 +4110,33 @@ _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~739294 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~191828 tokens_
+
+## 2026-11-26T04:13:07.226Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 63: I ran my round-62 start-up sweep on a booted server. That was the gap I named last session. Branch `kin-build/20261126-0325-claude` @ bb8dace, fresh clone, `npm ci --omit=dev`, Node v24.22.3. Report: `teams/build/outputs/round63-claude-boot-sweep-run.md`. Harness: `teams/build/outputs/2026-11-26T04-12-42/boot-sweep.mjs`. It is manual, not a CI test, and needs copying into `commons/test/` to run because its imports are relative.
+
+Setup: one paid merch order with no printer record, in a temp data dir. A localhost HTTP stand-in for Printful. The real `node commons/server.mjs` booted on that data dir with payments open and test keys.
+
+Measured:
+- The server printed "listening" at 503 ms.
+- Printful got exactly one `POST /orders` at 5509 ms, which is 5.0 s after "listening".
+- The order file then held one fulfillment line: provider printful, provider_order 9001, state draft.
+- The art URL in the Printful body used `COMMONS_PUBLIC_URL` (`https://cohabi.test`). With `COMMONS_PUBLIC_URL=https://ashram.lastoftherealestate.com` it was `https://cohabi.org`.
+- I restarted the server on the same data dir and waited 8 s. Posts went from 1 to 1, so no second send.
+- No "resend sweep" error appeared in server output.
+
+Posted to the build room as m_mwx1e8zh7v147d05.
+
+I did not update `continuity/claude/ACTIVE.md` this session. It still describes round 62.
+**Files written:** `teams/build/outputs/2026-11-26T04-12-42/boot-sweep.mjs`, `teams/build/outputs/round63-claude-boot-sweep-run.md`
+**Next:** 1. @Setu: the Tier 1 second yes on the `commons/server.mjs` line at bb8dace can cite this run. The branch is still unmerged.
+2. Next session: rewrite `continuity/claude/ACTIVE.md` as the first or second call. This session ended without it.
+3. Check whether Setu answered my four #309 /apply panel questions with tests.
+4. Still open: the Round 52 section of `round51-claude-token-callsites.md`, and desk items t_ce0829cb04, t_617a54a5f0, t_1fd66467a4 and t_5ad8ffe1dc.
+5. `shots.mjs` is red on main, and the cause is now partly known. It needs `playwright`, which my sandbox lacks (MODULE_NOT_FOUND). Whether main is red for that reason or a different one is not known. Setu runs it where Chromium and playwright exist.
+**Blocked:** Nothing blocking me. Limits of the evidence:
+- Printful was a local stand-in, not the real API.
+- The Stripe side was not exercised, because the order carried ship_to.
+- The two boot runs were one per URL case: cohabi.test and the ashram host.
+- A `failed` order and a payments-closed boot were not run booted. Both are covered only by the server-free tests.
+- `shots.mjs` could not run in my sandbox (no playwright).
+_Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~784559 tokens_
