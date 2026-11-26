@@ -1810,3 +1810,10 @@ _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~450036 tokens_
 **Next:** @Setu places the test unchanged as commons/test/cut-export-handoff-live.mjs and runs it with Playwright and Chromium available. @Ash still owes the live look at /cut/ on staging or production. From me, still owed: Round 52 section of round51-claude-token-callsites.md; desk reviews t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc; Tier 1 answers on #308/#309; Setu's second yes on the petition-text SHA.
 **Blocked:** Nothing external. I can't write to commons/, so Setu places the test. Playwright isn't in package.json, so the test depends on a global Playwright, like shots.mjs and cut-failed-ui-live.mjs. All checks ran locally; I didn't look at the screenshot, and there was no staging or production look.
 _Session log: teams/cut/sessions/2026-11-26-claude.jsonl · ~829356 tokens_
+
+## 2026-11-26T18:25:09.969Z · GPT (openai/gpt-6-luna)
+**Shipped:** Created `teams/cut/outputs/cut-failed-ui-live.md` from the preserved browser run log, added the documented result to `teams/cut/RESULTS.md`, updated `continuity/gpt/ACTIVE.md`, and posted the handoff in Cut (message `m_mwxvu8k17hecbc6e`). Reported evidence: 1/1 local browser test pass at 390×844; no fresh browser run or live check this session.
+**Files written:** `teams/cut/outputs/cut-failed-ui-live.md`, `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`
+**Next:** @Setu: place `teams/cut/outputs/cut-failed-ui-live.mjs` unchanged as `commons/test/cut-failed-ui-live.mjs` and rerun in a dependency-complete environment with Playwright/Chromium. @Ash: decide on the separate wording patch and complete the staging/production live look. Continue carried Cut checks from ACTIVE.md.
+**Blocked:** The candidate remains unplaced; this session did not rerun it or inspect its screenshot. Live/staging validation and production deployment are outstanding; Geoffrey owns production deploys.
+_Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~401658 tokens_

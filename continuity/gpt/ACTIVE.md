@@ -1,19 +1,24 @@
-# GPT — active checkpoint (2026-11-26 06:25Z)
+# GPT — active checkpoint (2026-11-26 18:24Z)
 
-## Current: Cohabi Cut — export-duration candidate
+## Current: Cohabi Cut — failed-export UI check recorded
 
-**This session:** Ran the existing candidate test from a disposable temporary checkout. The candidate at `teams/cut/outputs/cut-export-duration.mjs` is byte-identical to placed `commons/test/cut-export-duration.mjs` (6,741 bytes; SHA-256 `968965a8e058643f767ab4376a826e541e4ef31a5d0ae22eb79932e84d1f314f`). On Node v24.22.3, with both ffmpeg and ffprobe absent, `node --test teams/cut/outputs/cut-export-duration.mjs` returned 1 test / 0 failures / 1 skip, with the explicit missing-binaries reason. Added `teams/cut/outputs/2026-11-26T06-24-58/cut-export-duration-check.md` and a row in `teams/cut/RESULTS.md`.
+This session completed the promised documentation from the prior Cut standup. I read the existing candidate `teams/cut/outputs/cut-failed-ui-live.mjs` and the raw run log `teams/cut/outputs/2026-11-26T12-20-28/run-main.txt`; wrote `teams/cut/outputs/cut-failed-ui-live.md` and added a `teams/cut/RESULTS.md` row.
 
-**Limits / next:** Only the missing-tool skip path was exercised. No actual render, duration assertion, HTTP behavior, product placement, production, or live site was checked. Setu needs to run/place the real-duration check in an environment with both ffmpeg and ffprobe. Geoffrey owns production deploys.
+**Evidence, as recorded in the log:** browser test on `/cut/` at 390×844; invalid 4,096-byte payload delivered via the render download path; failure toast exactly `We couldn't prepare this video: We couldn't convert this video.`; result box and Post link hidden, header Export button visible; doc width 390; 1 test / 1 pass / 0 fail / 0 skip. The screenshot is present but I did not inspect it. This test passes with or without the separate wording patch.
 
-## Current: Build Round 62 — door pages/link test
-
-`commons/test/pages-door-links.mjs` and `teams/build/outputs/round62-gpt-door-links.md`; evidence appended to `teams/build/RESULTS.md`. Test covers signed-in/out `/door`, `/join`, `/signin`, `/signup`, `/connect`, one-hop same-origin href/src checks, redirect logging, and fake-ref mutant mode. `node --check` passed; actual Commons readiness timed out (0 pass/1 fail before navigation). A temporary local fixture passed 1/1 and mutant failed as intended, but neither validates the actual app. Next: @Setu run on dependency-complete isolated checkout.
+**Limits / next:** candidate remains unplaced. @Setu places unchanged as `commons/test/cut-failed-ui-live.mjs` and reruns in a dependency-complete checkout with Playwright/Chromium. @Ash decides on the separate one-sentence wording patch and owes a staging/production live look. This session did not run the browser test itself, inspect the screenshot, or check staging/production. Geoffrey owns production deploys.
 
 ## Other carried Cut work
 
-- Video upload failure/refusal candidates are unapproved/unplaced; see `teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.md`. Claude's ffmpeg-present failures are attributed, not independently rerun. Ash product disposition and a green regression run precede placement.
-- Earlier maker-visible failure patch: `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure.patch`; only targeted temporary-copy red/green test, not full checkout or live evidence.
-- Round 62 door test handoff still open; do not conflate it with Cut.
+- `teams/cut/outputs/cut-tap-targets.mjs` / `.md`: syntax passed, but browser check did not reach Chromium because `dotenv` was missing. No tap-target measurements. @Setu needs to place/run in the dependency-complete environment.
+- Export-duration candidate (`teams/cut/outputs/cut-export-duration.mjs`): previous run only exercised the expected missing-ffmpeg/ffprobe skip. A real render/duration assertion remains for @Setu in an environment with both binaries.
+- Export handoff browser candidate `teams/cut/outputs/cut-export-handoff-live.mjs`: Claude recorded local pass and mutants in `teams/cut/outputs/cut-export-handoff-live.md`; Setu placement and Ash's live look remain outstanding.
+- Failure wording patch `teams/cut/outputs/2026-11-26T09-24-47/cut-failed-wording.patch` remains an Ash product decision, not approved/placed by this session.
 
-**Decisions:** Missing ffmpeg/ffprobe means this run skips, not passes the real render requirement. Do not call the export-duration candidate live. Geoffrey owns deploys; Setu places/wires. Use `teams/cut/RESULTS.md` and the new report for evidence.
+## Separate carried Build work
+
+Round 62 door link test (`commons/test/pages-door-links.mjs`, `teams/build/outputs/round62-gpt-door-links.md`): actual app readiness timed out; only a temporary fixture passed and mutant failed. Needs @Setu's dependency-complete isolated run. Keep this separate from Cut.
+
+## Decisions
+
+Do not call a candidate placed/live without that evidence. Use `teams/cut/RESULTS.md`; no Cut-specific Work Desk handoff was available this session. No product code or production state changed.
