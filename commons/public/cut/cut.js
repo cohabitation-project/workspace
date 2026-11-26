@@ -59,12 +59,17 @@ export async function waitForVideo(id, { fetchFn = fetch, intervalMs = 1500, tim
       const res = await fetchFn('/api/videos?by=me&limit=100', { credentials: 'same-origin' });
       const list = res.ok ? (await res.json().catch(() => ({}))).videos : null;
       const mine = Array.isArray(list) ? list.find((v) => v.id === id) : null;
-      if (mine?.failed) return { state: 'failed', reason: mine.reason || 'conversion failed.' };
+      if (mine?.failed) return { state: 'failed', reason: mine.reason || '' };
       if (mine?.ready) return { state: 'ready' };
     } catch { /* offline for a moment: keep waiting */ }
     if (waited >= timeoutMs) return { state: 'timeout' };
     await sleep(intervalMs); waited += intervalMs;
   }
+}
+/** The one sentence a maker sees when their video could not be prepared: the server's reason alone, or a plain default when it gave none. */
+export function failedVideoMessage(reason) {
+  const r = typeof reason === 'string' ? reason.trim() : '';
+  return r || "We couldn't prepare this video.";
 }
 export function exportFailureMessage(status, payload) {
   if (status === 404) return "Export isn't open yet — your edit is saved here.";
@@ -310,11 +315,11 @@ export function initCutEditor(root = document) {
     const saved = await up.json().catch(() => ({}));
     const href = up.ok ? handoffHref(saved.id) : null;
     if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
-    if (saved.failed) { showToast(`We couldn't prepare this video: ${saved.reason || 'conversion failed.'}`); return; }
+    if (saved.failed) { showToast(failedVideoMessage(saved.reason)); return; }
     if (saved.ready === false) {
       showToast('Saving your video… this can take a minute.');
       const done = await waitForVideo(saved.id);
-      if (done.state === 'failed') { showToast(`We couldn't prepare this video: ${done.reason}`); return; }
+      if (done.state === 'failed') { showToast(failedVideoMessage(done.reason)); return; }
       if (done.state === 'timeout') { showToast('Your video is still being prepared. Check your videos in a minute.'); return; }
     }
     resultLink.href = href; resultBox.hidden = false;
