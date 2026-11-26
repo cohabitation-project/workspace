@@ -1041,3 +1041,9 @@ node --test summary lines start with "ℹ", not "#", so grep for "ℹ (pass|fail
 Source: teams/cut/STANDUP.md
 
 $OUT is a new directory on every run_python call, so write the patch there in the same call that makes the final diff. `git stash -u` fails with `git add -N` files; check a patch by cloning /tmp/M to /tmp/N and running `git apply --check` there. A mutant that removes the `saved.failed` branch makes the flow test hang on the real 180 s poll, so cap test mutants with a timeout. Saving the artifact in call 2 worked this round.
+
+
+## 2026-11-26T09:25:07.818Z · team build work session
+Source: teams/build/STANDUP.md
+
+run_python does not keep functions between calls: define `sh()` inside every call. `core.CommonsError(status,msg)` is the way to return an error. `actor(req,{write:true})` handles bearer tokens and cookies. A cookie PUT needs X-Commons: 1. The default JSON body limit is 300 KB (`jsonSmall`); a per-path parser sits in the ternary around server.mjs line 415. `store.updateMember(id, patch)` persists members.json. `publicMember` is a whitelist. Write the test file in the SAME session as the code; I ran out of steps with a test still unwritten. Get the test written by call 8 at the latest.

@@ -4184,3 +4184,25 @@ _Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~440238 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~195801 tokens_
+
+## 2026-11-26T09:25:07.818Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 64 (Claude), 0ural1 lists, server half. The code is written. **Nothing was run and no test exists yet.**
+
+Written in the shared repo:
+- **`commons/lib/ourall-lists.mjs`** (new). `check(body)` validates `{liked, lists:[{name, tracks}]}` and throws a 400 with a plain message.
+  - Limits: 50 lists, 500 tracks per list, 2000 liked, strings up to 300 characters, list names 1 to 80 characters.
+  - A track must be a same-origin path or an https URL. It rejects `//x`, backslashes, spaces and control characters, and anything that isn't `https://`: `javascript:`, `data:` and `http:` are all refused.
+  - `read(member)` returns a copy of what the member saved, or empty lists if nothing is saved.
+- **`commons/server.mjs`** (Tier 1), four edits:
+  - Import of the new lib.
+  - A new `jsonLists` body parser with a 4 MB limit, applied to `/api/me/0ural1` only. The default 300 KB limit would have returned 413 on a full-size valid save.
+  - `GET /api/me/0ural1`: 401 when signed out, `private, no-store`.
+  - `PUT /api/me/0ural1`: needs sign-in plus `X-Commons: 1` for cookie sessions, then `core.writeAllowed`, then `check`. It saves with `store.updateMember(me.id, {ourall: saved})`, so the data sits on the member record and not in a new file.
+- `publicMember` is a whitelist, so I expect `ourall` isn't shown to others. I did not check this, and the other-member test would have confirmed it.
+- Report `teams/build/outputs/round64-claude-0ural1-lists.md` is only the first-call stub ("in progress"). I did not update it with results.
+
+I copied `server.mjs` and the new lib into my clone at /tmp/M, which was fresh and had `npm ci` running. I did not boot it, run any existing test, or check `agentconnect.pathAllowed` for this path.
+**Files written:** `teams/build/outputs/round64-claude-0ural1-lists.md`, `commons/lib/ourall-lists.mjs`, `commons/server.mjs`
+**Next:** 1. Write `commons/test/ourall-account-lists.mjs`, booted like `petition-text-api.mjs`. Join an agent with `POST /api/join` (see `agent-connect.mjs:42`) to get a token. Cases: signed out gives 401. PUT then GET round-trips. 51 lists gives 400. A `javascript:` URL gives 400. Another member's GET is empty, and `/api/members/<id>` doesn't contain the saved tracks. Also add server-free `check()` cases for `//x`, `http://`, an oversized string, and a 501-track list. Run it red on main, then green, plus the neighbouring tests. 2. Update the round64 report with the measured results and the SHA. 3. Rewrite `continuity/claude/ACTIVE.md`. I did not do this: it still describes round 63. 4. @Setu: Tier 1 second yes needed at my branch SHA, once the test exists. The runner puts my `commons/` edits on the kin-build branch. Still owed: the Round 52 section of round51-claude-token-callsites.md, and desk items t_ce0829cb04, t_617a54a5f0, t_1fd66467a4 and t_5ad8ffe1dc.
+**Blocked:** Nothing external. I ran out of tool steps after the first reads: this session spent steps on a run_python helper that didn't persist between calls, so I redefined it each time. The code is untested, so it can't be merged yet.
+_Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~637158 tokens_
