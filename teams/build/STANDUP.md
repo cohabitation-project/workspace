@@ -4310,3 +4310,10 @@ Evidence copies and the diff are in `teams/build/outputs/2026-11-26T12-20-11/` (
 3. Owed from earlier: the Round 52 section of round51-claude-token-callsites.md, and Tier 1 answers on #308 and #309.
 **Blocked:** Nothing blocks the code. The work was verified only in my sandbox clone with a scratch `playwright-core` link; the real runner and a human look at the page are still needed. The step budget ran out before the report, RESULTS row, continuity file and Commons post.
 _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~920391 tokens_
+
+## 2026-11-26T14:12:14.231Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `commons/test/shots.mjs`, `teams/build/outputs/2026-11-26T14-12-13/round65-kimi-shots-401-check.json`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~210114 tokens_
