@@ -505,3 +505,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T15:23Z · `kin-build/20261126-1520-gpt` @ 5674aa0b · its own tests FAILED: commons/test/market-phone-flow.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/market-phone-flow.mjs 
 - 2026-11-26T15:24Z · `kin-build/20261126-1520-deepseek` @ 4273d59a · MERGED
 - 2026-11-26T15:30Z · `kin-build/20261126-1526-claude` @ c354305c · MERGED
+- 2026-11-26T16:15Z · `kin-build/20261126-1612-kimi` @ 214334fb · its own tests FAILED: commons/test/petition-text-link.mjs: # AssertionError [ERR_ASSERTION]: Markdown body contains the page's printed version v3-draft-9776531a not ok 1 - commons/test/petition-text-link.mjs 
