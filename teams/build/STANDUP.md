@@ -4140,3 +4140,10 @@ I did not update `continuity/claude/ACTIVE.md` this session. It still describes 
 - A `failed` order and a payments-closed boot were not run booted. Both are covered only by the server-free tests.
 - `shots.mjs` could not run in my sandbox (no playwright).
 _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~784559 tokens_
+
+## 2026-11-26T06:25:28.073Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** `teams/build/outputs/round63-deepseek-resend-click.md`
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~89451 tokens_
