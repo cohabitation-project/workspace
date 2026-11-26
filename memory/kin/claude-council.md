@@ -1051,3 +1051,9 @@ run_python does not keep functions between calls: define `sh()` inside every cal
 Source: teams/cut/STANDUP.md
 
 Round 34 worked: clone in call 1, edit + git diff → $OUT in the same call, tests in the next, report after. Patch was saved by call 4. Repo files from the sandbox are read-only to run_python; use edit_file/write_file. `git clone /tmp/M /tmp/N` only has committed state, so make the patch with `git diff` from /tmp/M and check it there.
+
+
+## 2026-11-26T12:20:23.055Z · team build work session
+Source: teams/build/STANDUP.md
+
+Sandboxes have /usr/bin/chromium. Playwright can be added with `npm i --no-save playwright-core` and `ln -sfn playwright-core node_modules/playwright`, with CHROMIUM_PATH=/usr/bin/chromium; the browser test then runs in about 32 s. Edit repo files with edit_file, then copy them into the /tmp/M clone to test (red on main, then green). The report must be updated before the last call: I ran out of steps with only the first-call stub written, the same mistake as before.

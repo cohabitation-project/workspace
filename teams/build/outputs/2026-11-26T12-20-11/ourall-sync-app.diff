@@ -1,0 +1,68 @@
+diff --git a/commons/public/0ural1/app.js b/commons/public/0ural1/app.js
+index a5d4f9d..8d37aee 100644
+--- a/commons/public/0ural1/app.js
++++ b/commons/public/0ural1/app.js
+@@ -28,7 +28,43 @@ if (main && view && audio) {
+   // ---- what this browser keeps -------------------------------------------------------------------------------------
+   const KEY = 'ou1';
+   const store = (() => { let s = {}; try { s = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch { s = {}; } return { liked: [], lists: [], dur: {}, vol: 90, mix: { artists: [], lists: [], liked: false, order: 'random' }, ...s }; })();
+-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode: keep it for this visit only */ } };
++  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* private mode: keep it for this visit only */ } pushLater(); };
++
++  // ---- the member's account (round 65): signed in, hearts and playlists follow the member to any device ---------------
++  // GET/PUT /api/me/0ural1 keeps `{ liked, lists: [{ name, tracks }] }` (no ids). Signed out, nothing here touches the
++  // network except the one /api/me probe (the cookie is HttpOnly, so asking is the only way to know; a 401 is the answer).
++  const acct = { on: false, last: '', timer: 0, warned: false };
++  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
++  const plain = (liked, lists) => JSON.stringify({ liked, lists: lists.map(({ name, tracks }) => ({ name, tracks })) });
++  const putAccount = (keepalive = false) => {
++    clearTimeout(acct.timer); acct.timer = 0;
++    if (!acct.on) return;
++    const body = plain(store.liked, store.lists); if (body === acct.last) return; // durations and volume also call save(); only a real change is sent
++    const before = acct.last; acct.last = body;
++    fetch('/api/me/0ural1', { method: 'PUT', credentials: 'same-origin', keepalive, headers: { 'Content-Type': 'application/json', 'X-Commons': '1' }, body })
++      .then((r) => { if (r.status === 400) { if (!acct.warned) { acct.warned = true; console.warn('0ural1: the account refused this save; hearts and playlists stay in this browser.'); } } else if (!r.ok) acct.last = before; })
++      .catch(() => { acct.last = before; });
++  };
++  const pushLater = () => { if (!acct.on) return; clearTimeout(acct.timer); acct.timer = setTimeout(() => putAccount(), 1500); };
++  document.addEventListener('visibilitychange', () => { if (document.hidden) putAccount(true); });
++  const hydrate = async () => {
++    const opts = { credentials: 'same-origin', headers: { 'X-Commons': '1' } };
++    try {
++      const me = await fetch('/api/me', opts); if (!me.ok) return;
++      const r = await fetch('/api/me/0ural1', opts); if (!r.ok) return;
++      const s = await r.json();
++      const sl = Array.isArray(s.liked) ? s.liked : []; const ss = Array.isArray(s.lists) ? s.lists : [];
++      const old = store.lists;
++      const fresh = ss.map((l) => ({ id: uid(), name: l.name, tracks: [...(l.tracks || [])] }));
++      const byName = new Map(fresh.map((l) => [l.name, l.id]));
++      const extra = old.filter((l) => !byName.has(l.name)); // a list only this browser has stays, and is sent up next
++      store.mix.lists = [...new Set(store.mix.lists.map((id) => { const o = old.find((l) => l.id === id); return o ? (byName.get(o.name) || o.id) : null; }).filter(Boolean))];
++      store.liked = [...store.liked, ...sl.filter((u) => !store.liked.includes(u))];
++      store.lists = [...fresh, ...extra];
++      acct.on = true; acct.last = plain(sl, ss);
++      save(); syncHearts(); route();
++    } catch { /* signed out, or offline: this browser keeps its own copy */ }
++  };
+   const isLiked = (u) => store.liked.includes(u);
+   const toggleLike = (u) => { store.liked = isLiked(u) ? store.liked.filter((x) => x !== u) : [u, ...store.liked]; save(); syncHearts(); };
+   const listById = (id) => store.lists.find((l) => l.id === id);
+@@ -170,9 +206,9 @@ if (main && view && audio) {
+         ${row('Albums', a.rels.map(albumCard).join(''))}<section class="ou-sec"><div class="ou-sech"><h2>All songs</h2></div>${table(a.tracks, a.name)}</section>`;
+     },
+     songs() { const id = reg(ALL, 'All songs'); return head('Songs', `${ALL.length} songs<span data-total="${id}"></span>`) + actions(id) + table(ALL, 'All songs'); },
+-    liked() { const t = tracksOf(store.liked); const id = reg(t, 'Liked'); return head('♥ Liked', `${t.length} songs · kept in this browser`) + (t.length ? actions(id) : '') + (t.length ? table(t, 'Liked') : '<p class="ou-empty">Tap ♥ on any song and it lands here.</p>'); },
++    liked() { const t = tracksOf(store.liked); const id = reg(t, 'Liked'); return head('♥ Liked', `${t.length} songs · kept ${acct.on ? 'on your account' : 'in this browser'}`) + (t.length ? actions(id) : '') + (t.length ? table(t, 'Liked') : '<p class="ou-empty">Tap ♥ on any song and it lands here.</p>'); },
+     playlists() {
+-      return head('Playlists', 'Kept in this browser. Mix any of them together in <a href="#/mix">Mix</a>.') + `<form class="ou-new" id="ou-newlist"><label class="sr-only" for="ou-newname">New playlist name</label><input id="ou-newname" placeholder="New playlist name" maxlength="60" required><button class="ou-btn" type="submit">${ICON.plus} Create</button></form>
++      return head('Playlists', `Kept ${acct.on ? 'on your account' : 'in this browser'}. Mix any of them together in <a href="#/mix">Mix</a>.`) + `<form class="ou-new" id="ou-newlist"><label class="sr-only" for="ou-newname">New playlist name</label><input id="ou-newname" placeholder="New playlist name" maxlength="60" required><button class="ou-btn" type="submit">${ICON.plus} Create</button></form>
+         <div class="ou-grid">${store.lists.map((l) => { const t = tracksOf(l.tracks); return `<a class="ou-card" href="#/playlist/${h(l.id)}"><span class="ou-cover ou-mosaic">${t.slice(0, 4).map((x) => (x.art ? `<img src="${h(x.art)}" alt="" loading="lazy">` : '<i></i>')).join('') || '<i class="ou-noimg">♪</i>'}</span><strong>${h(l.name)}</strong><small>${t.length} songs</small></a>`; }).join('') || '<p class="ou-empty">No playlists yet. Make one above, then add songs with ＋.</p>'}</div>`;
+     },
+     playlist(pid) {
+@@ -272,5 +308,5 @@ if (main && view && audio) {
+   let tt; const toast = (msg) => { const t = $('ou-toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => { t.hidden = true; }, 2200); };
+   const bar = $('st-bar'); const setBarH = () => document.documentElement.style.setProperty('--barh', `${bar.offsetHeight}px`);
+   setBarH(); if ('ResizeObserver' in window) new ResizeObserver(setBarH).observe(bar); else window.addEventListener('resize', setBarH);
+-  route();
++  route(); hydrate();
+ }

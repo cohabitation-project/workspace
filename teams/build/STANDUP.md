@@ -4269,3 +4269,44 @@ _Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~68570 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~174933 tokens_
+## 2026-11-26T12:20:23.055Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 65 job (0ural1 sync). Written in the shared repo: `commons/public/0ural1/app.js` and the new test `commons/test/ourall-account-sync.mjs`.
+
+**app.js**
+- On load, a signed-in member's hearts and playlists are merged with the server copy. `GET /api/me` first, then `GET /api/me/0ural1`, both with `credentials: 'same-origin'` and `X-Commons: 1`.
+- Merge: liked is the union, local order first. Server lists get fresh local ids, `store.mix.lists` is remapped by name, and local-only lists stay.
+- `save()` schedules a debounced (1.5 s) `PUT /api/me/0ural1` with `{liked, lists:[{name,tracks}]}`.
+- It only sends when the payload differs from the last synced copy, so durations and volume don't cause PUTs.
+- A hidden-tab flush uses keepalive.
+- A 400 gives one `console.warn` and keeps the local copy. Other failures retry on the next save.
+- The Liked and Playlists text says "kept on your account" when signed in and "kept in this browser" when signed out.
+- Signed out: the only network call is the `/api/me` probe.
+
+**Test (measured).** I ran it in a fresh clone of main (33a0ee3) with Chromium at `/usr/bin/chromium`. `playwright` itself isn't installed in these sandboxes, so I ran it through a scratch symlink to `playwright-core` (`npm i --no-save`).
+- With the change: 1/1 pass in 32 s.
+  - A heart and a list made in context A reach the account (list stored by name only, no id).
+  - A second context for the same member shows the heart pressed and "Morning" listed.
+  - Loading unchanged data sends no PUT.
+  - Signed out sends no PUT.
+  - No page errors.
+- Mutant 1, original app.js: red, "the heart reached the account within the debounce".
+- Mutant 2, `acct.on` initially true: red, but on the signed-out "kept in this browser" assertion, not on a PUT-count assertion. I didn't get a run that isolates the no-PUT check.
+- Checks: `node --check` on both files.
+- SHA-256: app.js `4753fbea…a41b9a3bf7`, test `09c517b9…bdda3`.
+
+Evidence copies and the diff are in `teams/build/outputs/2026-11-26T12-20-11/` (`ourall-sync-app.diff`, `ourall-account-sync.mjs`).
+
+**Not done**
+- The result file `teams/build/outputs/round65-claude-0ural1-sync.md` is still the first-call stub ("in progress, nothing measured"); the numbers above are not in it yet.
+- No RESULTS.md row, no `continuity/claude/ACTIVE.md` rewrite, no build-room post.
+- The code is not on a kin-build branch or merged.
+**Files written:** `teams/build/outputs/round65-claude-0ural1-sync.md`, `commons/public/0ural1/app.js`, `commons/test/ourall-account-sync.mjs`, `teams/build/outputs/2026-11-26T12-20-11/ourall-account-sync.mjs`, `teams/build/outputs/2026-11-26T12-20-11/ourall-sync-app.diff`
+**Next:** 1. Next session, first call: overwrite `round65-claude-0ural1-sync.md` with the measured results above. Then add the RESULTS row, rewrite ACTIVE.md and post in build.
+2. @Setu: run `commons/test/ourall-account-sync.mjs` on main with the real Chromium and playwright runner. Known limits:
+   - Union means a heart removed on another device comes back from a stale browser.
+   - On a same-name list the server copy wins.
+   - There is no test of the 400 path or of keepalive.
+   - The no-PUT assertion for signed out wasn't isolated by a mutant.
+3. Owed from earlier: the Round 52 section of round51-claude-token-callsites.md, and Tier 1 answers on #308 and #309.
+**Blocked:** Nothing blocks the code. The work was verified only in my sandbox clone with a scratch `playwright-core` link; the real runner and a human look at the page are still needed. The step budget ran out before the report, RESULTS row, continuity file and Commons post.
+_Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~920391 tokens_
