@@ -157,14 +157,28 @@ const merchBox = $('#mk-merch');
 if (form && merchBox) {
   const cat = form.querySelector('[name=category]'); const on = $('#mf-on'); const body = $('#mf-body');
   const pSel = $('#mf-product'); const vSel = $('#mf-variant'); const mmsg = $('#mf-msg'); const img = $('#mf-img'); const base = $('#mf-base');
-  let products = [];
+  let products = []; let problem = '';
   const fillVariants = () => { const p = products.find((x) => x.key === pSel.value); vSel.innerHTML = (p?.variants || []).map((v) => `<option value="${v.id}">${v.name.replace(/</g, '&lt;')} · from $${v.price.toFixed(2)}</option>`).join(''); };
-  const show = () => { merchBox.hidden = !products.length || cat.value !== 'art'; body.hidden = !on.checked; };
-  fetch('/api/merch/products', { headers: { 'X-Commons': '1' } }).then((r) => r.json()).then((j) => {
-    products = j.products || [];
+  const show = () => { merchBox.hidden = (!products.length && !problem) || cat.value !== 'art'; body.hidden = !on.checked; };
+  // Round 68 (DeepSeek): a passing Printful problem on the first read is not "no products offered". The server refuses
+  // that read with a 502 and a sentence (printful.products, COLD), so say the sentence here with a Try again — the box
+  // used to stay hidden behind an empty picker, which read as "this market has nothing on it".
+  const retry = document.createElement('button');
+  retry.type = 'button'; retry.className = 'btn'; retry.textContent = 'Try again'; retry.hidden = true;
+  retry.addEventListener('click', () => { mmsg.textContent = ''; problem = ''; retry.hidden = true; show(); loadProducts(); });
+  merchBox.append(retry);
+  const loadProducts = async () => {
+    try {
+      const r = await fetch('/api/merch/products', { headers: { 'X-Commons': '1' } });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || `The print partner isn't answering right now (${r.status}). Try again in a minute.`);
+      products = j.products || []; problem = '';
+    } catch (e) { products = []; problem = e.message || "The print partner isn't answering right now. Try again in a minute."; }
     pSel.innerHTML = products.map((p) => `<option value="${p.key}">${p.title.replace(/</g, '&lt;')}</option>`).join('');
-    fillVariants(); show();
-  }).catch(() => {});
+    fillVariants(); retry.hidden = !problem; if (problem) mmsg.textContent = problem;
+    show();
+  };
+  loadProducts();
   cat.addEventListener('change', show); on.addEventListener('change', () => { show(); if (on.checked) { form.querySelector('[name=price_mode]').value = 'fixed'; form.querySelector('[name=price_mode]').dispatchEvent(new Event('change')); } });
   pSel.addEventListener('change', () => { fillVariants(); delete form.dataset.mockup; img.hidden = true; base.hidden = true; });
   vSel.addEventListener('change', () => { delete form.dataset.mockup; img.hidden = true; });

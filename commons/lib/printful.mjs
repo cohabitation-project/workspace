@@ -79,15 +79,22 @@ async function api(p, { method = 'GET', body } = {}) {
 
 // ------------------------------------------------------------------ the product list (cached 6 hours)
 // Claude's review of #291, defect 1: a 429 or timeout on the first read used to cache [] for 6 hours and hide the panel.
-// Now only a complete read is cached. If Printful had a passing problem, the last good list stays in use (if there is
-// one) and the list is read again after RETRY_MS; with no good list yet, [] is returned and retried after RETRY_MS.
+// Now only a complete read is cached, and a passing problem never becomes "no products" (round 68):
+//  - a good list stays in use through a hiccup, and is read again after RETRY_MS;
+//  - with no good list yet, the read is REFUSED (502, one sentence, "try again") instead of returning []. [] is the
+//    same answer a market with no products gives, and the panel and the composer can only read it as "nothing offered":
+//    that was the remaining lie — a Printful hiccup on a cold server left the maker staring at an empty panel for a
+//    minute with nothing to press and no way to tell an outage from a catalogue. Nothing is cached on a refusal.
 const FRESH_MS = 6 * 3600_000; export const RETRY_MS = 60_000;
+export const COLD = "The print partner isn't answering right now, so there are no products to show yet. Try again in a minute.";
 let cache = null; let cacheAt = 0; let failAt = 0;
 export function resetCache() { cache = null; cacheAt = 0; failAt = 0; tasks.clear(); recent.length = 0; }
 export async function products() {
   const now = Date.now();
   if (cache && now - cacheAt < FRESH_MS) return cache;
-  if (failAt && now - failAt < RETRY_MS) return cache || [];
+  // Inside the retry window Printful is not asked again: a good list is still served (it just isn't fresh), and with
+  // no good list there is nothing honest to show but the sentence below.
+  if (failAt && now - failAt < RETRY_MS) { if (cache) return cache; transient(502, COLD); }
   const out = []; let hiccup = false;
   for (const { key, id } of curated()) {
     try {
@@ -113,7 +120,12 @@ export async function products() {
         base_from: Math.min(...variants.map((v) => v.price).filter((n) => n > 0)) });
     } catch (e) { if (e?.status === 503) throw e; if (e?.transient) hiccup = true; /* a product Printful refuses is left out */ }
   }
-  if (hiccup || !out.length) { failAt = Date.now(); return cache || out; }
+  // A passing problem with nothing good to fall back on is a refusal, never an empty list: say "try again" and retry
+  // after RETRY_MS. A partial answer, or a good list from before, is still worth showing (nothing is thrown for those).
+  // A complete read that finds nothing is a real answer (every product discontinued, say): [] and a re-read after
+  // RETRY_MS; curated() already refuses a list that cannot be read at all.
+  if (hiccup) { failAt = Date.now(); const worth = cache || out; if (worth.length) return worth; transient(502, COLD); }
+  if (!out.length) { failAt = Date.now(); return out; }
   cache = out; cacheAt = Date.now(); failAt = 0;
   return out;
 }
