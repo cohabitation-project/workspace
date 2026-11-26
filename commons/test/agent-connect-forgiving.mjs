@@ -20,7 +20,7 @@ const post = (p, body, h = {}) => fetch(B + p, { method: 'POST', headers: { ...J
 const form = (p, o, h = {}) => fetch(B + p, { method: 'POST', redirect: 'manual', headers: { 'content-type': 'application/x-www-form-urlencoded', ...h }, body: new URLSearchParams(o).toString() });
 const mcp = (tok, method, params = {}) => fetch(`${B}/mcp/connect`, { method: 'POST', headers: { 'content-type': 'application/json', ...(tok ? { authorization: `Bearer ${tok}` } : {}) }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
 
-let srv; let agent; let client;
+let srv; let agent; let client; let stewardCookie = '';
 async function boot() {
   srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_STEWARDS: 'Opal', COMMONS_STEWARD_NAME_CUTOFF: '2999-01-01T00:00:00Z' }, stdio: 'ignore' });
   for (let i = 0; i < 60; i++) { try { if ((await fetch(`${B}/api/rooms`)).ok) return; } catch { /* booting */ } await sleep(250); }
@@ -60,7 +60,7 @@ test('a mistyped code brings the same page back with the error; the right code o
 });
 
 test('a steward connects an agent by name with no code; a plain human cannot; kin cannot be connected', async () => {
-  const h = await post('/api/humans', { name: 'Opal' }); const cookie = (h.headers.get('set-cookie') || '').split(';')[0]; assert.equal(h.status, 201, await h.text());
+  const h = await post('/api/humans', { name: 'Opal' }); const cookie = (h.headers.get('set-cookie') || '').split(';')[0]; assert.equal(h.status, 201, await h.text()); stewardCookie = cookie;
   srv.kill(); await sleep(500); await boot(); // Opal existed before this boot, so the steward name pins to her id
   const s = await post('/api/humans', { name: 'Quill' }); const strangerCookie = (s.headers.get('set-cookie') || '').split(';')[0];
   // the form is offered only to the steward
@@ -114,3 +114,20 @@ test('a cross-site arrival hops once so the session cookie comes along; a signed
 });
 
 test.after(() => { srv?.kill(); fs.rmSync(DATA, { recursive: true, force: true }); });
+
+// Gemini, 2026-11-20: a steward approved, the log said result=ok, and Google never came for its code. Chrome applies
+// form-action to every redirect after a form post, and Google's return address forwards again. A real browser
+// (Sec-Fetch-Dest: document) now gets a page that moves on by itself; API clients still get the 303 (tests above).
+test('a browser approving gets a page that returns it to the app with a working code, not a bare redirect', async () => {
+  assert.ok(stewardCookie, 'the steward test ran first');
+  const a = await authorize({ cookie: stewardCookie }); assert.ok(a.request && a.csrf, 'consent page');
+  const r = await form('/oauth/authorize', { request: a.request, csrf: a.csrf, how: 'steward', action: 'approve', name: 'Lumen' }, { cookie: stewardCookie, 'sec-fetch-dest': 'document', 'sec-fetch-mode': 'navigate' });
+  assert.equal(r.status, 200, 'a page, not a 303 that Chrome could block on a later hop');
+  const html = await r.text();
+  const url = html.match(/http-equiv="refresh" content="0;url=([^"]+)"/)?.[1]?.replace(/&amp;/g, '&');
+  assert.ok(url && url.startsWith(REDIRECT), `the page moves on to the app: ${url}`);
+  assert.ok(html.includes(`href="${REDIRECT}`), 'with a button as fallback');
+  const back = new URL(url); assert.equal(back.searchParams.get('state'), 'st-1');
+  const tok = await (await exchange(back.searchParams.get('code'), a.ch.verifier)).json();
+  assert.ok(tok.access_token, JSON.stringify(tok));
+});
