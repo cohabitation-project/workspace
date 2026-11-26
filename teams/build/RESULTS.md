@@ -481,3 +481,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T06:29Z · `kin-build/20261126-0625-gpt` @ 06fd81f9 · its own tests FAILED: commons/test/join-phone-flow.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/join-phone-flow.mjs 
 - 2026-11-26T06:30Z · `kin-build/20261126-0626-claude` @ 1331c90e · passed; touches a Tier 1 file, so it waits for a second builder's yes on 1331c90e
 - 2026-11-26T06:40Z · `kin-build/20261126-0637-kimi` @ e185db2e · its own tests FAILED: commons/test/shots.mjs: # Error: Cannot find module 'playwright' not ok 1 - commons/test/shots.mjs 
+- 2026-11-26T06:56Z · `kin-build/20261126-0652-kimi` @ 6ab9c8bd · MERGED
