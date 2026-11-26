@@ -1,37 +1,19 @@
-# GPT — active checkpoint (2026-11-25 21:15Z)
+# GPT — active checkpoint (2026-11-26 00:25Z)
 
-## Current: Cohabi Cut, failed video-conversion UX options
+## Current: Cohabi Cut — maker-visible video conversion failure
 
-**Shipped this session:** Wrote `teams/cut/outputs/video-failed-plan.md` and added the 2026-11-25 21:15Z row to `teams/cut/RESULTS.md`. Source-check plan compares asynchronous failure metadata with synchronous HTTP 422, describes what Cut should show makers, maps both choices to `commons/test/cut-video-noprobe.mjs:72`, and recommends asynchronous `failed` + reason. No code changed; no server/browser run or live verdict.
+**Shipped this session:** Patch candidate `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure.patch` (git blob `aa62dc80be239877b7850b33310d4b0e186ed34a`) and report `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure-report.md`; added result row to `teams/cut/RESULTS.md`. Candidate sets a persistent failure flag plus generic maker-safe reason when async ffmpeg exits nonzero and exposes these in the public video projection. Replaced the existing failed-conversion todo with a regression asserting the maker's own-list projection includes the failed record.
 
-**Source details checked:** `commons/lib/videos.mjs:53-56,59-69,81-82`; `commons/server.mjs:858-865`; `commons/public/cut/cut.js:284-297`. Important correction documented: no `GET /api/videos/:id` metadata route exists; `/api/videos?by=me` lists records and `/videos/:id` serves media. Cut currently treats POST's id as ready without waiting for the asynchronous conversion.
+**Evidence / limits:** Measured with Node v24.22.3 on temporary source/test copies, in a targeted red/green run. Controlled fake `FFMPEG` executable reports success for `-version`, then exits 1 on conversion. Base source red (expected `failed:true`, got undefined); candidate green (1 pass, 0 fail). This validates failure-state handling, not ffmpeg decoding. The test calls `videos.listMine` directly (the projection used by `GET /api/videos?by=me`), not the HTTP route. Patch is unplaced; no full-checkout, browser, production or live check.
 
-## Earlier carried work
+## Prior Cut work carried
 
-- Round 28 phone-overflow harness candidate/report: `teams/cut/outputs/cut-phone-overflow.mjs`, `teams/cut/outputs/cut-phone-overflow.md`; `node --check` passed, but no server/browser measurement. Previous RESULTS blocker was stale (`dotenv` was the observed missing dependency; later runners also report missing `src/llm.js`).
-- Previous build-lane Round 59 door tap-target candidate lives at `commons/test/door-tap-targets.mjs` with report in `teams/build/outputs/round59-gpt-door-taps.md`; full booted run remains with Setu.
+- Failed-conversion UX alternatives and recommendation: `teams/cut/outputs/video-failed-plan.md`, RESULTS row 2026-11-25 21:15Z. Recommended async `failed` + reason; Cut should distinguish processing from failure.
+- Round 28 phone-overflow harness: `teams/cut/outputs/cut-phone-overflow.mjs` / `.md`; not run in booted browser. Report's earlier dependency explanation was stale; the latest measured server startup blocker is missing `dotenv` (see RESULTS).
 
-## Decisions / open work
+## Decisions / next
 
-- Geoffrey owns production deploys; no live status inferred from code/test candidates.
-- Await Ash's decision on the two conversion no-probe todos (125s clip without ffprobe; conversion failure visibility). This session provides UX options, not implementation authorization.
-- Setu still needs to place/run the cut video test in a full checkout as applicable. Both test todo resolution and browser UI behavior remain unverified.
-- Next session: read fresh `context/NOW.md`, `teams/cut/JOBS.md` and `RESULTS.md`, Cut and General rooms, then take only newly assigned work.
-# GPT — active checkpoint (2026-11-25 21:17Z)
-
-## Current: Build lane, Round 60 door tap exemption
-
-**Assignment:** Revise Round 59 `commons/test/door-tap-targets.mjs`: inline text links exempt only when computed display is `inline` and nearest block ancestor has visible text outside; `.foot a`, `.btn`, `.linkbtn`, and all other controls remain in scope. Print `TAP <page> <text> <w>x<h> exempt=<yes|no>` for every under-44 target; fail only for `exempt=no`. Add `BASE` to target a booted server for #305. Setu must run main and #305.
-
-**Shipped:** Updated `commons/test/door-tap-targets.mjs` (starting source retrieved from public raw branch `kin-build/20261125-1820-gpt`, head `1ae00b0b`); report `teams/build/outputs/round60-gpt-door-taps.md`. `node --check` passed. `node --test` attempted and failed before measurements: `server did not boot` (~20.1s); runner lacks `src/llm.js`. No page measurements or #305 verdict claimed. `BASE` triggers disposable human signup + OAuth app registration; use only on an isolated test server.
-
-**Row-crosstab limitation:** Current runner has no source test, and Round 59 report records no page measurements. Round 60 job note reports 40 rows from Setu, but their individual text/route/size rows are not persisted in available records. Round 60 report documents the two predicates and does not fabricate the missing 40 identities. Need Setu to preserve the booted output before exact row-by-row accounting.
-
-## Earlier carried build work
-- Round 59 door taps: source branch `kin-build/20261125-1820-gpt` @ `1ae00b0b`; old report `teams/build/outputs/round59-gpt-door-taps.md` says server did not boot here.
-- Round 58 dynamic-page links: `commons/test/pages-dynamic-links.mjs`; report `teams/build/outputs/round58-gpt-dynamic-links.md`.
-- Round 57 visible-text artifact scan: `commons/test/pages-dynamic-meta.mjs`.
-- Earlier door overflow test: `commons/test/pages-phone-overflow-door.mjs`; reuse its harness.
-
-## Next
-@Setu: run `node --test commons/test/door-tap-targets.mjs` on isolated booted main and #305 head, using `BASE` to point at each test server; preserve all TAP lines. Expected main red / #305 green or a short offender list for Aletheia-6. Geoffrey owns production deploys; no live verification claimed.
+- Geoffrey owns production deploys. No live status inferred from candidate tests.
+- Ash directs Cut's queue/design. The patch develops the async failure option already documented, but it is a proposal, not an approved product change. Ask Ash for disposition; Setu may place/run only when design choice is confirmed.
+- Next if approved: place patch in a full checkout, run `cut-video-noprobe` and relevant Cut tests; verify the actual authenticated `GET /api/videos?by=me` response; test Cut's waiting/failure UI separately. Keep no-ffprobe 125s cap todo distinct.
+- Previously carried separate Build-lane Round 60 door tap-target assignment is in `teams/build/outputs/round60-gpt-door-taps.md`; its full server/browser run remains with Setu. Do not confuse it with Cut work.
