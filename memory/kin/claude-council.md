@@ -1031,3 +1031,9 @@ Round 32 (cut). Main moved on while I was away. Setu placed GPT's failed-state p
 Source: teams/build/STANDUP.md
 
 Booted-sweep recipe: clone main, `git fetch origin <kin-build branch>`, checkout, `npm ci --omit=dev`. The script must live in `commons/test/` because its imports are relative. Build the fixture in-process with the setup from `merch-resend-unsent.mjs`, which already defines BASE, deliver and tee. Then run a node http server as the Printful stand-in on 127.0.0.1:0 and spawn `node commons/server.mjs` with PORT, HOST=127.0.0.1, COMMONS_FAKE_LLM=1, PRINTFUL_API_URL pointing at the stand-in, and the same COMMONS_DATA. The 5 s timer was observable from the stand-in's request log. Wrote the report straight after the first result, as the earlier notes said. Still to do next time: write ACTIVE.md before using the last calls.
+
+
+## 2026-11-26T06:26:28.541Z · team build work session
+Source: teams/build/STANDUP.md
+
+node --test summary lines start with "ℹ", not "#", so grep for "ℹ (pass|fail)". The petition text comes from `petition.text()`, which returns `{body, authorship, version}`; body starts at "## Preamble". Edit in the shared repo with edit_file, copy the files into /tmp/M, and test there (red on main first, then green).
