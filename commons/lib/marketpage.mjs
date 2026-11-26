@@ -747,13 +747,15 @@ export function salesPage({ me, sales = [] }) {
     // account or base cost, and it is not the buyer's or the seller's business.
     const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>`
       : printer && pstate === 'draft' ? `<div class="mk-postto small" data-printer-state="draft"><strong>At ${pname} as a draft${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>Waiting for a person to confirm it. Nothing ships until then.</div>`
-      : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>A steward can send it again. The buyer has paid; you do not post it.</div>`
+      // Round 62 (DeepSeek): a refused order gets its maker the button, not only a sentence. `failed` only, on purpose:
+      // a draft is already at the printer, and a record with no state at all is one the printer already has.
+      : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>You can send it again. The buyer has paid; you do not post it.<br><button type="button" class="btn small" data-printer-send="${esc(o.id)}">Send it again</button> <span class="small" role="status"></span></div>`
       : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${pname}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
     const fulfillmentLink = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillmentLink}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
   }).join('');
   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
-  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center });
+  return frame({ me, title: 'Your sales', description: 'View orders for listings you made on the Cohabi Market.', section: 'sales', center, scripts: ['/static/market.js'] });
 }
 
 // ------------------------------------------------------------------------------------------ one listing
