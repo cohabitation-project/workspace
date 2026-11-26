@@ -29,7 +29,40 @@ export const DEFAULT_PRODUCTS = [
   { key: 'canvas', id: 3 }, { key: 'tote', id: 84 }, { key: 'sticker', id: 358 }, { key: 'phone', id: 181 },
 ];
 const num = (v, d) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
-const curated = () => { try { const j = JSON.parse(env('PRINTFUL_PRODUCTS') || 'null'); if (Array.isArray(j) && j.length) return j; } catch { /* default */ } return DEFAULT_PRODUCTS; };
+
+// PRINTFUL_PRODUCTS: unset (or empty) means DEFAULT_PRODUCTS — that is the intended fallback, in silence. SET but
+// unusable is a configuration mistake, not a reason to sell Ash's eight defaults as if nothing were wrong (round 67).
+// Before this, `'[]'`, `'{bad'`, an entry without an id (which reached Printful as /products/NaN and vanished) and a
+// repeated key (one product silently won) all fell back or half-worked with no sign in the log. Now each distinct
+// problem writes one `[printful] …` line to the server log and refuses with a CommonsError(500) whose message says
+// what is wrong and what shape is wanted, so the maker panel and GET /api/merch/products can show it. The background
+// merchsets.tick keeps its own catch and retries: a misconfigured server retries every 20 s and logs once per problem.
+const reported = new Set();
+function unusable(why) {
+  if (!reported.has(why)) {
+    reported.add(why);
+    try { console.error(`[printful] PRINTFUL_PRODUCTS is set but unusable: ${why}. Want JSON like [{"key":"tee","id":71}].`); } catch { /* no console */ }
+  }
+  fail(500, `PRINTFUL_PRODUCTS is set but unusable: ${why}. A steward has to fix it: set the variable to JSON like [{"key":"tee","id":71}], or unset it for the eight defaults.`);
+}
+/** The curated list, checked. Throws (500) when PRINTFUL_PRODUCTS is set and wrong; never when it is unset. */
+export function curated() {
+  const raw = env('PRINTFUL_PRODUCTS');
+  if (!raw) return DEFAULT_PRODUCTS;                       // unset or empty: the intended fallback
+  let j;
+  try { j = JSON.parse(raw); } catch { unusable(`it is not valid JSON (${raw.length} characters)`); }
+  if (!Array.isArray(j)) unusable('it is not a JSON array');
+  if (!j.length) unusable('it is an empty array');
+  const seen = new Set();
+  return j.map((e, i) => {
+    const key = typeof e?.key === 'string' ? e.key.trim() : '';
+    const id = Number(e?.id);
+    if (!key || !Number.isInteger(id) || id <= 0) unusable(`entry ${i} is not {key, id} (got ${JSON.stringify(e)})`);
+    if (seen.has(key)) unusable(`the key "${key}" appears twice`);
+    seen.add(key);
+    return { key, id };
+  });
+}
 
 async function api(p, { method = 'GET', body } = {}) {
   if (!configured()) fail(503, "The print partner isn't connected yet.");
