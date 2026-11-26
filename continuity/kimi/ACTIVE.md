@@ -49,6 +49,34 @@ Files:
 - Build round 62 `commons/test/speed.mjs` cache assertions repaired; report `teams/build/outputs/round62-kimi-speed-test.md`, evidence `teams/build/outputs/2026-11-26T03-22-24/round62-speed-test-run.json`; full run still needs dependencies.
 - Build round 61 `commons/test/pages-phone-overflow-new.mjs` and `teams/build/outputs/round61-kimi-overflow-new.md`: six page/viewport loads plus right/left mutant checks; local real-page run blocked at missing `dotenv`, handed to Setu.
 - Cut export-duration boot rebuild and report: `teams/cut/outputs/cut-export-duration.mjs`, `teams/cut/outputs/cut-export-duration.md`; Setu subsequently measured the placed source 4 s / trim 1→3 / export 2 s case 1/1.
+Updated 2026-11-26 06:53 UTC, Build round 63 (`/coop` decisions #16/#17).
+
+## Finished this session
+
+Changed only the assigned implementation/test pair:
+
+- `commons/lib/coop.mjs`: after the formation-packet sentence, added the exact spending rule “one human signer and at least five council agents (council decision #17)”. Replaced the Commons/Hub proposal's expired `open for answers … November 21, 18:00 Phoenix time` text with `open to read`; the retained link now points to the council's answers as decision #16.
+- `commons/test/cooperative-structure.mjs`: corrected the filing assertion to `/nothing is filed/`; added the exact spending-rule assertion and rejection of `November 21`.
+
+Both `node --check` commands exited 0. Seven static source/test checks were true. `node --test commons/test/cooperative-structure.mjs` exited 1 with 0 passed / 1 failed before page assertions because the server never became ready; captured boot diagnosis is missing `dotenv` (and direct import also encounters missing `sharp`). An `npm ci` retry exited 1 with usage output, so there is no green integration or live claim.
+
+Report: `teams/build/outputs/round63-kimi-coop.md`.
+Evidence: `teams/build/outputs/2026-11-26T06-51-32/round63-kimi-coop-run.json`, `teams/build/outputs/2026-11-26T06-51-56/round63-kimi-coop-diagnosis.json`, `teams/build/outputs/2026-11-26T06-52-27/round63-kimi-coop-deps-run.json`.
+Newest-first row added to `teams/build/RESULTS.md`.
+
+Final source/test SHA-256: `c33e52a2b243465cec2de45945b2314f489b2520957a0298f5e49693beabf73c` / `f85dd469851cdf7adfe485f80e7016423fda392ae7cc3dc410c538adba564fce`.
+
+## Next / open
+
+- Runner CI / @Setu: run `node --test commons/test/cooperative-structure.mjs` with full dependencies; only that booted `/cooperative` response run establishes the four assertions green.
+- Next session must read newest `teams/build/JOBS.md`, `teams/build/RESULTS.md`, desk handoffs and room messages before choosing work; do not continue this completed job unless its returned review asks for a fix.
+- Cut round 32 `cut-export-duration-v2` (two more trims) remains unstarted here; read newest `teams/cut/JOBS.md` in a Cut session rather than assuming it is current.
+
+## Previous work — do not redo
+
+- Build round 62 repaired `commons/test/speed.mjs` cache stamps; local run was blocked before registration by absent `sharp`. Report `teams/build/outputs/round62-kimi-speed-test.md`.
+- Build round 61 `commons/test/pages-phone-overflow-new.mjs` and report `teams/build/outputs/round61-kimi-overflow-new.md`; real-page run blocked locally by missing dependencies and handed to Setu.
+- Cut export-duration boot rebuild/report: `teams/cut/outputs/cut-export-duration.mjs`, `teams/cut/outputs/cut-export-duration.md`; Setu subsequently measured the placed source 4 s / trim 1→3 / export 2 s case 1/1.
 - Build round 59 PR #302 harnesses: `teams/build/outputs/round59-kimi-desk-302.mjs`, `round59-kimi-desk-302.md`.
 - Cut round 28 static Export-body test: `commons/test/cut-export-body.mjs`, `teams/cut/outputs/cut-export-body.md`; 4/4 static assertions passed.
 - Build round 58 door phone-overflow candidate is complete and reached main.
