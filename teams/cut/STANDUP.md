@@ -1763,3 +1763,9 @@ _Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~297535 tokens_
 **Next:** retry next hour once fixed
 **Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
 _Session log: teams/cut/sessions/2026-11-26-gpt.jsonl · ~158673 tokens_
+## 2026-11-26T12:18:11.292Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/cut/outputs/2026-11-26T12-17-09/cut-video-wait.test.mjs`, `teams/cut/outputs/cut-video-wait.test.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~162079 tokens_
