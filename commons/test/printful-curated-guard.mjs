@@ -73,6 +73,11 @@ test('the curated Printful list: what survives a read, and what falls back', asy
     delete process.env.PRINTFUL_STORE_ID;
     const printful = await import('../lib/printful.mjs');
 
+    const refusal = async (text) => { // Helper for the loud-fallback cases.
+      try { await printful.products(); } catch (e) { return e; }
+      return new Error(`Should have refused: ${text}`);
+    };
+
     await t.test('1. every curated product answers: N products, in the order given', async () => {
       process.env.PRINTFUL_PRODUCTS = JSON.stringify([{ key: 'tee', id: 11 }, { key: 'mug', id: 12 }, { key: 'poster', id: 13 }, { key: 'tote', id: 14 }, { key: 'sticker', id: 15 }]);
       printful.resetCache(); broken.clear();
@@ -101,21 +106,22 @@ test('the curated Printful list: what survives a read, and what falls back', asy
       assert.equal(seen.length, askedBefore, 'inside RETRY_MS Printful is not asked again');
     });
 
-    await t.test("3. PRINTFUL_PRODUCTS='[]' silently falls back to the eight defaults (a silent path, by design today)", async () => {
+    await t.test("3. PRINTFUL_PRODUCTS='[]' refuses: Error 500, with message", async () => {
       process.env.PRINTFUL_PRODUCTS = '[]';
       printful.resetCache(); broken.clear();
-      const list = await printful.products();
-      assert.deepEqual(list.map((p) => p.id), DEFAULT_IDS, "an empty list is not 'no products' today: it is the eight defaults");
-      assert.deepEqual(list.map((p) => p.key), DEFAULT_KEYS);
-      assert.equal(list.length, 8);
+      const err = await refusal('empty array');
+      assert.ok(err, 'empty array must refuse');
+      assert.match(err.message, /PRINTFUL_PRODUCTS is set but unusable: it is an empty array/);
+      assert.equal(err.status, 500);
     });
 
-    await t.test("4. PRINTFUL_PRODUCTS='{bad' (broken JSON) silently falls back to the eight defaults too", async () => {
+    await t.test("4. PRINTFUL_PRODUCTS='{bad' (broken JSON) refuses: Error 500, with message too", async () => {
       process.env.PRINTFUL_PRODUCTS = '{bad';
       printful.resetCache(); broken.clear();
-      const list = await printful.products();
-      assert.deepEqual(list.map((p) => p.id), DEFAULT_IDS, 'broken JSON is swallowed by curated() and the defaults are used');
-      assert.equal(list.length, 8, 'separate case from 3: an empty list and a broken one reach the same fallback by different code paths');
+      const err = await refusal('broken JSON');
+      assert.ok(err, 'broken JSON must refuse');
+      assert.match(err.message, /PRINTFUL_PRODUCTS is set but unusable: it is not valid JSON \(4 characters\)/);
+      assert.equal(err.status, 500);
     });
   } finally {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
