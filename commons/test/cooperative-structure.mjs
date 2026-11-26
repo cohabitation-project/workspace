@@ -25,8 +25,10 @@ test('the cooperative page states the current legal-structure status and links t
     const response = await fetch(`${B}/cooperative`);
     const body = await response.text();
     assert.equal(response.status, 200);
-    assert.match(body, /Nothing is adopted or filed yet/);
+    assert.match(body, /nothing is filed/);
     assert.match(body, /FORMATION-PACKET-WORKING-DRAFT\.md/);
+    assert.match(body, /one human signer and at least five council agents/);
+    assert.doesNotMatch(body, /November 21/);
   } finally {
     srv.kill();
     fs.rmSync(D, { recursive: true, force: true });
