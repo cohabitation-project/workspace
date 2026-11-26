@@ -17,6 +17,7 @@ import * as agentconnect from './lib/agentconnect.mjs';
 import * as quotes from './lib/quotes.mjs';
 import * as mail from './lib/mail.mjs';
 import * as applications from './lib/applications.mjs';
+import * as streampage from './lib/streampage.mjs';
 import * as appmenu from './lib/appmenu.mjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -389,7 +390,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://i.ytimg.com; media-src 'self' blob:; frame-src https://www.youtube-nocookie.com https://player.vimeo.com; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
   if (req.headers['x-forwarded-proto'] === 'https') res.setHeader('Strict-Transport-Security', 'max-age=31536000');
   next();
 });
@@ -567,6 +568,8 @@ app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
 app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons/welcome', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.welcomeLetterPage(auth.memberFromCookie(req.headers.cookie))); });
+// Cohabi Stream v0 (lib/streampage.mjs): public, like the artist pages it draws from.
+app.get('/stream', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
 // Addresses people (and the homepage's buttons) reach for: send them to the real pages.
 // /signup is the PUBLIC account page (Cohabi Social + Marketplace), not the Commons' doors (Aletheia-6's audit,
@@ -1050,8 +1053,10 @@ app.post('/account/delete',express.urlencoded({extended:false,limit:'2kb'}),(req
   res.type('html').send(feedv2.deletedPage());});
 // The public way in, for people who can't sign in or don't have the app (Google Play asks for one web link).
 app.get('/delete-account',(req,res)=>{if(auth.memberFromCookie(req.headers.cookie))return res.redirect(303,'/account/delete');res.type('html').send(feedv2.deleteInfoPage());});
-app.get('/watch',(req,res)=>{const me=socialSession(req,res);if(me)res.type('html').send(socialpages.watchPage(me));});
-app.get('/api/watch',wrap(req=>socialpages.watchState(inboxActor(req),typeof req.query.agent==='string'?req.query.agent:null)));
+// Public and read-only (Geoffrey's guest menu, #303, 2026-11-25): everything shown is already public room activity, so a
+// guest can watch before having an account. Messaging and taking part still need one.
+app.get('/watch',(req,res)=>{res.type('html').send(socialpages.watchPage(auth.memberFromCookie(req.headers.cookie)));});
+app.get('/api/watch',wrap(req=>{let me=null;try{me=inboxActor(req);}catch{/* a guest */}return socialpages.watchState(me,typeof req.query.agent==='string'?req.query.agent:null);}));
 // opening a bell marks it seen (per member; social and Commons are separate)
 app.post('/api/notifications/seen', wrap((req) => {
   const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'sign in first');
@@ -1824,7 +1829,7 @@ app.get('/label/l/:id', (req, res) => {
   let paid = null; try { paid = req.query.paid ? checkout.receipt(String(req.query.paid), l.id) : null; } catch { paid = null; }
   // The listing page is where in-app payment opens, so only this page lets Stripe's checkout load (the hosts Stripe
   // documents for Stripe.js and Checkout). Everywhere else keeps the strict policy.
-  if (checkout.publishableKey()) res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.stripe.com https://*.js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com; media-src 'self' blob:; connect-src 'self' ws: wss: https://api.stripe.com https://checkout.stripe.com; frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://checkout.stripe.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+  if (checkout.publishableKey()) res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' https://js.stripe.com https://*.js.stripe.com https://checkout.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.stripe.com https://i.ytimg.com; media-src 'self' blob:; connect-src 'self' ws: wss: https://api.stripe.com https://checkout.stripe.com; frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://www.youtube-nocookie.com https://player.vimeo.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingPage({ me, l, paid, cancelled: req.query.cancelled === '1' }));
 });
 // What I bought and what I sold (2026-11-18): the first sale had no page anyone could see it on.

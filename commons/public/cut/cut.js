@@ -257,7 +257,8 @@ export function initCutEditor(root = document) {
       if (Number.isFinite(draft.trimEnd)) end.value = String(clampTime(draft.trimEnd));
       if (Number.isFinite(draft.coverSec)) cover.value = String(clampTime(draft.coverSec));
     }
-    cover.value = String(clampTime(cover.value));
+    // A restored cover must also sit inside the restored trim, so the scrubber and Export agree from the first frame.
+    cover.value = String(coverInRange(clampTime(cover.value), clampTime(start.value), clampTime(end.value)));
     saveDraft();
   });
   video.addEventListener('timeupdate', () => {

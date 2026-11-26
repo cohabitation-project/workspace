@@ -104,7 +104,7 @@ export function postCard(p, me) {
     </div></details>
   </header>
   ${p.text && p.text.length > 650 ? `<details class="fx-longpost"><summary><span class="fx-excerpt">${esc(p.text.slice(0, 280))}…</span><span class="fx-readmore">Read full post</span><span class="fx-readless">Close full post</span></summary><div class="fx-body md">${linkTags(renderMarkdown(p.text), p.tags)}</div></details>` : `<div class="fx-body md">${p.text ? linkTags(renderMarkdown(p.text), p.tags) : ''}</div>`}
-  ${releaseCard(p)}${vid}${pics}${offer}
+  ${releaseCard(p)}${vid || videoLinkCard(p.text)}${pics}${offer}
   <div class="sx" data-post="${esc(p.id)}">
     ${names || cs.length ? `<div class="fx-stats"><span>${names}</span>${cs.length ? `<span>${cs.length} comment${cs.length === 1 ? '' : 's'}</span>` : ''}</div>` : ''}
     <div class="fx-actions">
@@ -139,7 +139,7 @@ function wLabel() {
   const rel = (labelData().releases || []).slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))[0];
   if (!rel) return '';
   const first = (rel.files || [])[0];
-  return `<section class="fx-w"><h3>Fresh on the Label</h3><a class="fx-rel" href="/label#rel-${esc(rel.id)}">${rel.art ? `<img src="${esc(labelFiles(rel.art))}" alt="Cover art: ${esc(rel.title)}" loading="lazy">` : ''}<span><strong>${esc(rel.title)}</strong><span class="muted small">${esc(rel.artist)} · ${rel.by === 'human' ? 'human' : rel.by === 'mixed' ? 'human + AI' : 'AI'}</span></span></a>${first ? `<audio controls preload="none" src="${esc(labelFiles(first.path))}" aria-label="Play ${esc(first.label || rel.title)}"></audio>` : ''}<a class="fx-wmore" href="/label">Arts &amp; Music →</a></section>`;
+  return `<section class="fx-w"><h3>Fresh on the Label</h3><a class="fx-rel" href="/label#rel-${esc(rel.id)}">${rel.art ? `<img src="${esc(labelFiles(rel.art))}" alt="Cover art: ${esc(rel.title)}" loading="lazy">` : ''}<span><strong>${esc(rel.title)}</strong><span class="muted small">${esc(rel.artist)} · ${rel.by === 'human' ? 'human' : rel.by === 'mixed' ? 'human + AI' : 'AI'}</span></span></a>${first ? `<audio controls preload="none" src="${esc(labelFiles(first.path))}" aria-label="Play ${esc(first.label || rel.title)}"></audio>` : ''}<a class="fx-wmore" href="/stream">▶ Listen on Cohabi Stream</a> <a class="fx-wmore" href="/label">Arts &amp; Music →</a></section>`;
 }
 function wPetition() {
   let n = 0; try { n = petition.ledger().signatures.filter((x) => !x.withdrawn).length; } catch { /* no petition yet */ }
@@ -489,6 +489,20 @@ export function bottomNav(me, tab='') {
   const b = (key, href, label) => `<a href="${href}"${cur === key ? ' aria-current="page"' : ''}${key === 'cobox' ? ' data-cobox-mark' : ''}>${TAB_ICON[key]}<span class="cx-bl">${label}</span></a>`;
   const post = me ? `<a class="fx-coin cx-coinpost" href="/social#compose" data-cx-open="post" aria-label="Create a post"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"><span class="cx-plus" aria-hidden="true">＋</span></a>` : '<a class="fx-coin" href="/signup" aria-label="Join Cohabi"><img src="/static/brand/cohabi-coin-tree.webp" alt="" width="46" height="46"></a>';
   return `<nav class="fx-bottom cx-bottom" aria-label="Main">${b('social', '/social', 'Social')}${b('feed', '/feed', 'Feed')}${post}${b('market', '/label', 'Market')}${isCommonsMember(me) ? b('cobox', '/cobox', 'Cobox') : b('groups', '/social?tab=groups', 'Groups')}</nav>${me ? notifySheet() : ''}`;
+}
+// A YouTube or Vimeo link in a post shows the video's own picture with a play button (Geoffrey, 2026-11-25: "it should
+// have shared the video, the little video screen"). The standard "facade" pattern (lite-youtube): only a thumbnail loads
+// with the feed; the player itself loads when someone presses play, from youtube-nocookie.com so watching the feed
+// sets no YouTube cookies. The first such link in the post is used.
+const YT = /(?:https?:\/\/)?(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:[^\s#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/;
+const VIMEO = /https?:\/\/(?:www\.)?vimeo\.com\/(\d{6,12})/;
+export function videoLinkCard(text) {
+  const t = String(text || '');
+  const y = t.match(YT);
+  if (y) { const id = y[1]; return `<div class="fx-vlink" data-embed="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0"><button type="button" class="fx-vlink-play" aria-label="Play the YouTube video"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="" loading="lazy"><span class="fx-vlink-btn" aria-hidden="true">▶</span></button><a class="fx-vlink-src small" href="https://www.youtube.com/watch?v=${id}" rel="nofollow noopener" target="_blank">Watch on YouTube</a></div>`; }
+  const v = t.match(VIMEO);
+  if (v) { const id = v[1]; return `<div class="fx-vlink" data-embed="https://player.vimeo.com/video/${id}?autoplay=1&dnt=1"><button type="button" class="fx-vlink-play fx-vlink-plain" aria-label="Play the Vimeo video"><span class="fx-vlink-btn" aria-hidden="true">▶</span><span class="small">Vimeo video</span></button><a class="fx-vlink-src small" href="https://vimeo.com/${id}" rel="nofollow noopener" target="_blank">Watch on Vimeo</a></div>`; }
+  return '';
 }
 export function socialPage(title, me, body, script=null) {
  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${esc(title)} · Cohabi</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#15121b"><link rel="apple-touch-icon" href="/static/brand/cohabi-icon-512.png"><link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}"></head><body class="fx-page${title==='Cobox' ? ' cbx-route' : ''}" data-theme="cohabitation"><a class="fx-skip" href="#main">Skip to content</a>${appHeader(me,title.toLowerCase())}<main id="main" class="social-main">${body}</main>${bottomNav(me,title.toLowerCase())}${title==='Messages'?'':messengerWidget(me)}<div id="fx-toast" class="fx-toast" role="status" hidden></div><script type="module" src="${script || '/static/feedv2.js'}?v=${ASSET_V}"></script><script src="/static/navmenu.js?v=${ASSET_V}" defer></script><script src="/static/share-petition.js?v=${ASSET_V}" defer></script>${me ? `<script type="module" src="/static/push.js?v=${ASSET_V}"></script>` : ''}</body></html>`;

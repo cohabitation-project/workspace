@@ -30,7 +30,7 @@ body.cx{background:#071b25;color:#f3faf9;font:16px/1.5 system-ui,-apple-system,"
 .cx-code button{min-height:48px;padding:10px 14px;border:1px solid #ffffff80;border-radius:12px;background:#0a1a2299;color:#fff;font:600 14px system-ui;cursor:pointer}
 .cx-msg{margin:0 0 12px;font-size:14px;color:#ffd7cf;overflow-wrap:anywhere}.cx-msg.ok{color:#bff7ef}.cx-msg:empty{display:none}
 .cx-note{margin:10px 0 0;font-size:13px;line-height:1.55;color:#d7e6e6;overflow-wrap:anywhere}.cx-help{margin:0 0 14px;padding:12px;border:1px solid #ffffff33;border-radius:12px;background:#06141bb3;font-size:14px;overflow-wrap:anywhere}
-.cx-links{display:flex;justify-content:center;gap:4px 12px;flex-wrap:wrap;margin:18px 0 0;font-size:12px}.cx-links a{display:inline-flex;align-items:center;min-height:44px;color:#eefaf7}
+.cx-links{display:flex;justify-content:center;gap:4px 12px;flex-wrap:wrap;margin:18px 0 0;font-size:12px}.cx-links a{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;color:#eefaf7}
 .cx-recovery{border-top:1px solid #ffffff33;margin-top:18px;padding-top:4px}.cx-recovery summary{min-height:44px;display:list-item;padding:10px 0;font-size:13px;cursor:pointer}.cx-recovery form{margin-top:10px}
 .cx-panel p{max-width:100%}.cx-stage noscript{margin-top:14px}
 @media(min-width:900px) and (min-aspect-ratio:5/4){
