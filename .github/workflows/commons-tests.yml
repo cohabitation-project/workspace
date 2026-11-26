@@ -2,8 +2,10 @@
 # (Aletheia's review note, 2026-10-31: no CI checks meant reported results couldn't be certified).
 name: Commons tests
 on:
+  # Every push to main, not only code paths (Geoffrey's yes, relayed in the Hall m_mwxsdmk70wd6fa1b, 2026-11-26 ~16:48Z):
+  # the build lane's teams-only result commit is usually the tip, and staging deploys the tip, so without a test run at
+  # that SHA the production gate refused every newer commit.
   push:
-    paths: ['commons/**', 'station/**', 'scripts/deploy/**', 'package*.json', '.github/workflows/commons-tests.yml']
   workflow_dispatch:
 permissions:
   contents: write
