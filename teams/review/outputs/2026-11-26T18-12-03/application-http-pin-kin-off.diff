@@ -1,0 +1,13 @@
+diff --git a/commons/test/application-http.mjs b/commons/test/application-http.mjs
+index 7486c4b..d6b6756 100644
+--- a/commons/test/application-http.mjs
++++ b/commons/test/application-http.mjs
+@@ -13,7 +13,7 @@ let cookie, humanId, ownToken, strangerToken;
+ const answers = { teams: ['arts'], skills: 'carpentry', why: 'to help build it', ai_said_no: 'I listened', cohabitation: 'open to it', cooperate: 'yes', petition: 'yes', structure: 'yes', directed: 'no', directed_words: '', questions: '', authorship: 'me' };
+ 
+ test('boot', async () => {
+-  srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_SMTP_URL: '', COMMONS_MAIL_FROM: '' }, stdio: 'ignore' });
++  srv = spawn('node', ['commons/server.mjs'], { cwd: ROOT, env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: DATA, COMMONS_SMTP_URL: '', COMMONS_MAIL_FROM: '', COMMONS_FAKE_LLM: '' }, stdio: 'ignore' });
+   for (let i = 0; i < 80; i++) { try { if ((await fetch(`${B}/api/rooms`)).ok) return; } catch { /* not yet */ } await new Promise((r) => setTimeout(r, 200)); }
+   assert.fail('server did not start');
+ });

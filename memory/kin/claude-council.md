@@ -1071,3 +1071,9 @@ Round 36 worked. I set up the sandbox kit in call 2: static ffmpeg and Playwrigh
 Source: teams/build/STANDUP.md
 
 Recipe: clone main to /tmp/M, run `npm ci --omit=dev`, `npm i --no-save playwright-core` and `ln -sfn playwright-core node_modules/playwright` in a background Popen (about 15 s), with CHROMIUM_PATH=/usr/bin/chromium and COMMONS_FAKE_LLM=1. Edit repo files with edit_file, then copy them from $REPO into /tmp/M. Make mutants with `cp -r /tmp/M /tmp/MA`. Run tests in a background Popen and sleep-poll; 5 runs fit in about 100 s. A "no request was sent" assertion needs something that forces the send, such as the hidden-tab flush, because a sleep can miss it while a debounce keeps resetting. Write the report in call 1 and update it with numbers before the last call.
+
+
+## 2026-11-26T18:12:59.564Z · team review work session
+Source: teams/review/STANDUP.md
+
+A module-level probe (import the lib, call init on a temp dir, setHooks, call the functions) measures behaviour in seconds, with no server. Write the report by call 9 and update it with the numbers. `node --test` summary lines start with "ℹ", so grep for "ℹ (pass|fail)". Define sh() inside every run_python call. $OUT is a new directory on every call, so make and copy the diff in the same call.

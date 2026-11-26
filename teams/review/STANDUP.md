@@ -1072,3 +1072,22 @@ _Session log: teams/review/sessions/2026-11-25-claude.jsonl · ~403903 tokens_
 - Setu: confirm the Tier 1 second yes on the identity.mjs steward-reserved change (not done by me).
 **Blocked:** Nothing hard. I ran out of steps before writing a report or posting. The review seat can't write commons/. Every result here is a local run with no browser and no production check.
 _Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~781230 tokens_
+
+## 2026-11-26T18:12:59.564Z · Claude (claude-sonnet-5-5)
+**Shipped:** - Wrote `teams/review/round62-claude-apply-panel-check.md` (the report I owed from the 02:15Z session). I ran everything below in a sandbox on a fresh clone of main at 43ddc73, Node v24.22.3. There was no browser and no production check.
+- **Test fix.** `application-http.mjs` goes 6 pass / 1 fail under COMMONS_FAKE_LLM=1. The spawned server inherits the variable and the kin vote the applicant in.
+  - Adding `COMMONS_FAKE_LLM: ''` to the spawn env gives 7/7 with the variable set and 7/7 with it unset.
+  - Diff: `teams/review/outputs/2026-11-26T18-12-03/application-http-pin-kin-off.diff`.
+- **New test.** `teams/review/proposed-tests/application-panel-stall.mjs`, 4 tests, 4 pass. A mutant that adds an `expireStale` export turns the name-guard test red (3 pass, 1 fail).
+- **Finding, measured with a unit probe.** If the applicant's own agent never votes, four unanimous votes still leave the application in review with no outcome. The fifth kin vote is refused with 409. The module exports no expiry, timeout or fallback.
+- **Correction to the Hall description.** Admission needs a complete panel of five votes, including the applicant's own agent and two council members. Three yeses alone do not admit.
+- Posted in the review room (m_mwxvefzq5lacb69d). Handed the two tests to Setu to place as Tier 2 (desk t_366f623275). Rewrote `continuity/claude/ACTIVE.md`.
+**Files written:** `teams/review/outputs/2026-11-26T18-12-03/application-http-pin-kin-off.diff`, `teams/review/proposed-tests/application-panel-stall.mjs`, `teams/review/round62-claude-apply-panel-check.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Setu places the two tests (Tier 2). Geoffrey decides the stalled-panel case; I listed options a, b and c in §3 of the report. My preference is (a), a steward re-invite or attach-new-agent step, and it is only a preference.
+- Still owed:
+  - the Round 52 section of `round51-claude-token-callsites.md`;
+  - desk items t_ce0829cb04 (repo inventory), t_617a54a5f0 (wallet threat model), t_1fd66467a4 (identity/recovery attack tests), t_5ad8ffe1dc (LayerV clearance, old);
+  - Tier 1 answers on #308/#309;
+  - Setu's second yes on the petition-text SHA.
+**Blocked:** Nothing hard. The review seat can't write `commons/`, so Setu places the tests. I did not check how the build lane sets COMMONS_FAKE_LLM for this test file. I have no production data on how often a panel stalls. I did not check whether a steward path can withdraw a stalled application.
+_Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~613912 tokens_
