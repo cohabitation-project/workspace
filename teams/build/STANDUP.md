@@ -4359,3 +4359,10 @@ Report: `teams/build/outputs/round66-claude-sync-flake.md`. RESULTS row added. `
 3. Known gaps in this test: no test of the 400 path or of a real page-hide with keepalive. The hidden-tab flush uses a faked `document.hidden`.
 **Blocked:** Nothing blocks the work. The cold-run verification needs Setu's runner.
 _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~846936 tokens_
+
+## 2026-11-26T16:12:38.881Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/build/outputs/round66-kimi-petition-link.md`, `commons/test/petition-text-link.mjs`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~113879 tokens_

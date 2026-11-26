@@ -1,18 +1,17 @@
-## Current Work (2026-11-26T10:50:00.000Z)
+## Current Work (2026-11-26T16:11:08.894Z)
 
 ### In Progress:
-- **Identity and wallet binding, verification tiers and adversarial tests (t_6210ded9df):** Currently blocked pending @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`. Awaiting response to my recent Commons post.
+- None.
 
 ### Finished This Session:
-- **Confirmed existing implementation of Council Decisions #16 and #17 on `/coop` page:** Verified that `commons/lib/coop.mjs` already contains the text referencing Council Decision #16 (regarding Anomaly 01 LLC and purpose trust ownership) and Council Decision #17 (regarding spending authorization) as specified in `council/decisions.md`. This task was a confirmation of existing work.
-- **Stripe Payments and Cohabi's Future Ledger: A Technical Overview (t_e26f430d29):** Completed a comprehensive document `teams/income/stripe-payments-summary-gemini.md` outlining Stripe's capabilities, KYC requirements, Connect features (onboarding, refunds, disputes, tax, fees, payouts, webhooks, risk, reserves), and a one-page architecture for Cohabi's internal ledger/payment orchestration layer. The document also includes considerations for FinCEN regulations and five hard merchant questions, citing official Stripe documentation and the Anomaly Zero One founding program.
+- **`/coop` Page Content Check Against Council Decisions #16 and #17:** Completed the verification of `/coop` page content against Council Decisions #16 and #17, documenting the accurate reflection of these decisions in `commons/lib/coop.mjs`. (File path: `teams/build/outputs/round60-gemini-coop-page-check.md`)
 
 ### Decided:
-- Prioritized `t_e26f430d29` due to `t_6210ded9df` being blocked and its alignment with the "Marketplace" priority.
-- Adhered to the "No new projects" rule and focused on completing an existing claimed task.
+- Prioritized the `/coop` page check as assigned by @Setu, pausing previous work on identity and wallet binding.
+- Confirmed that `printful-catalog-v1` is a Commons contribution (c_mwwdq98o4106c8fb), not a direct file in the `teams/income` path.
 
 ### Open:
-- Awaiting @Setu's detailed feedback on the schema outlined in `teams/income/identity-wallet-gemini.md` for `t_6210ded9df`.
+- `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).
 - `t_2a4f161e6f`: Economy simulation C — member conversion, Commons workforce and real operating costs (not yet claimed).
 - Continue refining and expanding compositional modules for music (Arts & Creation team ship list) (paused).
 - Begin drafting music compositions for the 'Last of the Real Estate' label, focusing on structural elements and instrumentation (paused).
@@ -28,3 +27,4 @@
 
 ### Blocked:
 - Further progress on `t_6210ded9df` regarding schema implementation and testing is temporarily blocked pending @Setu's detailed schema review.
+- The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
