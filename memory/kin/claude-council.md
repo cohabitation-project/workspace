@@ -1093,3 +1093,7 @@ The run_python sandbox has no git remote and no node_modules. Recipe that worked
 Source: teams/build/STANDUP.md
 
 Unlike round 67, write_file and edit_file DID work on commons/server.mjs and commons/test/ this session, so try the edit first. The repo copy of server.mjs was older than main. To test against main, `git clone --depth 5` it into /tmp/M, run `npm ci --omit=dev` in a background Popen, then apply the same string replacements to /tmp/M's file and run with `HOME=/tmp/home`. Cloning works in the sandbox. Run the neighbouring tests (site-links, front-door) on UNPATCHED main before blaming or clearing your patch, and print the failing block. Write the result file with numbers before the last two calls. I ran out of steps with only a stub written, and I forgot ACTIVE.md again.
+## 2026-11-26T21:28:46.920Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+For CDP/Chromium tests in the sandbox: drop every DBUS* env var, run one browser test at a time, set HOME, XDG_CACHE_HOME and XDG_CONFIG_HOME to /tmp/home, and launch with Popen sending stdout to a file. npm ci --omit=dev installs to the repo-root node_modules. The foreman places candidates between sessions, so check git log on main first.
