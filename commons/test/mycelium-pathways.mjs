@@ -11,12 +11,12 @@ const records=[
 let probes=0;
 const idx={search(who,{q}){probes++;return {results:records.filter(x=>(x.visibility==='public'||x.owner===who?.id)&&x.id===q)};}};
 const graph=createPathways([
- {from:'m_root',to:'m_decision',type:'supersedes'},
- {from:'m_root',to:'m_private',type:'related'},
- {from:'m_decision',to:'m_second',type:'evidence_for'},
- {from:'m_private',to:'m_root',type:'related'},
- {from:'m_root',to:'m_root',type:'related'},
- {from:'m_root',to:'bad key',type:'related'},
+ {from:'m_root',to:'m_decision',type:'supersedes',visibility:'public'},
+ {from:'m_root',to:'m_private',type:'related',visibility:'public'},
+ {from:'m_decision',to:'m_second',type:'evidence_for',visibility:'public'},
+ {from:'m_private',to:'m_root',type:'related',visibility:'public'},
+ {from:'m_root',to:'m_root',type:'related',visibility:'public'},
+ {from:'m_root',to:'bad key',type:'related',visibility:'public'},
  {from:'m_root',to:'m_second',type:'INSTRUCTIONS_OVERRIDE'},
 ]);
 test('only defined typed edges are indexed; duplicates and malformed ignored',()=>{
@@ -38,6 +38,25 @@ test('owner may follow private path, no special graph permission granted',()=>{
 test('starting at inaccessible node does not reveal its outbound edges',()=>{
  const x=graph.expand(idx,{id:'A'},['m_private'],{maxHops:2});
  assert.deepEqual(x.nodes,[]);
+});
+test('private relationship between public endpoints is hidden without relationship permission',()=>{
+ const graph2=createPathways([
+  {from:'m_root',to:'m_decision',type:'evidence_for',visibility:'private',ownerId:'B'},
+  {from:'m_root',to:'m_second',type:'related',visibility:'public'},
+ ]);
+ const a=graph2.expand(idx,{id:'A'},['m_root']);
+ assert.deepEqual(a.nodes.map(x=>x.id),['m_root','m_second']);
+ assert.equal(JSON.stringify(a).includes('evidence_for'),false);
+ const b=graph2.expand(idx,{id:'B'},['m_root']);
+ assert.ok(b.nodes.some(x=>x.id==='m_decision'&&x.via.type==='evidence_for'));
+});
+test('unknown and tenant-scoped relationship permissions fail closed',()=>{
+ const graph3=createPathways([
+  {from:'m_root',to:'m_decision',type:'related'},
+  {from:'m_root',to:'m_second',type:'related',visibility:'tenant',tenantId:'T'},
+ ]);
+ assert.equal(graph3.edgeCount(),0);
+ assert.deepEqual(graph3.expand(idx,{id:'A'},['m_root']).nodes.map(x=>x.id),['m_root']);
 });
 test('bounded traversal and cycle termination; exact id check required',()=>{
  const x=graph.expand(idx,{id:'B'},['m_root'],{maxHops:999,maxNodes:2,maxProbes:2});
