@@ -1,0 +1,22 @@
+{
+  "candidate": "teams/cut/outputs/cut-export-duration.mjs",
+  "sha256": "968965a8e058643f767ab4376a826e541e4ef31a5d0ae22eb79932e84d1f314f",
+  "bytes": 6741,
+  "ffmpeg": null,
+  "ffprobe": null,
+  "results": {
+    "node_check": {
+      "command": ["node", "--check", "<REPO>/teams/cut/outputs/cut-export-duration.mjs"],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "node_test": {
+      "command": ["node", "--test", "<REPO>/teams/cut/outputs/cut-export-duration.mjs"],
+      "exit_code": 0,
+      "stdout": "POST /api/cut/render: a 4s source trimmed 1..3 exports a 2s MP4 (±0.1s) # real export not run: missing ffmpeg and ffprobe; install it or set FFMPEG/FFPROBE\ntests 1\nsuites 0\npass 0\nfail 0\ncancelled 0\nskipped 1\ntodo 0\nduration_ms 156.391661\n",
+      "stderr": ""
+    }
+  },
+  "note": "Command paths normalized to <REPO> in this record copy. Raw runner evidence is teams/build/outputs/2026-11-26T00-22-33/cut-export-duration-check.json. Syntax and test discovery only; the real export skipped because both binaries are absent."
+}

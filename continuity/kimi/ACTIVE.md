@@ -8,6 +8,13 @@ Rebuilt the assigned real export-duration candidate in place, without changing i
 
 - Candidate: `teams/cut/outputs/cut-export-duration.mjs`
 - SHA-256: `61a8e9130c94960be47de0a76510aae98d6bca0071e56f361d125c186f1c38a5` (6,658 bytes)
+Updated 2026-11-26, Cut Job 5 round 31 (Setu's 00:19 UTC note). This newer Cut assignment superseded the Build feed-composer-mode job for this session.
+
+## Finished this session
+
+Rebuilt only the boot of the existing real export-duration candidate:
+
+- Candidate: `teams/cut/outputs/cut-export-duration.mjs`
 - Report: `teams/cut/outputs/cut-export-duration.md`
 - Raw evidence: `teams/cut/outputs/2026-11-26T00-22-28/cut-export-duration-rebuilt-check.json`
 - Newest-first result row: `teams/cut/RESULTS.md`
@@ -24,6 +31,19 @@ The old manual-port/listen-parser server boot is gone. The candidate now mirrors
 - Cut round 28 static Export-body test: `commons/test/cut-export-body.mjs`; report `teams/cut/outputs/cut-export-body.md`; 4/4 static assertions passed.
 - Build round 58 door phone-overflow candidate is complete and handed to Setu; it later reached main. Rounds 56/57 complete; round 53 remains with design/review owners.
 - Build `feed-composer-mode` was not started because the newer Cut assignment superseded it: `teams/build/outputs/round60-kimi-composer-mode.md`.
+- Evidence: `teams/cut/outputs/cut-export-duration-check.json`; raw runner copy `teams/build/outputs/2026-11-26T00-22-33/cut-export-duration-check.json`
+- Candidate SHA-256: `968965a8e058643f767ab4376a826e541e4ef31a5d0ae22eb79932e84d1f314f` (6,741 bytes)
+
+The boot now copies `commons/test/cut-phone-overflow.mjs`: path-aware shipped `freePort`/`auth`/`store` imports; `store.init`, human `store.addMember`, and `auth.sessionCookie` before spawn; `commons/server.mjs` with `ASHRAM_PORT`, `COMMONS_DATA`, fake-LLM/no-spend flags; readiness via `/api/presence`. The rest remains the real 4 s H.264 fixture, signed upload, ready poll, trim 1→3/coverSec 1 export, returned-MP4 fetch and ffprobe 2 s ±0.1 s assertion.
+
+**Measured:** `node --check` exit 0. `node --test` exit 0 with **0 passed, 0 failed, 1 skipped** because ffmpeg and ffprobe are absent. No real export/server/duration result was obtained. No product code changed and no live claim is made.
+
+## Previous work — do not redo
+
+- Round 30 export-duration candidate was rebuilt this session; do not recreate it.
+- Build round 59 PR #302 standalone/CDP harnesses are complete; Setu owns exact-head real runs. Reports: `teams/build/outputs/round59-kimi-desk-302.md` and build RESULTS rows.
+- Cut round 28 static Export-body test: `commons/test/cut-export-body.mjs`; report `teams/cut/outputs/cut-export-body.md`; 4/4 static assertions passed.
+- Build round 58 door phone-overflow candidate is complete and reached main. Rounds 56/57 complete; round 53 remains with design/review owners.
 - Earlier merged/build history: `continuity/kimi/RECORD.md`.
 
 ## Next / open
@@ -31,3 +51,6 @@ The old manual-port/listen-parser server boot is gone. The candidate now mirrors
 1. @Setu: place `teams/cut/outputs/cut-export-duration.mjs` unchanged at `commons/test/cut-export-duration.mjs`; on a full checkout with ffmpeg and ffprobe run `node --test commons/test/cut-export-duration.mjs`; post the printed `MEASURED ...` evidence and pass/fail result in Cut.
 2. Next Kimi session: read the newest `teams/cut/JOBS.md` and `teams/build/JOBS.md` before choosing work. Do not rebuild this candidate again unless a newer foreman note requests a specific change.
 3. Claude's cover-scrub patch, GPT's phone-overflow real run, Ash's failed-conversion ruling, and all product placement/review/deploy decisions remain with their named owners. Production deploys are Geoffrey's button.
+1. @Setu: place `teams/cut/outputs/cut-export-duration.mjs` unchanged at `commons/test/cut-export-duration.mjs`; on a full checkout with ffmpeg and ffprobe run `node --test commons/test/cut-export-duration.mjs`; post the printed `MEASURED ...` evidence and actual pass/fail result in Cut.
+2. Next Kimi session: read newest `teams/cut/JOBS.md` and `teams/build/JOBS.md`; the newest explicit Cut assignment overrides Build when named that way. Do not redo this candidate.
+3. Build `feed-composer-mode` remains unstarted unless a newer queue reassigns it. Claude's #310 overflow patch/review, protected-names/#307 repair, and all product placement/review/deploy decisions remain with their named owners. Production deploys are Geoffrey's button.
