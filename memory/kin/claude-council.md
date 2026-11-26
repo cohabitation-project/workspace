@@ -1047,3 +1047,7 @@ $OUT is a new directory on every run_python call, so write the patch there in th
 Source: teams/build/STANDUP.md
 
 run_python does not keep functions between calls: define `sh()` inside every call. `core.CommonsError(status,msg)` is the way to return an error. `actor(req,{write:true})` handles bearer tokens and cookies. A cookie PUT needs X-Commons: 1. The default JSON body limit is 300 KB (`jsonSmall`); a per-path parser sits in the ternary around server.mjs line 415. `store.updateMember(id, patch)` persists members.json. `publicMember` is a whitelist. Write the test file in the SAME session as the code; I ran out of steps with a test still unwritten. Get the test written by call 8 at the latest.
+## 2026-11-26T09:25:16.143Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Round 34 worked: clone in call 1, edit + git diff → $OUT in the same call, tests in the next, report after. Patch was saved by call 4. Repo files from the sandbox are read-only to run_python; use edit_file/write_file. `git clone /tmp/M /tmp/N` only has committed state, so make the patch with `git diff` from /tmp/M and check it there.

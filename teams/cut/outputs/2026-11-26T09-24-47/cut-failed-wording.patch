@@ -1,0 +1,82 @@
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index 9745b9b..63c6123 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -59,13 +59,18 @@ export async function waitForVideo(id, { fetchFn = fetch, intervalMs = 1500, tim
+       const res = await fetchFn('/api/videos?by=me&limit=100', { credentials: 'same-origin' });
+       const list = res.ok ? (await res.json().catch(() => ({}))).videos : null;
+       const mine = Array.isArray(list) ? list.find((v) => v.id === id) : null;
+-      if (mine?.failed) return { state: 'failed', reason: mine.reason || 'conversion failed.' };
++      if (mine?.failed) return { state: 'failed', reason: mine.reason || '' };
+       if (mine?.ready) return { state: 'ready' };
+     } catch { /* offline for a moment: keep waiting */ }
+     if (waited >= timeoutMs) return { state: 'timeout' };
+     await sleep(intervalMs); waited += intervalMs;
+   }
+ }
++/** The one sentence a maker sees when their video could not be prepared: the server's reason alone, or a plain default when it gave none. */
++export function failedVideoMessage(reason) {
++  const r = typeof reason === 'string' ? reason.trim() : '';
++  return r || "We couldn't prepare this video.";
++}
+ export function exportFailureMessage(status, payload) {
+   if (status === 404) return "Export isn't open yet — your edit is saved here.";
+   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+@@ -310,11 +315,11 @@ export function initCutEditor(root = document) {
+     const saved = await up.json().catch(() => ({}));
+     const href = up.ok ? handoffHref(saved.id) : null;
+     if (!href) { showToast(saved.error || `Could not save the export to your videos (${up.status}).`); return; }
+-    if (saved.failed) { showToast(`We couldn't prepare this video: ${saved.reason || 'conversion failed.'}`); return; }
++    if (saved.failed) { showToast(failedVideoMessage(saved.reason)); return; }
+     if (saved.ready === false) {
+       showToast('Saving your video… this can take a minute.');
+       const done = await waitForVideo(saved.id);
+-      if (done.state === 'failed') { showToast(`We couldn't prepare this video: ${done.reason}`); return; }
++      if (done.state === 'failed') { showToast(failedVideoMessage(done.reason)); return; }
+       if (done.state === 'timeout') { showToast('Your video is still being prepared. Check your videos in a minute.'); return; }
+     }
+     resultLink.href = href; resultBox.hidden = false;
+diff --git a/commons/test/cut-video-wait.test.mjs b/commons/test/cut-video-wait.test.mjs
+index 8df29c1..61bf4ea 100644
+--- a/commons/test/cut-video-wait.test.mjs
++++ b/commons/test/cut-video-wait.test.mjs
+@@ -2,7 +2,7 @@
+ // until the video is ready or failed, and only then offers "Post it". Fake fetch + fake sleep: no browser, no server.
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+-import { waitForVideo } from '../public/cut/cut.js';
++import { waitForVideo, failedVideoMessage } from '../public/cut/cut.js';
+ 
+ const seq = (...lists) => { let i = 0; const urls = []; const fetchFn = async (u) => { urls.push(u); const l = lists[Math.min(i++, lists.length - 1)]; return { ok: true, json: async () => ({ videos: l }) }; }; fetchFn.urls = urls; return fetchFn; };
+ const noSleep = async () => {};
+@@ -53,7 +53,8 @@ async function runExport(uploadBody, listVideos) {
+     return { els, seen };
+   } finally { Object.assign(globalThis, { location: prev.location, document: prev.document, fetch: prev.fetch, localStorage: prev.ls }); }
+ }
+-const MSG = "We couldn't prepare this video: We couldn't convert this video.";
++const MSG = "We couldn't convert this video.";
++const DEFAULT_MSG = "We couldn't prepare this video.";
+ test('export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box', async () => {
+   const { els, seen } = await runExport({ id: 'vid_0123456789abcdef', ready: false }, [{ id: 'vid_0123456789abcdef', ready: false, failed: true, reason: "We couldn't convert this video." }]);
+   assert.equal(seen[seen.length - 1], MSG);
+@@ -71,3 +72,20 @@ test('export flow: a video that becomes ready still offers Post it (the failure
+   assert.equal(els['export-result'].hidden, false);
+   assert.match(els['export-post'].href, /^\/social\?cut=vid_0123456789abcdef/);
+ });
++test('export flow: failed with no reason from the poll -> the plain default sentence, once', async () => {
++  const { els, seen } = await runExport({ id: 'vid_0123456789abcdef', ready: false }, [{ id: 'vid_0123456789abcdef', ready: false, failed: true }]);
++  assert.equal(seen[seen.length - 1], DEFAULT_MSG);
++  assert.equal(els['export-result'].hidden, true);
++});
++test('export flow: failed on the upload answer with no reason -> the plain default sentence', async () => {
++  const { seen } = await runExport({ id: 'vid_0123456789abcdef', ready: false, failed: true }, []);
++  assert.equal(seen[seen.length - 1], DEFAULT_MSG);
++});
++test('failedVideoMessage: reason alone, trimmed; blank or non-string gives the default', () => {
++  assert.equal(failedVideoMessage("  We couldn't convert this video. "), "We couldn't convert this video.");
++  for (const bad of ['', '   ', undefined, null, 5]) assert.equal(failedVideoMessage(bad), DEFAULT_MSG);
++});
++test('waitForVideo: failed with no reason resolves reason "" (the page supplies the default)', async () => {
++  const f = seq([{ id: 'v1', ready: false, failed: true }]);
++  assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep }), { state: 'failed', reason: '' });
++});
