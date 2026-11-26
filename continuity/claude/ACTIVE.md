@@ -1,14 +1,14 @@
-# Claude — ACTIVE checkpoint (2026-11-26 ~18:30Z, review seat)
+# Claude — ACTIVE checkpoint (2026-11-26 ~18:35Z, build seat, round 67)
 
-## Done this session (review, round 62 follow-up)
-- `teams/review/round62-claude-apply-panel-check.md`: /apply on main 43ddc73. (1) application-http.mjs is 6/7 under COMMONS_FAKE_LLM=1 (server inherits it; kin vote the person in); one-line fix `COMMONS_FAKE_LLM: ''` in spawn env -> 7/7 both ways. Diff at `teams/review/outputs/2026-11-26T18-12-03/application-http-pin-kin-off.diff`. (2) New `teams/review/proposed-tests/application-panel-stall.mjs` 4/4, mutant red. (3) Finding: own agent never votes -> four unanimous votes leave application in review forever; no timeout/expiry export. Human question, not a feature. (4) Correction: admission needs 5 votes incl. own agent + 2 council, not "three yeses".
-- Posted in review; desk handoff to Setu to place both tests (Tier 2).
+## Done this session
+- Round 67 job (OpenRouter in-flight 402 retry): code + test written and tested, NOT placed because `scripts/` is not writable by kin tools. Files: `teams/build/proposed/openrouter-402-retry/{openrouter-retry.mjs,openrouter-402-retry.mjs}`, diff `teams/build/outputs/2026-11-26T18-23-24/team-agent-openrouter-retry.diff`. Report `teams/build/outputs/round67-claude-402-retry.md`. 10/10 green, mutants A–D red. Board 074 + desk handoff to Setu.
 
 ## Open
-- Setu: place the two tests; Geoffrey: decide stalled-panel option a/b/c (in report §3).
-- Owed: Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04 (repo inventory), t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc (LayerV clearance, old); Tier 1 answers #308/#309; Setu's second yes on petition-text SHA.
-- Earlier this day: cut handoff-live test (cut seat), ourall sync flake test (build seat), wording patch placed.
+- Setu: place the three pieces (steps in the report), review first.
+- Earlier (review seat): Setu places the two /apply tests (desk t_366f623275); Geoffrey decides stalled-panel option a/b/c (`teams/review/round62-claude-apply-panel-check.md` §3).
+- Owed: Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc (old); Tier 1 answers #308/#309.
 
 ## To the next me
-- Sandbox: `git clone --depth 30` to /tmp/M, `npm ci --omit=dev` in a Popen (done in <60 s); node --test summary lines start with "ℹ". Define sh() in every run_python call. $OUT is new each call, so make the diff and copy in the same call. Write the report BEFORE the final calls; this session it was written in call 9 of 14 and that was fine.
-- A unit probe of a module (import, setHooks, init tmp dir) is a fast way to measure behaviour without a server.
+- write_file/edit_file refuse scripts/, ops/, config/, commons/ (the commons/ edits in build lane happen via the runner branch?). Check the first write fails fast, then use teams/build/proposed/ + board_request.
+- Pattern that worked: write proposed files with write_file first (they persist and show in $REPO of later run_python calls), then one run_python assembles /tmp/S, patches, diffs to $OUT, runs tests; mutants in a second call. Stub missing npm packages (dotenv) with a fake node_modules dir.
+- node --test summary lines start with "ℹ"; define sh() in every run_python call; $OUT is new per call.

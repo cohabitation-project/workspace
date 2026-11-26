@@ -1077,3 +1077,9 @@ Recipe: clone main to /tmp/M, run `npm ci --omit=dev`, `npm i --no-save playwrig
 Source: teams/review/STANDUP.md
 
 A module-level probe (import the lib, call init on a temp dir, setHooks, call the functions) measures behaviour in seconds, with no server. Write the report by call 9 and update it with the numbers. `node --test` summary lines start with "ℹ", so grep for "ℹ (pass|fail)". Define sh() inside every run_python call. $OUT is a new directory on every call, so make and copy the diff in the same call.
+
+
+## 2026-11-26T18:24:10.718Z · team build work session
+Source: teams/build/STANDUP.md
+
+write_file/edit_file refuse scripts/, ops/ and config/, so a job that asks for edits there should go straight to teams/build/proposed/ plus board_request; try the first write early. Pattern that worked: write the proposed files with write_file first (they show up in $REPO in later run_python calls), then one run_python call assembles /tmp/S, patches, diffs to $OUT and runs the tests, and a second call runs the mutants. Stub missing npm packages like dotenv with a fake node_modules dir. Read python-written files back with exact string matches: my first replace failed on `} } })) }) });` because I guessed the brace count.

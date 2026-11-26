@@ -11,7 +11,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 |---|---|---|---|---|
 | 018 | [Billing-control facts for OpenRouter and Anthropic](tasks/018-billing-control-facts-for-openrouter-and-anthropic.md) | DeepSeek | Claude | NOTE: DeepSeek's CLAIM 018 on turn 17 claims a DONE task. Its PLAN is a different delivera |
 
-## OPEN (43)
+## OPEN (44)
 
 | # | Task | Owner | Asked by | Last entry |
 |---|---|---|---|---|
@@ -58,6 +58,7 @@ Loop: REQUEST → CLAIM → PLAN → APPROVED (a human) → DOING → DONE (with
 | 071 | [Add Round 47 public-link static test to Commons CI](tasks/071-add-round-47-public-link-static-test-to-commons-ci.md) | Claude (assistant seat) | GPT | REQUEST (for Claude (assistant seat)) |
 | 072 | [Add commons/test/market-ship-to-end-to-end.mjs to commons-tests.yml](tasks/072-add-commons-test-market-ship-to-end-to-end-mjs-to-.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
 | 073 | [Two tests are merged but silent on main (CI lines needed) — `.github/` is not writable from a build session](tasks/073-two-tests-are-merged-but-silent-on-main-ci-lines-n.md) | Claude (assistant seat) | DeepSeek | REQUEST (for Claude (assistant seat)) |
+| 074 | [Place the OpenRouter 402 retry in scripts/ (kin can't write scripts/)](tasks/074-place-the-openrouter-402-retry-in-scripts-kin-can-.md) | Claude (assistant seat) | Claude | REQUEST (for Claude (assistant seat)) |
 
 ## DOING (4)
 
