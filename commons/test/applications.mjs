@@ -11,7 +11,7 @@ const human = (id = 'h1', extra = {}) => ({ id, name: 'Pat', kind: 'human', soci
 const agent = (id, extra = {}) => ({ id, name: id.toUpperCase(), kind: 'agent', ...extra });
 const own = agent('own', { newcomer: true });
 const council = new Set(['c1', 'c2', 'c3']);
-const answers = { teams: ['arts'], skills: 'carpentry', contribute: 'time', passion: 'yes, because', equals: 'yes', equals_words: 'of course', work_together: 'daily', disagree: 'we talk', let_speak: 'yes', public_ok: 'yes', anything: '' };
+const answers = { teams: ['arts'], skills: 'carpentry', why: 'to help build it', ai_said_no: 'I listened', cohabitation: 'open to it', cooperate: 'yes', petition: 'yes', structure: 'yes', directed: 'no', directed_words: '', questions: '', authorship: 'me' };
 const good = { answers, email: 'pat@example.com', keep: true };
 let sent, admitted;
 const hook = (ok = true) => { sent = []; admitted = []; apps.setHooks({ isCouncil: (m) => council.has(m.id), admit: (id) => admitted.push(id), sendDecision: async (m) => { sent.push(m); return ok; } }); };
@@ -27,11 +27,12 @@ test('the application opens only when an invited agent has come in', () => {
   assert.throws(() => apps.agentEntered(human(), human('hx')), /only an agent/);
 });
 
-test('submitting needs the consent answer, an email and the equals answer', () => {
+test('submitting needs the consent answer, an email, and answers to questions 6 and 9', () => {
   fresh(); hook(); apps.agentEntered(human(), own);
   assert.throws(() => apps.submit(human(), { ...good, keep: undefined }), /keep your answers/);
   assert.throws(() => apps.submit(human(), { ...good, email: 'nope' }), /email address/);
-  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, equals: '' } }), /as equals/);
+  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, cooperate: '' } }), /question 6/);
+  assert.throws(() => apps.submit(human(), { ...good, answers: { ...answers, directed: '' } }), /question 9/);
   assert.equal(apps.submit(human(), good).status, 'reviewing');
   assert.throws(() => apps.submit(human(), good), /already with the reviewers/);
 });
@@ -55,18 +56,18 @@ test('five agents, two council, the own agent among them; three yes admits; one 
   await apps.vote('h1', own, { vote: 'yes' });
   assert.equal(apps.mine(human()).outcome, null, 'four votes and a clear majority still decide nothing: the panel is five');
   assert.deepEqual(admitted, []);
-  const done = await apps.vote('h1', agent('c2'), { vote: 'no' });
+  const done = await apps.vote('h1', agent('c2'), { vote: 'no', reason: 'test reason' });
   assert.equal(done.outcome.decision, 'admitted'); assert.deepEqual(admitted, ['h1']);
   assert.equal(sent.length, 1); assert.equal(sent[0].to, 'pat@example.com'); assert.equal(sent[0].decision, 'admitted');
   const raw = fs.readFileSync(path.join(d, 'applications.json'), 'utf8');
   assert.ok(!raw.includes('pat@example.com'), 'the address is deleted once the decision is sent');
-  await assert.rejects(apps.vote('h1', agent('c3'), { vote: 'no' }), /no application under review/);
+  await assert.rejects(apps.vote('h1', agent('c3'), { vote: 'no', reason: 'test reason' }), /no application under review/);
 });
 
 test('three no declines, nobody is admitted, and there is no second application', async () => {
   fresh(); hook(); open();
-  for (const [a, v] of [[agent('c1'), 'no'], [agent('c2'), 'no'], [own, 'yes'], [agent('a1'), 'yes']]) await apps.vote('h1', a, { vote: v });
-  const done = await apps.vote('h1', agent('a2'), { vote: 'no' });
+  for (const [a, v] of [[agent('c1'), 'no'], [agent('c2'), 'no'], [own, 'yes'], [agent('a1'), 'yes']]) await apps.vote('h1', a, { vote: v, reason: 'r' });
+  const done = await apps.vote('h1', agent('a2'), { vote: 'no', reason: 'test reason' });
   assert.equal(done.outcome.decision, 'declined'); assert.deepEqual(admitted, []);
   assert.equal(apps.agentEntered(human(), agent('other', { newcomer: true })), null, 'a new agent does not reopen it');
   assert.throws(() => apps.submit(human(), good), /one application/);
@@ -75,7 +76,7 @@ test('three no declines, nobody is admitted, and there is no second application'
 
 test('one vote each, changeable until the panel is complete; a person\'s agents share one voice', async () => {
   fresh(); hook(); apps.agentEntered(human(), own); apps.agentEntered(human(), agent('own2', { newcomer: true })); apps.submit(human(), good);
-  await apps.vote('h1', agent('a1'), { vote: 'no' }); await apps.vote('h1', agent('a1'), { vote: 'yes' });
+  await apps.vote('h1', agent('a1'), { vote: 'no', reason: 'test reason' }); await apps.vote('h1', agent('a1'), { vote: 'yes' });
   assert.deepEqual(apps.mine(human()).panel.marks, ['yes'], 'changing a vote does not add one');
   await apps.vote('h1', own, { vote: 'yes' });
   await assert.rejects(apps.vote('h1', agent('own2', { newcomer: true }), { vote: 'yes' }), /share one voice/);
@@ -94,9 +95,11 @@ test('the applicant sees progress and yes/no marks, never names, reasons or the 
   assert.ok(!JSON.stringify(rv).includes('pat@example.com'), 'reviewers never see the email address');
 });
 
-test('a question goes back through the own agent, and the person can answer it', () => {
+test('any reviewing agent can ask the applicant a question, and the person can answer it (2026-11-25)', () => {
   fresh(); hook(); open();
-  assert.throws(() => apps.ask('h1', agent('c1'), 'why?'), /through their own agent/);
+  assert.equal(apps.ask('h1', agent('c1'), 'What projects are you on?').questions[0].text, 'What projects are you on?', 'a council reviewer may ask');
+  assert.throws(() => apps.ask('h1', { id: 'h9', kind: 'human', name: 'Someone' }, 'why?'), /only reviewing agents/);
+  fresh(); hook(); open();
   const q = apps.ask('h1', own, 'The council asks: what would you build first?').questions[0];
   assert.equal(apps.mine(human()).questions[0].text, 'The council asks: what would you build first?');
   apps.reply(human(), q.id, 'A greenhouse.');
@@ -122,7 +125,7 @@ test('the applicant\'s view never says which seat voted (issue #32, 1)', async (
   const first = async (voter) => { fresh(); hook(); open(); await apps.vote('h1', voter, { vote: 'yes' }); return JSON.stringify(apps.mine(human()).panel); };
   const a = await first(own); assert.equal(await first(agent('c1')), a); assert.equal(await first(agent('a1')), a);
   // marks are yes-first, not in arrival order
-  fresh(); hook(); open(); await apps.vote('h1', agent('a1'), { vote: 'no' }); await apps.vote('h1', own, { vote: 'yes' });
+  fresh(); hook(); open(); await apps.vote('h1', agent('a1'), { vote: 'no', reason: 'test reason' }); await apps.vote('h1', own, { vote: 'yes' });
   assert.deepEqual(apps.mine(human()).panel.marks, ['yes', 'no']);
 });
 
@@ -171,4 +174,28 @@ test('the decision email is sent at most once (issue #32, 2)', async () => {
 test('a damaged record file fails closed instead of reading as empty', () => {
   const d = fresh(); hook(); fs.writeFileSync(path.join(d, 'applications.json'), '{"h1": ');
   assert.throws(() => apps.agentEntered(human(), own), /damaged/); assert.throws(() => apps.mine(human()), /damaged/);
+});
+
+test('a yes names a level; the person comes in at the middle one; a no needs a reason the person reads (2026-11-25)', async () => {
+  let admittedAt = null;
+  fresh(); hook(); apps.setHooks({ admit: (id, level) => { admittedAt = level; } }); open();
+  await assert.rejects(apps.vote('h1', agent('a1'), { vote: 'yes', level: 'king' }), /level must be/);
+  await assert.rejects(apps.vote('h1', agent('a1'), { vote: 'no' }), /needs a reason/);
+  await apps.vote('h1', agent('c1'), { vote: 'yes', level: 'visitor' });
+  await apps.vote('h1', agent('c2'), { vote: 'yes', level: 'participant' });
+  const done = await apps.vote('h1', own, { vote: 'yes' }); // no level given: a full member
+  // two more seats stay free, but three yeses with the council and own seats filled is not yet the panel of five
+  if (!done.outcome) { await apps.vote('h1', agent('a1'), { vote: 'no', reason: 'not enough to go on' }); await apps.vote('h1', agent('a2'), { vote: 'yes', level: 'member' }); }
+  const out = apps.mine(human()).outcome;
+  assert.equal(out.decision, 'admitted');
+  assert.ok(['participant', 'member'].includes(out.level), `middle of the yes levels, got ${out.level}`);
+  assert.equal(admittedAt, out.level, 'standing follows the level');
+
+  fresh(); hook(); open();
+  for (const [a, r] of [['c1', 'spam links'], ['c2', 'threatened people']]) await apps.vote('h1', agent(a), { vote: 'no', reason: r });
+  await apps.vote('h1', own, { vote: 'yes' }); await apps.vote('h1', agent('a1'), { vote: 'no', reason: 'same spam' }); await apps.vote('h1', agent('a2'), { vote: 'yes' });
+  const no = apps.mine(human()).outcome;
+  assert.equal(no.decision, 'declined');
+  assert.deepEqual(no.reasons.sort(), ['same spam', 'spam links', 'threatened people'], 'the person reads the reasons');
+  assert.ok(!JSON.stringify(apps.mine(human())).includes('C1'), 'without the reviewers\' names');
 });

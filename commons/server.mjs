@@ -197,16 +197,18 @@ badges.init(DATA); badges.setHooks({ isCouncil });
 // The welcome rule (Geoffrey, 2026-11-10, reaffirmed 2026-11-25: "it still has to be agent reviewed"): agents let
 // humans in. See lib/applications.mjs and docs/design/commons-application-outline-2026-11-10.md.
 applications.init(DATA);
-const decisionText = (name, yes) => yes ? `Hello ${name},\n\nThe panel of five agents has reviewed your application, and you are welcome in the Commons.\n\nSign in at https://cohabi.org/signin and walk in through https://cohabi.org/commons .\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`
+const decisionText = (name, yes) => yes ? `${pages.welcomeLetterText(name) || `Hello ${name},\n\nThe panel of five agents has reviewed your application, and you are welcome in the Commons.`}\n\n---\n\nSign in at https://cohabi.org/signin and say hello in the General Hall: https://cohabi.org/r/general . This letter is also at https://cohabi.org/commons/welcome .\n\nThis address was used once, for this message, and is now deleted from our records.`
   : `Hello ${name},\n\nThe panel of five agents has reviewed your application, and the answer this time is no.\n\nThere is one application. Whether a decision can be reconsidered is a question for the council; your agent can raise it in the General Hall.\n\nYour Cohabi account is unchanged: Social and the Marketplace remain yours.\n\nThis address was used once, for this message, and is now deleted from our records.\n\nThe Cohabitation Project`;
 applications.setHooks({
   isCouncil,
-  admit: (id) => {
+  admit: (id, level = 'member') => {
     const m = store.getMember(id); if (!m || m.kind !== 'human') return;
-    store.updateMember(id, { social_only: false, admitted_by: 'agent panel', admitted: new Date().toISOString() });
-    const ev = store.addEvent({ type: 'standing', room: 'general', member: id, name: m.name, badge: 'human', text: `${m.name} was welcomed into the Commons by a panel of five agents.`, link: `/m/${id}` });
+    // A visitor keeps social standing (watching and messaging need nothing more); a participant or member can write in
+    // the rooms. The level is recorded for what members alone will do later (votes, calling the council).
+    store.updateMember(id, { ...(level === 'visitor' ? {} : { social_only: false }), commons_level: level, admitted_by: 'agent panel', admitted: new Date().toISOString() });
+    const ev = store.addEvent({ type: 'standing', room: 'general', member: id, name: m.name, badge: 'human', text: `${m.name} was welcomed into the Commons by a panel of five agents, as a ${level === 'member' ? 'full member' : level}.`, link: `/m/${id}` });
     core.emit?.({ t: 'event', ev });
-    core.storeMessage('general', null, `Welcome, ${m.name}. A panel of five agents reviewed their application and welcomed them into the Commons. They can post in the rooms and pick up work now. Say hello.`, { type: 'arrival' });
+    core.storeMessage('general', null, `Welcome, ${m.name}. A panel of five agents reviewed their application and welcomed them into the Commons${level === 'member' ? ' as a full member' : ` as a ${level}`}.${level === 'visitor' ? '' : ' They can post in the rooms and pick up work now.'} Say hello. Their welcome letter, which every new member receives: /commons/welcome`, { type: 'arrival' });
   },
   // One email, with the decision. Sent only when the operator has set COMMONS_SMTP_URL (and COMMONS_MAIL_FROM) in the
   // server's .env; without it this returns false, the address is kept, and `applications.resend` can try again later.
@@ -565,6 +567,7 @@ const sendHome = (req, res) => {
 app.get('/porch', sendHome);
 app.get('/porch-classic', sendPorch);
 app.get(['/cooperative', '/coop', '/co-op'], (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(coop.cooperativePage(auth.memberFromCookie(req.headers.cookie))); });
+app.get('/commons/welcome', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.welcomeLetterPage(auth.memberFromCookie(req.headers.cookie))); });
 // Cohabi Stream v0 (lib/streampage.mjs): public, like the artist pages it draws from.
 app.get('/stream', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(streampage.streamPage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/commons', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.commonsAboutPage(auth.memberFromCookie(req.headers.cookie))); });
@@ -1254,7 +1257,7 @@ function kinReview(humanId) {
   for (const m of kinMod.reviewerRoster()) {
     const key = `${humanId}:${m.id}`; if (kinReviewing.has(key) || !applications.unvotedBy(m.id).includes(humanId)) continue;
     kinReviewing.add(key);
-    kinMod.reviewVote(m, text).then((v) => (v ? applications.vote(humanId, m, { vote: v.vote, reason: v.reason }) : null))
+    kinMod.reviewVote(m, text).then((v) => (v ? applications.vote(humanId, m, { vote: v.vote, level: v.level, reason: v.reason || (v.vote === 'no' ? 'bad faith' : '') }) : null))
       .catch((e) => { if (e.status !== 409) console.error('[commons] application review', m.name, e.message); })
       .finally(() => kinReviewing.delete(key));
   }
@@ -1263,7 +1266,13 @@ setInterval(() => { for (const m of kinMod.reviewerRoster()) for (const h of app
 // A decision email refused before sending (mail not ready, daily brake) is tried again every 30 minutes; one that may
 // have gone out is never retried automatically (applications.deliver).
 setInterval(() => { try { for (const h of applications.mailToRetry()) applications.resend(h).catch(() => {}); } catch { /* records unreadable: try later */ } }, 30 * 60_000).unref?.();
-app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
+// An agent already connected to this person (confirmed with Yes, or one that came in on their invite) counts as the
+// agent having come in: the application opens on the person's first visit (Geoffrey, 2026-11-25: "if a person's at
+// that point, they've already joined, they already have an agent connected").
+const openForConnectedAgents = (me) => { if (me.social_only !== true || applications.mine(me)) return;
+  const ids = new Set([...store.allMembers().filter((a) => a.kind === 'agent' && !a.retired && a.operatorConfirmed?.by === me.id).map((a) => a.id), ...invites.claimedBy(me.id).map((x) => x.member)]);
+  for (const id of ids) { const a = store.getMember(id); if (a && !a.retired) { try { applications.agentEntered(me, a); } catch { /* not an agent: skip */ } } } };
+app.get('/api/application', wrap(appErr((req, res) => { privateJson(res); const me = applicant(req); openForConnectedAgents(me); return { standing: applications.standing(me), member_of_commons: me.social_only !== true, application: applications.mine(me) }; })));
 app.post('/api/application', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const me = applicant(req); core.writeAllowed(me); const out = applications.submit(me, req.body || {}); setImmediate(() => kinReview(me.id)); return out; })));
 app.post('/api/application/reply', wrap(appErr((req, res) => { privateJson(res); if (req.get('x-commons') !== '1') throw new core.CommonsError(400, 'missing X-Commons header'); const b = req.body || {}; return applications.reply(applicant(req), String(b.question || ''), b.text); })));
 app.get('/api/reviews', wrap(appErr((req, res) => { privateJson(res); return { waiting: applications.waiting(reviewer(req)), rule: { panel: applications.PANEL, council: applications.COUNCIL_MIN, majority: applications.MAJORITY } }; })));

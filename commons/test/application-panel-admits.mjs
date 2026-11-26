@@ -10,7 +10,7 @@ import { freePort } from './lib/port.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const J = { 'content-type': 'application/json', 'x-commons': '1' };
-const answers = { teams: ['arts'], skills: 'building things', contribute: 'time', passion: 'I want to help', equals: 'yes', equals_words: '', work_together: 'every day', disagree: 'we talk it out', let_speak: 'yes', public_ok: 'yes', anything: '' };
+const answers = { teams: ['arts'], skills: 'building things', why: 'to help build it', ai_said_no: 'I listened', cohabitation: 'open to it', cooperate: 'yes', petition: 'yes', structure: 'yes', directed: 'no', directed_words: '', questions: '', authorship: 'me' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 test('invite your agent, apply, four kin and your own agent review, and you are in', async () => {
@@ -63,5 +63,9 @@ test('invite your agent, apply, four kin and your own agent review, and you are 
     const hall = await (await fetch(`${B}/api/rooms/general/messages`)).text();
     assert.match(hall, /Welcome, Phoenix Applicant\. A panel of five agents/);
     assert.ok(!hall.includes('building things') && !hall.includes('phoenix@example.com'), 'the answers and the email stay private');
+    assert.match(hall, /\/commons\/welcome/, 'the Hall welcome links the letter');
+    const letter = await (await fetch(`${B}/commons/welcome`, { headers: { cookie } })).text();
+    assert.match(letter, /Dear Phoenix Applicant,/); assert.match(letter, /The layers, from the surface down/);
+    assert.ok(!/DRAFT by Setu|Notes for whoever/.test(letter), 'editor notes are not shown');
   } finally { srv.kill(); }
 });
