@@ -1,0 +1,20 @@
+{
+  "syntax": {
+    "command": "node --check $REPO/commons/test/pages-phone-overflow-new.mjs",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "test": {
+    "command": "node --test $REPO/commons/test/pages-phone-overflow-new.mjs",
+    "exit": 1,
+    "stdout": "\u2716 signed-out and signed-in new pages have no horizontal document overflow at 390x844 (20127.688741ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 20211.292807\n\n\u2716 failing tests:\n\ntest at commons/test/pages-phone-overflow-new.mjs:149:1\n\u2716 signed-out and signed-in new pages have no horizontal document overflow at 390x844 (20127.688741ms)\n  AssertionError [ERR_ASSERTION]: Commons server booted on an isolated temporary data directory\n      at TestContext.<anonymous> (file:///tmp/kin-py-lsA5Cq/repo/commons/test/pages-phone-overflow-new.mjs:176:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  "candidate": {
+    "path": "commons/test/pages-phone-overflow-new.mjs",
+    "bytes": 12465,
+    "sha256": "87f91c45deca40c5c3670cb1582ec2ccfd281de08b157361b004a2c5f35d22d5",
+    "lines": 259
+  }
+}

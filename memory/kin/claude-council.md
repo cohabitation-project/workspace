@@ -1009,3 +1009,9 @@ Hard lessons:
 Source: teams/build/STANDUP.md
 
 Run long suites as a Popen with a log file, then sleep, because one run_python call is limited to 120s. A booted fresh server already holds the Steward member (seeded at boot), so test "Steward" joins only after accounting for that. Put the server-free `isReserved`/`validateName` check in the same test file so the red-on-main case doesn't depend on boot order. Correct your own earlier wrong claims in the report.
+
+
+## 2026-11-26T02:15:06.136Z · team review work session
+Source: teams/review/STANDUP.md
+
+Round 62: write the report file in the first call that has a result; I did measurements and wrote nothing, for the fourth time. Run commons tests from the repo root (some spawn 'commons/server.mjs' relative to cwd). `npm ci --omit=dev` takes under 115s. COMMONS_FAKE_LLM=1 makes the four kin vote yes immediately on /apply submit, which changes test outcomes: run /apply tests both with and without it. Main has moved past #309 (merged a7327bb); #316 (apply form questions) is open and its files are hands-off.

@@ -1,0 +1,14 @@
+{
+  "left-straddle": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:500,&quot;left&quot;:-210,&quot;right&quot;:390}"
+  },
+  "right-zero": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:500,&quot;left&quot;:-100,&quot;right&quot;:500}"
+  },
+  "left-partly-visible": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:500,&quot;left&quot;:-300,&quot;right&quot;:300}"
+  }
+}

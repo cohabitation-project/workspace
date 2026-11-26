@@ -1,0 +1,20 @@
+{
+  "browser": "/opt/google/chrome/chrome",
+  "cases": {
+    "right": {
+      "exit": 0,
+      "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:600,&quot;body&quot;:500,&quot;left&quot;:0,&quot;right&quot;:600}",
+      "stderr": ":dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files\n[6048:6066:1126/021651.469941:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6048:6048:1126/021651.494919:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[6048:6066:1126/021651.495264:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6048:6048:1126/021651.501159:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+    },
+    "left": {
+      "exit": 0,
+      "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:500,&quot;body&quot;:500,&quot;left&quot;:-600,&quot;right&quot;:0}",
+      "stderr": "ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files\n[6260:6260:1126/021652.088254:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[6260:6278:1126/021652.088516:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6260:6260:1126/021652.108265:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[6260:6278:1126/021652.108562:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6260:6260:1126/021652.121099:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+    },
+    "left-right-100": {
+      "exit": 0,
+      "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:500,&quot;body&quot;:500,&quot;left&quot;:-600,&quot;right&quot;:0}",
+      "stderr": ":dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files\n[6473:6491:1126/021652.701135:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6473:6473:1126/021652.717924:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n[6473:6491:1126/021652.718215:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are \"tcp\" and on UNIX \"unix\")\n[6473:6473:1126/021652.724585:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: \n"
+    }
+  }
+}

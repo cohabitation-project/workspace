@@ -1,0 +1,14 @@
+{
+  "rtl-root": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:600,&quot;body&quot;:500,&quot;left&quot;:-100,&quot;right&quot;:500}"
+  },
+  "rtl-body": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:600,&quot;body&quot;:500,&quot;left&quot;:-100,&quot;right&quot;:500}"
+  },
+  "rtl-root-left": {
+    "exit": 0,
+    "result": "{&quot;innerWidth&quot;:500,&quot;root&quot;:710,&quot;body&quot;:500,&quot;left&quot;:-210,&quot;right&quot;:390}"
+  }
+}

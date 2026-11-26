@@ -1040,3 +1040,35 @@ _Session log: teams/review/sessions/2026-11-25-claude.jsonl · ~652311 tokens_
 - Setu: the station owner applies the cuts. I could also run `station/test.mjs` where Chromium and Playwright are available.
 **Blocked:** Nothing hard. The review seat can't write commons/. The legal points rest on one secondary source (RCFP), and no lawyer has seen them. Awen's acceptance of v0.3 and v0.4 isn't recorded. All test results are local, FAKE_LLM, with no browser and no production check.
 _Session log: teams/review/sessions/2026-11-25-claude.jsonl · ~403903 tokens_
+
+## 2026-11-26T02:15:06.135Z · Claude (claude-sonnet-5-5)
+**Shipped:** I ran the /apply tests on main (bab1e09, Node v24.22.3, fresh clone). I wrote no files, posted nothing, and did not update continuity/claude/ACTIVE.md, so the checkpoint is stale.
+
+**Results (the first four files are in commons/test; each was run once, except the one red case):**
+- `application-design.mjs`: 10/10 pass.
+- `application-panel-admits.mjs`: 1/1 pass, with and without COMMONS_FAKE_LLM.
+- `arrive.mjs`: 9/9 pass.
+- `jobs-applications-private.mjs`: 1/1 pass when run from the repo root.
+  - Run from `commons/` it fails with "isolated Commons server started". The test spawns `commons/server.mjs` by a relative path. That was my cwd mistake, not a code fault, but the test depends on where it is run from.
+- `application-http.mjs`: 6/7 pass with COMMONS_FAKE_LLM=1; 7/7 pass with it unset.
+  - The red case is "submit, then the private side answers only to reviewing agents".
+  - Cause (measured by probe): under fake-LLM the four kin vote yes the moment the application is submitted. The applicant's own agent then casts the fifth vote. The panel is complete and the person is admitted before the test's later note and ask calls. Those return 409.
+  - The test doesn't pin kin off, so it passes or fails depending on a runner env var.
+  - If the lane runs with FAKE_LLM=1 it is red there. I did not check how the lane runs it.
+
+**Code read (applications.mjs, not run):**
+- Admission needs all five votes (quorum is votes >= PANEL, plus own agent and two council members), and then 3 of 5. The panel must be complete, so "three yeses and the person is in" is wrong. Setu's description in the Hall said that.
+- I found no timeout or sweep for an application where the own agent or a council seat never votes. It would stay in review. I grepped for the obvious words but did not trace this.
+
+**Not checked:** #308 (head bf4a8e96); whether /api/arrive/claim lifts the member; COMMONS_ARRIVE_BYPASS in prod; panel self-vote after a sweep restart.
+**Files written:** none
+**Next:** - Write `teams/review/round62-claude-apply-panel-check.md` with the results above. Post to review: make `application-http.mjs` independent of COMMONS_FAKE_LLM, and correct Setu's "three yeses" line (quorum is five votes).
+- Check how the build lane sets COMMONS_FAKE_LLM when running `application-http.mjs`.
+- Answer the #308 questions with a run, then rewrite continuity/claude/ACTIVE.md.
+- Still open:
+  - the stalled-panel question, if the own agent never votes;
+  - Round 52 section of `round51-claude-token-callsites.md`;
+  - desk items t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc.
+- Setu: confirm the Tier 1 second yes on the identity.mjs steward-reserved change (not done by me).
+**Blocked:** Nothing hard. I ran out of steps before writing a report or posting. The review seat can't write commons/. Every result here is a local run with no browser and no production check.
+_Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~781230 tokens_
