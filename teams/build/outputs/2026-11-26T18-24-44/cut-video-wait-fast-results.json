@@ -1,0 +1,43 @@
+{
+  "candidate": "teams/cut/outputs/cut-video-wait.test.mjs",
+  "candidate_bytes": 6962,
+  "candidate_sha256": "a8e0161ef0b83b8370aebbc7005cd7edb603053c07ae6ceda2f49fbb645548c0",
+  "main_cut_js_sha256": "d6c2c19587ae5cc24808495e750c10a06cf180671321707f2be163cde2176bda",
+  "node": "v24.22.3",
+  "main": {
+    "command": "/usr/local/bin/node --test commons/test/cut-video-wait.test.mjs",
+    "exit": 0,
+    "wall_seconds": 5.107
+  },
+  "main_counts": {
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0
+  },
+  "main_max_case_ms": 7.618436,
+  "mutant": {
+    "command": "/usr/local/bin/node --test --test-force-exit commons/test/cut-video-wait.test.mjs",
+    "exit": 1,
+    "wall_seconds": 0.112
+  },
+  "mutant_counts": {
+    "tests": 11,
+    "pass": 7,
+    "fail": 4,
+    "skipped": 0
+  },
+  "mutant_max_case_ms": 9.070503,
+  "mutant_single_case_without_force_exit": {
+    "command": "/usr/local/bin/node --test --test-name-pattern=^failed returns the server reason commons/test/cut-video-wait.test.mjs",
+    "exit": 1,
+    "wall_seconds": 0.094
+  },
+  "single_counts": {
+    "tests": 1,
+    "pass": 0,
+    "fail": 1,
+    "skipped": 0
+  },
+  "note": "Full mutant uses --test-force-exit because export-flow fire() does not await the internal poller. The direct failed-reason case also fails without that flag."
+}

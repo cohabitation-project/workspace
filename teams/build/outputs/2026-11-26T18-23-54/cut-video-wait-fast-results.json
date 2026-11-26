@@ -1,0 +1,37 @@
+{
+  "candidate": "teams/cut/outputs/cut-video-wait.test.mjs",
+  "candidate_sha256": "13eeb61124ed3f593c211d8c8f81a3bec58b21f70e18762bc976ee2da769b4d1",
+  "node": "v24.22.3",
+  "main_source_sha256": "d6c2c19587ae5cc24808495e750c10a06cf180671321707f2be163cde2176bda",
+  "mutant": "commented out exactly the if (mine?.failed) return line in a scratch cut.js",
+  "check": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--check",
+      "/tmp/kin-py-a8zBp8/repo/teams/cut/outputs/cut-video-wait.test.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.16
+  },
+  "green": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--test",
+      "commons/test/cut-video-wait.test.mjs"
+    ],
+    "exit": 1,
+    "seconds": 5.153
+  },
+  "red": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--test",
+      "--test-name-pattern=^(ready after two polls|failed returns the server reason.*|only the asked-for id counts.*|a failed fetch or network error.*|waitForVideo: failed with no reason.*)$",
+      "commons/test/cut-video-wait.test.mjs"
+    ],
+    "exit": 1,
+    "seconds": 0.1
+  },
+  "green_tail": "oad response itself says failed -> same message, nothing to post (1.141295ms)\n\u2714 export flow: a video that becomes ready still offers Post it (the failure path did not break success) (0.944058ms)\n\u2714 export flow: failed with no reason from the poll -> the plain default sentence, once (0.928458ms)\n\u2714 export flow: failed on the upload answer with no reason -> the plain default sentence (1.012675ms)\n\u2714 failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.290479ms)\n\u2714 waitForVideo: failed with no reason resolves reason \"\" (the page supplies the default) (0.156847ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 10\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 5089.011568\n\n\u2716 failing tests:\n\ntest at commons/test/cut-video-wait.test.mjs:11:1\n\u2716 ready after two polls (6.89089ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    {\n  +   state: 'timeout'\n  -   state: 'ready'\n    }\n  \n      at TestContext.<anonymous> (file:///tmp/kimi-cut-wait-main/commons/test/cut-video-wait.test.mjs:13:10)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: { state: 'timeout' },\n    expected: { state: 'ready' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n",
+  "red_tail": "    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: { state: 'timeout' },\n    expected: { state: 'ready' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n\ntest at commons/test/cut-video-wait.test.mjs:17:1\n\u2716 failed returns the server reason, so Cut can show it and withhold \"Post it\" (1.327349ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    {\n  +   state: 'timeout'\n  -   reason: 'We could not convert this video.',\n  -   state: 'failed'\n    }\n  \n      at TestContext.<anonymous> (file:///tmp/kimi-cut-wait-mutant/commons/test/cut-video-wait.test.mjs:19:10)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: { state: 'timeout' },\n    expected: { state: 'failed', reason: 'We could not convert this video.' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n\ntest at commons/test/cut-video-wait.test.mjs:89:1\n\u2716 waitForVideo: failed with no reason resolves reason \"\" (the page supplies the default) (0.472115ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    {\n  +   state: 'timeout'\n  -   reason: '',\n  -   state: 'failed'\n    }\n  \n      at TestContext.<anonymous> (file:///tmp/kimi-cut-wait-mutant/commons/test/cut-video-wait.test.mjs:91:10)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: { state: 'timeout' },\n    expected: { state: 'failed', reason: '' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n"
+}

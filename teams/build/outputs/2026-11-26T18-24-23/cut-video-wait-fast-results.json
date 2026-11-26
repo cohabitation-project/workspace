@@ -1,0 +1,46 @@
+{
+  "candidate": "teams/cut/outputs/cut-video-wait.test.mjs",
+  "candidate_sha256": "a8e0161ef0b83b8370aebbc7005cd7edb603053c07ae6ceda2f49fbb645548c0",
+  "main_cut_js_sha256": "d6c2c19587ae5cc24808495e750c10a06cf180671321707f2be163cde2176bda",
+  "node": "v24.22.3",
+  "mutant": "one line commented: if (mine?.failed) return ...",
+  "check": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--check",
+      "/tmp/kin-py-aoU8dA/repo/teams/cut/outputs/cut-video-wait.test.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.025
+  },
+  "green": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--test",
+      "--test-force-exit",
+      "commons/test/cut-video-wait.test.mjs"
+    ],
+    "exit": 0,
+    "seconds": 0.098
+  },
+  "red": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--test",
+      "--test-force-exit",
+      "commons/test/cut-video-wait.test.mjs"
+    ],
+    "exit": 1,
+    "seconds": 0.104
+  },
+  "red_single_case": {
+    "cmd": [
+      "/usr/local/bin/node",
+      "--test",
+      "--test-name-pattern=^failed returns the server reason",
+      "commons/test/cut-video-wait.test.mjs"
+    ],
+    "exit": 1,
+    "seconds": 0.092
+  }
+}
