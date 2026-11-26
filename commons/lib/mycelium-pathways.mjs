@@ -13,16 +13,19 @@ export const PATH_TYPES=Object.freeze([...edgeTypes]);
 
 /**
  * An in-memory directed adjacency index over caller-supplied pointers.
- * No traversals are exposed without requester-scoped verification.
- * Does not persist private data. Rejects untrusted edge properties except IDs/type.
+ * No traversals are exposed without edge-level authorization AND requester-scoped verification.
+ * Does not persist private data. Unknown edge scope is DENIED, not public by default.
  */
 export function createPathways(edges=[],{maxEdges=2000}={}) {
  const adjacency=new Map();
  for(const e of (Array.isArray(edges)?edges:[]).slice(0,cap(maxEdges,2000,10000))) {
    if(!e||!idOk(e.from)||!idOk(e.to)||e.from===e.to||!edgeTypes.has(e.type)) continue;
+   // An edge is a separate permissioned record. Deny unknown scopes.
+   const visibility = e.visibility === 'public' ? 'public' : (e.visibility === 'private' && idOk(e.ownerId) ? 'private' : null);
+   if(!visibility) continue;
    if(!adjacency.has(e.from))adjacency.set(e.from,[]);
    if(!adjacency.get(e.from).some(x=>x.to===e.to&&x.type===e.type))
-     adjacency.get(e.from).push(Object.freeze({to:e.to,type:e.type}));
+     adjacency.get(e.from).push(Object.freeze({to:e.to,type:e.type,visibility,ownerId:visibility==='private'?e.ownerId:null}));
  }
  /**
   * Search hits = seed; optionally traverse 1-2 hops via graph edges.
@@ -53,6 +56,9 @@ export function createPathways(edges=[],{maxEdges=2000}={}) {
     const {id,depth}=queued[head];if(depth>=hops)continue;
     for(const e of adjacency.get(id)||[]){
       if(found.length>=nodeLimit||probes.count>=probeLimit)break;
+      // Fail closed at EDGE level as well as endpoint level. Tenant-scoped edges
+      // require a future real grant checker; not accepted by this v0 experiment.
+      if(e.visibility!=='public' && !(e.visibility==='private' && requester?.id===e.ownerId))continue;
       if(verified.has(e.to))continue;
       const hit=verify(e.to);
       if(!hit)continue;
