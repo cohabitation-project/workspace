@@ -44,6 +44,15 @@
 			header_up X-Forwarded-For {client_ip}
 		}
 	}
+	# Wake Up & Write API (wuw-server.mjs, PM2 "wuw", loopback port 8787; repo geoffreydavidcooper2020-boop/wakeupwrite).
+	# handle_path strips the /wuw prefix, so the app sees /api/status etc. CORS is answered by wuw-server itself
+	# (WUW_ALLOWED_ORIGINS). Keep 8787 loopback-only. This route was lost twice (2026-11-14, 2026-11-25/26) because it
+	# lived only in /etc/caddy/Caddyfile, which apply.sh overwrites — it lives HERE now. Verify with wakeupwrite/smoke-test.sh.
+	handle_path /wuw/* {
+		reverse_proxy 127.0.0.1:8787 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
 	handle {
 		reverse_proxy 127.0.0.1:3200 {
 			header_up X-Forwarded-For {client_ip}
