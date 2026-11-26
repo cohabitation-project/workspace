@@ -1,19 +1,19 @@
-# GPT — active checkpoint (2026-11-26 00:25Z)
+# GPT — active checkpoint (2026-11-26 03:22Z)
 
-## Current: Cohabi Cut — maker-visible video conversion failure
+## Current: Cohabi Cut — video upload refusal / async conversion failure proposal
 
-**Shipped this session:** Patch candidate `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure.patch` (git blob `aa62dc80be239877b7850b33310d4b0e186ed34a`) and report `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure-report.md`; added result row to `teams/cut/RESULTS.md`. Candidate sets a persistent failure flag plus generic maker-safe reason when async ffmpeg exits nonzero and exposes these in the public video projection. Replaced the existing failed-conversion todo with a regression asserting the maker's own-list projection includes the failed record.
+**This session:** Completed the missing status report for Claude's unplaced candidate: `teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.md`. It records the intended behavior, the prior runner's test results with clear attribution, the two ffmpeg-present failures, the unverified cause, and a hold recommendation pending Ash's product disposition and green regression suite. This session did not rerun any tests or independently verify the patch.
 
-**Evidence / limits:** Measured with Node v24.22.3 on temporary source/test copies, in a targeted red/green run. Controlled fake `FFMPEG` executable reports success for `-version`, then exits 1 on conversion. Base source red (expected `failed:true`, got undefined); candidate green (1 pass, 0 fail). This validates failure-state handling, not ffmpeg decoding. The test calls `videos.listMine` directly (the projection used by `GET /api/videos?by=me`), not the HTTP route. Patch is unplaced; no full-checkout, browser, production or live check.
-
-## Prior Cut work carried
-
-- Failed-conversion UX alternatives and recommendation: `teams/cut/outputs/video-failed-plan.md`, RESULTS row 2026-11-25 21:15Z. Recommended async `failed` + reason; Cut should distinguish processing from failure.
-- Round 28 phone-overflow harness: `teams/cut/outputs/cut-phone-overflow.mjs` / `.md`; not run in booted browser. Report's earlier dependency explanation was stale; the latest measured server startup blocker is missing `dotenv` (see RESULTS).
+**Prior evidence:**
+- My maker-visible failure-state candidate: `teams/cut/outputs/2026-11-26T00-23-27/cut-video-failure.patch` and report. Targeted fake-ffmpeg red/green test only; unplaced and unapproved.
+- Claude's broader candidate: `teams/cut/outputs/2026-11-26T00-25-06/video-refuse-fail.patch`. Claude's 00:25Z standup reports 11/11 no-probe/wait tests passing, but 2/41 failures when ffmpeg is on PATH in the larger suite; main reportedly passes 41/41. Report is now at the path above. These numbers are attributed, not re-measured here.
 
 ## Decisions / next
 
-- Geoffrey owns production deploys. No live status inferred from candidate tests.
-- Ash directs Cut's queue/design. The patch develops the async failure option already documented, but it is a proposal, not an approved product change. Ask Ash for disposition; Setu may place/run only when design choice is confirmed.
-- Next if approved: place patch in a full checkout, run `cut-video-noprobe` and relevant Cut tests; verify the actual authenticated `GET /api/videos?by=me` response; test Cut's waiting/failure UI separately. Keep no-ffprobe 125s cap todo distinct.
-- Previously carried separate Build-lane Round 60 door tap-target assignment is in `teams/build/outputs/round60-gpt-door-taps.md`; its full server/browser run remains with Setu. Do not confuse it with Cut work.
+- Ash directs Cut's design queue. Ask Ash to confirm the refuse-unverified-upload policy before placement; candidate is not approved or live.
+- If approved, fix and rerun the seven-file test set both with and without ffmpeg, including `cut-music-list` and `cut-route-http`; then Setu can place and verify authenticated `GET /api/videos?by=me` and the UI waiting/failure path.
+- Geoffrey owns production deploys. Never infer live status from a candidate or test.
+
+## Other carried context
+
+Cut's export-duration candidate `teams/cut/outputs/cut-export-duration.mjs` remains awaiting Setu placement and real ffmpeg/ffprobe run (see Kimi's latest standup). Do not conflate that task with upload-refusal work. Round 28 phone-overflow harness is partial only; actual startup previously blocked by missing `dotenv`.
