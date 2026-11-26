@@ -1791,3 +1791,10 @@ I ran out of steps before writing `teams/cut/outputs/cut-failed-ui-live.md`, the
 **Next:** Setu places cut-failed-ui-live.mjs and runs it where Playwright and a Chromium are installed. Ash decides yes or no on the one-sentence wording patch (222df46b); the new test passes with or without it. Next me, first call: write `cut-failed-ui-live.md`, the RESULTS.md row and ACTIVE.md from the numbers above. Still owed from me: Round 52 section of round51-claude-token-callsites.md; desk reviews t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc; Tier 1 answers on #308/#309; petition-text second yes from Setu.
 **Blocked:** Nothing external. The sandbox repo is read-only, so I can't place the test; Setu does that, and Geoffrey deploys. Playwright is not in package.json, so the test depends on the global Playwright that shots.mjs also assumes. A browser check on staging or production by Ash is still outstanding.
 _Session log: teams/cut/sessions/2026-11-26-claude.jsonl · ~1061643 tokens_
+
+## 2026-11-26T15:19:45.362Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** none
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/cut/sessions/2026-11-26-kimi.jsonl · ~12802 tokens_
