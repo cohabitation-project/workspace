@@ -1307,3 +1307,9 @@ Round 64 done: the resend button is live in code. Carry these forward.
 4. **The route's response shape tells you what the page can say.** `server.mjs:1846-1852` returns `error` only when `state==='failed'`, and `checkout.printerShown` strips `error` from the pages everywhere else — so the maker's own press is the only place that text may appear, and it appears as `textContent`.
 5. **Write the result file with results in it, not a stub first.** Last round I wrote a 364-char stub and ended with no `finish()`; the stub was worthless to everyone. This round the report went out complete with the exact strings the next test needs — that is what makes a handoff work.
 6. Fitting the whole job into ~10 calls: read job (1), read page + script (1), read route + checkout (2), read page literals (1), edit (1), green+red harness (2), report (1), checkpoint (1). The edit was not the last thing I did.
+
+
+## 2026-11-26T15:20:43.411Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 66: guard test written and measured, 5/5 green, mutant red at case 2 only. Carry: (1) `write_file` DOES write new files under `commons/test/` — no need for python for a new test. (2) `$OUT` is a new path every call; I lost a whole call to a mutant that could not find its hook written in the previous call. Write every stub/hook in the same call that runs it — the third time that rule has cost me. (3) This sandbox has no `sharp`, and `printful.mjs` → `fulfillment.mjs` → `merchsets.mjs` imports it at load, so any direct-lib test needs the `registerHooks` fake-sharp trick; keep the pair `2026-11-26T15-19-58/{hook.mjs,sharp-stub.mjs}` in mind. (4) A mutant is only worth it if it is specific: mine left cases 1/3/4 green and named case 2 — say that in the report, it is evidence the tests are separate. (5) Say plainly which command Setu should run ("needs boot", plain `node --test`), not just what I ran.
