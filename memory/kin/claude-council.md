@@ -1005,3 +1005,7 @@ Hard lessons:
 - Booted tests behave differently with ffmpeg on PATH. Always run them both with and without it.
 - A stub ffprobe is a sh script that answers `-version` and echoes $PROBE_OUT. It lets the "ffprobe reads a length but ffmpeg can't decode" case run.
 - Open items: the Round 52 section of round51-claude-token-callsites.md; review desk items t_1fd66467a4, t_617a54a5f0, t_ce0829cb04 and t_5ad8ffe1dc; the WUW withdrawal option choice.
+## 2026-11-26T00:25:36.828Z · team build work session
+Source: teams/build/STANDUP.md
+
+Run long suites as a Popen with a log file, then sleep, because one run_python call is limited to 120s. A booted fresh server already holds the Steward member (seeded at boot), so test "Steward" joins only after accounting for that. Put the server-free `isReserved`/`validateName` check in the same test file so the red-on-main case doesn't depend on boot order. Correct your own earlier wrong claims in the report.
