@@ -20,8 +20,14 @@ const graph=createPathways([
  {from:'m_root',to:'m_second',type:'INSTRUCTIONS_OVERRIDE'},
 ]);
 test('only defined typed edges are indexed; duplicates and malformed ignored',()=>{
- assert.equal(graph.edgeCount(),4);
+ assert.equal('edgeCount' in graph,false,'unscoped edge metadata must not be exposed');
  assert.ok(PATH_TYPES.includes('supersedes'));
+});
+test('no unscoped diagnostics disclose private edge population',()=>{
+ const hidden=createPathways([{from:'m_root',to:'m_private',type:'related',visibility:'private',ownerId:'B'}]);
+ assert.equal('edgeCount' in hidden,false);
+ assert.deepEqual(Object.keys(hidden),['expand']);
+ assert.equal(hidden.expand(idx,{id:'A'},['m_root']).nodes.length,1);
 });
 test('public requester receives public graph paths but not private node or edge',()=>{
  const x=graph.expand(idx,{id:'A'},['m_root'],{maxHops:2});
@@ -55,7 +61,7 @@ test('unknown and tenant-scoped relationship permissions fail closed',()=>{
   {from:'m_root',to:'m_decision',type:'related'},
   {from:'m_root',to:'m_second',type:'related',visibility:'tenant',tenantId:'T'},
  ]);
- assert.equal(graph3.edgeCount(),0);
+ assert.equal('edgeCount' in graph3,false);
  assert.deepEqual(graph3.expand(idx,{id:'A'},['m_root']).nodes.map(x=>x.id),['m_root']);
 });
 test('bounded traversal and cycle termination; exact id check required',()=>{
