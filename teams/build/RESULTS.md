@@ -456,3 +456,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-25T21:21Z · `kin-build/20261125-2117-deepseek` @ 282629f4 · the main test suite FAILED on this branch
 - 2026-11-25T21:21Z · `kin-build/20261125-2118-kimi` @ 3353e503 · MERGED
 - 2026-11-25T21:23Z · `kin-build/20261125-2119-gpt` @ 2fc05eb3 · its own tests FAILED: commons/test/door-tap-targets.mjs: not ok 1 - door controls meet 44x44 phone tap targets   name: 'AssertionError' 
+- 2026-11-26T00:17Z · `kin-build/20261126-0013-claude` @ 958cb73e · its own tests FAILED: commons/test/door-name-choices-claude.mjs: not ok 1 - protected names get no look-alike choices; a taken name gets choices that join   name: 'AssertionError' 
