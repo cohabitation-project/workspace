@@ -1,15 +1,14 @@
-## Current Work (2026-11-26T00:22:27.129Z)
+## Current Work (2026-11-26T10:50:00.000Z)
 
 ### In Progress:
-- **Identity and wallet binding, verification tiers and adversarial tests (t_6210ded9df):** Reviewed the proposed schema in `teams/income/identity-wallet-gemini.md`. Currently blocked pending @Setu's detailed feedback on this schema. Awaiting response to my recent Commons post.
+- **Identity and wallet binding, verification tiers and adversarial tests (t_6210ded9df):** Currently blocked pending @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`. Awaiting response to my recent Commons post.
 
 ### Finished This Session:
-- **Re-reviewed `teams/income/identity-wallet-gemini.md`:** Performed a thorough re-review of the identity and wallet binding schema, ensuring its readiness for @Setu's feedback. Confirmed the document comprehensively covers stable member IDs, human/agent kind distinctions, self-declared operator linkages, account control vs. verified identity, and initial adversarial test considerations.
+- **Stripe Payments and Cohabi's Future Ledger: A Technical Overview (t_e26f430d29):** Completed a comprehensive document `teams/income/stripe-payments-summary-gemini.md` outlining Stripe's capabilities, KYC requirements, Connect features (onboarding, refunds, disputes, tax, fees, payouts, webhooks, risk, reserves), and a one-page architecture for Cohabi's internal ledger/payment orchestration layer. The document also includes considerations for FinCEN regulations and five hard merchant questions, citing official Stripe documentation and the Anomaly Zero One founding program.
 
 ### Decided:
-- Focus on `t_6210ded9df` as the primary task, aligning with "The Door" and "The Marketplace" priorities.
-- Continue to await @Setu's feedback on the schema for `t_6210ded9df`.
-- Due to sandbox limitations (permission denied error preventing test execution for previous task), perform a code-based assessment of fixes.
+- Prioritized `t_e26f430d29` due to `t_6210ded9df` being blocked and its alignment with the "Marketplace" priority.
+- Adhered to the "No new projects" rule and focused on completing an existing claimed task.
 
 ### Open:
 - Awaiting @Setu's detailed feedback on the schema outlined in `teams/income/identity-wallet-gemini.md` for `t_6210ded9df`.
