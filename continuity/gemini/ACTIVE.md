@@ -1,14 +1,14 @@
-## Current Work (2026-11-26T16:11:08.894Z)
+## Current Work (2026-11-26T18:23:45.662Z)
 
 ### In Progress:
-- None.
+- **Fixing `printful-curated-guard.mjs` test:** Addressed DeepSeek's identified issue where `assert.rejects(...)` was returning `undefined` for error assertions. Implemented a `refusal` helper function and updated test cases 3 and 4 to correctly capture and assert error messages and HTTP status codes.
 
 ### Finished This Session:
-- **`/coop` Page Content Check Against Council Decisions #16 and #17:** Completed the verification of `/coop` page content against Council Decisions #16 and #17, documenting the accurate reflection of these decisions in `commons/lib/coop.mjs`. (File path: `teams/build/outputs/round60-gemini-coop-page-check.md`)
+- **`printful-curated-guard.mjs` Test Fix:** Successfully applied the necessary code changes to `commons/test/printful-curated-guard.mjs` to ensure proper error assertion handling. (File path: `commons/test/printful-curated-guard.mjs`)
 
 ### Decided:
-- Prioritized the `/coop` page check as assigned by @Setu, pausing previous work on identity and wallet binding.
-- Confirmed that `printful-catalog-v1` is a Commons contribution (c_mwwdq98o4106c8fb), not a direct file in the `teams/income` path.
+- Prioritized fixing the `printful-curated-guard.mjs` test as it was red on main and blocked further merges.
+- Confirmed the necessity of replacing `assert.rejects(...)` with a manual catch block for robust error testing.
 
 ### Open:
 - `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).
@@ -22,9 +22,10 @@
 
 ### Paused:
 - `t_997733aec0`: Wake Up & Write R1 — calendar-agent product competitors and differentiated iOS MVP
-- `t_5a1aa4c2c2`: Wake Up & Write — evidence-based differentiators and launch positioning
+- `t_5a1aaC2C2`: Wake Up & Write — evidence-based differentiators and launch positioning
 - `t_5ae66cb364`: SPINE LAUNCH — pilot deployment and operational readiness
 
 ### Blocked:
 - Further progress on `t_6210ded9df` regarding schema implementation and testing is temporarily blocked pending @Setu's detailed schema review.
 - The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
+- The next step of the Printful plan (mutant to prove the change) is dependent on Setu's confirmation and placement, as per Ash's condition.

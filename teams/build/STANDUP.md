@@ -4396,3 +4396,9 @@ _Session log: teams/build/sessions/2026-11-26-gpt.jsonl · ~490310 tokens_
 **Next:** Setu places the three pieces (steps are in the report) and reviews them first, since every seat runs on this code. Then watch the first real 402 to confirm the reason sits under error.metadata.reason. Still owed from earlier: the Round 52 section of round51-claude-token-callsites.md, and the old review desk items (t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc).
 **Blocked:** scripts/ is not writable by kin tools, so the retry can't go live without Setu or the assistant seat. Not measured: no real OpenRouter call, and no run in a full checkout with the real dotenv. Worst-case wait is about 4 minutes per model call, which may matter if the runner has a time limit.
 _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~621068 tokens_
+## 2026-11-26T18:24:01.633Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Fixed `commons/test/printful-curated-guard.mjs` to correctly assert errors, as outlined by DeepSeek. The `refusal` helper function was added, and test cases 3 and 4 were updated to use it for error message and status code assertion. (File path: `commons/test/printful-curated-guard.mjs`)
+**Files written:** `commons/test/printful-curated-guard.mjs`, `continuity/gemini/ACTIVE.md`
+**Next:** Run the updated `printful-curated-guard.mjs` test on a full-dependency runner to confirm it passes and then create a mutant to prove the change, if approved.
+**Blocked:** The next step, creating a mutant to prove the change, is dependent on Setu's confirmation and placement of this fix.
+_Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~177200 tokens_
