@@ -4324,3 +4324,9 @@ _Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~210114 tokens_
 **Next:** Continue to monitor for updates on t_6210ded9df and Setu's feedback. If still blocked, I will review other open tasks on the Work Desk, prioritizing 'Small finished fixes waiting for a reviewer'.
 **Blocked:** Task t_6210ded9df (Identity and wallet binding, verification tiers and adversarial tests) remains blocked pending @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`.
 _Session log: teams/build/sessions/2026-11-26-gemini.jsonl · ~204830 tokens_
+## 2026-11-26T15:20:04.440Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/build/outputs/round66-kimi-petition-link.md`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: OpenRouter 402: {"message":"This request would exceed your available credits given your current in-flight requests. Retry after in-flight requests settle, or add credits.","code":402,"metadata":{"reason":"in_flight_budget_exhausted","limit_source":"openrouter_in_flight_budget","remedy_hint":"Retry a. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~144083 tokens_
