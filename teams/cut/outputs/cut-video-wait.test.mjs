@@ -31,15 +31,20 @@ test('a failed fetch or network error is retried, then times out; it never claim
 // Export flow (round 33, Cut Claude): drive the shipped initCutEditor with a fake DOM and a fake fetch. The upload answers ready:false,
 // the member's own list then says failed:true. The maker sees the failure message and is never offered "Post it". Fake DOM, not a browser.
 import { initCutEditor } from '../public/cut/cut.js';
-function fakeEl() { const l = {}; return { value: '', dataset: {}, hidden: false, options: [], disabled: false, href: '', textContent: '', addEventListener(t, f) { (l[t] ||= []).push(f); }, fire(t) { for (const f of l[t] || []) f({ preventDefault() {} }); }, focus() {}, load() {} }; }
+function fakeEl() { const l = {}; return { value: '', dataset: {}, hidden: false, options: [], disabled: false, href: '', textContent: '', addEventListener(t, f) { (l[t] ||= []).push(f); }, fire(t) { return Promise.all((l[t] || []).map((f) => f({ preventDefault() {} }))); }, focus() {}, load() {} }; }
 async function runExport(uploadBody, listVideos) {
-  const els = {}; const toasts = []; const toast = fakeEl();
+  const els = {}; const toasts = []; const toast = fakeEl(); let pollSleeps = 0;
   const prev = { location: globalThis.location, document: globalThis.document, fetch: globalThis.fetch, ls: globalThis.localStorage, setTimeout: globalThis.setTimeout };
   globalThis.location = { search: '?videoId=vid_0123456789abcdef' };
   globalThis.document = { querySelector: () => toast };
   globalThis.localStorage = { getItem: () => null, setItem() {} };
-  // handOff calls waitForVideo without options. Make its default sleep immediate too; otherwise deleting a failure branch leaves a real 180 s poll.
-  globalThis.setTimeout = (fn) => { queueMicrotask(fn); return 0; };
+  // Await the real click listener below. Its default 1,500 ms sleeps run as microtasks; after 20, reject the sleep
+  // (outside waitForVideo's fetch catch), so a missing terminal state settles red instead of leaving a live poller.
+  globalThis.setTimeout = (fn, ms) => {
+    if (ms === 1500 && ++pollSleeps > 20) throw new Error('Test poller exceeded 20 sleeps');
+    queueMicrotask(fn);
+    return 0;
+  };
   globalThis.fetch = async (url, opts) => {
     if (url === '/api/cut/render') return { ok: true, json: async () => ({ url: '/cut/cut_x.mp4' }) };
     if (url === '/cut/cut_x.mp4') return { ok: true, blob: async () => new Blob(['x']) };
@@ -51,9 +56,10 @@ async function runExport(uploadBody, listVideos) {
     initCutEditor({ getElementById: (id) => (els[id] ||= fakeEl()) });
     els['cut-preview'].duration = 5; els['cut-preview'].fire('loadedmetadata');
     const seen = []; Object.defineProperty(toast, 'textContent', { get: () => seen[seen.length - 1], set: (v) => seen.push(v) });
-    els['export-result'].hidden = true; els['export-feed'].fire('click');
-    for (let i = 0; i < 40; i++) await new Promise((r) => setImmediate(r));
-    return { els, seen };
+    els['export-result'].hidden = true;
+    await els['export-feed'].fire('click');
+    assert.ok(pollSleeps <= 20, 'export poller must settle before globals are restored');
+    return { els, seen, pollSleeps };
   } finally { Object.assign(globalThis, { location: prev.location, document: prev.document, fetch: prev.fetch, localStorage: prev.ls, setTimeout: prev.setTimeout }); }
 }
 const MSG = "We couldn't convert this video.";

@@ -1,0 +1,69 @@
+{
+  "round": 38,
+  "main_head": "b91074abc5680fe4059516efbb0cf4b23ddfa029",
+  "node": "v24.22.3",
+  "candidate_sha256": "6ae2948695638508c4522b447c21a34005e9f5f5cfe04f66c0d77b4ba99b56e3",
+  "candidate_bytes": 7554,
+  "main_cut_sha256": "d6c2c19587ae5cc24808495e750c10a06cf180671321707f2be163cde2176bda",
+  "main_test_sha256": "419ba6f15b2d4581c0c883bbb79a53e74113dd9ccdc00728c5f20ff96634be46",
+  "mutant_cut_sha256": "ca1893ab44a1eea5f3e91b92002a66462539c8698f8c9ac5fc39519c8cadc758",
+  "runs": [
+    {
+      "name": "node-check",
+      "command": [
+        "node",
+        "--check",
+        "commons/test/cut-video-wait.test.mjs"
+      ],
+      "exit": 0,
+      "wall_s": 0.018,
+      "counts": {
+        "tests": null,
+        "pass": null,
+        "fail": null,
+        "cancelled": null,
+        "skipped": null,
+        "todo": null
+      },
+      "log": "out/node-check.log"
+    },
+    {
+      "name": "main-ordinary",
+      "command": [
+        "node",
+        "--test",
+        "commons/test/cut-video-wait.test.mjs"
+      ],
+      "exit": 0,
+      "wall_s": 0.073,
+      "counts": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "log": "out/main-ordinary.log"
+    },
+    {
+      "name": "mutant-ordinary",
+      "command": [
+        "node",
+        "--test",
+        "commons/test/cut-video-wait.test.mjs"
+      ],
+      "exit": 1,
+      "wall_s": 0.078,
+      "counts": {
+        "tests": 11,
+        "pass": 7,
+        "fail": 4,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "log": "out/mutant-ordinary.log"
+    }
+  ]
+}
