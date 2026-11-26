@@ -1,0 +1,8 @@
+main 33a0ee3+ (97b52cc): PASS 1/1 3.1s post=/social?cut=vid_dba30ba2d3b6056d#compose link=99x44 docWidth=375 toast="Your edited video is ready. Tap "Post it"."
+Mutant A (resultBox.hidden=false removed): FAIL 0/1 'Post it link never became visible within 60s' link=0x0
+Mutant B (href built from the source id): FAIL 0/1 'Post it carries the ORIGINAL upload id'
+Mutant C (poll success branch inverted: ready -> failed toast): FAIL 0/1 toast="We couldn't prepare this video." post=/social#compose
+no ffmpeg/chromium run: ℹ tests 1
+ℹ pass 0
+ℹ fail 0
+ℹ skipped 1

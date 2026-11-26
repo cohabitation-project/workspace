@@ -1,0 +1,12 @@
+post=/social?cut=vid_dba30ba2d3b6056d#compose
+toast="Your edited video is ready. Tap \"Post it\"." renderStatus=200 link=99x44 docWidth=375 sourceId=vid_49cd77966b035016
+screenshot=/tmp/kin-py-Kongcn/out/cut-export-handoff-live.png
+✔ /cut/ at 375x812: a finished export offers a Post it link (>=44px) to the Feed composer carrying the new video id (3128.238871ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3414.843237
