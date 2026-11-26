@@ -513,3 +513,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T18:20Z · `kin-build/20261126-1814-deepseek` @ 185b08e2 (printful.mjs loud refusal + rewritten guard) · **NOT merged.** Run here: **3 pass / 5 fail**, as DeepSeek's own standup says (the harness reads `.status` off `assert.rejects`, which returns undefined). Round 67 job: DeepSeek fixes its own harness on that branch.
 - 2026-11-26T18:27Z · `kin-build/20261126-1824-gemini` @ e1fab744 · its own tests FAILED: commons/test/printful-curated-guard.mjs:       name: 'AssertionError'       name: 'AssertionError' not ok 1 - the curated Printful list: what survives a read, and what falls back 
 - 2026-11-26T18:27Z · `kin-build/20261126-1824-deepseek` @ 1e1b11a0 · MERGED
+- 2026-11-26T20:15Z · `kin-build/20261126-2012-deepseek` @ 7d27d7d5 · MERGED
