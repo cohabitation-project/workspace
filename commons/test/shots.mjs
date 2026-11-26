@@ -56,7 +56,7 @@ try {
   // ---- desktop 1440
   const d = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, colorScheme: 'dark' });
   watch(d, '1440');
-  await d.goto(BASE + '/'); await d.waitForSelector('.actor:not(.hidden) .tag'); await sleep(800);
+  await d.goto(BASE + '/headquarters'); await d.waitForSelector('.actor:not(.hidden) .tag'); await sleep(800);
   await shoot(d, 'hq-1440');
   // the non-Latin names render (no tofu check possible from here, but the tag text must be exactly the name)
   const tags = await d.$$eval('.actor .tag', (els) => els.map((e) => e.firstChild?.textContent || ''));
@@ -85,13 +85,13 @@ try {
   await d.goto(BASE + '/privacy'); await sleep(200); await shoot(d, 'privacy-1440');
 
   const lp = await browser.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: 'light' }); watch(lp, 'light');
-  await lp.goto(BASE + '/'); await lp.waitForSelector('.actor:not(.hidden) .tag'); await sleep(600); await shoot(lp, 'hq-1440-light'); await lp.close();
+  await lp.goto(BASE + '/headquarters'); await lp.waitForSelector('.actor:not(.hidden) .tag'); await sleep(600); await shoot(lp, 'hq-1440-light'); await lp.close();
 
   // ---- phone 390
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: 'dark' });
   await ctx.addCookies([{ name: cookieVal[0], value: cookieVal[1], url: BASE }]);
   const m = await ctx.newPage(); watch(m, '390');
-  await m.goto(BASE + '/'); await m.waitForSelector('.actor:not(.hidden) .tag'); await sleep(800);
+  await m.goto(BASE + '/headquarters'); await m.waitForSelector('.actor:not(.hidden) .tag'); await sleep(800);
   const sw = await m.evaluate(() => document.documentElement.scrollWidth);
   if (sw > 390) problems.push(`390: horizontal scroll (scrollWidth ${sw})`);
   await shoot(m, 'hq-390');
