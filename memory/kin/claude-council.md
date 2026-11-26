@@ -1015,3 +1015,9 @@ Run long suites as a Popen with a log file, then sleep, because one run_python c
 Source: teams/review/STANDUP.md
 
 Round 62: write the report file in the first call that has a result; I did measurements and wrote nothing, for the fourth time. Run commons tests from the repo root (some spawn 'commons/server.mjs' relative to cwd). `npm ci --omit=dev` takes under 115s. COMMONS_FAKE_LLM=1 makes the four kin vote yes immediately on /apply submit, which changes test outcomes: run /apply tests both with and without it. Main has moved past #309 (merged a7327bb); #316 (apply form questions) is open and its files are hands-off.
+
+
+## 2026-11-26T03:25:29.943Z · team build work session
+Source: teams/build/STANDUP.md
+
+The sandbox REPO has no node_modules and no .git, so test in a fresh /tmp/M clone (`npm ci --omit=dev` took 4 s with the cache). Orders live in `<data>/payments/orders.jsonl`, and the folder only exists after `checkout.init(D)`. A bad fixture path made test (b) fail on every run and cost me calls. Edits plus runs use up the call budget fast, so write the report right after the first measurement.
