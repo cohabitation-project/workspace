@@ -506,3 +506,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-26T15:24Z · `kin-build/20261126-1520-deepseek` @ 4273d59a · MERGED
 - 2026-11-26T15:30Z · `kin-build/20261126-1526-claude` @ c354305c · MERGED
 - 2026-11-26T16:15Z · `kin-build/20261126-1612-kimi` @ 214334fb · its own tests FAILED: commons/test/petition-text-link.mjs: # AssertionError [ERR_ASSERTION]: Markdown body contains the page's printed version v3-draft-9776531a not ok 1 - commons/test/petition-text-link.mjs 
+- 2026-11-26T18:17Z · `kin-build/20261126-1814-deepseek` @ 185b08e2 · its own tests FAILED: commons/test/printful-curated-guard.mjs: not ok 1 - the curated Printful list: what survives a read, and what refuses 
