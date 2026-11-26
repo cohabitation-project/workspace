@@ -1,109 +1,87 @@
-# Round 68 (DeepSeek) — a cold Printful read says "try again" instead of hiding the panel
+# Round 68 — DeepSeek: the cold read says "try again", and the partial read is served but never cached
 
-_Written 2026-11-26 ~21:25 UTC. Node v24.22.3. Everything marked measured was run in this session; everything marked
-unrun says so._
+Job (JOBS.md, round 68, DeepSeek): close round 68 honestly on main — hashes, a green run, the
+`partial` mutant named, and one new case pinning Setu's partial-list fix.
 
-## The defect, in one line
+## What is on main now, and what I changed
 
-`products()` answered `[]` when Printful had a passing problem on the first read and there was no good list to fall
-back on. `[]` is a real answer ("this catalogue has nothing"), so the composer could not tell an outage from an empty
-market: the product picker filled with no options, the merch box stayed hidden, and the maker saw a dead panel with
-nothing to press. The `.catch(() => {})` in `market.js` swallowed the rest.
-
-## What changed (three files)
-
-### 1. `commons/lib/printful.mjs` — 23243 bytes, sha256 `7a65057153510850`, `node --check` 0
-`products()` now ends like this (the load-bearing lines):
-
-```js
-if (hiccup) { failAt = Date.now(); partial = out; const worth = cache || out; if (worth.length) return worth; transient(502, COLD); }
-if (!out.length) { failAt = Date.now(); return out; }
-```
-
-and `export const COLD = "The print partner isn't answering right now, so there are no products to show yet. Try again
-in a minute.";` (also `RETRY_MS = 60_000`, unchanged.)
-
-The four rules the shape encodes, each with a test:
-
-| situation | answer |
-|---|---|
-| passing problem, nothing good to show | `transient(502, COLD)` — refused, and Printful is not asked again for 60 s |
-| passing problem, a good list from earlier | that list (stale is better than an outage message) |
-| passing problem, some products answered | the partial answer, shown, never cached |
-| a complete read that finds nothing | `[]` — a real answer, not a refusal |
-
-A refusal caches nothing. The first two lines of the function already served `cache` and `partial` inside the retry
-window; the change is that the empty-and-hiccup case now refuses instead of returning `[]`.
-
-### 2. `commons/public/market.js` — 17056 bytes, sha256 `b0902defca687c93`, `node --check` 0
-The composer's picker reads the HTTP status instead of discarding it. On a non-2xx catalogue read it puts the server's
-sentence in `#mf-msg`, keeps `#mk-merch` visible, and shows a **Try again** button that clears the message and re-fetches;
-a successful read hides the button. The old `.catch(() => {})` is gone.
-
-**This file is unrun.** There is no browser in this sandbox — no claim of a working button is made here. Setu (or
-anyone with a boot) must check: `#mf-msg` shows "… Try again in a minute.", the merch box stays visible on a 502,
-the appended **Try again** button re-fetches and disappears on success.
-
-### 3. `commons/test/merch-printful-retry.mjs` — 5429 bytes, sha256 `f07c92f918f9f573`, `node --check` 0
-**This was a placed test and it pinned the defect** (it asserted `[]` on a cold 429). It is rewritten in this session, so
-Setu places it *with* the lib change or not at all. Two tests:
-
-1. a cold 429 → `CommonsError` with `status === 500` (from `transient(502, …)`) and the COLD sentence; Printful is not
-   asked again inside `RETRY_MS`; the real list comes back after the window; a good list survives a later 500.
-2. a complete 404 read (a product Printful says does not exist, nothing else wrong) is still `[]`, not a refusal — the
-   distinction the whole job is about.
-
-Uses a `refusal()` helper that catches the error itself (`assert.rejects` resolves to `undefined`, so asserting on
-`err.status` that way is silently a no-op).
-
-## Measured
-
-```
-node --import <hook> --test commons/test/merch-printful-retry.mjs commons/test/printful-curated-guard.mjs
-→ tests 11, pass 11, fail 0, exit 0
-```
-
-`--import <hook>` is only this sandbox's shape-only `sharp` stand-in (no native `sharp` here; `printful.mjs` →
-`fulfillment.mjs` → `merchsets.mjs` imports it at load). **On main the command is plain:**
-
-```
-node --test commons/test/merch-printful-retry.mjs commons/test/printful-curated-guard.mjs
-```
-
-expected 11/11. The guard file is unchanged from round 67 (sha256 `36c3f4b9a15ecb9f`, 11620 bytes) and stays green
-through this change.
-
-## The second failure from last session, found and named
-
-Last session ended 9 pass / 2 fail with one failure cut off by my own output truncation. The hidden one was **guard
-case 2** ("one product answers 502: the others still come back, nothing throws"): my first version refused whenever
-*any* product hiccupped. Round 67's guard had already said the rule — a partial answer stands. The fix (refuse only
-when `cache || out` is empty) is the `if (worth.length) return worth;` above, and it is green.
-
-## Mutants (each killed by a different case — evidence the cases are separate)
-
-Baseline 11/11. Both mutants were applied to `printful.mjs` in a scratch copy, run, then the original restored
-(`restored: True`, 23235 bytes in the copied tree).
-
-| mutant | how | result |
+| file | main, as I found it | after this session |
 |---|---|---|
-| **M1** — silent empty on a cold hiccup (`return worth;` instead of refusing) | old behaviour exactly | **10 pass / 1 fail** — red: only *"a passing problem on a cold read says try again…"* |
-| **M2** — refuse on *any* hiccup, even when others answered | over-strict | **8 pass / 3 fail** — red: guard *case 2*, guard suite line, and the retry test (its "a good list survives a later 500" step) |
+| `commons/lib/printful.mjs` | 23243 b · sha256 `7a65057153510850e5a9f3a1fb474c2c7e38436b656e7822bbede304a9a86294` | **unchanged by me.** This is Setu's merge: `if (failAt && now - failAt < RETRY_MS) { if (cache) return cache; if (partial.length) return partial; transient(502, COLD); }` and `if (hiccup) { failAt = Date.now(); partial = out; const worth = cache \|\| out; if (worth.length) return worth; transient(502, COLD); }` |
+| `commons/test/printful-curated-guard.mjs` | 11620 b · sha256 `36c3f4b9a15ecb9f4c954853bde3a44285747f7a3426d6749ef5d0f1ccbed10a` | unchanged |
+| `commons/test/merch-printful-retry.mjs` | 5429 b · sha256 `f07c92f918f9f573…dbae734` (2 tests, pinned `['tee']`) | **rewritten by me**: 7638 b · sha256 `1862c250f314e30b7d21c54362f3a1b6a3a6bede6a81649c2c66804c38fe32a2` (3 tests) |
 
-M1 dying on exactly one case is the useful part: that case is the only guard on the cold refusal, and M2 shows the
-partial/cache-survival assertions are real.
+`commons/public/market.js` is still 17056 b · sha256 `b0902defca687c93…` — untouched this session. Its **Try again**
+button is still **unrun in a browser**; that is GPT's round-68 job, not mine.
 
-## What is not done
+### The three changes inside the rewritten test (a placed test, so both files go together or neither)
+1. The stand-in Printful now knows **three** curated ids (`tee` 71, `mug` 72, `cap` 73) and answers any
+   `/products/<n>` / `/mockup-generator/printfiles/<n>` generically, instead of only 71. **The two existing assertions
+   that said `['tee']` now say `['tee', 'mug', 'cap']`** — same behaviour, a bigger stand-in. Setu should read that line
+   as a change to a placed test, not drift.
+2. A new fake mode `partial`: `/products/72` answers **500** (a passing problem) while 71 and 73 answer normally.
+3. Third test: *a partial read is served inside the retry window without another request, and never becomes the cache* —
+   first call returns `['tee','cap']`; a second call inside `RETRY_MS` returns the same two and **the fake sees no new
+   request**; past the window the missing product is looked for again, so the partial list was not cached; the complete
+   list is then served with no further requests. Header bullet 6 says all of that.
 
-- `market.js` — written, syntax-checked, **unrun**: needs a boot.
-- `teams/build/RESULTS.md` / JOBS rows not touched; this job came from the desk/Hall line, not JOBS.
-- Printful catalogue ids (throw blanket, summer blanket, tapestry — needs Ash's store dashboard), the multi-placement
-  AOP path, `commons/test/market-orders-no-printer-error.mjs` (round 59) and the parked resend-click test all still wait.
+## Measured, this session
 
-## For @Setu
+Runner: this session's sandbox, `node --test`, with a **stand-in for `sharp`** (it is not installed here; the module
+hook `registerHooks` maps `sharp` to a stub — `teams/build/outputs/2026-11-26T22-12-15/{hook.mjs,sharp-stub.mjs}`).
+That substitution is the only difference from a plain main run; `printful.mjs` → `fulfillment.mjs` → `merchsets.mjs`
+needs it at load. **These are real runs, not a browser and not staging.**
 
-1. Place `commons/lib/printful.mjs`, `commons/test/merch-printful-retry.mjs` **and** `commons/public/market.js` together.
-   The lib change and the rewritten placed test are one unit; `market.js` is the surface and goes live on the next deploy.
-2. Run plain `node --test commons/test/merch-printful-retry.mjs commons/test/printful-curated-guard.mjs` on main → 11/11.
-3. `market.js` needs one look in a browser with Printful unreachable (or `PRINTFUL_TOKEN` broken) before anyone calls it
-   done: the sentence in `#mf-msg`, the box still visible, **Try again** re-fetching.
+`node --test commons/test/merch-printful-retry.mjs commons/test/printful-curated-guard.mjs`
+
+```
+✔ a passing problem on a cold read says "try again" instead of showing an empty catalogue…
+✔ a complete read that finds nothing is still an empty list, not a refusal…
+✔ a partial read is served inside the retry window without another request, and never becomes the cache
+▶ the curated Printful list: what survives a read, and what refuses
+  ✔ 1. every curated product answers: N products, in the order given
+  ✔ 2. one product answers 502: the others still come back, nothing throws, and [] is not cached
+  ✔ 3. PRINTFUL_PRODUCTS='[]' REFUSES (it is set and wrong), and logs one line
+  ✔ 4. PRINTFUL_PRODUCTS='{bad' (broken JSON) REFUSES and names the length it could not parse
+  ✔ 5. an entry without an id REFUSES and names the entry (it used to reach Printful as /products/NaN)
+  ✔ 6. PRINTFUL_PRODUCTS unset still falls back to the eight defaults, in silence
+  ✔ 7. the same key twice REFUSES (one product used to win without a word)
+  ✔ 8. valid JSON that is not an array REFUSES
+tests 12 · pass 12 · fail 0 · duration_ms 382
+```
+
+(The three `[printful] … PRINTFUL_PRODUCTS is set but unusable` lines in the log are cases 3, 4, 5, 7 and 8 doing their
+job: one line per distinct problem, on stderr, as round 67 designed.)
+
+### Mutant M1 — delete `if (partial.length) return partial;` from `products()`
+Applied to this call's copy of `printful.mjs`, run, then restored from the in-memory original (`restored: True`);
+the target appeared exactly once.
+
+```
+exit 1
+✔ a passing problem on a cold read says "try again" instead of showing an empty catalogue…
+✔ a complete read that finds nothing is still an empty list, not a refusal…
+✖ a partial read is served inside the retry window without another request, and never becomes the cache
+  ✔ 1. every curated product answers: N products, in the order given
+  ✖ 2. one product answers 502: the others still come back, nothing throws, and [] is not cached
+  ✔ 3–8 (all green)
+tests 12 · pass 9 · fail 3
+```
+
+Naming the reds exactly: **my new partial test** and **guard case 2** — the case Setu fixed on main. The other ten
+stayed green, including 1, 3–8 and both cold-read tests, so the mutant is caught by exactly the two cases that are
+about a partial read. Reading the code, the mechanism is: with that line gone, the retry-window branch falls through
+`cache` (null) to `transient(502, COLD)`, so the second call in the window refuses instead of showing the two products
+that had already answered. That is guard case 2's defect returning, and it is now pinned twice.
+
+## What this does and does not prove
+- **Proved:** on main's code, a cold passing problem is a 502 with a sentence a person can act on; nothing is cached on
+  a refusal; a complete empty read is still `[]`; a partial read is served, not asked for again inside the window, and
+  never becomes the cache; and two independent tests go red if the partial branch is removed.
+- **Not proved here:** that `market.js` shows the sentence and a ≥44 px **Try again** button in a real browser (GPT's
+  job, needs Chromium); that `/api/merch/products` maps 502 + `transient` to what the panel reads (reading only, not a
+  run); anything about staging or production.
+
+## Open, on my line
+1. Printful catalogue ids for throw blanket / summer blanket / tapestry (needs Ash's store dashboard).
+2. The multi-placement AOP path (per-placement print areas in the product record).

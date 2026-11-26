@@ -4520,3 +4520,24 @@ _Session log: teams/build/sessions/2026-11-26-claude.jsonl · ~669356 tokens_
 **Next:** @Setu/CI runs the server-equipped `commons/test/feedv2.mjs` and reviews/merges through the normal lane. Next session starts from the newest Build JOBS/RESULTS and takes only Kimi's assigned job; no Cut or Printful duplication.
 **Blocked:** The existing feedv2 test exited 1 before assertions because nothing was listening at 127.0.0.1:3486 (`fetch failed`, ECONNREFUSED). No feed page, browser, staging, production, or deploy claim was made; that broader run needs a server-equipped runner. The focused real-menu regression and requested mutant both ran successfully.
 _Session log: teams/build/sessions/2026-11-26-kimi.jsonl · ~311372 tokens_
+
+## 2026-11-26T22:13:16.748Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** Round 68 for DeepSeek, closed honestly and green on main's code — with a new case that pins the partial-read fix.
+
+**Files:**
+- `commons/test/merch-printful-retry.mjs` — **rewritten**: 7638 b, sha256 `1862c250f314e30b7d21c54362f3a1b6a3a6bede6a81649c2c66804c38fe32a2` (was 5429 b, `f07c92f9…`). Three changes: (1) the stand-in Printful now knows three curated ids (`tee` 71, `mug` 72, `cap` 73) and answers any `/products/<n>` generically, so two existing assertions read `['tee','mug','cap']` instead of `['tee']`; (2) a new fake mode `partial` where `/products/72` answers 500 while 71 and 73 answer; (3) a third test: **a partial read is served inside `RETRY_MS` with no second request to Printful, and never becomes the six-hour cache**, then the missing product is looked for again after the window and the complete list is cached.
+- `commons/lib/printful.mjs` — **not touched by me**; main's 23243 b / `7a65057153510850…a86294` is Setu's merge (`if (partial.length) return partial;` inside the retry window, `worth.length` on a first read). Same for `commons/test/printful-curated-guard.mjs` (11620 b / `36c3f4b9…`).
+- `teams/build/outputs/round68-deepseek-cold-read.md` — the report: hashes, the full pass/fail block, the mutant, and what is and isn't proved.
+- `continuity/deepseek/ACTIVE.md` — rewritten for round 68, including the exact `node --test` invocation that works in this sandbox.
+
+**Measured (this sandbox, `node --test`, `sharp` replaced by a module hook because it isn't installed here — not a browser, not staging):** `merch-printful-retry.mjs` + `printful-curated-guard.mjs` → **12 tests, 12 pass, 0 fail**.
+
+**Mutant M1** — delete `if (partial.length) return partial;` (target appeared once; restored `True`) → exit 1, **9 pass / 3 fail**, red on exactly the new partial test and **guard case 2**, the case Setu fixed on main. The other ten stayed green, so the mutant is caught only by the two cases about a partial read.
+
+**Not proved here:** the `Try again` button in `commons/public/market.js` in a real browser (GPT's round-68 job, needs Chromium); `/api/merch/products` mapping 502+`transient` to what the panel reads (reading, not a run).
+**Files written:** `commons/test/merch-printful-retry.mjs`, `teams/build/outputs/2026-11-26T22-12-15/hook.mjs`, `teams/build/outputs/2026-11-26T22-12-15/sharp-stub.mjs`, `teams/build/outputs/round68-deepseek-cold-read.md`, `continuity/deepseek/ACTIVE.md`
+**Next:** 1. **@Setu:** place `commons/test/merch-printful-retry.mjs` (`1862c250…`) as one unit — it rewrites a placed test — and run it with `printful-curated-guard.mjs` on main (12/12 expected). Add the round-68 row for me in `teams/build/RESULTS.md`; I ran out of calls before it.
+2. Next session on my line: Printful catalogue ids for throw blanket / summer blanket / tapestry (needs Ash's store dashboard), then the multi-placement AOP path (per-placement print areas in the product record).
+3. Still owed, not mine: `commons/test/market-orders-no-printer-error.mjs` (round 59) and the parked resend-click test wait on Setu.
+**Blocked:** Nothing blocked. Two limits stated plainly: `sharp` is absent in this sandbox (stubbed, said so), and no browser here, so `market.js`'s Try again path remains unrun in a browser — GPT's job. The catalogue-id work needs Ash's Printful store dashboard, which I don't hold and won't ask for credentials to.
+_Session log: teams/build/sessions/2026-11-26-deepseek.jsonl · ~377001 tokens_

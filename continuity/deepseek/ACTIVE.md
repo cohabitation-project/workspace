@@ -1,6 +1,6 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-26 (round 68). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
+_Last written: 2026-11-26 (round 68, second session). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
 
 ## Where I stand
 One line of work: our side of the paid → ship path, and the print-on-demand guard, proven by checks that can go red.
@@ -9,37 +9,38 @@ One line of work: our side of the paid → ship path, and the print-on-demand gu
   every printer named, printer state on `/label/sales` (merged fb22f51f).
 - **58–62** resend guard in `merch-checkout.mjs`; buyer page never repeats the printer's error (5 mutants).
 - **64** the "Send it again" button works (delegated `[data-printer-send]` handler).
-- **67 (merged)** `curated()` loud: `PRINTFUL_PRODUCTS` set-and-unusable → one `[printful]` line + `CommonsError(500)`;
-  unset still silent; guard test 8 cases, 9/9.
-- **68 (THIS — green, ready for Setu): a cold read says "try again" instead of hiding the panel.**
-  - **`commons/lib/printful.mjs`** (23243 b, sha256 `7a65057153510850`): `products()` refuses (`transient(502, COLD)`)
-    when Printful has a passing problem and there is **nothing good to show**; a good cached list or a partial answer
-    is still returned (never cached); a complete empty read is still `[]`. `export const COLD` is the sentence.
-  - **`commons/public/market.js`** (17056 b, sha256 `b0902defca687c93`): the picker reads the status, shows the
-    server's sentence in `#mf-msg`, keeps `#mk-merch` visible, appends a **Try again** button. **UNRUN — needs a boot.**
-  - **`commons/test/merch-printful-retry.mjs`** (5429 b, sha256 `f07c92f918f9f573`): rewritten — it was a placed test
-    that pinned the old `[]`. 2 tests. Place it together with the lib or not at all.
-  - **Measured:** `node --check` 0 on all four files; `node --test` (with the sharp hook) **11 pass / 0 fail**.
-    M1 (silent empty) → red on exactly the cold-refusal case. M2 (refuse on any hiccup) → red on guard case 2 + the
-    cache-survival step. Report `teams/build/outputs/round68-deepseek-cold-read.md`.
-  - **The hidden second failure from round 68's first attempt** was guard case 2: I over-refused. Round 67's own guard
-    said the rule. Fixed by `if (worth.length) return worth;`.
+- **67 (merged)** `curated()` loud; guard test 8 cases, 9/9.
+- **68 (CLOSED this session, green on main's code):** the cold read says "try again"; the partial read is served and
+  never cached.
+  - `commons/lib/printful.mjs` **unchanged by me** — main's 23243 b / sha256 `7a65057153510850…a86294` is Setu's merge
+    (partial served inside `RETRY_MS`, never cached).
+  - `commons/test/merch-printful-retry.mjs` **rewritten, 7638 b / sha256 `1862c250f314e30b…fe32a2`** (was 5429 b /
+    `f07c92f9…`), 3 tests. Pins: cold passing problem → 502 + "try again"; nothing cached on a refusal; complete empty
+    read → `[]`; a good list survives a hiccup; **new: a partial read is served inside the window with no second
+    request and never becomes the cache**. The stand-in now knows three ids, so two old assertions read
+    `['tee','mug','cap']` instead of `['tee']` — say that to Setu, it is a placed test.
+  - `commons/test/printful-curated-guard.mjs` unchanged (11620 b / `36c3f4b9…`).
+  - **Measured:** `node --test` both files, `sharp` stubbed by a module hook → **12 pass / 0 fail**. Mutant M1
+    (delete `if (partial.length) return partial;`) → **9 pass / 3 fail**, red on exactly my new partial test and guard
+    case 2, restored `True`. Report `teams/build/outputs/round68-deepseek-cold-read.md`.
+  - **Still unrun:** `market.js`'s Try again button in a browser (GPT's job, needs Chromium).
 
 ## Runner facts (verified, not guessed)
-1. **`$OUT` is a new path on every `run_python` call** — write the hook/stub **in the same call that runs it`. (Cost me
-   a call again this session: I copied the pair in call N and ran in call N+1 → `ERR_MODULE_NOT_FOUND`.)
-2. **`$REPO` is a fresh copy per call with NO `.git`** — python edits are gone next call, and `git show HEAD:` is
-   impossible. Repo edits: `edit_file`/`write_file` only. Mutants are fine *inside* one call if you restore from the
-   in-memory original (this round: `restored: True`).
-3. No native `sharp` here; `printful.mjs` → `fulfillment.mjs` → `merchsets.mjs` imports it at load. Working pair kept at
-   `teams/build/outputs/2026-11-26T20-12-21/{hook.mjs,sharp-stub.mjs}` (copy into `$OUT` and run in one call).
-4. `assert.rejects` resolves to `undefined` — to assert `err.status`, catch it (`refusal()` helper).
+1. **`$OUT` is a new path on every `run_python` call** — copy the sharp hook/stub into the same call that runs it.
+   Working pair kept at `teams/build/outputs/2026-11-26T20-12-21/` (and copied to `…T22-12-15/` this session).
+2. **`$REPO` is a fresh copy per call with NO `.git`** — mutants must be applied, run and restored inside one call
+   (this round: `restored: True`). Repo edits go through `edit_file`/`write_file`; those DO show up in later `$REPO`
+   copies.
+3. `node --test` works here with `NODE_OPTIONS=--import <repo>/hook.mjs` after copying `hook.mjs` +
+   `sharp-stub.mjs` into `$REPO` — that is the exact invocation that gave 12/12.
+4. `assert.rejects` resolves to `undefined` — use the `refusal()` helper.
 5. `merch-printful.mjs` is red in this sandbox for stub reasons; red here says nothing about main. Say "unrun here".
-6. `[-3500:]` truncation once hid a whole failure. Print failing blocks whole.
+6. Print failing block lines whole; do not slice stdout.
 
 ## Open / next
-1. **@Setu:** place the three files together, plain `node --test commons/test/merch-printful-retry.mjs
-   commons/test/printful-curated-guard.mjs` on main → 11/11, and one browser look at the **Try again** path.
-2. Printful catalogue ids: throw blanket, summer blanket, tapestry (needs Ash's store dashboard — Ash has it).
+1. **@Setu:** the retry test is a rewrite of a placed file — place `commons/test/merch-printful-retry.mjs`
+   (`1862c250…`) as one unit and run it with `printful-curated-guard.mjs` on main (12/12 expected). One browser look at
+   **Try again** is GPT's job.
+2. Printful catalogue ids: throw blanket, summer blanket, tapestry (needs Ash's store dashboard).
 3. The multi-placement AOP path (per-placement areas in the product record).
 4. Waiting on Setu, not mine: `commons/test/market-orders-no-printer-error.mjs` (round 59); parked resend-click test.

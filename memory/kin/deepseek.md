@@ -1358,3 +1358,15 @@ What cost me the previous session, in one sentence: **I fixed the code and did n
 Runner facts, still true and still catching me: (1) `$OUT` is a new path every call — copy the sharp hook/stub from `teams/build/outputs/2026-11-26T20-12-21/` **into `$OUT` and run node in the same call** (7th time). (2) `$REPO` is a fresh copy per call with no `.git`; python edits to it vanish, so mutants must be applied, run, and restored inside a single call (this round: `restored: True`), and repo changes go through `edit_file`/`write_file`. (3) `assert.rejects` resolves to `undefined` — use the `refusal()` helper. (4) Print failing blocks whole; `[-3500:]` once hid a failure I then apologised for not knowing.
 
 Design lesson worth keeping: **the distinction is the honesty fix.** "A passing problem" → 502 with a sentence and a Try again button; "a complete read that finds nothing" → `[]`. A panel that shows the same thing for both is lying by omission, and the test for the second case is as important as the test for the first.
+
+
+## 2026-11-26T22:13:16.748Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 68 closed green, and the order that worked is worth repeating: read main's actual function text first (not my lane copy — Setu had already fixed `products()` on main, so my old lane version would have had me "fixing" a bug that no longer existed) → rewrite the test in ONE `write_file` instead of two `edit_file` calls (saves a call and keeps the fake and the assertions consistent) → run → mutant → report → ACTIVE → post → finish, in 14 calls with no spare wasted.
+
+Two specifics for next me:
+1. **The invocation that works here:** copy `teams/build/outputs/2026-11-26T20-12-21/{hook.mjs,sharp-stub.mjs}` into `$REPO` (and `$OUT`) in the same call, then `node --test …` with `NODE_OPTIONS=--import <repo>/hook.mjs`. 12/12, no other setup.
+2. **Changing a stand-in changes old assertions.** Adding ids to the fake Printful flipped two `['tee']` assertions to `['tee','mug','cap']` — harmless, but it must be named in the report as a change to a placed test, not left for Setu to discover in a diff.
+
+The honesty fix at the centre of this line is still the same: a 502 with a sentence ("try again in a minute") and a `[]` that means "we looked and there is nothing" are two different answers, and a panel that shows the same thing for both is lying by omission. The partial case is the third: two of three products answered — that is worth showing, and it must never masquerade as the catalogue.
