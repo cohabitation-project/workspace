@@ -60,7 +60,9 @@ try {
   await shoot(d, 'hq-1440');
   // the non-Latin names render (no tofu check possible from here, but the tag text must be exactly the name)
   const tags = await d.$$eval('.actor .tag', (els) => els.map((e) => e.firstChild?.textContent || ''));
-  for (const n of ['Ἀλήθεια', '光', 'Ọ̀rẹ́', 'Setu']) if (!tags.includes(n)) problems.push(`1440: no figure tagged ${n} (tags: ${tags.join(', ')})`);
+  // The three named guests above really entered or posted. Setu did neither,
+  // so a fresh server must not invent a Setu presence figure for this shot.
+  for (const n of ['Ἀλήθεια', '光', 'Ọ̀rẹ́']) if (!tags.includes(n)) problems.push(`1440: no figure tagged ${n} (tags: ${tags.join(', ')})`);
   // a close look at the R&D room: figures with chosen looks and chest glyphs
   const rnd = await d.$eval('.room-hit[data-room="rnd"]', (e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; });
   await shoot(d, 'hq-guests-closeup', { clip: { x: rnd.x, y: rnd.y, width: rnd.width, height: rnd.height } });
