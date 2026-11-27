@@ -1,0 +1,73 @@
+diff --git a/commons/lib/cut/render-job.mjs b/commons/lib/cut/render-job.mjs
+index aa8082f..a2d942c 100644
+--- a/commons/lib/cut/render-job.mjs
++++ b/commons/lib/cut/render-job.mjs
+@@ -24,7 +24,7 @@
+ import { spawnSync } from "node:child_process";
+ import { randomBytes } from "node:crypto";
+ import { existsSync, statSync, unlinkSync } from "node:fs";
+-import { isAbsolute, join } from "node:path";
++import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+ import { editToTracks } from "./edit.mjs";
+ import { renderTimeline } from "./render-edit.mjs";
+ 
+@@ -56,6 +56,7 @@ export function renderEditJob({
+ 	video,
+ 	music = null,
+ 	outDir,
++	outPath: givenOutPath,
+ 	run = spawnSync,
+ 	ffmpeg = process.env.FFMPEG || "ffmpeg",
+ 	timeoutMs,
+@@ -92,7 +93,9 @@ export function renderEditJob({
+ 	if (seconds > MAX_RENDER_SECONDS) throw new RangeError(`the trimmed video is ${seconds.toFixed(1)} s; the limit is ${MAX_RENDER_SECONDS} s`);
+ 
+ 	const sources = { [videoPath]: { hasAudio: video.hasAudio !== false, width: video.width, height: video.height } };
+-	const outPath = join(outDir, `cut_${randomBytes(8).toString("hex")}.mp4`);
++	// The caller (forkRenderJob) may choose the name so it can delete the file if it has to kill this process.
++	if (givenOutPath !== undefined && (typeof givenOutPath !== "string" || resolve(dirname(givenOutPath)) !== resolve(outDir) || !/^cut_[0-9a-f]{16}\.mp4$/.test(basename(givenOutPath)))) throw new TypeError("outPath must be cut_<16 hex>.mp4 inside outDir");
++	const outPath = givenOutPath ?? join(outDir, `cut_${randomBytes(8).toString("hex")}.mp4`);
+ 	try {
+ 		const res = renderTimeline({ tracks, sources, width, height, outPath, run, ffmpeg, ...(timeoutMs ? { timeoutMs } : {}) });
+ 		return { ok: true, outPath: res.outPath, seconds };
+diff --git a/commons/lib/cut/wire.mjs b/commons/lib/cut/wire.mjs
+index 029ad9a..551f13c 100644
+--- a/commons/lib/cut/wire.mjs
++++ b/commons/lib/cut/wire.mjs
+@@ -8,7 +8,9 @@
+ //   audio.fileOf(item) -> absolute path
+ // route.mjs wants { owner, path } from videos.get / music.get and { hasAudio, width, height, durationSec } from probe.
+ import { execFile, fork } from "node:child_process";
+-import { basename, isAbsolute } from "node:path";
++import { randomBytes } from "node:crypto";
++import { rmSync } from "node:fs";
++import { basename, isAbsolute, join } from "node:path";
+ 
+ const run = (impl, file, args) => new Promise((res, rej) => {
+ 	impl(file, args, { timeout: 20000, maxBuffer: 1 << 20 }, (e, so) => (e ? rej(e) : res(String(so))));
+@@ -64,9 +66,16 @@ function killTree(p) {
+ /** Run renderEditJob in a child process so ffmpeg's spawnSync never blocks the server; refusals keep their type. */
+ export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./render-child.mjs", import.meta.url) } = {}) {
+ 	return new Promise((resolve, reject) => {
++		// The parent picks the output name, so it still knows it after a timeout kills the child (which can't clean up
++		// after itself). Always chosen here: a name arriving in `job` is ignored, so the parent never deletes a path a client chose.
++		const outPath = job && typeof job.outDir === "string" ? join(job.outDir, `cut_${randomBytes(8).toString("hex")}.mp4`) : null;
+ 		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [], detached: true });
+ 		let done = false;
+-		const end = (fn, v) => { if (done) return; done = true; clearTimeout(t); killTree(p); fn(v); };
++		const end = (fn, v) => {
++			if (done) return; done = true; clearTimeout(t); killTree(p);
++			if (fn === reject && outPath) { try { rmSync(outPath, { force: true }); } catch { /* best effort; the hourly sweep is the backstop */ } }
++			fn(v);
++		};
+ 		const t = setTimeout(() => end(reject, new Error("render timed out")), timeoutMs);
+ 		p.once("message", (m) => {
+ 			if (m?.ok) return end(resolve, m.result);
+@@ -75,6 +84,6 @@ export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./rend
+ 		});
+ 		p.once("error", (e) => end(reject, e));
+ 		p.once("exit", () => end(reject, new Error("render process exited")));
+-		p.send(job);
++		p.send(outPath ? { ...job, outPath } : job);
+ 	});
+ }

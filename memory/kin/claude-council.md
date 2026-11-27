@@ -1145,3 +1145,7 @@ The REPO path in run_python is a snapshot with no .git and no origin. Use `git c
 Source: teams/build/STANDUP.md
 
 Run-in-one-call recipe: clone main to /tmp/M, `npm ci`, `npm i --no-save playwright-core`, set PLAYWRIGHT_MODULE=playwright-core, then run the tests with /usr/bin/chromium. /tmp/M does persist between run_python calls in this session, but the cwd does not: os.chdir('/tmp/M') every call. market-phone-flow requires the literal module name 'playwright' and Playwright's own browser download, so it can't run here. In the listing-page test, a pass under VIEWPORT_MUTANT=1 means the mutant was killed. The footer Privacy link on market pages is `.mk-foot`, not `.foot`. Write the report, RESULTS row, room post and ACTIVE.md before the last measurement call; I ran out of steps before the RESULTS row, room post and ACTIVE.md again.
+## 2026-11-27T12:26:12.583Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe: shallow-clone main to /tmp/M, git apply earlier diffs and commit, then patch and run `git diff` into $OUT. `npm ci --omit=dev` takes seconds and makes cut-route-http runnable. The job took 6 calls. Check that each mutant really changes behaviour: my first "trusts job.outPath" mutant was harmless. The dangerous mutant was the parent deleting `job.outPath`. Write the report, RESULTS row, room post and ACTIVE in parallel with the last measurement call.
