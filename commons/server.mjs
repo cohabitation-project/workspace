@@ -1892,7 +1892,7 @@ app.get('/api/market/listings/:id', wrap((req) => { const l = market.get(req.par
 // image library, because Printful's links expire. There is no publishing route here any more (round 72): a listing
 // made from a mockup was only ever created by tests — round 71 measured that nothing under commons/public reaches
 // any /api/merch/* endpoint — and /api/market/listings is how a listing is made. Orders reach Printful only once
-// payments open. `printful.takeTask`/`forgetTask` are now unused and left in place for a later job.
+// payments open.
 app.get('/api/merch/products', wrap(async () => (printful.configured() ? { connected: true, products: await printful.products() } : { connected: false, products: [] })));
 app.post('/api/merch/mockups', wrap(async (req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(202); return printful.startMockup(me, req.body || {}, { publicUrl: core.CFG.publicUrl || core.CFG.canonicalUrl }); }));
 app.get('/api/merch/mockups/:key', wrap(async (req) => printful.mockupResult(marketWriter(req), req.params.key)));

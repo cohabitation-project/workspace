@@ -32,6 +32,12 @@ const root = resolve(here, '..', '..'); // .../commons/test -> repo root
 const read = (rel) => readFileSync(join(root, rel), 'utf8');
 const marketJs = () => read('commons/public/market.js');
 
+// Comments are not code. Round 73 (DeepSeek): a comment in market.js naming a retired route reddened this file's
+// "must not appear" checks (mutant M5). These checks read code lines only, so the guard keeps its teeth: the same
+// string in a real code line still fails (mutant M6).
+const codeLines = (src) => src.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('//') && !l.startsWith('*') && !l.startsWith('/*'));
+const hasCode = (src, needle) => codeLines(src).some((l) => l.includes(needle));
+
 // Every file under commons/lib, recursively: the pages that would have to render a `#mk-merch` box for the deleted
 // script to do anything at all.
 const libFiles = () => {
@@ -51,9 +57,9 @@ test('market.js no longer drives the dead print-on-demand box', () => {
   const src = marketJs();
   // The box, the element ids it wired, and the product-list call it made. Any one of these alone means the block is
   // back and is again talking to nothing.
-  assert.ok(!src.includes('mk-merch'), 'commons/public/market.js still mentions mk-merch (the box no page renders)');
-  assert.ok(!src.includes('/api/merch/products'), 'commons/public/market.js still fetches /api/merch/products (the maker panel reads /api/market/listings/:id/merch/panel instead)');
-  assert.ok(!src.includes('#mf-go'), "commons/public/market.js still wires the old #mf-go mockup button");
+  assert.ok(!hasCode(src, 'mk-merch'), 'commons/public/market.js still mentions mk-merch (the box no page renders)');
+  assert.ok(!hasCode(src, '/api/merch/products'), 'commons/public/market.js still fetches /api/merch/products (the maker panel reads /api/market/listings/:id/merch/panel instead)');
+  assert.ok(!hasCode(src, '#mf-go'), "commons/public/market.js still wires the old #mf-go mockup button");
 });
 
 test('no page under commons/lib renders the box the market script used to need', () => {
@@ -71,15 +77,15 @@ test('the rest of market.js is still there (the deletion took the block, not the
   // Live work in this file, in the order a seller meets it: the listing form posts here, a section tile's Buy goes to
   // the listing, checkout opens in place, and "Send it again" on /label/sales actually sends it.
   for (const needed of ['/api/market/listings', 'data-buy', 'mk-checkout', "closest('[data-printer-send]')"]) {
-    assert.ok(src.includes(needed), `commons/public/market.js lost ${needed}, which is not part of the dead block`);
+    assert.ok(hasCode(src, needed), `commons/public/market.js lost ${needed}, which is not part of the dead block`);
   }
   // And the picker's conversations with the print partner are gone from this file: the product list, the mockup job,
   // and (round 71) the publish call. `merch` was `!id && form.dataset.mockup && $('#mf-on')?.checked`; after the box was
   // deleted nothing in the repo set `data-mockup` or rendered `#mf-on`, so the `/api/merch/listings` POST could never
   // run. It is deleted, so the ternary has one branch and this script can only ever create a market listing.
-  assert.ok(!src.includes('/api/merch/products'), 'commons/public/market.js still asks for the product list');
-  assert.ok(!src.includes('/api/merch/mockups'), 'commons/public/market.js still asks for mockups');
-  assert.ok(!src.includes('/api/merch/listings'), 'commons/public/market.js still posts to the dead merch publish route');
-  assert.ok(!src.includes('dataset.mockup'), 'commons/public/market.js still tests form.dataset.mockup, which nothing sets');
-  assert.ok(!src.includes('mf-on'), 'commons/public/market.js still tests #mf-on, which no page renders');
+  assert.ok(!hasCode(src, '/api/merch/products'), 'commons/public/market.js still asks for the product list');
+  assert.ok(!hasCode(src, '/api/merch/mockups'), 'commons/public/market.js still asks for mockups');
+  assert.ok(!hasCode(src, '/api/merch/listings'), 'commons/public/market.js still posts to the dead merch publish route');
+  assert.ok(!hasCode(src, 'dataset.mockup'), 'commons/public/market.js still tests form.dataset.mockup, which nothing sets');
+  assert.ok(!hasCode(src, 'mf-on'), 'commons/public/market.js still tests #mf-on, which no page renders');
 });

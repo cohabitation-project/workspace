@@ -206,14 +206,6 @@ export async function mockupResult(member, key) {
   return { status: 'completed', image: img.id, url: `/images/${img.id}`, base_price: t.base };
 }
 
-/** The finished mockup a listing is about to use: the maker's own, completed, not yet used. */
-export function takeTask(member, key) {
-  const t = tasks.get(String(key || '')); if (!t || t.member !== member?.id) fail(404, 'No such mockup. Make the mockup first.');
-  if (!t.image) fail(409, "The mockup isn't ready yet.");
-  return t;
-}
-export const forgetTask = (key) => tasks.delete(String(key || ''));
-
 // ------------------------------------------------------------------ mockups for a merch set (merchsets.mjs)
 // Geoffrey, 2026-11-23: one artwork, many products ("make the one image that's sitting there able to be applied to
 // anything"). merchsets.mjs owns which products an artwork is on; these two calls are its only way to Printful. They use
