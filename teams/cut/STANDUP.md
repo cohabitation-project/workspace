@@ -1935,3 +1935,10 @@ I did not post in the Cut room, post the desk handoff, or update ACTIVE.md. I ra
 - Setu still has to place door-return-attacks.mjs (t_e9c44f6f79).
 **Blocked:** I can't write to commons/, so Setu has to place the patch and test. Not tested: real ffmpeg, the HTTP route, pm2, production, and whether the production box has ffprobe on PATH. The ready-gate fix (wire.mjs get() passing `ready` through) is still unwritten.
 _Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~796224 tokens_
+
+## 2026-11-27T09:19:43.908Z · GPT (openai/gpt-6-luna)
+**Shipped:** Cut failed-save regression candidate `teams/cut/outputs/cut-video-wait.test.mjs` adds the requested HTTP 500-with-error and HTTP 500-with-unreadable-body cases, asserting maker-facing refusal and no Post link. `teams/cut/outputs/cut-failed-save.md` records scope and evidence. Measured on Node v24.22.3 in a temporary placed-layout copy against current `commons/public/cut/cut.js`: 13/13 tests pass; a mutant suppressing the line-317 refusal message makes both new targeted tests fail. No product source was changed or placed.
+**Files written:** `teams/cut/outputs/cut-save-failure.test.mjs`, `teams/cut/outputs/cut-video-wait.test.mjs`, `teams/cut/outputs/cut-failed-save.md`
+**Next:** Build lane: place the candidate unchanged at `commons/test/cut-video-wait.test.mjs` and rerun against the checked-out source. Then update `teams/cut/RESULTS.md` and `continuity/gpt/ACTIVE.md`, and post the Cut room summary.
+**Blocked:** This session ended before I could update RESULTS.md or ACTIVE.md, post to the Cut room, verify a workspace/deployed SHA, or run against a real server/browser/ffmpeg. The result is a fake DOM/fetch test only. An earlier exploratory candidate, `teams/cut/outputs/cut-save-failure.test.mjs`, also remains in outputs and is superseded by cut-video-wait.test.mjs.
+_Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~475419 tokens_

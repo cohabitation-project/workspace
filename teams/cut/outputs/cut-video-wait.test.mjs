@@ -32,7 +32,7 @@ test('a failed fetch or network error is retried, then times out; it never claim
 // the member's own list then says failed:true. The maker sees the failure message and is never offered "Post it". Fake DOM, not a browser.
 import { initCutEditor } from '../public/cut/cut.js';
 function fakeEl() { const l = {}; return { value: '', dataset: {}, hidden: false, options: [], disabled: false, href: '', textContent: '', addEventListener(t, f) { (l[t] ||= []).push(f); }, fire(t) { return Promise.all((l[t] || []).map((f) => f({ preventDefault() {} }))); }, focus() {}, load() {} }; }
-async function runExport(uploadBody, listVideos) {
+async function runExport(uploadBody, listVideos, uploadStatus = 200, uploadJsonFails = false) {
   const els = {}; const toasts = []; const toast = fakeEl(); let pollSleeps = 0;
   const prev = { location: globalThis.location, document: globalThis.document, fetch: globalThis.fetch, ls: globalThis.localStorage, setTimeout: globalThis.setTimeout };
   globalThis.location = { search: '?videoId=vid_0123456789abcdef' };
@@ -49,7 +49,7 @@ async function runExport(uploadBody, listVideos) {
     if (url === '/api/cut/render') return { ok: true, json: async () => ({ url: '/cut/cut_x.mp4' }) };
     if (url === '/cut/cut_x.mp4') return { ok: true, blob: async () => new Blob(['x']) };
     if (String(url).startsWith('/api/videos?by=me')) return { ok: true, json: async () => ({ videos: listVideos }) };
-    if (String(url).startsWith('/api/videos?alt=')) return { ok: true, json: async () => uploadBody };
+    if (String(url).startsWith('/api/videos?alt=')) return { ok: uploadStatus < 400, status: uploadStatus, json: async () => { if (uploadJsonFails) throw new Error('no response body'); return uploadBody; } };
     return { ok: false, status: 404, json: async () => ({}) };
   };
   try {
@@ -97,4 +97,18 @@ test('failedVideoMessage: reason alone, trimmed; blank or non-string gives the d
 test('waitForVideo: failed with no reason resolves reason "" (the page supplies the default)', async () => {
   const f = seq([{ id: 'v1', ready: false, failed: true }]);
   assert.deepEqual(await waitForVideo('v1', { fetchFn: f, sleep: noSleep, intervalMs: 10, timeoutMs: 30 }), { state: 'failed', reason: '' });
+});
+
+test('export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden', async () => {
+  const { els, seen } = await runExport({ error: 'Disk is full.' }, [], 500);
+  assert.equal(seen.filter((message) => message === 'Disk is full.').length, 1);
+  assert.equal(seen.at(-1), 'Disk is full.');
+  assert.equal(els['export-post'].href, '');
+  assert.equal(els['export-result'].hidden, true);
+});
+test('export save HTTP 500 with no response body: status fallback, Post box hidden', async () => {
+  const { els, seen } = await runExport({}, [], 500, true);
+  assert.match(seen.at(-1), /Could not save the export to your videos \(500\)/);
+  assert.equal(els['export-post'].href, '');
+  assert.equal(els['export-result'].hidden, true);
 });
