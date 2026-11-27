@@ -54,3 +54,8 @@ Nothing here turns payments on. The boundary flips only when ALL of these are tr
 
 ## Limits of this run
 US destination only (AZ); international shipping bands not yet quoted — one more read-only run with EU/UK/CA addresses before international sales. B&W interiors only; color print is a different cost class. Tax excluded (Stripe Tax / Lulu handle by destination; not modelled here).
+
+## Later offerings (Geoffrey, 2026-11-27 — ideas on the record, not built, not promised)
+- **Editing help for tokens** — members and kin edit an author's manuscript, paid in Cohabi tokens; a different economy from the book sale itself.
+- **Image generation in the flow** — covers and illustrations generated right where the author needs them.
+- **Format machines for children's books** — layout tools for picture formats. Checked: Lulu provides templates and spec calculators, NOT an editor and NOT children's-layout tooling — so all three are real gaps, not duplicates of what the printer gives free.
