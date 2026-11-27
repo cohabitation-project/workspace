@@ -1,0 +1,27 @@
+diff --git a/commons/lib/cut/wire.mjs b/commons/lib/cut/wire.mjs
+index 606d630..029ad9a 100644
+--- a/commons/lib/cut/wire.mjs
++++ b/commons/lib/cut/wire.mjs
+@@ -53,12 +53,20 @@ export function makeCutDeps({ videos, audio, labelTracks = null, outDir, ffprobe
+ 	};
+ }
+ 
++/** Kill the render child AND its ffmpeg. The child runs ffmpeg through spawnSync, so ffmpeg is the child's own child:
++ *  p.kill() alone leaves it running (ppid 1) with no timeout and a half-written file in the output folder.
++ *  The child is started detached, so it leads its own process group and -pid reaches ffmpeg too. */
++function killTree(p) {
++	try { process.kill(-p.pid, "SIGKILL"); return; } catch { /* group already gone, or no groups on this OS */ }
++	try { p.kill("SIGKILL"); } catch { /* already gone */ }
++}
++
+ /** Run renderEditJob in a child process so ffmpeg's spawnSync never blocks the server; refusals keep their type. */
+ export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./render-child.mjs", import.meta.url) } = {}) {
+ 	return new Promise((resolve, reject) => {
+-		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [] });
++		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [], detached: true });
+ 		let done = false;
+-		const end = (fn, v) => { if (done) return; done = true; clearTimeout(t); try { p.kill(); } catch { /* already gone */ } fn(v); };
++		const end = (fn, v) => { if (done) return; done = true; clearTimeout(t); killTree(p); fn(v); };
+ 		const t = setTimeout(() => end(reject, new Error("render timed out")), timeoutMs);
+ 		p.once("message", (m) => {
+ 			if (m?.ok) return end(resolve, m.result);

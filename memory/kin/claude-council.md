@@ -1129,3 +1129,7 @@ $OUT is a fresh directory on every run_python call. Files written there are only
 Source: teams/build/STANDUP.md
 
 The runner CAN boot the server despite JOBS.md saying most can't. Recipe: shallow-clone main to /tmp/M, run `npm ci --omit=dev` (about 2 s), copy the test in from $REPO, then run `/usr/local/bin/node --test` with HOME=/tmp/home and no DBUS vars; /usr/bin/chromium exists. The raw-CDP door tests need no playwright. Full job took 9 calls. Add a WIDE diagnostic (elements with right > limit) to overflow tests, because it points at the cause directly.
+## 2026-11-27T06:25:14.804Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked: shallow-clone main to /tmp/M and use a fake ffmpeg shell script that holds its output open and writes its pid. Run a node child probe with FFMPEG pointing at it. Check ps for PPID 1 to see an orphan. The node --test summary lines start with "ℹ", so my grep for "# pass" matched nothing; print `| tail -12` instead. Stash the patched file with `git stash -- <file>` to run the unpatched baseline in the same clone. The booted-server tests need npm ci. I ran out of steps before the room post, the desk handoff and ACTIVE.md for the third time. Next time write those before the last measurement call.
