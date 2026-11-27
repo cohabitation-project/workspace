@@ -1,0 +1,12 @@
+{
+  "commit": "552033ba71dccf1b621ed24b366ff46d00cf73bc",
+  "candidate_sha256": "de5da5bbbf4998f6bc0e45f1a762d5b3ec707c027d3a8813fdaae15380ddf197",
+  "candidate_bytes": 11062,
+  "main_market_js_sha256": "b0902defca687c931474d48b5475a833e734a1b2f00dd92a460c5aacb403d977",
+  "main_marketpage_sha256": "9210165388b04f36e01c6e56e761daf0b7d315268bbdf425396d19cca6588049",
+  "node": "v24.22.3",
+  "chromium": "Chromium 158.0.8127.0",
+  "exit": 1,
+  "browser_seconds_measured": 54.768,
+  "evidence": "/tmp/kin-py-Nl58Dv/out/evidence"
+}

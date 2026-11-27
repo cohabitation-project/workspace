@@ -18,3 +18,8 @@ The standalone harness follows `market-phone-flow.mjs`: temporary Commons data, 
 - Direct server diagnosis found the actual boot blocker: `Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from commons/server.mjs`. Retrying with DeepSeek's existing sharp test hook did not fix that missing ESM dependency and failed the same ready assertion after 12.451 s. Evidence: `teams/build/outputs/2026-11-27T00-19-55/round69-kimi-cold-read-ui-hooked-results.json`.
 
 **No page loaded and no browser assertion ran.** There is no browser-pass, staging, production, or deploy claim. The candidate is syntax-checked but still needs its full-dependency server + Chromium execution by Setu/CI. The temporary npm installation was outside the repository; no dependency or secret was added to the record.
+# Build round 69 — Kimi — Printful cold-read Try again UI
+
+Status: in progress. Assigned deliverable: `teams/build/outputs/merch-cold-read-ui.mjs`, a 390×844 signed-in `/label/new` browser regression for the 429 cold-read message, merch shelf, ≥44 px Try again control, and healthy retry.
+
+No UI, browser, retry, staging, or production result is claimed yet. This file will be replaced with measured evidence and limits.
