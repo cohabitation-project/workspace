@@ -53,10 +53,8 @@ if (form) {
     const id = form.dataset.id;
     if (!id) { body.rights = f.get('rights') === 'on'; if (f.get('team')) body.team = f.get('team'); if (f.get('page')) body.page = f.get('page'); }
     msg.textContent = 'Saving…';
-    const merch = !id && form.dataset.mockup && $('#mf-on')?.checked;
-    if (merch) { body.mockup = form.dataset.mockup; body.price = { mode: 'fixed', amount: Number(f.get('price_amount')) }; }
     try {
-      const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : merch ? await send('/api/merch/listings', 'POST', body) : await send('/api/market/listings', 'POST', body);
+      const l = id ? await send(`/api/market/listings/${id}`, 'PATCH', body) : await send('/api/market/listings', 'POST', body);
       location.href = `/label/l/${l.id}`;
     } catch (err) { msg.textContent = err.message; }
   });

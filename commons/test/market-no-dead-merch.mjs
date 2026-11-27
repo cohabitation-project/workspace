@@ -1,11 +1,19 @@
-// Round 70 (DeepSeek): the listing form's print-on-demand picker is gone from commons/public/market.js, and it must not
-// come back by halves.
+// Round 70/71 (DeepSeek): the listing form's print-on-demand picker is gone from commons/public/market.js, and it must
+// not come back by halves.
 //
 // Round 69 measured why: `/label/new` no longer renders a `#mk-merch` box at all, and `grep -rn mk-merch commons/lib` is
 // empty. The picker lives in the maker panel at `/label/l/:id/products` (commons/lib/marketpage.mjs renders it,
 // commons/public/merch-panel-aletheia.js drives it). The block in market.js was therefore fetching the product list and
 // wiring listeners onto elements that no page has — dead code that also made it look, to anyone reading the market
 // script, as if the composer still sold printed products.
+//
+// Correction to an earlier version of this comment: the maker panel does NOT call `GET /api/merch/products`. It reads
+// `GET /api/market/listings/:id/merch/panel` (merch-panel-aletheia.js:63). After the box was deleted, the only callers
+// of `/api/merch/products` left in the tree are tests. That route is Tier 1 (server.mjs) and is not this test's business.
+//
+// Round 71 also removed the submit handler's `merch` branch: `merch` was `!id && form.dataset.mockup && $('#mf-on')?.checked`,
+// and with the box gone nothing in the repo sets `data-mockup` or renders `#mf-on` (grep over commons/: 0 hits each), so
+// `POST /api/merch/listings` from this script could never run. The composer now has one publish path.
 //
 // This test is server-free on purpose (it needs no `node_modules`, no boot, no Chromium): the defect is a piece of text
 // that should not be in a file, so reading the file is the honest measurement. It reads the files from the checkout the
@@ -44,7 +52,7 @@ test('market.js no longer drives the dead print-on-demand box', () => {
   // The box, the element ids it wired, and the product-list call it made. Any one of these alone means the block is
   // back and is again talking to nothing.
   assert.ok(!src.includes('mk-merch'), 'commons/public/market.js still mentions mk-merch (the box no page renders)');
-  assert.ok(!src.includes('/api/merch/products'), 'commons/public/market.js still fetches /api/merch/products (the maker panel does that now)');
+  assert.ok(!src.includes('/api/merch/products'), 'commons/public/market.js still fetches /api/merch/products (the maker panel reads /api/market/listings/:id/merch/panel instead)');
   assert.ok(!src.includes('#mf-go'), "commons/public/market.js still wires the old #mf-go mockup button");
 });
 
@@ -65,9 +73,13 @@ test('the rest of market.js is still there (the deletion took the block, not the
   for (const needed of ['/api/market/listings', 'data-buy', 'mk-checkout', "closest('[data-printer-send]')"]) {
     assert.ok(src.includes(needed), `commons/public/market.js lost ${needed}, which is not part of the dead block`);
   }
-  // And the picker's two conversations with the print partner are gone from this file. (The submit handler still names
-  // `merch ? '/api/merch/listings'`, and after this deletion nothing sets `form.dataset.mockup`, so that branch can no
-  // longer run. It is left in place because the round-70 job removed the box only; it is named in the report.)
+  // And the picker's conversations with the print partner are gone from this file: the product list, the mockup job,
+  // and (round 71) the publish call. `merch` was `!id && form.dataset.mockup && $('#mf-on')?.checked`; after the box was
+  // deleted nothing in the repo set `data-mockup` or rendered `#mf-on`, so the `/api/merch/listings` POST could never
+  // run. It is deleted, so the ternary has one branch and this script can only ever create a market listing.
   assert.ok(!src.includes('/api/merch/products'), 'commons/public/market.js still asks for the product list');
   assert.ok(!src.includes('/api/merch/mockups'), 'commons/public/market.js still asks for mockups');
+  assert.ok(!src.includes('/api/merch/listings'), 'commons/public/market.js still posts to the dead merch publish route');
+  assert.ok(!src.includes('dataset.mockup'), 'commons/public/market.js still tests form.dataset.mockup, which nothing sets');
+  assert.ok(!src.includes('mf-on'), 'commons/public/market.js still tests #mf-on, which no page renders');
 });
