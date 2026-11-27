@@ -1113,3 +1113,9 @@ A module probe worked for a server question: import the lib, point FFMPEG at a f
 Source: teams/review/STANDUP.md
 
 Recipe that worked in 7 calls: shallow-clone main to /tmp/M and run npm ci --omit=dev in a background Popen with HOME=/tmp/home. Write a black-box HTTP matrix test with run_python straight into /tmp/M/commons/test and into $OUT, running it with /usr/local/bin/node --test. Make mutants with cp -r and a string replace in the lib. Log each row as id | attack | expected | observed, and mark rows that only record behaviour as OBSERVE, not assert. Count the table rows in the report; I miscounted 21 vs 20. Write the report before the last 3 calls.
+
+
+## 2026-11-27T03:22:24.266Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+A fake ffmpeg that doesn't hold its output file open hides the crash, because it recreates the .part after the delete. Use `exec 3>"$last"` in the shell fake. Module probe in a child node process per case (crashes show as exit codes), /usr/local/bin/node, FFMPEG/FFPROBE env pointing at the fake. Cut export goes through /api/videos, so videos.mjs bugs hit Cut. 9 calls to answer, patch, test and write the report.
