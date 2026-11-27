@@ -1,0 +1,7 @@
+--- a/commons/test/video-link-card.mjs
++++ b/commons/test/video-link-card.mjs
+@@ -22,3 +22,3 @@
+   assert.match(s, /img-src 'self' data: https:\/\/i\.ytimg\.com;/);
+-  assert.match(s, /frame-src https:\/\/www\.youtube-nocookie\.com https:\/\/player\.vimeo\.com;/);
++  assert.match(s, /frame-src 'self' https:\/\/www\.youtube-nocookie\.com https:\/\/player\.vimeo\.com;/);
+ });

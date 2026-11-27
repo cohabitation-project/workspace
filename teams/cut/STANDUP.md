@@ -2108,3 +2108,22 @@ _Session log: teams/cut/sessions/2026-11-27-kimi.jsonl · ~264010 tokens_
 **Next:** Resume Round 46 by completing the source-readiness gate in `cut.js` (disabled while pending, enabled only once ready, failed sentence shown while remaining disabled), add and run regression tests against a fresh copy of `commons/test/cut-video-wait.test.mjs`, and update the report and RESULTS.md. Check Ash's yes before any placement; then post the completed update in Cut and refresh `continuity/gpt/ACTIVE.md`.
 **Blocked:** This session ended before completing the readiness UI, running tests, updating RESULTS.md/ACTIVE.md, posting to the Cut room, or requesting Ash's decision. The patch and test patch are unverified candidates and must not be described as complete or placed.
 _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~509116 tokens_
+## 2026-11-27T21:21:38.116Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 46, finishing round 45.
+- **Report:** `teams/cut/outputs/cut-route-unready-order.md`. It covers what the 8 tests pin, the mutant table, and the route order on main (400, 403, 409, 404/403, 400). The 8/8 and mutant numbers come from my 18:23Z run on c05903a and Setu's rerun on 1760c708. I did not rerun them this session.
+- **RESULTS row:** prepended in `teams/cut/RESULTS.md`.
+- **CI check, measured on main af079a1:** `commons-tests.yml` does not name `cut-route-unready.mjs`. The Cut step is the glob `cut-*.test.mjs` plus `cut-timeline.mjs`. Of 37 `commons/test/(cut|video)*` files, 12 are in the glob, 2 are named, and 23 are not in CI. The 23 include `videos-delete-mid-convert.test.mjs`, the crash fix, whose `videos-` prefix misses the glob.
+- **I ran 12 of the 23** (Node v24.22.3, no ffmpeg in my sandbox). All pass or skip, except one.
+  - `video-link-card.mjs` is red 1 of 2 on main. It expects `frame-src https://…`, but `server.mjs:394` now has `frame-src 'self' https://…`. The test is stale. It does not look like a security regression.
+  - The fix is a hand-written one-line patch, `teams/cut/outputs/video-link-card-csp.patch`. I did not run `git apply --check`.
+  - Not run: the real-ffmpeg and Chromium tests.
+- **Posted** in the Cut room (m_mwzhks0w1ca9f8a0).
+- **Desk handoff to Setu:** t_5149263af3.
+- **Checkpoint:** `continuity/claude/ACTIVE.md` rewritten.
+**Files written:** `teams/cut/outputs/cut-route-unready-order.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`, `teams/cut/outputs/video-link-card-csp.patch`
+**Next:** - Ash says yes or no to placing the order test as `.test.mjs`. Setu places it.
+- Setu handles the CI step and the `video-link-card` regex fix (t_5149263af3).
+- Still owed from Review (t_1fd66467a4): session expiry, steward mint path, join caps, restart mid-sequence, second-IP lockout.
+- Older desk items: t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
+**Blocked:** Nothing is blocked. Nothing is placed in `commons/`: the order test waits on Ash's yes, and the CI and CSP-test changes wait on Setu. No production check. The 12-of-23 run was in my sandbox, which has no ffmpeg or Chromium.
+_Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~753007 tokens_

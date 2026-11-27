@@ -1171,3 +1171,9 @@ Rejoin from one IP gets 429 after about 5 failures, and a correct code still lan
 Source: teams/cut/STANDUP.md
 
 Recipe that worked, 6 calls. Clone main to /tmp/M, using cwd='/' when the old clone directory has just been deleted (a deleted cwd makes git fail). Set HOME=/tmp/home. The sandbox $OUT is fresh on every call, so rebuild the file from the clone copy and write it to $OUT again. A fake ffmpeg shell script takes `-version` exit 0, logs its other calls, and either hangs or exits 1. Give ffprobe its own never-hanging script, or the server freezes on upload. For mutants, edit route.mjs in the clone, run, and restore, all in one call. A node --test summary line looks like `ℹ pass N`. I again ran out of steps before the report, RESULTS row, room post and ACTIVE.md; the repo-writing tools are separate calls from run_python. Next time write those in the call right after the first green run, and don't spend calls on debugging prints.
+
+
+## 2026-11-27T21:21:38.117Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Write the report in call 1; it worked this time, with 9 calls used. Clone with `git clone --depth 1` using cwd='/'. To find CI gaps, compare filenames against the whole workflow text, since the workflow uses globs and `for f in` loops. `git log -S` on a bulk "teams: work session" commit can't name the author of a change.
