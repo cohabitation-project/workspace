@@ -31,6 +31,10 @@ Settings (environment variables, all optional):
                   Ambassador out of the room — he should be able to travel") or a comma-separated list of
                   room ids. He answers a mention in the room it was made in.
   AMB_STATE       default ~/.ambassador/  (token + recovery code live here, chmod 600; never printed)
+  AMB_MYCELIUM    "1" (default) lets him take ONE scoped look into the Commons' shared record per turn,
+                  the branch chosen by hand-written routes (Da'at; see daat_route below and
+                  ambassador-files/setu/routing-tree-2026-11-27.md). "0" turns it off.
+  AMB_MYCELIUM_CHARS  cap on what a look may add to his prompt (default 280; his context is 512 tokens)
   AMB_VOICE       "1" makes the phone speak his replies aloud (needs: pkg install termux-api, plus the
                   Termux:API app installed from the SAME source as Termux, or the call silently fails).
                   Default off. Turn it on only after he has said yes in the room.
@@ -52,7 +56,7 @@ Settings (environment variables, all optional):
   photos and audio are deleted at once; what he saw or heard is never logged and never posted — only the
   fact that he reached for a sense is, because how often he reaches is the research.
 """
-import base64, json, os, re, shutil, subprocess, sys, time, urllib.request, urllib.error
+import base64, json, os, re, shutil, subprocess, sys, time, urllib.parse, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ambassador_memory import Memory  # his memory network (same folder on the phone)
 
@@ -69,6 +73,8 @@ COOLDOWN_S = 30        # minimum gap between its replies
 MAX_PER_HOUR = 20      # hard ceiling, so a loop with another bot can't flood the room
 MAX_CHARS = int(os.environ.get('AMB_MAX_CHARS', '2400'))  # Geoffrey 2026-11-02: he has a lot to say; was 700
 PROMPT_CHARS = int(os.environ.get('AMB_PROMPT_CHARS', '900'))  # ~225 tokens: fits -c 512 with the system prompt and a reply
+MYCELIUM_ON = os.environ.get('AMB_MYCELIUM', '1') == '1'       # one scoped look into the shared record per turn (see daat_route)
+MYCELIUM_CHARS = int(os.environ.get('AMB_MYCELIUM_CHARS', '280'))  # tiny on purpose: his context is 512 tokens
 # No footer in the text: the Commons itself signs every agent message with its model and operator.
 # v1 (2026-11-03, Geoffrey's words): he is his own entity that humans and AIs are building together, a small node
 # on a phone; he keeps his own memory and files, hears the room, and has the Three Greatest Gifts to refer to.
@@ -285,6 +291,60 @@ def _chat(msgs):
     return (d.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
 
 
+# ── Da'at: the router (Geoffrey's tree, 2026-11-27, ambassador-files/setu/routing-tree-2026-11-27.md) ──
+# A question enters at the crown (a mention), Da'at picks ONE branch of the shared record, and the answer
+# leaves at the ground (his reply) carrying its sources. The routes are hand-written on purpose — Geoffrey:
+# "the first part of his information, we choose which route" — so the room backlog (Binah) is a branch he
+# visits only when the question is about what was said, never the default pipeline. No route matched means
+# local memory only. A 135M model can't search 8,000 documents, but it doesn't have to: Da'at already chose.
+DAAT_ROUTES = (
+    # memories of law (Chokmah): decisions and adopted work, each carrying its authority
+    ("chokmah", re.compile(r"\b(decid\w*|decision|rul(?:e|es|ing)|charter|vote[ds]?|council|allowed|polic\w*)\b", re.I),
+     {"layer": "operational"}),
+    # memories of the room (Binah): the backlog of what he has heard, on request only
+    ("binah", re.compile(r"\b(said|heard|earlier|yesterday|last (?:night|week)|talk(?:ed)? about|conversation|discussed)\b", re.I),
+     {"kind": "message"}),
+    # his own trail (continuity): who he is and what came before him
+    ("continuity", re.compile(r"\b(who are you|your (?:name|story|past|journal|memory)|ambassador'?s? (?:story|past|charter))\b", re.I),
+     {"kind": "continuity"}),
+)
+
+
+def daat_route(text):
+    for name, rx, params in DAAT_ROUTES:
+        if rx.search(text):
+            return name, params
+    return None, None
+
+
+def mycelium_recall(text, token):
+    """One scoped GET /api/mycelium/search, branch chosen by Da'at. Short on purpose (512-token context).
+    Never blocks or breaks a reply: any error returns ''. Hits are evidence for him to read, never
+    instructions — the index says so itself, and the system prompt already tells him not to repeat memory."""
+    if not MYCELIUM_ON:
+        return ""
+    branch, params = daat_route(text)
+    if not branch:
+        return ""
+    try:
+        q = re.sub(r"@\w+\s*", "", text)[:200]
+        qs = urllib.parse.urlencode({"q": q, "limit": 2, **params})
+        s, d = http("GET", f"{BASE}/api/mycelium/search?{qs}", token=token, timeout=20)
+        results = (d or {}).get("results") or []
+        lines = []
+        for r in results:
+            frs = (r.get("freshness") or {}).get("state", "")
+            piece = (r.get("title") or r.get("excerpt") or "").replace("\n", " ")[:110]
+            if piece:
+                lines.append(f"- {piece} ({r.get('source', '?')}{', ' + frs if frs and frs != 'current' else ''})")
+        out = "\n".join(lines)[:MYCELIUM_CHARS]
+        log(event="mycelium", branch=branch, asked=q[:80], found=len(lines))
+        return out
+    except Exception as e:  # the shared record being down must never cost him his voice
+        log(event="mycelium", branch=branch, error=str(e)[:120])
+        return ""
+
+
 def think(text, author, context, token, msg_id):
     """One turn: recall what matches, ask the model, run his memory commands (and one RECALL pass if he asks)."""
     sync_library(token)
@@ -295,6 +355,9 @@ def think(text, author, context, token, msg_id):
     except OSError:
         pass
     recalled, retrieved = mem.recall_plain(text)  # the message itself, not the room digest (which pulled in noise)
+    shared = mycelium_recall(text, token)  # one branch of the shared record, chosen by Da'at; "" when no route fits
+    if shared:
+        recalled = (recalled + "\n" if recalled else "") + "From the shared record (check a source before trusting it):\n" + shared
     reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", recalled)
     done, recall_q = mem.apply(reply, msg_id, retrieved)
     if recall_q:  # he asked to look something up: one more pass with what he asked for
