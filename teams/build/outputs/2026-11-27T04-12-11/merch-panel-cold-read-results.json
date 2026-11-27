@@ -1,0 +1,18 @@
+{
+  "status": "failed",
+  "mode": "cold-429",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "started_at": "2026-11-27T04:12:11.080Z",
+  "evidence": {},
+  "retry_button": {
+    "observed": false
+  },
+  "failure": {
+    "message": "Playwright is required for this browser test: Cannot find package 'playwright' imported from /tmp/kin-py-feS8Qc/repo/teams/build/outputs/merch-panel-cold-read.mjs",
+    "stack": "Error: Playwright is required for this browser test: Cannot find package 'playwright' imported from /tmp/kin-py-feS8Qc/repo/teams/build/outputs/merch-panel-cold-read.mjs\n    at loadPlaywright (file:///tmp/kin-py-feS8Qc/repo/teams/build/outputs/merch-panel-cold-read.mjs:50:9)\n    at async TestContext.<anonymous> (file:///tmp/kin-py-feS8Qc/repo/teams/build/outputs/merch-panel-cold-read.mjs:66:26)\n    at async Test.run (node:internal/test_runner/test:1409:7)\n    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)"
+  },
+  "finished_at": "2026-11-27T04:12:11.091Z"
+}

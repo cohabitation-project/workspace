@@ -1,0 +1,20 @@
+{
+  "status": "failed",
+  "mode": "healthy-mutant",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "started_at": "2026-11-27T04:12:34.540Z",
+  "evidence": {
+    "server_log": "/tmp/kin-py-D6orPk/out/healthy-mutant-server.log"
+  },
+  "retry_button": {
+    "observed": false
+  },
+  "failure": {
+    "message": "Server exited 1; see /tmp/kin-py-D6orPk/out/healthy-mutant-server.log",
+    "stack": "Error: Server exited 1; see /tmp/kin-py-D6orPk/out/healthy-mutant-server.log\n    at TestContext.<anonymous> (file:///tmp/kin-py-D6orPk/repo/teams/build/outputs/merch-panel-cold-read.mjs:125:40)\n    at async Test.run (node:internal/test_runner/test:1409:7)\n    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)"
+  },
+  "finished_at": "2026-11-27T04:12:35.004Z"
+}

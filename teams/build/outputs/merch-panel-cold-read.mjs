@@ -1,147 +1,213 @@
-#!/usr/bin/env node
-// Round 70 candidate: isolated 390x844 browser regression for the real maker products panel.
-// Candidate: node teams/build/outputs/merch-panel-cold-read.mjs [evidence-directory]
-// Placed:    node commons/test/merch-panel-cold-read.mjs [evidence-directory]
-// MERCH_PANEL_MODE=healthy is the mutation control: the cold-message assertion must go red.
-// Optional runner overrides: PLAYWRIGHT_MODULE (absolute module URL/path), CHROMIUM_PATH.
-// No live Printful account, money, staging, or production is touched.
-
+// Round 70 candidate, Tier 2. Place as commons/test/merch-panel-cold-read.mjs.
+// Isolated data + fake Printful; no production service, listing, credential, or payment is touched.
+// Normal run: fake Printful is rate-limited and the signed-in maker must see the honest cold message.
+// Mutation run: MERCH_PANEL_COLD_MUTANT=healthy makes Printful healthy; the cold-message assertion must fail.
+import test from 'node:test';
+import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
-import assert from 'node:assert/strict';
+import net from 'node:net';
 import { spawn } from 'node:child_process';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.basename(here) === 'outputs' ? path.resolve(here, '../../..') : path.resolve(here, '../..');
-const OUT = path.resolve(process.argv[2] || fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-cold-read-')));
-const DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-cold-data-'));
-const MODE = process.env.MERCH_PANEL_MODE || 'cold';
-assert.ok(['cold', 'healthy'].includes(MODE), 'MERCH_PANEL_MODE must be cold or healthy');
+const COLD = "The print partner's products aren't available right now. Try again in a minute.";
+const HEALTHY_MUTANT = process.env.MERCH_PANEL_COLD_MUTANT === 'healthy';
+const OUT = process.env.OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-cold-read-'));
 fs.mkdirSync(OUT, { recursive: true });
-const result = { candidate: 'merch-panel-cold-read.mjs', round: 70, mode: MODE, viewport: [390, 844], ok: false, checks: {}, requests: [], console_errors: [], page_errors: [], evidence: OUT };
-const save = () => fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(result, null, 2));
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let browser, child, fake;
-const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR4nGP8z8DAwMDAxMDAwMDAAAANHQEDasKb6QAAAABJRU5ErkJggg==', 'base64');
-
-async function startFake() {
-  const seen = [];
-  const server = http.createServer((req, res) => {
-    seen.push(`${req.method} ${req.url}`); result.requests.push(`PRINTFUL ${req.method} ${req.url}`);
-    res.setHeader('content-type', 'application/json');
-    if (MODE === 'cold') {
-      res.statusCode = 429;
-      return res.end(JSON.stringify({ code: 429, error: { message: 'Too Many Requests' } }));
-    }
-    if (req.url === '/products') return res.end(JSON.stringify({ code: 200, result: [{ id: 71, title: 'Test tee', image: 'https://example.invalid/tee.png' }] }));
-    if (req.url === '/products/71') return res.end(JSON.stringify({ code: 200, result: {
-      product: { id: 71, title: 'Test tee', image: 'https://example.invalid/tee.png', currency: 'USD', is_discontinued: false },
-      variants: [{ id: 10071, name: 'White / M', color: 'White', color_code: '#ffffff', size: 'M', price: '12.00', in_stock: true }],
-    } }));
-    if (req.url === '/mockup-generator/printfiles/71') return res.end(JSON.stringify({ code: 200, result: {
-      available_placements: { front: 'Front' },
-      printfiles: [{ printfile_id: 50071, width: 3000, height: 4000, dpi: 300 }],
-      variant_printfiles: [{ variant_id: 10071, placements: { front: 50071 } }],
-    } }));
-    res.statusCode = 404; res.end(JSON.stringify({ code: 404, error: { message: `fake has no ${req.url}` } }));
-  });
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-  return { seen, server, url: `http://127.0.0.1:${server.address().port}` };
+const resultPath = path.join(OUT, HEALTHY_MUTANT ? 'merch-panel-cold-read-healthy-mutant.json' : 'merch-panel-cold-read-results.json');
+const shotPath = path.join(OUT, HEALTHY_MUTANT ? 'merch-panel-healthy-mutant-390x844.png' : 'merch-panel-cold-390x844.png');
+const result = {
+  status: 'started', mode: HEALTHY_MUTANT ? 'healthy-mutant' : 'cold-429', viewport: { width: 390, height: 844 },
+  started_at: new Date().toISOString(), evidence: {}, retry_button: { observed: false }, failure: null,
+};
+const save = () => fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const listen = (server, port) => new Promise((resolve, reject) => {
+  server.once('error', reject); server.listen(port, '127.0.0.1', resolve);
+});
+const close = (server) => new Promise((resolve) => server.close(resolve));
+async function freePort() {
+  const server = net.createServer(); await listen(server, 0);
+  const port = server.address().port; await close(server); return port;
 }
-async function boot() {
-  const fd = fs.openSync(path.join(OUT, 'server.log'), 'a');
-  child = spawn(process.execPath, ['commons/server.mjs'], { cwd: ROOT, env: {
-    ...process.env, PORT: '0', HOST: '127.0.0.1', DATA_DIR: DATA, COMMONS_DATA: DATA,
-    PRINTFUL_TOKEN: 'isolated-test-token-not-a-credential', PRINTFUL_API_URL: fake.url,
-    STRIPE_SECRET_KEY: '', PRINTFUL_STORE_ID: '', NODE_ENV: 'test',
-  }, stdio: ['ignore', fd, fd] });
-  fs.closeSync(fd);
-  let exited = false; child.once('exit', (code, signal) => { exited = true; result.server_exit = { code, signal }; });
-  const deadline = Date.now() + 15000;
-  while (Date.now() < deadline) {
-    if (exited) throw new Error(`server exited: ${fs.readFileSync(path.join(OUT, 'server.log'), 'utf8').slice(-4000)}`);
-    const text = fs.readFileSync(path.join(OUT, 'server.log'), 'utf8');
-    const m = text.match(/https?:\/\/127\.0\.0\.1:(\d+)/);
-    if (m) { result.base = `http://127.0.0.1:${m[1]}`; return result.base; }
-    await sleep(100);
+function findRoot() {
+  let dir = import.meta.dirname;
+  while (true) {
+    if (fs.existsSync(path.join(dir, 'commons', 'server.mjs'))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) throw new Error('Could not find the repository root containing commons/server.mjs');
+    dir = parent;
   }
-  throw new Error('server ready timeout');
-}
-async function call(B, route, method = 'GET', body, cookie) {
-  const resultUrl = B + route; result.requests.push(`${method} ${route}`);
-  const r = await fetch(resultUrl, { method, headers: { ...(body ? { 'content-type': 'application/json' } : {}), ...(cookie ? { cookie } : {}) }, body: body ? JSON.stringify(body) : undefined, redirect: 'manual' });
-  const text = await r.text(); let json; try { json = JSON.parse(text); } catch { json = text; }
-  return { r, json, text };
 }
 async function loadPlaywright() {
-  if (process.env.PLAYWRIGHT_MODULE) return import(process.env.PLAYWRIGHT_MODULE.startsWith('/') ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : process.env.PLAYWRIGHT_MODULE);
-  try { return await import('playwright'); }
-  catch (first) {
-    for (const p of ['/opt/node22/lib/node_modules/playwright/index.mjs', '/usr/lib/node_modules/playwright/index.mjs', '/usr/local/lib/node_modules/playwright/index.mjs']) {
-      if (fs.existsSync(p)) return import(pathToFileURL(p).href);
-    }
-    throw first;
+  const candidates = ['playwright'];
+  if (process.env.PLAYWRIGHT_MODULE) candidates.push(process.env.PLAYWRIGHT_MODULE);
+  let last;
+  for (const candidate of candidates) {
+    try { return await import(candidate); } catch (error) { last = error; }
   }
+  throw new Error(`Playwright is required for this browser test: ${last?.message || 'not installed'}`);
 }
-async function stop() {
-  if (browser) await browser.close().catch(() => {});
-  if (child && child.exitCode === null) {
-    child.kill('SIGTERM'); await Promise.race([new Promise((r) => child.once('exit', r)), sleep(3000)]);
-    if (child.exitCode === null) child.kill('SIGKILL');
+function chromiumPath(chromium) {
+  for (const candidate of [process.env.CHROME_PATH, process.env.CHROMIUM_PATH, '/usr/bin/chromium', '/usr/bin/chromium-browser', chromium.executablePath()]) {
+    if (candidate && fs.existsSync(candidate)) return candidate;
   }
-  if (fake?.server) await new Promise((r) => fake.server.close(r));
-  fs.rmSync(DATA, { recursive: true, force: true });
+  throw new Error('No Chromium executable found; set CHROME_PATH or install Playwright Chromium');
 }
 
-try {
-  fake = await startFake(); const B = await boot();
-  const made = await call(B, '/api/human', 'POST', { name: 'Panel Cold Reader' });
-  assert.equal(made.r.status, 201, made.text);
-  const cookie = (made.r.headers.get('set-cookie') || '').split(';')[0]; assert.ok(cookie, 'session cookie');
-  const art = await call(B, '/api/images', 'POST', { data: PNG.toString('base64'), alt: 'isolated two-pixel test artwork' }, cookie);
-  assert.equal(art.r.status, 201, art.text);
-  const listing = await call(B, '/api/market/listings', 'POST', { title: 'Panel cold-read art', text: 'An isolated browser regression fixture.', category: 'art', type: 'product', price: { mode: 'quote' }, license: 'all-rights', rights: true, images: [art.json.id] }, cookie);
-  assert.equal(listing.r.status, 201, listing.text);
-  const id = listing.json.id || listing.json.listing?.id; assert.ok(id, 'real listing id'); result.listing_id = id;
-  const { chromium } = await loadPlaywright();
-  const executablePath = process.env.CHROMIUM_PATH || ['/usr/bin/chromium', '/usr/bin/chromium-browser', '/usr/bin/google-chrome'].find((p) => fs.existsSync(p));
-  browser = await chromium.launch({ ...(executablePath ? { executablePath } : {}), headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] });
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, extraHTTPHeaders: { cookie } });
-  const page = await context.newPage();
-  page.on('pageerror', (e) => result.page_errors.push(String(e)));
-  page.on('console', (m) => { if (m.type() === 'error') result.console_errors.push(m.text()); });
-  page.on('request', (r) => { if (r.url().includes('/merch/')) result.requests.push(`BROWSER ${r.method()} ${new URL(r.url()).pathname}`); });
-  const panelResponse = page.waitForResponse((r) => new URL(r.url()).pathname === `/api/market/listings/${id}/merch/panel` && r.request().method() === 'GET', { timeout: 30000 });
-  const nav = await page.goto(`${B}/label/l/${id}/products`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  result.page_status = nav.status(); assert.equal(result.page_status, 200);
-  const response = await panelResponse; result.panel_status = response.status(); result.panel_body = (await response.text()).slice(0, 2000);
-  await page.locator('#mp-app').waitFor({ state: 'attached', timeout: 15000 });
-  await page.waitForFunction(() => /Try again in a minute/i.test(document.querySelector('#mp-app')?.textContent || ''), null, { timeout: 15000 });
-  result.checks.maker_safe_message = await page.locator('#mp-app').innerText();
-  assert.match(result.checks.maker_safe_message, /Try again in a minute/i);
-  assert.doesNotMatch(result.checks.maker_safe_message, /Too Many Requests|isolated-test-token|api\.printful/i);
-  result.checks.page_errors = result.page_errors.length; assert.equal(result.page_errors.length, 0, result.page_errors.join('\n'));
-  result.checks.document_width = await page.evaluate(() => ({ inner: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth }));
-  assert.ok(result.checks.document_width.document <= 390, JSON.stringify(result.checks.document_width));
-  assert.ok(result.checks.document_width.body <= 390, JSON.stringify(result.checks.document_width));
-  const retry = page.getByRole('button', { name: /Try again/i });
-  result.checks.retry_button = { count: await retry.count(), visible: await retry.first().isVisible().catch(() => false) };
-  // Deliberately no button requirement: the panel's cold API error is rendered as text, not a retry control.
-  assert.ok(result.requests.some((x) => x === `BROWSER GET /api/market/listings/${id}/merch/panel`), 'browser requested the real panel endpoint');
-  await page.screenshot({ path: path.join(OUT, `${MODE}-panel.png`), fullPage: true });
-  result.ok = true;
-} catch (e) {
-  result.error = e.stack || String(e); result.ok = false; process.exitCode = 1;
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64');
+
+test('signed-in maker gets the honest cold read on the real product panel at 390px', { timeout: 120_000 }, async () => {
+  const ROOT = findRoot();
+  let fake; let srv; let browser; let logFd;
+  const seen = [];
   try {
-    if (browser) {
-      const pages = browser.contexts().flatMap((c) => c.pages());
-      if (pages[0]) { await pages[0].screenshot({ path: path.join(OUT, 'failure.png'), fullPage: true }); result.failure_body = (await pages[0].locator('body').innerText()).slice(0, 6000); }
+    const { chromium } = await loadPlaywright();
+    const fakePort = await freePort();
+    fake = http.createServer((req, res) => {
+      const u = new URL(req.url, 'http://printful.fake');
+      seen.push({ method: req.method, path: u.pathname, at: new Date().toISOString() });
+      const json = (status, body) => {
+        res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body));
+      };
+      if (!HEALTHY_MUTANT && /^\/products\/\d+$/.test(u.pathname)) {
+        return json(429, { code: 429, error: { message: 'Too Many Requests' } });
+      }
+      let match = u.pathname.match(/^\/products\/(\d+)$/);
+      if (match) return json(200, { code: 200, result: {
+        product: { id: Number(match[1]), title: 'Unisex Staple T-Shirt | Bella + Canvas 3001', currency: 'USD', is_discontinued: false },
+        variants: [
+          { id: 4012, name: 'Black / M', color: 'Black', color_code: '#111111', size: 'M', price: '11.50', in_stock: true },
+          { id: 4022, name: 'White / M', color: 'White', color_code: '#ffffff', size: 'M', price: '11.50', in_stock: true },
+        ],
+      } });
+      match = u.pathname.match(/^\/mockup-generator\/printfiles\/(\d+)$/);
+      if (match) return json(200, { code: 200, result: {
+        available_placements: { front: 'Front print' },
+        printfiles: [{ printfile_id: 1, width: 1800, height: 2400, dpi: 150 }],
+        variant_printfiles: [4012, 4022].map((variant_id) => ({ variant_id, placements: { front: 1 } })),
+      } });
+      match = u.pathname.match(/^\/mockup-generator\/templates\/(\d+)$/);
+      if (match) return json(200, { code: 200, result: {
+        version: 1, min_dpi: 150,
+        variant_mapping: [{ variant_id: 4012, templates: [{ placement: 'front', template_id: 919 }] }],
+        templates: [{ template_id: 919, image_url: `http://127.0.0.1:${fakePort}/template.png`, background_url: null,
+          background_color: '#ffffff', printfile_id: 1, template_width: 1000, template_height: 1000,
+          print_area_width: 300, print_area_height: 400, print_area_top: 200, print_area_left: 350 }],
+      } });
+      if (u.pathname === '/template.png') {
+        res.writeHead(200, { 'content-type': 'image/png' }); return res.end(PNG);
+      }
+      return json(404, { code: 404, error: { message: `Unexpected fake Printful path: ${u.pathname}` } });
+    });
+    await listen(fake, fakePort);
+
+    const port = await freePort();
+    const base = `http://127.0.0.1:${port}`;
+    const data = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-cold-data-'));
+    const logPath = path.join(OUT, HEALTHY_MUTANT ? 'healthy-mutant-server.log' : 'cold-server.log');
+    logFd = fs.openSync(logPath, 'w');
+    srv = spawn(process.execPath, ['commons/server.mjs'], {
+      cwd: ROOT,
+      env: {
+        ...process.env, ASHRAM_PORT: String(port), COMMONS_DATA: data, COMMONS_FAKE_LLM: '1',
+        COMMONS_TEST_ASSETS: '1', COMMONS_PUBLIC_URL: base, PRINTFUL_TOKEN: 'test-token',
+        PRINTFUL_API_URL: `http://127.0.0.1:${fakePort}`,
+        PRINTFUL_PRODUCTS: JSON.stringify([{ key: 'tee', id: 71 }]),
+        PRINTFUL_MOCKUPS_PER_MINUTE: '10', MERCH_TICK_MS: '1000', COMMONS_FEE_PERCENT: '0',
+      },
+      stdio: ['ignore', logFd, logFd],
+    });
+    result.evidence.server_log = logPath;
+    let healthy = false;
+    for (let i = 0; i < 160; i++) {
+      if (srv.exitCode !== null) throw new Error(`Server exited ${srv.exitCode}; see ${logPath}`);
+      try { if ((await fetch(`${base}/healthz`, { signal: AbortSignal.timeout(1000) })).ok) { healthy = true; break; } } catch { /* booting */ }
+      await sleep(250);
     }
-  } catch (screenshotError) { result.screenshot_error = String(screenshotError); }
-} finally {
-  save(); await stop(); save();
-  console.log(JSON.stringify(result, null, 2));
-}
+    assert.ok(healthy, `Server did not become healthy; see ${logPath}`);
+
+    const call = (route, method = 'GET', body, cookie) => fetch(base + route, {
+      method, headers: { 'content-type': 'application/json', 'x-commons': '1', ...(cookie ? { cookie } : {}) },
+      body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(30_000),
+    });
+    const signin = await call('/api/humans', 'POST', { name: 'Cold Read Maker', bio: 'isolated browser regression' });
+    const signinBody = await signin.json();
+    assert.ok([200, 201].includes(signin.status), `sign-in: ${signin.status} ${JSON.stringify(signinBody)}`);
+    const cookie = (signin.headers.get('set-cookie') || '').split(';')[0];
+    assert.ok(cookie.includes('='), 'sign-in returned a session cookie');
+    const imageResponse = await call('/api/images', 'POST', { data: PNG.toString('base64'), alt: 'cold read test artwork' }, cookie);
+    const image = await imageResponse.json();
+    assert.ok(imageResponse.ok, `image upload: ${imageResponse.status} ${JSON.stringify(image)}`);
+    const listingResponse = await call('/api/market/listings', 'POST', {
+      title: 'Cold Read Artwork', text: 'An isolated cold-read regression listing.', category: 'art', type: 'product',
+      price: { mode: 'quote' }, license: 'all-rights', rights: true, images: [image.id],
+    }, cookie);
+    const listing = await listingResponse.json();
+    assert.equal(listingResponse.status, 201, JSON.stringify(listing));
+    result.evidence.member_id = signinBody.member?.id || null;
+    result.evidence.listing_id = listing.id;
+    save();
+
+    browser = await chromium.launch({ executablePath: chromiumPath(chromium), headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] });
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    await context.addCookies([{ name: cookie.split('=')[0], value: cookie.slice(cookie.indexOf('=') + 1), url: base }]);
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    const target = `/label/l/${listing.id}/products`;
+    const panelResponsePromise = page.waitForResponse((response) => response.url() === `${base}/api/market/listings/${listing.id}/merch/panel`, { timeout: 45_000 });
+    const navigation = await page.goto(base + target, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+    assert.equal(navigation.status(), 200);
+    assert.equal(new URL(page.url()).pathname, target, 'the maker stayed signed in on the real panel');
+    const panelResponse = await panelResponsePromise;
+    result.evidence.panel_http_status = panelResponse.status();
+    result.evidence.panel_body = await panelResponse.json();
+    await page.waitForFunction((cold) => {
+      const app = document.querySelector('#mp-app');
+      return app && !/Loading your products/.test(app.textContent) &&
+        (app.textContent.includes(cold) || app.querySelector('.cz-stage'));
+    }, COLD, { timeout: 45_000 });
+    const coldMessageVisible = await page.locator('#mp-app').evaluate((app, cold) => app.textContent.includes(cold), COLD);
+    result.evidence.cold_message_visible = coldMessageVisible;
+    result.evidence.app_text = await page.locator('#mp-app').innerText();
+    result.evidence.signed_in_name_visible = (await page.locator('body').innerText()).includes('Cold Read Maker');
+    result.evidence.width = await page.evaluate(() => ({
+      viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth,
+      horizontal_overflow_px: Math.max(0, document.documentElement.scrollWidth - innerWidth),
+    }));
+    result.retry_button = await page.locator('#mp-app').evaluate((app) => {
+      const button = [...app.querySelectorAll('button')].find((candidate) => candidate.textContent.trim() === 'Try again');
+      if (!button) return { observed: true, present: false, disposition: 'observation only; no Try again button was demanded' };
+      return { observed: true, present: true, visible: !!(button.offsetWidth || button.offsetHeight), disabled: button.disabled };
+    });
+    result.evidence.page_errors = pageErrors;
+    result.evidence.printful_requests = seen;
+    await page.screenshot({ path: shotPath, fullPage: true });
+    result.evidence.screenshot = shotPath;
+    save();
+
+    // This is the assertion the healthy mutant must break: recovery is honest only if the cold read was visible.
+    assert.ok(coldMessageVisible, `cold message assertion: expected #mp-app to contain ${JSON.stringify(COLD)}`);
+    assert.equal(panelResponse.status(), 502, 'a rate-limited cold read surfaces as 502, not a successful empty catalogue');
+    assert.equal(result.evidence.panel_body.error, COLD);
+    assert.ok(result.evidence.signed_in_name_visible, 'the signed-in maker name is visible');
+    assert.ok(result.evidence.width.horizontal_overflow_px <= 1, `horizontal overflow: ${JSON.stringify(result.evidence.width)}`);
+    assert.deepEqual(pageErrors, [], 'no uncaught page errors');
+    assert.ok(seen.some((request) => /^\/products\/71$/.test(request.path)), 'the isolated fake Printful was actually read');
+    result.status = HEALTHY_MUTANT ? 'mutant-unexpectedly-passed' : 'passed';
+  } catch (error) {
+    result.status = HEALTHY_MUTANT && /cold message assertion/.test(error.message) ? 'mutant-killed-as-required' : 'failed';
+    result.failure = { message: error.message, stack: error.stack };
+    if (!HEALTHY_MUTANT || result.status !== 'mutant-killed-as-required') throw error;
+  } finally {
+    result.finished_at = new Date().toISOString(); save();
+    if (browser) await browser.close();
+    if (srv && srv.exitCode === null) { srv.kill('SIGTERM'); await sleep(250); if (srv.exitCode === null) srv.kill('SIGKILL'); }
+    if (fake) await close(fake);
+    if (logFd !== undefined) fs.closeSync(logFd);
+  }
+  if (HEALTHY_MUTANT) assert.equal(result.status, 'mutant-killed-as-required', 'the healthy fake must make the cold-message assertion fail');
+});
