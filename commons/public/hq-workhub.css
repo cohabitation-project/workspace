@@ -74,3 +74,16 @@
  #hq-workhub.hw-full .hw-tabs{padding:8px;overflow-x:auto}
  #hq-workhub.hw-full .hw-tabs button{min-width:auto}
 }
+
+/* Three-pane work dashboard, with authentic presence and event records. */
+#hq-workhub .hw-dashboard-grid{display:grid;grid-template-columns:minmax(300px,1.5fr) minmax(220px,1fr) minmax(210px,.88fr);gap:18px;align-items:start}
+#hq-workhub .hw-dashboard-grid>*{min-width:0}
+#hq-workhub .hw-dashboard-grid h3{padding:8px 0;border-bottom:1px solid #343d56}
+#hq-workhub .hw-overview-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#hq-workhub .hw-overview-header p{margin:0}
+#hq-workhub .hw-total{display:block;font-size:23px;color:#c6a6ff}
+#hq-workhub .hw-dashboard-contacts .hw-person{padding:8px;margin:5px 0}
+#hq-workhub .hw-dashboard-grid .hw-card{margin-bottom:10px}
+#hq-workhub .hw-dashboard-grid .hw-card p{margin:5px 0 8px}
+@media(max-width:1150px){#hq-workhub .hw-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr)}#hq-workhub .hw-dashboard-contacts{grid-column:1 / -1}}
+@media(max-width:720px){#hq-workhub .hw-dashboard-grid{grid-template-columns:1fr}#hq-workhub .hw-dashboard-contacts{grid-column:auto}}
