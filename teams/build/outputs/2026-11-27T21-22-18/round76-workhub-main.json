@@ -1,0 +1,8 @@
+{
+  "base": "http://127.0.0.1:9613",
+  "root": "/tmp/M",
+  "head": null,
+  "checks": [],
+  "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r76-data-K3RalR\n[commons] repo: /tmp/M\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY\n",
+  "fatal": "Error: server boot timeout\n[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r76-data-K3RalR\n[commons] repo: /tmp/M\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY\n\n    at file:///tmp/M/round76-kimi-workhub-main.mjs:29:38"
+}

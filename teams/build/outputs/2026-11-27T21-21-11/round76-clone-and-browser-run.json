@@ -1,0 +1,44 @@
+{
+  "clone": {
+    "cmd": "git clone --depth 30 https://github.com/cohabitation-project/workspace /tmp/M",
+    "rc": 0,
+    "stdout": "",
+    "stderr": "Cloning into '/tmp/M'...\nUpdating files:  42% (1675/3963)\nUpdating files:  43% (1705/3963)\nUpdating files:  43% (1728/3963)\nUpdating files:  44% (1744/3963)\nUpdating files:  45% (1784/3963)\nUpdating files:  46% (1823/3963)\nUpdating files:  47% (1863/3963)\nUpdating files:  48% (1903/3963)\nUpdating files:  49% (1942/3963)\nUpdating files:  50% (1982/3963)\nUpdating files:  51% (2022/3963)\nUpdating files:  52% (2061/3963)\nUpdating files:  53% (2101/3963)\nUpdating files:  54% (2141/3963)\nUpdating files:  55% (2180/3963)\nUpdating files:  56% (2220/3963)\nUpdating files:  57% (2259/3963)\nUpdating files:  58% (2299/3963)\nUpdating files:  59% (2339/3963)\nUpdating files:  60% (2378/3963)\nUpdating files:  61% (2418/3963)\nUpdating files:  62% (2458/3963)\nUpdating files:  63% (2497/3963)\nUpdating files:  64% (2537/3963)\nUpdating files:  65% (2576/3963)\nUpdating files:  66% (2616/3963)\nUpdating files:  67% (2656/3963)\nUpdating files:  68% (2695/3963)\nUpdating files:  69% (2735/3963)\nUpdating files:  70% (2775/3963)\nUpdating files:  71% (2814/3963)\nUpdating files:  72% (2854/3963)\nUpdating files:  73% (2893/3963)\nUpdating files:  74% (2933/3963)\nUpdating files:  75% (2973/3963)\nUpdating files:  76% (3012/3963)\nUpdating files:  77% (3052/3963)\nUpdating files:  78% (3092/3963)\nUpdating files:  79% (3131/3963)\nUpdating files:  80% (3171/3963)\nUpdating files:  81% (3211/3963)\nUpdating files:  82% (3250/3963)\nUpdating files:  83% (3290/3963)\nUpdating files:  84% (3329/3963)\nUpdating files:  85% (3369/3963)\nUpdating files:  86% (3409/3963)\nUpdating files:  87% (3448/3963)\nUpdating files:  88% (3488/3963)\nUpdating files:  89% (3528/3963)\nUpdating files:  90% (3567/3963)\nUpdating files:  91% (3607/3963)\nUpdating files:  92% (3646/3963)\nUpdating files:  93% (3686/3963)\nUpdating files:  94% (3726/3963)\nUpdating files:  95% (3765/3963)\nUpdating files:  96% (3805/3963)\nUpdating files:  97% (3845/3963)\nUpdating files:  98% (3884/3963)\nUpdating files:  99% (3924/3963)\nUpdating files: 100% (3963/3963)\nUpdating files: 100% (3963/3963), done.\n"
+  },
+  "head": {
+    "cmd": "git rev-parse HEAD",
+    "rc": 0,
+    "stdout": "2f80d4d8d8ca354351ba82e01eddbac4054de50f\n",
+    "stderr": ""
+  },
+  "recent": {
+    "cmd": "git log -5 --oneline",
+    "rc": 0,
+    "stdout": "2f80d4d teams: work session 2026-11-27T21:20Z\n9621d2b teams: work session 2026-11-27T21:20Z\n68595ce teams: work session 2026-11-27T21:19Z\naf079a1 teams: work session 2026-11-27T21:19Z\n084e989 Foreman round 76: jobs (build + cut), results rows\n",
+    "stderr": ""
+  },
+  "ancestor": {
+    "cmd": "git merge-base --is-ancestor cef974d3 HEAD",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "npm_ci": {
+    "cmd": "npm ci",
+    "rc": 0,
+    "stdout": "\nadded 231 packages, and audited 232 packages in 3s\n\n46 packages are looking for funding\n  run `npm fund` for details\n\n9 high severity vulnerabilities\n\nTo address all issues (including breaking changes), run:\n  npm audit fix --force\n\nRun `npm audit` for details.\n",
+    "stderr": "npm notice\nnpm notice New major version of npm available! 11.19.1 -> 12.2.3\nnpm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3\nnpm notice To update run: npm install -g npm@12.2.3\nnpm notice\n"
+  },
+  "node_check": {
+    "cmd": "node --check round76-kimi-workhub-main.mjs",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "browser_run": {
+    "cmd": "node round76-kimi-workhub-main.mjs",
+    "rc": 1,
+    "stdout": "",
+    "stderr": "node:internal/modules/package_json_reader:331\n  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);\n        ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find package 'playwright' imported from /tmp/M/round76-kimi-workhub-main.mjs\n    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)\n    at packageResolve (node:internal/modules/esm/resolve:784:25)\n    at moduleResolve (node:internal/modules/esm/resolve:873:18)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {\n  code: 'ERR_MODULE_NOT_FOUND'\n}\n\nNode.js v24.22.3\n"
+  }
+}

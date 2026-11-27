@@ -1,0 +1,73 @@
+{
+  "before_head": {
+    "cmd": "git rev-parse HEAD",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 128,
+    "stdout": "",
+    "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+  },
+  "before_branch": {
+    "cmd": "git branch --show-current",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 128,
+    "stdout": "",
+    "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+  },
+  "status": {
+    "cmd": "git status --short",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 128,
+    "stdout": "",
+    "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+  },
+  "fetch": {
+    "cmd": "git fetch origin main",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 128,
+    "stdout": "",
+    "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+  },
+  "fresh_head": {
+    "cmd": "git rev-parse FETCH_HEAD",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 128,
+    "stdout": "",
+    "stderr": "fatal: not a git repository (or any of the parent directories): .git\n"
+  },
+  "ancestor": {
+    "rc": 1,
+    "stderr": "no fetched head"
+  },
+  "npm_ci_retry_with_writable_cache": {
+    "cmd": "npm ci",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 1,
+    "stdout": "",
+    "stderr": "npm error code EUSAGE\nnpm error\nnpm error The `npm ci` command can only install with an existing package-lock.json or\nnpm error npm-shrinkwrap.json with lockfileVersion >= 1. Run an install with npm@5 or\nnpm error later to generate a package-lock.json file, then try again.\nnpm error\nnpm error Clean install a project\nnpm error\nnpm error Usage:\nnpm error npm ci\nnpm error\nnpm error Options:\nnpm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]\nnpm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]\nnpm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]\nnpm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts]\nnpm error [--allow-directory <all|none|root>] [--allow-file <all|none|root>]\nnpm error [--allow-git <all|none|root>] [--allow-remote <all|none|root>]\nnpm error [--allow-scripts <package-list> [--allow-scripts <package-list> ...]]\nnpm error [--strict-allow-scripts] [--dangerously-allow-all-scripts] [--no-audit]\nnpm error [--no-bin-links] [--no-fund] [--dry-run]\nnpm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]\nnpm error [--workspaces] [--include-workspace-root] [--install-links]\nnpm error\nnpm error   --install-strategy\nnpm error     Sets the strategy for installing packages in node_modules.\nnpm error\nnpm error   --legacy-bundling\nnpm error     Instead of hoisting package installs in `node_modules`, install packages\nnpm error\nnpm error   --global-style\nnpm error     Only install direct dependencies in the top level `node_modules`,\nnpm error\nnpm error   --omit\nnpm error     Dependency types to omit from the installation tree on disk.\nnpm error\nnpm error   --include\nnpm error     Option that allows for defining which types of dependencies to install.\nnpm error\nnpm error   --strict-peer-deps\nnpm error     If set to `true`, and `--legacy-peer-deps` is not set, then _any_\nnpm error\nnpm error   --foreground-scripts\nnpm error     Run all build scripts (ie, `preinstall`, `install`, and\nnpm error\nnpm error   --ignore-scripts\nnpm error     If true, npm does not run scripts specified in package.json files.\nnpm error\nnpm error   --allow-directory\nnpm error     Limits the ability for npm to install dependencies from directories.\nnpm error\nnpm error   --allow-file\nnpm error     Limits the ability for npm to install dependencies from tarball files.\nnpm error\nnpm error   --allow-git\nnpm error     Limits the ability for npm to fetch dependencies from git references.\nnpm error\nnpm error   --allow-remote\nnpm error     Limits the ability for npm to fetch dependencies from urls.\nnpm error\nnpm error   --allow-scripts\nnpm error     Comma-separated list of packages whose install-time lifecycle scripts\nnpm error\nnpm error   --strict-allow-scripts\nnpm error     If `true`, turn the install-script policy from a warning into a hard\nnpm error\nnpm error   --dangerously-allow-all-scripts\nnpm error     If `true`, bypass the `allowScripts` policy entirely and run every\nnpm error\nnpm error   --audit\nnpm error     When \"true\" submit audit reports alongside the current npm command to the\nnpm error\nnpm error   --bin-links\nnpm error     Tells npm to create symlinks (or `.cmd` shims on Windows) for package\nnpm error\nnpm error   --fund\nnpm error     When \"true\" displays the message at the end of each `npm install`\nnpm error\nnpm error   --dry-run\nnpm error     Indicates that you don't want npm to make any changes and that it should\nnpm error\nnpm error   -w|--workspace\nnpm error     Enable running a command in the context of the configured workspaces of the\nnpm error\nnpm error   --workspaces\nnpm error     Set to true to run the command in the context of **all** configured\nnpm error\nnpm error   --include-workspace-root\nnpm error     Include the workspace root when workspaces are enabled for a command.\nnpm error\nnpm error   --install-links\nnpm error     When set file: protocol dependencies will be packed and installed as\nnpm error\nnpm error\nnpm error aliases: clean-install, ic, install-clean, isntall-clean\nnpm error\nnpm error Run \"npm help ci\" for more info\nnpm error A complete log of this run can be found in: /tmp/cohabi-npm-logs/2026-11-27T21_20_39_921Z-debug-0.log\n"
+  },
+  "playwright": {
+    "cmd": "node -e \"console.log(require.resolve('playwright'))\"",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 1,
+    "stdout": "",
+    "stderr": "node:internal/modules/cjs/loader:1568\n  throw err;\n  ^\n\nError: Cannot find module 'playwright'\nRequire stack:\n- /tmp/kin-py-g3qtiw/repo/[eval]\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\n    at require.resolve (node:internal/modules/helpers:175:31)\n    at [eval]:1:21\n    at runScriptInThisContext (node:internal/vm:219:10)\n    at node:internal/process/execution:451:12\n    at [eval]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:449:60)\n    at evalFunction (node:internal/process/execution:283:30) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [ '/tmp/kin-py-g3qtiw/repo/[eval]' ]\n}\n\nNode.js v24.22.3\n"
+  },
+  "chromium": {
+    "cmd": "command -v chromium || command -v chromium-browser || command -v google-chrome",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 0,
+    "stdout": "/usr/bin/chromium\n",
+    "stderr": ""
+  },
+  "archive": {
+    "rc": 1,
+    "stderr": "fresh main unavailable; did not substitute an older checkout"
+  },
+  "node_check": {
+    "cmd": "node --check /tmp/kin-py-g3qtiw/repo/teams/build/outputs/round76-kimi-workhub-main.mjs",
+    "cwd": "/tmp/kin-py-g3qtiw/repo",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "head": "2f80d4d8d8ca354351ba82e01eddbac4054de50f",
+  "rc": 1,
+  "stdout": "",
+  "stderr": "",
+  "scriptStdout": "{\n  \"base\": \"http://127.0.0.1:9466\",\n  \"root\": \"/tmp/M\",\n  \"head\": \"ref: refs/heads/main\",\n  \"checks\": [],\n  \"serverLog\": \"[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\\n[commons] listening on http://127.0.0.1:9466 (ws /ws, mcp /mcp)\\n[commons] data: /tmp/cohabi-r76-data-rqxUhB\\n[commons] repo: /tmp/M\\n[commons] Discord mirror: off (no webhook set)\\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\\n\",\n  \"signup\": {\n    \"status\": 404,\n    \"body\": \"{\\\"error\\\":\\\"not found\\\"}\"\n  },\n  \"fatal\": \"Error: signup 404: {\\\"error\\\":\\\"not found\\\"}\\n[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\\n[commons] listening on http://127.0.0.1:9466 (ws /ws, mcp /mcp)\\n[commons] data: /tmp/cohabi-r76-data-rqxUhB\\n[commons] repo: /tmp/M\\n[commons] Discord mirror: off (no webhook set)\\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\\n\\n    at file:///tmp/M/round76-kimi-workhub-main.mjs:40:50\\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\"\n}\n",
+  "scriptStderr": ""
+}

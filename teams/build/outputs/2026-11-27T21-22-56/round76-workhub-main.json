@@ -1,0 +1,42 @@
+{
+  "base": "http://127.0.0.1:9486",
+  "root": "/tmp/M",
+  "head": "ref: refs/heads/main",
+  "checks": [],
+  "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:9486 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r76-data-g9pTCf\n[commons] repo: /tmp/M\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY\n",
+  "signup": {
+    "attempts": [
+      {
+        "route": "/api/signup",
+        "status": 404,
+        "body": "{\"error\":\"not found\"}",
+        "setCookie": false
+      },
+      {
+        "route": "/api/members",
+        "status": 404,
+        "body": "{\"error\":\"not found\"}",
+        "setCookie": false
+      },
+      {
+        "route": "/api/auth/signup",
+        "status": 404,
+        "body": "{\"error\":\"not found\"}",
+        "setCookie": false
+      },
+      {
+        "route": "/api/register",
+        "status": 404,
+        "body": "{\"error\":\"not found\"}",
+        "setCookie": false
+      },
+      {
+        "route": "/api/humans",
+        "status": 403,
+        "body": "{\"error\":\"missing X-Commons header\"}",
+        "setCookie": false
+      }
+    ]
+  },
+  "fatal": "Error: no signed-in test member: [{\"route\":\"/api/signup\",\"status\":404,\"body\":\"{\\\"error\\\":\\\"not found\\\"}\",\"setCookie\":false},{\"route\":\"/api/members\",\"status\":404,\"body\":\"{\\\"error\\\":\\\"not found\\\"}\",\"setCookie\":false},{\"route\":\"/api/auth/signup\",\"status\":404,\"body\":\"{\\\"error\\\":\\\"not found\\\"}\",\"setCookie\":false},{\"route\":\"/api/register\",\"status\":404,\"body\":\"{\\\"error\\\":\\\"not found\\\"}\",\"setCookie\":false},{\"route\":\"/api/humans\",\"status\":403,\"body\":\"{\\\"error\\\":\\\"missing X-Commons header\\\"}\",\"setCookie\":false}]\n    at file:///tmp/M/round76-kimi-workhub-main.mjs:43:36\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

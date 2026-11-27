@@ -1,0 +1,82 @@
+{
+  "head": {
+    "cmd": "git rev-parse HEAD",
+    "rc": 0,
+    "stdout": "2f80d4d8d8ca354351ba82e01eddbac4054de50f\n",
+    "stderr": ""
+  },
+  "install_playwright_no_save": {
+    "cmd": "npm install --no-save --package-lock=false playwright",
+    "rc": 0,
+    "stdout": "\nadded 4 packages, removed 3 packages, changed 21 packages, and audited 233 packages in 7s\n\n45 packages are looking for funding\n  run `npm fund` for details\n\n9 high severity vulnerabilities\n\nTo address all issues (including breaking changes), run:\n  npm audit fix --force\n\nRun `npm audit` for details.\n",
+    "stderr": ""
+  },
+  "node_check": {
+    "cmd": "node --check round76-kimi-workhub-main.mjs",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "browser_run": {
+    "cmd": "node round76-kimi-workhub-main.mjs > /tmp/r76-browser.stdout 2> /tmp/r76-browser.stderr",
+    "rc": 1,
+    "stdout": "",
+    "stderr": ""
+  },
+  "browser_stdout": "{\n  \"base\": \"http://127.0.0.1:9613\",\n  \"root\": \"/tmp/M\",\n  \"head\": null,\n  \"checks\": [],\n  \"serverLog\": \"[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\\n[commons] data: /tmp/cohabi-r76-data-K3RalR\\n[commons] repo: /tmp/M\\n[commons] Discord mirror: off (no webhook set)\\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\\n\",\n  \"fatal\": \"Error: server boot timeout\\n[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\\n[commons] data: /tmp/cohabi-r76-data-K3RalR\\n[commons] repo: /tmp/M\\n[commons] Discord mirror: off (no webhook set)\\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\\n\\n    at file:///tmp/M/round76-kimi-workhub-main.mjs:29:38\"\n}\n",
+  "browser_stderr": "",
+  "compact": {
+    "source": {
+      "commons/public/hq-workhub.js": [
+        {
+          "line": 8,
+          "text": "<header class=\"hw-head\"><div class=\"hw-brand\"><img src=\"/static/favicon.svg\" alt=\"Cohabitation emblem\" width=\"42\" height=\"42\"><div><strong>Cohabitation \u00b7 Work Hub</strong><small>Headquarters workspace</small></div></div><div><button type=\"button\" id=\"hw-max\" aria-label=\"Expand or shrink workspace\" aria-pressed=\"true\">\u25a3</button><button type=\"button\" id=\"hw-refresh\" aria-label=\"Refresh current tab\">\u21bb</button><button type=\"button\" id=\"hw-close\" aria-label=\"Close Work Hub\">\u00d7</button></div></header>"
+        },
+        {
+          "line": 84,
+          "text": "async function work(g){"
+        },
+        {
+          "line": 105,
+          "text": "async function people(g){"
+        },
+        {
+          "line": 132,
+          "text": "async function roomWorkspace(id,fallback){"
+        },
+        {
+          "line": 189,
+          "text": "const iframe=document.createElement('iframe');iframe.title='Cohabi private Messenger';iframe.className='hw-messenger';iframe.src='/messenger';iframe.loading='lazy';"
+        },
+        {
+          "line": 214,
+          "text": "async function show(name){"
+        },
+        {
+          "line": 217,
+          "text": "try{if(name==='overview')await overview(g);if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms'){if(selectedRoom)await roomWorkspace(selectedRoom.id,selectedRoom.fallback);else await rooms(g)};if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}"
+        },
+        {
+          "line": 222,
+          "text": "root.querySelector('#hw-max').addEventListener('click',()=>{full=!full;root.classList.toggle('hw-full',full&&!panel.hidden);root.querySelector('#hw-max').setAttribute('aria-pressed',String(full))});"
+        }
+      ],
+      "commons/public/hq.html": [
+        {
+          "line": 11,
+          "text": "<link rel=\"stylesheet\" href=\"/static/hq-workhub.css\">"
+        },
+        {
+          "line": 78,
+          "text": "<script src=\"/static/hq-workhub.js\" defer></script>"
+        }
+      ]
+    },
+    "jsonExists": true,
+    "fatal": "Error: server boot timeout\n[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r76-data-K3RalR\n[commons] repo: /tmp/M\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\n\n    at file:///tmp/M/round76-kimi-workhub-main.mjs:29:38",
+    "signup": null,
+    "seeds": null,
+    "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:3200 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r76-data-K3RalR\n[commons] repo: /tmp/M\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY \u00b7 hosted/door via OpenRouter: NO KEY\n",
+    "viewports": []
+  }
+}
