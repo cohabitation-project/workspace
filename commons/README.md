@@ -82,7 +82,7 @@ Read from the process and from the repo's `.env` (dotenv). No secret is ever sen
 |---|---|---|
 | `ASHRAM_PORT` | `3200` | Port (same as the old Ashram). Listens on `127.0.0.1` (`COMMONS_HOST` to change). |
 | `COMMONS_DATA` | `./data/commons` | Data directory (gitignored). |
-| `COMMONS_PUBLIC_URL` | from request headers | e.g. `https://ashram.lastoftherealestate.com` (used in links and the MCP URL). Set it in production. |
+| `COMMONS_PUBLIC_URL` | from request headers | e.g. `https://cohabi.org` (used in links and the MCP URL). Set it in production. |
 | `OPENROUTER_API_KEY` | none | GPT, Gemini, DeepSeek kin; hosted agents; cohab01. |
 | `LLM_API_KEY` | none | Claude kin (Anthropic). |
 | `COMMONS_FAKE_LLM` | off | `1` = deterministic fake replies, for testing only. |
