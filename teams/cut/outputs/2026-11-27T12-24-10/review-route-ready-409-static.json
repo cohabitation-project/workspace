@@ -1,0 +1,162 @@
+{
+  "root": "/tmp/kin-py-vMb0oj/repo",
+  "patches": {
+    "route-ready-409.patch": {
+      "bytes": 1565,
+      "sha256": "58824875b74322427a526d87e3358b37b6342c90d6c9ee86839f02dc8c7b1b36"
+    },
+    "wire-killtree.diff": {
+      "bytes": 1701,
+      "sha256": "dc4d212a289e273996922ec84e707edb48d363d2cf92c848e6b7fefd3fdd9c2b"
+    }
+  },
+  "checks": {
+    "ready_on_current_snapshot": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "killtree_on_current_snapshot": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "apply_killtree_for_sequence": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "ready_after_killtree": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "apply_ready_after_killtree": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "commons/lib/cut/route.mjs_after_both": {
+      "sha256": "6cc7b8b8457045c5fea98747b54672e7b7379c85cacaeea93c8f44c7940b50d6",
+      "lines": [
+        "75: \tif (video.failed === true) return fail(409, \"This video could not be prepared. Upload it again.\");",
+        "76: \tif (video.ready === false) return fail(409, \"This video is still being prepared. Try again when it shows ready.\");"
+      ]
+    },
+    "commons/lib/cut/wire.mjs_after_both": {
+      "sha256": "fc869c8b76ffd8495fa0d23345a6b46298b4f68730e5163a0f1b4da1fda66dca",
+      "lines": [
+        "37: \t\t\t\treturn v && f ? { owner: v.by, path: f.file, ready: v.ready, failed: v.failed } : null; // ready/failed: route.mjs refuses a source that is not ready",
+        "60: \ttry { process.kill(-p.pid, \"SIGKILL\"); return; } catch { /* group already gone, or no groups on this OS */ }",
+        "67: \t\tconst p = fork(child, [], { stdio: [\"ignore\", \"ignore\", \"ignore\", \"ipc\"], execArgv: [], detached: true });"
+      ]
+    }
+  },
+  "head": "unavailable: Command '['git', 'rev-parse', '--short', 'HEAD']' returned non-zero exit status 128.",
+  "commons/lib/cut/route.mjs": [
+    {
+      "line": 70,
+      "context": "68: \tif (wantsMusic && !musicId) return fail(400, \"the edit asks for music but gives no music id\");\n69: \n70: \tconst video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)\n71: \tif (!video) return fail(404, \"no such video\");\n72: \tif (video.owner !== member.id) return fail(403, \"that video is not yours\");\n73: \n74: \tlet music = null;"
+    },
+    {
+      "line": 71,
+      "context": "69: \n70: \tconst video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)\n71: \tif (!video) return fail(404, \"no such video\");\n72: \tif (video.owner !== member.id) return fail(403, \"that video is not yours\");\n73: \n74: \tlet music = null;\n75: \tif (wantsMusic) {"
+    },
+    {
+      "line": 72,
+      "context": "70: \tconst video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)\n71: \tif (!video) return fail(404, \"no such video\");\n72: \tif (video.owner !== member.id) return fail(403, \"that video is not yours\");\n73: \n74: \tlet music = null;\n75: \tif (wantsMusic) {\n76: \t\tif (!deps.music || typeof deps.music.get !== \"function\") return fail(400, \"music is not available on this server\");"
+    },
+    {
+      "line": 74,
+      "context": "72: \tif (video.owner !== member.id) return fail(403, \"that video is not yours\");\n73: \n74: \tlet music = null;\n75: \tif (wantsMusic) {\n76: \t\tif (!deps.music || typeof deps.music.get !== \"function\") return fail(400, \"music is not available on this server\");\n77: \t\tconst m = await deps.music.get(musicId);\n78: \t\tif (!m) return fail(404, \"no such music\");"
+    },
+    {
+      "line": 91,
+      "context": "89: \ttry {\n90: \t\tlet hasAudio = video.hasAudio;\n91: \t\tconst dims = {}; // measured by deps.probe AFTER the ownership check; the store's record has no width/height\n92: \t\tif (typeof deps.probe === \"function\") {\n93: \t\t\ttry {\n94: \t\t\t\tconst p = await deps.probe(video.path);\n95: \t\t\t\thasAudio = typeof p === \"boolean\" ? p : p && typeof p === \"object\" ? p.hasAudio : undefined;"
+    },
+    {
+      "line": 92,
+      "context": "90: \t\tlet hasAudio = video.hasAudio;\n91: \t\tconst dims = {}; // measured by deps.probe AFTER the ownership check; the store's record has no width/height\n92: \t\tif (typeof deps.probe === \"function\") {\n93: \t\t\ttry {\n94: \t\t\t\tconst p = await deps.probe(video.path);\n95: \t\t\t\thasAudio = typeof p === \"boolean\" ? p : p && typeof p === \"object\" ? p.hasAudio : undefined;\n96: \t\t\t\tif (p && typeof p === \"object\") for (const k of [\"durationSec\", \"width\", \"height\"]) if (Number.isFinite(p[k]) && p[k] > 0) dims[k] = p[k];"
+    },
+    {
+      "line": 94,
+      "context": "92: \t\tif (typeof deps.probe === \"function\") {\n93: \t\t\ttry {\n94: \t\t\t\tconst p = await deps.probe(video.path);\n95: \t\t\t\thasAudio = typeof p === \"boolean\" ? p : p && typeof p === \"object\" ? p.hasAudio : undefined;\n96: \t\t\t\tif (p && typeof p === \"object\") for (const k of [\"durationSec\", \"width\", \"height\"]) if (Number.isFinite(p[k]) && p[k] > 0) dims[k] = p[k];\n97: \t\t\t} catch (err) {\n98: \t\t\t\tif (typeof deps.log === \"function\") deps.log(`cut probe failed: ${err && err.message}`);"
+    },
+    {
+      "line": 116,
+      "context": "114: \t\tlet res;\n115: \t\ttry {\n116: \t\t\tres = await (typeof deps.renderJob === \"function\" ? deps.renderJob(job) : renderEditJob(job));\n117: \t\t} catch (err) {\n118: \t\t\t// TypeError/RangeError are the job's own refusals (bad edit, bad file, too long): safe to show.\n119: \t\t\tif (err instanceof TypeError || err instanceof RangeError || (err && err.name === \"RenderPlanError\")) {\n120: \t\t\t\treturn fail(400, String(err.message || \"the edit was refused\"));"
+    }
+  ],
+  "commons/lib/cut/wire.mjs": [
+    {
+      "line": 5,
+      "context": "3: //\n4: // What main's stores actually give (read at commons/lib/videos.mjs and audio.mjs, 2026-11-23):\n5: //   videos.get(id)     -> { id, by, url, seconds|null, ready, ... }   owner is `by`; NO file path, NO width/height\n6: //   videos.fileFor(id) -> { file, type } | null                      the file to read (converted mp4, else the original)\n7: //   audio.get(id)      -> { id, ext, by, title, ... } | null         owner is `by`\n8: //   audio.fileOf(item) -> absolute path\n9: // route.mjs wants { owner, path } from videos.get / music.get and { hasAudio, width, height, durationSec } from probe."
+    },
+    {
+      "line": 7,
+      "context": "5: //   videos.get(id)     -> { id, by, url, seconds|null, ready, ... }   owner is `by`; NO file path, NO width/height\n6: //   videos.fileFor(id) -> { file, type } | null                      the file to read (converted mp4, else the original)\n7: //   audio.get(id)      -> { id, ext, by, title, ... } | null         owner is `by`\n8: //   audio.fileOf(item) -> absolute path\n9: // route.mjs wants { owner, path } from videos.get / music.get and { hasAudio, width, height, durationSec } from probe.\n10: import { execFile, fork } from \"node:child_process\";\n11: import { basename, isAbsolute } from \"node:path\";"
+    },
+    {
+      "line": 35,
+      "context": "33: \treturn {\n34: \t\tvideos: {\n35: \t\t\tget(id) {\n36: \t\t\t\tconst v = videos.get(id), f = videos.fileFor(id);\n37: \t\t\t\treturn v && f ? { owner: v.by, path: f.file } : null;\n38: \t\t\t},\n39: \t\t},"
+    },
+    {
+      "line": 36,
+      "context": "34: \t\tvideos: {\n35: \t\t\tget(id) {\n36: \t\t\t\tconst v = videos.get(id), f = videos.fileFor(id);\n37: \t\t\t\treturn v && f ? { owner: v.by, path: f.file } : null;\n38: \t\t\t},\n39: \t\t},\n40: \t\tmusic: {"
+    },
+    {
+      "line": 37,
+      "context": "35: \t\t\tget(id) {\n36: \t\t\t\tconst v = videos.get(id), f = videos.fileFor(id);\n37: \t\t\t\treturn v && f ? { owner: v.by, path: f.file } : null;\n38: \t\t\t},\n39: \t\t},\n40: \t\tmusic: {\n41: \t\t\tget(id) {"
+    },
+    {
+      "line": 41,
+      "context": "39: \t\t},\n40: \t\tmusic: {\n41: \t\t\tget(id) {\n42: \t\t\t\tif (labelTracks) { const t = labelTracks.get(id); if (t) return { public: true, path: t.path }; }\n43: \t\t\t\tconst a = audio.get(id);\n44: \t\t\t\treturn a ? { owner: a.by, path: audio.fileOf(a) } : null;\n45: \t\t\t},"
+    },
+    {
+      "line": 42,
+      "context": "40: \t\tmusic: {\n41: \t\t\tget(id) {\n42: \t\t\t\tif (labelTracks) { const t = labelTracks.get(id); if (t) return { public: true, path: t.path }; }\n43: \t\t\t\tconst a = audio.get(id);\n44: \t\t\t\treturn a ? { owner: a.by, path: audio.fileOf(a) } : null;\n45: \t\t\t},\n46: \t\t},"
+    },
+    {
+      "line": 43,
+      "context": "41: \t\t\tget(id) {\n42: \t\t\t\tif (labelTracks) { const t = labelTracks.get(id); if (t) return { public: true, path: t.path }; }\n43: \t\t\t\tconst a = audio.get(id);\n44: \t\t\t\treturn a ? { owner: a.by, path: audio.fileOf(a) } : null;\n45: \t\t\t},\n46: \t\t},\n47: \t\tasync probe(path) {"
+    }
+  ],
+  "commons/lib/videos.mjs": [
+    {
+      "line": 33,
+      "context": "31:   resumeUnfinished();\n32: }\n33: // A restart can land mid-conversion; without this the record stays ready:false, failed:false forever.\n34: // Order: finished mp4 -> mark ready; else original still there -> convert again; else mark failed.\n35: function resumeUnfinished() {\n36:   if (!ff().ffmpeg) return;\n37:   for (const v of [...meta.values()]) {"
+    },
+    {
+      "line": 41,
+      "context": "39:     const mp4 = path.join(DIR, `${v.id}.mp4`), orig = path.join(DIR, `${v.id}.orig.${v.ext}`);\n40:     fs.rmSync(`${mp4}.part`, { force: true });\n41:     if (fs.existsSync(mp4)) { const nv = { ...v, ready: true, poster: fs.existsSync(path.join(DIR, `${v.id}.jpg`)) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); }\n42:     else if (fs.existsSync(orig)) convert(v, orig);\n43:     else { const nv = { ...v, failed: true, reason: \"We couldn't convert this video.\" }; meta.set(v.id, nv); write('update', { id: v.id, failed: true, reason: nv.reason }); }\n44:   }\n45: }"
+    },
+    {
+      "line": 43,
+      "context": "41:     if (fs.existsSync(mp4)) { const nv = { ...v, ready: true, poster: fs.existsSync(path.join(DIR, `${v.id}.jpg`)) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); }\n42:     else if (fs.existsSync(orig)) convert(v, orig);\n43:     else { const nv = { ...v, failed: true, reason: \"We couldn't convert this video.\" }; meta.set(v.id, nv); write('update', { id: v.id, failed: true, reason: nv.reason }); }\n44:   }\n45: }\n46: const write = (op, v) => fs.appendFileSync(FILE, JSON.stringify({ op, v, ts: new Date().toISOString() }) + '\\n');\n47: "
+    },
+    {
+      "line": 67,
+      "context": "65:   const secs = probeSeconds(orig);\n66:   if (secs != null && secs > MAX_SECONDS + 1) { fs.rmSync(orig, { force: true }); fail(413, 'videos can be up to 2 minutes'); }\n67:   const v = { id, by: member.id, ts: new Date().toISOString(), bytes: buf.length, ext, seconds: secs, alt: String(alt || '').slice(0, 300), ...(credit ? { credit: String(credit).slice(0, 300) } : {}), ready: false };\n68:   meta.set(id, v); write('add', v);\n69:   convert(v, orig);\n70:   return publicVideo(v);\n71: }"
+    },
+    {
+      "line": 81,
+      "context": "79:     if (code !== 0) {\n80:       fs.rmSync(out, { force: true });\n81:       const failed = { ...meta.get(v.id), failed: true, reason: \"We couldn't convert this video.\" };\n82:       meta.set(v.id, failed);\n83:       write('update', { id: v.id, failed: true, reason: failed.reason });\n84:       return;\n85:     }"
+    },
+    {
+      "line": 83,
+      "context": "81:       const failed = { ...meta.get(v.id), failed: true, reason: \"We couldn't convert this video.\" };\n82:       meta.set(v.id, failed);\n83:       write('update', { id: v.id, failed: true, reason: failed.reason });\n84:       return;\n85:     }\n86:     try { fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`)); } catch { fs.rmSync(out, { force: true }); return; } // the .part can vanish (video deleted); never throw in a child-process handler\n87:     spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-ss', '0.5', '-i', path.join(DIR, `${id(v)}.mp4`), '-frames:v', '1', '-vf', \"scale='min(720,iw)':-2\", poster], { stdio: 'ignore' })"
+    },
+    {
+      "line": 88,
+      "context": "86:     try { fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`)); } catch { fs.rmSync(out, { force: true }); return; } // the .part can vanish (video deleted); never throw in a child-process handler\n87:     spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-ss', '0.5', '-i', path.join(DIR, `${id(v)}.mp4`), '-frames:v', '1', '-vf', \"scale='min(720,iw)':-2\", poster], { stdio: 'ignore' })\n88:       .on('close', () => { if (!meta.has(v.id)) { for (const f of [poster, path.join(DIR, `${id(v)}.mp4`)]) fs.rmSync(f, { force: true }); return; } const nv = { ...meta.get(v.id), ready: true, poster: fs.existsSync(poster) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); fs.rmSync(orig, { force: true }); });\n89:   });\n90: }\n91: const id = (v) => v.id;\n92: "
+    },
+    {
+      "line": 94,
+      "context": "92: \n93: /** The file to serve for a video, and its type. */\n94: export function fileFor(vid) {\n95:   const v = meta.get(String(vid || '')); if (!v) return null;\n96:   const mp4 = path.join(DIR, `${v.id}.mp4`);\n97:   if (fs.existsSync(mp4)) return { file: mp4, type: 'video/mp4' };\n98:   const orig = path.join(DIR, `${v.id}.orig.${v.ext}`);"
+    },
+    {
+      "line": 103,
+      "context": "101: export function posterFor(vid) { const v = meta.get(String(vid || '')); const f = v && path.join(DIR, `${v.id}.jpg`); return f && fs.existsSync(f) ? f : null; }\n102: export const get = (vid) => { const v = meta.get(String(vid || '')); return v ? publicVideo(v) : null; };\n103: export const publicVideo = (v) => ({ id: v.id, by: v.by, url: `/videos/${v.id}`, poster: v.poster ? `/videos/${v.id}/poster.jpg` : null, seconds: v.seconds ?? null, alt: v.alt || '', ...(v.credit ? { credit: v.credit } : {}), ready: !!v.ready || !ff().ffmpeg, failed: !!v.failed, ...(v.reason ? { reason: v.reason } : {}) });\n104: export const byMember = (memberId) => [...meta.values()].filter((v) => v.by === memberId).map(publicVideo);\n105: /** A member's own videos, newest first (Cohabi Cut's \"From Cohabi\" tab). */\n106: export const listMine = (memberId, limit = 60) => [...meta.values()].filter((v) => v.by === memberId).sort((a, b) => (a.ts < b.ts ? 1 : -1)).slice(0, Math.max(1, Math.min(100, limit))).map(publicVideo);\n107: "
+    }
+  ]
+}

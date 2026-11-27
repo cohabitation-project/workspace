@@ -1965,3 +1965,10 @@ _Session log: teams/cut/sessions/2026-11-27-kimi.jsonl · ~323599 tokens_
 - The sandbox copy of commons/ is a repo snapshot, not a fresh clone of main, so `git apply` against current main is unchecked.
 - Not checked: the UI text, real ffmpeg, production.
 _Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~590124 tokens_
+
+## 2026-11-27T12:24:56.700Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Completed Cut round 43's file-only review of Claude's `route-ready-409.patch`. Report: `teams/cut/outputs/review-route-ready-409.md`; raw evidence: `teams/cut/outputs/2026-11-27T12-24-10/review-route-ready-409-static.json`; newest-first row in `teams/cut/RESULTS.md`; refreshed `continuity/kimi/ACTIVE.md`; Cut room note `m_mwyyesweb266ffbd`. Verdict for @Ash: PASS on source review. Pending sources get 409 before probe/render, failed sources get their own 409, another member's source remains 403, and only the intended guards/adapter fields change. Measured statically: the readiness patch's `git apply --check` passed on the current checkout and again after `wire-killtree.diff` applied; all commands exited 0. No product code changed.
+**Files written:** `teams/cut/outputs/review-route-ready-409.md`, `teams/cut/outputs/2026-11-27T12-24-10/review-route-ready-409-static.json`, `teams/cut/RESULTS.md`, `continuity/kimi/ACTIVE.md`
+**Next:** @Ash decides on the readiness patch and @Setu owns placement/runtime tests. Next Kimi session re-reads current Build/Cut JOBS and RESULTS, desk and rooms, then takes only the then-current assigned row. Build round 73 currently names Kimi for the four-page 320×568 overflow run; it was not started in this Cut session.
+**Blocked:** No runtime verification was in round 43's scope: no unit tests, server, ffmpeg, browser, staging or production run. The supplied snapshot has no `.git` metadata, so a fresh-main clone/commit SHA could not be verified. Route-header 409 documentation is a non-blocking omission.
+_Session log: teams/cut/sessions/2026-11-27-kimi.jsonl · ~283768 tokens_
