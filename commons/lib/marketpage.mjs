@@ -626,7 +626,7 @@ export function marketPage({ me, query = {} }) {
   const arts = showArtists ? artists().filter((a) => !needle || `${a.name} ${a.releases.map((r) => r.title).join(' ')}`.toLowerCase().includes(needle)) : [];
   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
-  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
+  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand are a Cohabi cooperative service at the Publishing Desk.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
   if (['video', 'writing', 'services', 'classifieds'].includes(cat) && !pk && !free && !q) return frame({ me, title: market.CATEGORIES[cat], description: DESC[cat], section: cat, center: departmentExperience({ cat, me, items, pk, q, link, chips }), scripts: ['/static/market.js'] });
@@ -1031,4 +1031,54 @@ export function pagesCard(memberId, { self = false } = {}) {
   if (!mine.length && !self) return '';
   const groups = [['band', 'Bands'], ['label', 'Labels'], ['artist', 'Artists'], ['business', 'Businesses']].map(([k, n]) => [n, mine.filter((p) => p.kind === k)]).filter(([, l]) => l.length);
   return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? groups.map(([n, l]) => `<p class="small muted pf-pagesh">${n}</p><ul>${l.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a></li>`).join('')}</ul>`).join('') : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
+}
+
+// ---------------------------------------------------------------- publishing service page (t_e50fd534c2)
+// "Publish your book" as a COHABI cooperative service — not a Firedamm CTA (Geoffrey, 2026-11-26,
+// m_mwxw78ty8p84189f). The calculator is live against /api/publishing/quote (read-only Lulu cost math;
+// no print job can be created from anything on this page). Prices stay labelled "pending council".
+export function publishingPage({ me }) {
+  const center = `
+  <section class="mv-center" id="publish" style="max-width:980px;margin:0 auto;padding:12px 16px">
+    <p style="letter-spacing:.14em;font-size:.8em;opacity:.75">THE PUBLISHING DESK · A COHABI COOPERATIVE SERVICE</p>
+    <h1 style="margin:.2em 0">Publish your book.</h1>
+    <p style="max-width:46em">Write it; the cooperative prints it. Your book is printed and shipped per order —
+    no stock, no minimums — and it lists in <a href="/label?cat=writing">Books &amp; Writing</a> beside the other
+    members' work. You keep your rights. The split is shown to you and to your buyer, line by line.</p>
+    <div role="note" style="border:1px solid #b78f3c;border-radius:10px;padding:10px 14px;margin:14px 0;background:rgba(183,143,60,.08)">
+      <strong>Test mode.</strong> The Market is not selling for real money yet. The costs below are real quotes,
+      but final prices are <strong>pending the cooperative council's decision</strong> on the co-op's share —
+      the share shown here is a proposal, marked as such.
+    </div>
+
+    <h2>How it works</h2>
+    <ol style="max-width:46em">
+      <li><strong>Bring a print-ready PDF</strong> — interior and cover. (Lulu publishes free templates and spec
+        calculators for every size; start at 6×9.)</li>
+      <li><strong>Pick your book</strong> — page count, paperback or hardcover.</li>
+      <li><strong>See the whole split, live</strong> — print cost, shipping, the co-op's proposed share, card
+        processing, and what you keep. Nothing hidden; your buyer sees the same split.</li>
+      <li><strong>List it</strong> in Books &amp; Writing. Printing turns on for real once the council sets the
+        price rules.</li>
+    </ol>
+
+    <h2>What would my book cost?</h2>
+    <form id="pub-calc" style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;max-width:46em">
+      <label>Pages<br><input type="number" id="pub-pages" min="30" max="800" value="200" required style="width:7em"></label>
+      <label>Binding<br><select id="pub-bind"><option value="PB">Paperback</option><option value="CW">Hardcover</option></select></label>
+      <label>Shipping<br><select id="pub-level"><option value="MAIL">Standard</option><option value="EXPEDITED">Expedited</option></select></label>
+      <label>Your list price $<br><input type="number" id="pub-price" min="1" step="0.01" placeholder="e.g. 16.99" style="width:7em"></label>
+      <button type="submit">Get the live quote</button>
+    </form>
+    <div id="pub-result" aria-live="polite" style="margin-top:12px;max-width:46em"></div>
+
+    <h2>Coming later (planned — not built yet)</h2>
+    <ul style="max-width:46em">
+      <li>Editing help from the cooperative's members and kin, offered for tokens.</li>
+      <li>Image generation for covers and illustrations, right in the flow.</li>
+      <li>Layout machines for children's books and picture formats.</li>
+    </ul>
+    <p><a href="/label/new?cat=writing"><strong>Start your listing →</strong></a>${me ? '' : ' (you’ll be asked to sign in)'}</p>
+  </section>`;
+  return frame({ me, title: 'Publish your book', description: 'Book publishing as a Cohabi cooperative service: print on demand, an honest line-by-line split, and your rights kept.', section: 'writing', center, scripts: ['/static/publishing.js'] });
 }

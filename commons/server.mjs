@@ -1822,6 +1822,14 @@ app.get('/api/label/artist/:slug', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache'); res.json({ artist: want, albums });
 });
 
+// Publishing Desk (t_e50fd534c2): "publish your book" as a Cohabi service. The quote is READ-ONLY cost math —
+// fulfillment.luluCost cannot create a print job; the test→paid boundary stays with the council.
+app.get('/label/publish', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.publishingPage({ me: auth.memberFromCookie(req.headers.cookie) })); });
+app.get('/api/publishing/quote', wrap(async (req) => {
+  const q = await fulfillment.luluCost({ pages: req.query.pages, bind: String(req.query.bind || 'PB'), level: String(req.query.level || 'MAIL') });
+  return { ...q, floor_usd: q.print_usd != null ? fulfillment.bookPriceFloor(q.print_usd) : null, proposed_cut_pct: 10, pending_council: true,
+    note: 'A live quote — costs only; no print job is created. The co-op share used in floors is PROPOSED; final prices are pending the council’s decision (teams/income/lulu-pricing-2026-11-27.md).' };
+}));
 app.get('/label/new', (req, res) => {
   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || ''), asPage: String(req.query.as || '') || null }));
