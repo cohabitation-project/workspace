@@ -1,0 +1,498 @@
+{
+  "node": "v24.22.3",
+  "rows": [
+    {
+      "file": "commons/test/cut-captions-words-insert.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-captions-words.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-captions.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-cleanup.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-cover-range.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-edit.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 13,
+      "pass": 12,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 13 - real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file # SKIP no ffmpeg"
+      ]
+    },
+    {
+      "file": "commons/test/cut-effects.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 12,
+      "pass": 11,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 8 - text: real ffmpeg draws hostile strings identically to a textfile= render (skipped if no ffmpeg) # SKIP"
+      ]
+    },
+    {
+      "file": "commons/test/cut-export-body.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-export-duration.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - POST /api/cut/render: three trims reuse one 4s upload and export the expected durations # SKIP real export not run: missing ffmpeg and ffprobe; install it or set FFMPEG/FFPROBE"
+      ]
+    },
+    {
+      "file": "commons/test/cut-export-handoff-live.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - /cut/ at 375x812: a finished export offers a Post it link (>=44px) to the Feed composer carrying the new video id # SKIP browser hand-off check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH"
+      ]
+    },
+    {
+      "file": "commons/test/cut-failed-ui-live.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - /cut/ at 390x844: an export whose saved video cannot be converted shows the failure message and no Post control # SKIP browser failure check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH"
+      ]
+    },
+    {
+      "file": "commons/test/cut-handoff.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-model.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 17,
+      "pass": 17,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-music-list.test.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 2,
+      "pass": 1,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 2 - GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule"
+      ]
+    },
+    {
+      "file": "commons/test/cut-phone-overflow.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 1 - signed-in /cut/ has no horizontal document overflow at 390x844"
+      ]
+    },
+    {
+      "file": "commons/test/cut-render-edit.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 8,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 2,
+      "todo": 0,
+      "special": [
+        "ok 7 - real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream # SKIP ffmpeg not available",
+        "ok 8 - real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file # SKIP ffmpeg not available"
+      ]
+    },
+    {
+      "file": "commons/test/cut-render-job.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 11,
+      "pass": 10,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 11 - real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s # SKIP no ffmpeg"
+      ]
+    },
+    {
+      "file": "commons/test/cut-render-music-fade.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - placed planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS # SKIP real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)"
+      ]
+    },
+    {
+      "file": "commons/test/cut-render-plan.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-render-real.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - placed planner renders a timed Words caption: absent / visible / absent # SKIP real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)"
+      ]
+    },
+    {
+      "file": "commons/test/cut-render-timeout-orphan.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-render-timeout-unlink.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-route-http.test.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 4,
+      "pass": 3,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 4 - booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429"
+      ]
+    },
+    {
+      "file": "commons/test/cut-route-real.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-route-unready.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-route.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-tap-targets-320.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 1 - visible /cut/ tap targets at 320x568 (document fits 320)"
+      ]
+    },
+    {
+      "file": "commons/test/cut-tap-targets.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 1 - visible /cut/ tap targets at 375x812"
+      ]
+    },
+    {
+      "file": "commons/test/cut-timeline.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-video-failed-http.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 1,
+      "todo": 0,
+      "special": [
+        "ok 1 - POST /api/videos: failed conversion is visible through GET /api/videos?by=me # SKIP real conversion-failure route not run: missing ffmpeg; install it or set FFMPEG"
+      ]
+    },
+    {
+      "file": "commons/test/cut-video-noprobe.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 5,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 3,
+      "todo": 1,
+      "special": [
+        "ok 1 - no ffprobe, real ffmpeg: a short clip still converts and becomes ready (ffprobe is not needed for convert) # SKIP no ffmpeg on PATH",
+        "ok 2 - no ffprobe: a clip over 2 minutes is ACCEPTED, silently (current behaviour, the finding) # SKIP no ffmpeg on PATH",
+        "ok 3 - no ffprobe: a clip over 2 minutes is refused with a 413 the maker can read (videos.mjs:52 only checks when secs != null) # TODO",
+        "ok 4 - no ffprobe, conversion failure: maker sees a failure in their own video list # SKIP no ffmpeg on PATH"
+      ]
+    },
+    {
+      "file": "commons/test/cut-video-wait.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/cut-videos-mine.test.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 1 - GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only, newest first"
+      ]
+    },
+    {
+      "file": "commons/test/cut-words-to-text.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/video-link-card.mjs",
+      "exit_code": 1,
+      "timeout": false,
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": [
+        "not ok 1 - commons/test/video-link-card.mjs"
+      ]
+    },
+    {
+      "file": "commons/test/video-topics.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    },
+    {
+      "file": "commons/test/videos-delete-mid-convert.test.mjs",
+      "exit_code": 0,
+      "timeout": false,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0,
+      "special": []
+    }
+  ],
+  "totals": {
+    "tests": 239,
+    "pass": 217,
+    "fail": 7,
+    "cancelled": 0,
+    "skipped": 14,
+    "todo": 1
+  },
+  "timeouts": []
+}

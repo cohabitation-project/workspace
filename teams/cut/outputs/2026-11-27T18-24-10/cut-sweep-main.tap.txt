@@ -1,0 +1,1694 @@
+TAP version 13
+# Subtest: inserts Words as an overlay text track and preserves other scene tracks
+ok 1 - inserts Words as an overlay text track and preserves other scene tracks
+  ---
+  duration_ms: 2.417051
+  type: 'test'
+  ...
+# Subtest: replaces the existing named Words track in place without changing other tracks
+ok 2 - replaces the existing named Words track in place without changing other tracks
+  ---
+  duration_ms: 0.201584
+  type: 'test'
+  ...
+# Subtest: replaces by matching Words name when the previous track id differs
+ok 3 - replaces by matching Words name when the previous track id differs
+  ---
+  duration_ms: 0.179821
+  type: 'test'
+  ...
+# Subtest: rejects ambiguous matches, ID collisions, and cross-track element collisions
+ok 4 - rejects ambiguous matches, ID collisions, and cross-track element collisions
+  ---
+  duration_ms: 0.490659
+  type: 'test'
+  ...
+# Subtest: does not replace a text track outside overlay and rejects malformed SceneTracks
+ok 5 - does not replace a text track outside overlay and rejects malformed SceneTracks
+  ---
+  duration_ms: 0.198419
+  type: 'test'
+  ...
+# Subtest: removes the Words overlay immutably and preserves every other track
+ok 6 - removes the Words overlay immutably and preserves every other track
+  ---
+  duration_ms: 0.214192
+  type: 'test'
+  ...
+# Subtest: removes by Words name when its id differs, but leaves unrelated text tracks untouched
+ok 7 - removes by Words name when its id differs, but leaves unrelated text tracks untouched
+  ---
+  duration_ms: 0.138058
+  type: 'test'
+  ...
+# Subtest: no matching Words track returns the exact original state
+ok 8 - no matching Words track returns the exact original state
+  ---
+  duration_ms: 0.131458
+  type: 'test'
+  ...
+# Subtest: refuses ambiguous matches, Words tracks outside overlay, and invalid selectors
+ok 9 - refuses ambiguous matches, Words tracks outside overlay, and invalid selectors
+  ---
+  duration_ms: 0.304769
+  type: 'test'
+  ...
+# Subtest: maps caption blocks to a Words TextTrack and flat text-element params
+ok 10 - maps caption blocks to a Words TextTrack and flat text-element params
+  ---
+  duration_ms: 2.338342
+  type: 'test'
+  ...
+# Subtest: IDs are deterministic, URL-escaped, unique across blocks, and collision-checked
+ok 11 - IDs are deterministic, URL-escaped, unique across blocks, and collision-checked
+  ---
+  duration_ms: 2.191011
+  type: 'test'
+  ...
+# Subtest: preserves integer tick timing exactly, including safe large tick values
+ok 12 - preserves integer tick timing exactly, including safe large tick values
+  ---
+  duration_ms: 0.290558
+  type: 'test'
+  ...
+# Subtest: rejects malformed blocks, unsafe/non-integer timing, and overflowing end ticks
+ok 13 - rejects malformed blocks, unsafe/non-integer timing, and overflowing end ticks
+  ---
+  duration_ms: 0.373763
+  type: 'test'
+  ...
+# Subtest: Whisper sample creates ordered, timed Words-track caption blocks with preserved source duration
+ok 14 - Whisper sample creates ordered, timed Words-track caption blocks with preserved source duration
+  ---
+  duration_ms: 2.137499
+  type: 'test'
+  ...
+# Subtest: input order can be unsorted; blank speech is skipped without losing original segment index
+ok 15 - input order can be unsorted; blank speech is skipped without losing original segment index
+  ---
+  duration_ms: 0.343407
+  type: 'test'
+  ...
+# Subtest: captions remain correctable in text and timing without changing identity
+ok 16 - captions remain correctable in text and timing without changing identity
+  ---
+  duration_ms: 0.302496
+  type: 'test'
+  ...
+# Subtest: rejects invalid intervals and invalid corrections instead of fabricating timings
+ok 17 - rejects invalid intervals and invalid corrections instead of fabricating timings
+  ---
+  duration_ms: 0.621647
+  type: 'test'
+  ...
+# Subtest: tiny intervals collapse to one caption rather than creating zero-length blocks
+ok 18 - tiny intervals collapse to one caption rather than creating zero-length blocks
+  ---
+  duration_ms: 0.240652
+  type: 'test'
+  ...
+# Subtest: tick partition stays exact near the safe-integer limit
+ok 19 - tick partition stays exact near the safe-integer limit
+  ---
+  duration_ms: 0.227733
+  type: 'test'
+  ...
+# Subtest: rejects timestamps whose tick values cannot be represented safely
+ok 20 - rejects timestamps whose tick values cannot be represented safely
+  ---
+  duration_ms: 0.212841
+  type: 'test'
+  ...
+# Subtest: sweepRenders treats a not-yet-created render directory as empty
+ok 21 - sweepRenders treats a not-yet-created render directory as empty
+  ---
+  duration_ms: 8.80256
+  type: 'test'
+  ...
+# Subtest: sweepRenders removes expired eligible files and preserves recent and unrelated entries
+ok 22 - sweepRenders removes expired eligible files and preserves recent and unrelated entries
+  ---
+  duration_ms: 9.624278
+  type: 'test'
+  ...
+# Subtest: sweepRenders does not follow or remove symlinks
+ok 23 - sweepRenders does not follow or remove symlinks
+  ---
+  duration_ms: 4.861473
+  type: 'test'
+  ...
+# Subtest: size cap removes the oldest eligible files first
+ok 24 - size cap removes the oldest eligible files first
+  ---
+  duration_ms: 3.582296
+  type: 'test'
+  ...
+# Subtest: size cap keeps deleting oldest files until eligible bytes fit
+ok 25 - size cap keeps deleting oldest files until eligible bytes fit
+  ---
+  duration_ms: 4.693425
+  type: 'test'
+  ...
+# Subtest: sweepRenders refuses invalid path and limits
+ok 26 - sweepRenders refuses invalid path and limits
+  ---
+  duration_ms: 2.046303
+  type: 'test'
+  ...
+# Subtest: coverInRange keeps a cover inside the range and pulls an outside one to the nearest end
+ok 27 - coverInRange keeps a cover inside the range and pulls an outside one to the nearest end
+  ---
+  duration_ms: 0.785704
+  type: 'test'
+  ...
+# Subtest: coverInRange does not hide a broken range or a non-number from the server
+ok 28 - coverInRange does not hide a broken range or a non-number from the server
+  ---
+  duration_ms: 0.193462
+  type: 'test'
+  ...
+# Subtest: the untouched-cover case: trim 1..3 with cover 0 is refused raw, accepted after coverInRange
+ok 29 - the untouched-cover case: trim 1..3 with cover 0 is refused raw, accepted after coverInRange
+  ---
+  duration_ms: 0.655939
+  type: 'test'
+  ...
+# Subtest: the export click builds its edit through coverInRange
+ok 30 - the export click builds its edit through coverInRange
+  ---
+  duration_ms: 0.21253
+  type: 'test'
+  ...
+# Subtest: trim 1..3 with the cover at 0: the scrubber itself shows 1 after the trim moves, not only the Export body
+ok 31 - trim 1..3 with the cover at 0: the scrubber itself shows 1 after the trim moves, not only the Export body
+  ---
+  duration_ms: 1.053647
+  type: 'test'
+  ...
+# Subtest: a cover already inside the trim is left alone, and one beyond the trim end is pulled to it
+ok 32 - a cover already inside the trim is left alone, and one beyond the trim end is pulled to it
+  ---
+  duration_ms: 0.384108
+  type: 'test'
+  ...
+# Subtest: a draft saved with trim 2..4 and cover 0 loads with the scrubber at 2
+ok 33 - a draft saved with trim 2..4 and cover 0 loads with the scrubber at 2
+  ---
+  duration_ms: 0.409046
+  type: 'test'
+  ...
+# Subtest: a draft cover inside its trim is restored as saved, and one past the trim end loads at the end
+ok 34 - a draft cover inside its trim is restored as saved, and one past the trim end loads at the end
+  ---
+  duration_ms: 1.238125
+  type: 'test'
+  ...
+# Subtest: refuses trimEnd <= trimStart
+ok 35 - refuses trimEnd <= trimStart
+  ---
+  duration_ms: 1.773692
+  type: 'test'
+  ...
+# Subtest: refuses a trim outside 0..durationSec
+ok 36 - refuses a trim outside 0..durationSec
+  ---
+  duration_ms: 0.274423
+  type: 'test'
+  ...
+# Subtest: refuses non-numbers and non-objects
+ok 37 - refuses non-numbers and non-objects
+  ---
+  duration_ms: 0.323518
+  type: 'test'
+  ...
+# Subtest: refuses text over 80 characters, a newline, or a control character
+ok 38 - refuses text over 80 characters, a newline, or a control character
+  ---
+  duration_ms: 1.351306
+  type: 'test'
+  ...
+# Subtest: refuses a text line that cannot fit the frame width, or that leaves the frame vertically
+ok 39 - refuses a text line that cannot fit the frame width, or that leaves the frame vertically
+  ---
+  duration_ms: 1.202952
+  type: 'test'
+  ...
+# Subtest: refuses music volume outside 0..1 and a bad music id
+ok 40 - refuses music volume outside 0..1 and a bad music id
+  ---
+  duration_ms: 0.506953
+  type: 'test'
+  ...
+# Subtest: refuses coverSec outside the trimmed range (inclusive ends are allowed)
+ok 41 - refuses coverSec outside the trimmed range (inclusive ends are allowed)
+  ---
+  duration_ms: 0.383227
+  type: 'test'
+  ...
+# Subtest: a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it
+ok 42 - a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it
+  ---
+  duration_ms: 2.287506
+  type: 'test'
+  ...
+# Subtest: no text and no music: only the main clip; blank text body draws nothing
+ok 43 - no text and no music: only the main clip; blank text body draws nothing
+  ---
+  duration_ms: 0.332631
+  type: 'test'
+  ...
+# Subtest: caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font
+ok 44 - caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font
+  ---
+  duration_ms: 0.463338
+  type: 'test'
+  ...
+# Subtest: end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv
+ok 45 - end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv
+  ---
+  duration_ms: 0.445461
+  type: 'test'
+  ...
+# Subtest: end to end: a hostile caption stays inside the filter string and never adds an argv flag
+ok 46 - end to end: a hostile caption stays inside the filter string and never adds an argv flag
+  ---
+  duration_ms: 0.39812
+  type: 'test'
+  ...
+# Subtest: real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file
+ok 47 - real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file # SKIP no ffmpeg
+  ---
+  duration_ms: 0.064026
+  type: 'test'
+  ...
+# Subtest: fade emits the exact ffmpeg filter string
+ok 48 - fade emits the exact ffmpeg filter string
+  ---
+  duration_ms: 1.169231
+  type: 'test'
+  ...
+# Subtest: crop emits the exact ffmpeg filter string
+ok 49 - crop emits the exact ffmpeg filter string
+  ---
+  duration_ms: 0.232811
+  type: 'test'
+  ...
+# Subtest: text emits the exact ffmpeg filter string
+ok 50 - text emits the exact ffmpeg filter string
+  ---
+  duration_ms: 0.53108
+  type: 'test'
+  ...
+# Subtest: fade rejects a zero or negative duration
+ok 51 - fade rejects a zero or negative duration
+  ---
+  duration_ms: 0.533183
+  type: 'test'
+  ...
+# Subtest: crop rejects a rectangle outside a supplied frame and incomplete dimensions
+ok 52 - crop rejects a rectangle outside a supplied frame and incomplete dimensions
+  ---
+  duration_ms: 0.291619
+  type: 'test'
+  ...
+# Subtest: text escapes apostrophe, colon, backslash and filtergraph delimiters exactly
+ok 53 - text escapes apostrophe, colon, backslash and filtergraph delimiters exactly
+  ---
+  duration_ms: 0.227222
+  type: 'test'
+  ...
+# Subtest: text uses unquoted two-level escaping: lone apostrophe, colon, edge whitespace, trailing backslash
+ok 54 - text uses unquoted two-level escaping: lone apostrophe, colon, edge whitespace, trailing backslash
+  ---
+  duration_ms: 0.599973
+  type: 'test'
+  ...
+# Subtest: text: real ffmpeg draws hostile strings identically to a textfile= render (skipped if no ffmpeg)
+ok 55 - text: real ffmpeg draws hostile strings identically to a textfile= render (skipped if no ffmpeg) # SKIP
+  ---
+  duration_ms: 0.123476
+  type: 'test'
+  ...
+# Subtest: text puts expansion=none before text= (real ffmpeg rejects the reverse for apostrophe + %{x})
+ok 56 - text puts expansion=none before text= (real ffmpeg rejects the reverse for apostrophe + %{x})
+  ---
+  duration_ms: 0.416758
+  type: 'test'
+  ...
+# Subtest: text accepts only a finite decimal between(t,start,end) and emits it before text
+ok 57 - text accepts only a finite decimal between(t,start,end) and emits it before text
+  ---
+  duration_ms: 0.531781
+  type: 'test'
+  ...
+# Subtest: text rejects arbitrary, malformed, negative, non-finite, and empty enable expressions
+ok 58 - text rejects arbitrary, malformed, negative, non-finite, and empty enable expressions
+  ---
+  duration_ms: 0.377719
+  type: 'test'
+  ...
+# Subtest: text rejects NUL and line breaks instead of emitting a malformed graph
+ok 59 - text rejects NUL and line breaks instead of emitting a malformed graph
+  ---
+  duration_ms: 0.187593
+  type: 'test'
+  ...
+# Subtest: every top-level key in the editor's Export body is read by the render handler
+ok 60 - every top-level key in the editor's Export body is read by the render handler
+  ---
+  duration_ms: 2.74831
+  type: 'test'
+  ...
+# Subtest: the server forwards the parsed request body without renaming or dropping keys
+ok 61 - the server forwards the parsed request body without renaming or dropping keys
+  ---
+  duration_ms: 0.334523
+  type: 'test'
+  ...
+# Subtest: the complete edit object reaches the render job; no nested edit keys are picked off
+ok 62 - the complete edit object reaches the render job; no nested edit keys are picked off
+  ---
+  duration_ms: 0.182044
+  type: 'test'
+  ...
+# Subtest: the comparison detects a future browser key that the route does not read
+ok 63 - the comparison detects a future browser key that the route does not read
+  ---
+  duration_ms: 0.30555
+  type: 'test'
+  ...
+# Subtest: POST /api/cut/render: three trims reuse one 4s upload and export the expected durations
+ok 64 - POST /api/cut/render: three trims reuse one 4s upload and export the expected durations # SKIP real export not run: missing ffmpeg and ffprobe; install it or set FFMPEG/FFPROBE
+  ---
+  duration_ms: 0.607044
+  type: 'test'
+  ...
+# Subtest: /cut/ at 375x812: a finished export offers a Post it link (>=44px) to the Feed composer carrying the new video id
+ok 65 - /cut/ at 375x812: a finished export offers a Post it link (>=44px) to the Feed composer carrying the new video id # SKIP browser hand-off check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH
+  ---
+  duration_ms: 0.818963
+  type: 'test'
+  ...
+# Subtest: /cut/ at 390x844: an export whose saved video cannot be converted shows the failure message and no Post control
+ok 66 - /cut/ at 390x844: an export whose saved video cannot be converted shows the failure message and no Post control # SKIP browser failure check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH
+  ---
+  duration_ms: 0.623459
+  type: 'test'
+  ...
+# Subtest: handoffHref only builds a link for a plain video id
+ok 67 - handoffHref only builds a link for a plain video id
+  ---
+  duration_ms: 0.998744
+  type: 'test'
+  ...
+# Subtest: the composer accepts exactly the ids the editor links with
+ok 68 - the composer accepts exactly the ids the editor links with
+  ---
+  duration_ms: 0.216676
+  type: 'test'
+  ...
+# Subtest: feed.js: a /cut video counts as a video at all four points
+ok 69 - feed.js: a /cut video counts as a video at all four points
+  ---
+  duration_ms: 0.214473
+  type: 'test'
+  ...
+# Subtest: the editor page has the post link, hidden until an export is saved, and cut.js uses the real upload
+ok 70 - the editor page has the post link, hidden until an export is saved, and cut.js uses the real upload
+  ---
+  duration_ms: 0.22621
+  type: 'test'
+  ...
+# Subtest: every POST fetch in cut.js sends X-Commons, so a signed-in member can export and import
+ok 71 - every POST fetch in cut.js sends X-Commons, so a signed-in member can export and import
+  ---
+  duration_ms: 0.331369
+  type: 'test'
+  ...
+# Subtest: the stock search fetch sends X-Commons too (its route is a write-gated houseWriter)
+ok 72 - the stock search fetch sends X-Commons too (its route is a write-gated houseWriter)
+  ---
+  duration_ms: 0.199791
+  type: 'test'
+  ...
+# Subtest: the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>)
+ok 73 - the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>)
+  ---
+  duration_ms: 0.144507
+  type: 'test'
+  ...
+# Subtest: removing a video from the ?cut= composer clears the id before submit
+ok 74 - removing a video from the ?cut= composer clears the id before submit
+  ---
+  duration_ms: 0.277058
+  type: 'test'
+  ...
+# Subtest: factories: unknown types and non-integer ticks are refused
+ok 75 - factories: unknown types and non-integer ticks are refused
+  ---
+  duration_ms: 5.959848
+  type: 'test'
+  ...
+# Subtest: retimable: video and audio only
+ok 76 - retimable: video and audio only
+  ---
+  duration_ms: 0.188875
+  type: 'test'
+  ...
+# Subtest: track order is overlay, main, audio; timeline end is the latest start + duration on any track
+ok 77 - track order is overlay, main, audio; timeline end is the latest start + duration on any track
+  ---
+  duration_ms: 1.151084
+  type: 'test'
+  ...
+# Subtest: animation keys: exactly 0..duration survive (both ends inclusive)
+ok 78 - animation keys: exactly 0..duration survive (both ends inclusive)
+  ---
+  duration_ms: 1.758308
+  type: 'test'
+  ...
+# Subtest: splitAnimationsAtTime: no animations in, undefined out; a boundary key lands on both sides when included
+ok 79 - splitAnimationsAtTime: no animations in, undefined out; a boundary key lands on both sides when included
+  ---
+  duration_ms: 0.380133
+  type: 'test'
+  ...
+# Subtest: scenes: the main scene is added at the FRONT; deleting an unknown id is a no-op that does not throw
+ok 80 - scenes: the main scene is added at the FRONT; deleting an unknown id is a no-op that does not throw
+  ---
+  duration_ms: 0.457689
+  type: 'test'
+  ...
+# Subtest: update: a duration change clamps animation keys; so does a retime that shortens the clip
+ok 81 - update: a duration change clamps animation keys; so does a retime that shortens the clip
+  ---
+  duration_ms: 0.588537
+  type: 'test'
+  ...
+# Subtest: update: a retime patch on a text clip does not derive a duration or clamp the rate
+ok 82 - update: a retime patch on a text clip does not derive a duration or clamp the rate
+  ---
+  duration_ms: 0.243156
+  type: 'test'
+  ...
+# Subtest: update: visible source never goes below 0 when trims exceed the source
+ok 83 - update: visible source never goes below 0 when trims exceed the source
+  ---
+  duration_ms: 0.230367
+  type: 'test'
+  ...
+# Subtest: update: a stored sourceDuration is used; with none, source length is inferred from duration plus both trims
+ok 84 - update: a stored sourceDuration is used; with none, source length is inferred from duration plus both trims
+  ---
+  duration_ms: 0.408114
+  type: 'test'
+  ...
+# Subtest: update: params merge key by key, they are not replaced
+ok 85 - update: params merge key by key, they are not replaced
+  ---
+  duration_ms: 0.220101
+  type: 'test'
+  ...
+# Subtest: start-time rule: the main-track 'first clip snaps to 0' rule
+ok 86 - start-time rule: the main-track 'first clip snaps to 0' rule
+  ---
+  duration_ms: 0.337869
+  type: 'test'
+  ...
+# Subtest: start-time rule: a lone main clip moved right snaps back to 0 (it is never compared with itself)
+ok 87 - start-time rule: a lone main clip moved right snaps back to 0 (it is never compared with itself)
+  ---
+  duration_ms: 0.149305
+  type: 'test'
+  ...
+# Subtest: start-time rule: other tracks only clamp at 0; the main-track snap does not apply to them
+ok 88 - start-time rule: other tracks only clamp at 0; the main-track snap does not apply to them
+  ---
+  duration_ms: 0.293392
+  type: 'test'
+  ...
+# Subtest: trim: the end edge can un-trim only what was trimmed, and never below 1 tick long
+ok 89 - trim: the end edge can un-trim only what was trimmed, and never below 1 tick long
+  ---
+  duration_ms: 0.274533
+  type: 'test'
+  ...
+# Subtest: trim: bad arguments are refused loudly
+ok 90 - trim: bad arguments are refused loudly
+  ---
+  duration_ms: 0.238429
+  type: 'test'
+  ...
+# Subtest: trim at a retime rate moves the source edge by round(delta * rate)
+ok 91 - trim at a retime rate moves the source edge by round(delta * rate)
+  ---
+  duration_ms: 0.164017
+  type: 'test'
+  ...
+# Subtest: cut.js fetches /api/cut/music, never the missing /api/label/tracks
+ok 92 - cut.js fetches /api/cut/music, never the missing /api/label/tracks
+  ---
+  duration_ms: 0.993266
+  type: 'test'
+  ...
+# Subtest: GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule
+not ok 93 - GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule
+  ---
+  duration_ms: 20237.626459
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-music-list.test.mjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    server started. stderr tail: node:internal/modules/package_json_reader:331
+      throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+            ^
+    
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-w0F7Uh/repo/commons/server.mjs
+        at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+        at packageResolve (node:internal/modules/esm/resolve:784:25)
+        at moduleResolve (node:internal/modules/esm/resolve:873:18)
+        at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+        at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+        at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+        at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+        at #resolve (node:internal/modules/esm/loader:687:17)
+        at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+        at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+      code: 'ERR_MODULE_NOT_FOUND'
+    }
+    
+    Node.js v24.22.3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    packageResolve (node:internal/modules/esm/resolve:784:25)
+    moduleResolve (node:internal/modules/esm/resolve:873:18)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    #resolve (node:internal/modules/esm/loader:687:17)
+    ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-music-list.test.mjs:52:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: signed-in /cut/ has no horizontal document overflow at 390x844
+not ok 94 - signed-in /cut/ has no horizontal document overflow at 390x844
+  ---
+  duration_ms: 20132.352538
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-phone-overflow.mjs:115:1'
+  failureType: 'testCodeFailure'
+  error: 'Commons server booted on an isolated temporary data directory'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-phone-overflow.mjs:138:12)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: runs ffmpeg with an argv array: -y, plan args, codec args, outPath last
+ok 95 - runs ffmpeg with an argv array: -y, plan args, codec args, outPath last
+  ---
+  duration_ms: 3.262154
+  type: 'test'
+  ...
+# Subtest: the music input is passed as a second -i and the result reports ignored overlay tracks
+ok 96 - the music input is passed as a second -i and the result reports ignored overlay tracks
+  ---
+  duration_ms: 0.438901
+  type: 'test'
+  ...
+# Subtest: ffmpeg exit != 0 throws with the last 20 stderr lines only
+ok 97 - ffmpeg exit != 0 throws with the last 20 stderr lines only
+  ---
+  duration_ms: 0.867877
+  type: 'test'
+  ...
+# Subtest: a failed spawn, a timeout and a signal each throw a clear message
+ok 98 - a failed spawn, a timeout and a signal each throw a clear message
+  ---
+  duration_ms: 0.935509
+  type: 'test'
+  ...
+# Subtest: planner refusals propagate as RenderPlanError and ffmpeg is never run
+ok 99 - planner refusals propagate as RenderPlanError and ffmpeg is never run
+  ---
+  duration_ms: 0.377559
+  type: 'test'
+  ...
+# Subtest: outPath that is empty, multi-line, or looks like an option is refused before running
+ok 100 - outPath that is empty, multi-line, or looks like an option is refused before running
+  ---
+  duration_ms: 0.549648
+  type: 'test'
+  ...
+# Subtest: real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream
+ok 101 - real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream # SKIP ffmpeg not available
+  ---
+  duration_ms: 0.121543
+  type: 'test'
+  ...
+# Subtest: real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file
+ok 102 - real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file # SKIP ffmpeg not available
+  ---
+  duration_ms: 0.127823
+  type: 'test'
+  ...
+# Subtest: a good edit runs ffmpeg once with the trim, the caption and the music; output is cut_<hex>.mp4 in outDir
+ok 103 - a good edit runs ffmpeg once with the trim, the caption and the music; output is cut_<hex>.mp4 in outDir
+  ---
+  duration_ms: 3.276305
+  type: 'test'
+  ...
+# Subtest: two renders get different file names
+ok 104 - two renders get different file names
+  ---
+  duration_ms: 0.387314
+  type: 'test'
+  ...
+# Subtest: a hostile caption cannot add an input or a flag
+ok 105 - a hostile caption cannot add an input or a flag
+  ---
+  duration_ms: 0.425661
+  type: 'test'
+  ...
+# Subtest: refuses a trimmed length over 60 s; exactly 60 s is allowed
+ok 106 - refuses a trimmed length over 60 s; exactly 60 s is allowed
+  ---
+  duration_ms: 0.636579
+  type: 'test'
+  ...
+# Subtest: refuses bad outDir, bad video and bad music paths before running anything
+ok 107 - refuses bad outDir, bad video and bad music paths before running anything
+  ---
+  duration_ms: 0.734707
+  type: 'test'
+  ...
+# Subtest: refuses bad video numbers; odd sizes round down to even
+ok 108 - refuses bad video numbers; odd sizes round down to even
+  ---
+  duration_ms: 0.507294
+  type: 'test'
+  ...
+# Subtest: a bad edit is refused by editToTracks and ffmpeg never runs
+ok 109 - a bad edit is refused by editToTracks and ffmpeg never runs
+  ---
+  duration_ms: 0.323988
+  type: 'test'
+  ...
+# Subtest: music given but not asked for by the edit is ignored
+ok 110 - music given but not asked for by the edit is ignored
+  ---
+  duration_ms: 0.244649
+  type: 'test'
+  ...
+# Subtest: a silent source (hasAudio false) gets generated silence in the graph
+ok 111 - a silent source (hasAudio false) gets generated silence in the graph
+  ---
+  duration_ms: 0.259681
+  type: 'test'
+  ...
+# Subtest: ffmpeg failure throws with the stderr tail and removes the half-written file
+ok 112 - ffmpeg failure throws with the stderr tail and removes the half-written file
+  ---
+  duration_ms: 0.525222
+  type: 'test'
+  ...
+# Subtest: real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s
+ok 113 - real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s # SKIP no ffmpeg
+  ---
+  duration_ms: 0.089405
+  type: 'test'
+  ...
+# Cut music-fade render test ffmpeg: unavailable (render test will skip)
+# Subtest: placed planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS
+ok 114 - placed planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS # SKIP real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)
+  ---
+  duration_ms: 0.546503
+  type: 'test'
+  ...
+# Subtest: two-clip sample: exact trim + concat plan
+ok 115 - two-clip sample: exact trim + concat plan
+  ---
+  duration_ms: 6.038336
+  type: 'test'
+  ...
+# Subtest: retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo
+ok 116 - retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo
+  ---
+  duration_ms: 0.329967
+  type: 'test'
+  ...
+# Subtest: retime with a trim: source window starts at trimStart and is duration*rate long
+ok 117 - retime with a trim: source window starts at trimStart and is duration*rate long
+  ---
+  duration_ms: 0.187122
+  type: 'test'
+  ...
+# Subtest: a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree)
+ok 118 - a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree)
+  ---
+  duration_ms: 0.290988
+  type: 'test'
+  ...
+# Subtest: plan.maps names the concat outputs, video first
+ok 119 - plan.maps names the concat outputs, video first
+  ---
+  duration_ms: 0.225139
+  type: 'test'
+  ...
+# Subtest: atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5)
+ok 120 - atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5)
+  ---
+  duration_ms: 1.84582
+  type: 'test'
+  ...
+# Subtest: gap between clips becomes black video + silence of the gap length
+ok 121 - gap between clips becomes black video + silence of the gap length
+  ---
+  duration_ms: 0.421225
+  type: 'test'
+  ...
+# Subtest: a gap before the first clip is filled too
+ok 122 - a gap before the first clip is filled too
+  ---
+  duration_ms: 0.320022
+  type: 'test'
+  ...
+# Subtest: clips are placed by startTime, not by array order
+ok 123 - clips are placed by startTime, not by array order
+  ---
+  duration_ms: 0.242485
+  type: 'test'
+  ...
+# Subtest: a source with hasAudio:false gets silence, and no [n:a] pad is read
+ok 124 - a source with hasAudio:false gets silence, and no [n:a] pad is read
+  ---
+  duration_ms: 0.361434
+  type: 'test'
+  ...
+# Subtest: the same file used twice gets two inputs, so no pad is reused
+ok 125 - the same file used twice gets two inputs, so no pad is reused
+  ---
+  duration_ms: 0.23866
+  type: 'test'
+  ...
+# Subtest: nothing silently dropped: overlay and main-track text elements are reported in `ignored`
+ok 126 - nothing silently dropped: overlay and main-track text elements are reported in `ignored`
+  ---
+  duration_ms: 0.235625
+  type: 'test'
+  ...
+# Subtest: one music element: exact trim + delay + amix plan; a second is refused
+ok 127 - one music element: exact trim + delay + amix plan; a second is refused
+  ---
+  duration_ms: 0.555947
+  type: 'test'
+  ...
+# Subtest: music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused
+ok 128 - music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused
+  ---
+  duration_ms: 0.578252
+  type: 'test'
+  ...
+# Subtest: music fades: exact afade chain, zero omitted, invalid timings refused
+ok 129 - music fades: exact afade chain, zero omitted, invalid timings refused
+  ---
+  duration_ms: 0.988409
+  type: 'test'
+  ...
+# Subtest: overlay Words track: exact timed drawtext chain after concat, not ignored
+ok 130 - overlay Words track: exact timed drawtext chain after concat, not ignored
+  ---
+  duration_ms: 0.704621
+  type: 'test'
+  ...
+# Subtest: a hostile src stays one argv element and never enters a filter string
+ok 131 - a hostile src stays one argv element and never enters a filter string
+  ---
+  duration_ms: 0.116316
+  type: 'test'
+  ...
+# Subtest: refuses what it cannot plan, with a RenderPlanError
+ok 132 - refuses what it cannot plan, with a RenderPlanError
+  ---
+  duration_ms: 0.362105
+  type: 'test'
+  ...
+# Subtest: an element asking for slightly past the source end by rounding is allowed
+ok 133 - an element asking for slightly past the source end by rounding is allowed
+  ---
+  duration_ms: 0.16592
+  type: 'test'
+  ...
+# Subtest: secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep)
+ok 134 - secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep)
+  ---
+  duration_ms: 0.692353
+  type: 'test'
+  ...
+# Subtest: seeded sweep: random timelines always yield a closed label graph and the right total length
+ok 135 - seeded sweep: random timelines always yield a closed label graph and the right total length
+  ---
+  duration_ms: 4.040537
+  type: 'test'
+  ...
+# Subtest: fade in + crop + fade out on one clip: exact string, in array order, between trim and scale
+ok 136 - fade in + crop + fade out on one clip: exact string, in array order, between trim and scale
+  ---
+  duration_ms: 0.363648
+  type: 'test'
+  ...
+# Subtest: effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter
+ok 137 - effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter
+  ---
+  duration_ms: 0.140982
+  type: 'test'
+  ...
+# Subtest: effects with retime: the fade time is measured on the clip's output, after setpts
+ok 138 - effects with retime: the fade time is measured on the clip's output, after setpts
+  ---
+  duration_ms: 0.111979
+  type: 'test'
+  ...
+# Subtest: an empty or missing effects list changes nothing; an effect with no params uses the registry defaults
+ok 139 - an empty or missing effects list changes nothing; an effect with no params uses the registry defaults
+  ---
+  duration_ms: 0.122294
+  type: 'test'
+  ...
+# Subtest: a source size with only one dimension is ignored, not half-applied
+ok 140 - a source size with only one dimension is ignored, not half-applied
+  ---
+  duration_ms: 0.201694
+  type: 'test'
+  ...
+# Subtest: an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included)
+ok 141 - an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included)
+  ---
+  duration_ms: 0.367964
+  type: 'test'
+  ...
+# Subtest: malformed effects entries are refused, not skipped
+ok 142 - malformed effects entries are refused, not skipped
+  ---
+  duration_ms: 0.317488
+  type: 'test'
+  ...
+# Subtest: a registry guard failure comes out as a RenderPlanError that names the effect
+ok 143 - a registry guard failure comes out as a RenderPlanError that names the effect
+  ---
+  duration_ms: 0.388525
+  type: 'test'
+  ...
+# Subtest: crop is checked against the source size when the caller supplies it, and not when it doesn't
+ok 144 - crop is checked against the source size when the caller supplies it, and not when it doesn't
+  ---
+  duration_ms: 0.350678
+  type: 'test'
+  ...
+# Subtest: a half-given frame size in the effect still fails, even when the source map has a size
+ok 145 - a half-given frame size in the effect still fails, even when the source map has a size
+  ---
+  duration_ms: 0.147542
+  type: 'test'
+  ...
+# Subtest: an error that is not a registry guard (a bug) is rethrown as itself, not hidden
+ok 146 - an error that is not a registry guard (a bug) is rethrown as itself, not hidden
+  ---
+  duration_ms: 0.138239
+  type: 'test'
+  ...
+# Subtest: text effect: hostile text is escaped by the registry and stays inside one filter in one chain
+ok 147 - text effect: hostile text is escaped by the registry and stays inside one filter in one chain
+  ---
+  duration_ms: 0.201824
+  type: 'test'
+  ...
+# Cut Words render test ffmpeg: unavailable (render test will skip)
+# Cut Words render test fc-match sans: DejaVuSans.ttf: "DejaVu Sans" "Book"
+# Subtest: placed planner renders a timed Words caption: absent / visible / absent
+ok 148 - placed planner renders a timed Words caption: absent / visible / absent # SKIP real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)
+  ---
+  duration_ms: 0.503499
+  type: 'test'
+  ...
+# Subtest: a timed-out render leaves no ffmpeg process running
+ok 149 - a timed-out render leaves no ffmpeg process running
+  ---
+  duration_ms: 1906.363179
+  type: 'test'
+  ...
+# Subtest: a render that finishes in time still resolves
+ok 150 - a render that finishes in time still resolves
+  ---
+  duration_ms: 40.260648
+  type: 'test'
+  ...
+# Subtest: timeout: the half file is there while it runs, gone after the timeout
+ok 151 - timeout: the half file is there while it runs, gone after the timeout
+  ---
+  duration_ms: 804.5658
+  type: 'test'
+  ...
+# Subtest: child dies without an answer: its file is removed too
+ok 152 - child dies without an answer: its file is removed too
+  ---
+  duration_ms: 27.562899
+  type: 'test'
+  ...
+# Subtest: success: the finished file is kept
+ok 153 - success: the finished file is kept
+  ---
+  duration_ms: 23.850433
+  type: 'test'
+  ...
+# Subtest: a path arriving in the job is ignored: the parent only ever deletes a name it chose
+ok 154 - a path arriving in the job is ignored: the parent only ever deletes a name it chose
+  ---
+  duration_ms: 603.876748
+  type: 'test'
+  ...
+# Subtest: render-job: uses the outPath it is given, refuses one outside outDir or off-pattern
+ok 155 - render-job: uses the outPath it is given, refuses one outside outDir or off-pattern
+  ---
+  duration_ms: 2.497472
+  type: 'test'
+  ...
+# Subtest: applyHunk puts all four pieces in, once each, and leaves every other line of server.mjs alone
+ok 156 - applyHunk puts all four pieces in, once each, and leaves every other line of server.mjs alone
+  ---
+  duration_ms: 6.910159
+  type: 'test'
+  ...
+# Subtest: the placed-versus-unplaced switch: a server.mjs that already holds the hunk is not given it twice; an unplaced one gets all of it
+ok 157 - the placed-versus-unplaced switch: a server.mjs that already holds the hunk is not given it twice; an unplaced one gets all of it
+  ---
+  duration_ms: 1.176012
+  type: 'test'
+  ...
+# Subtest: the hunk in this test is the hunk in route-wire.md (skipped when that note is not in the checkout)
+ok 158 - the hunk in this test is the hunk in route-wire.md (skipped when that note is not in the checkout)
+  ---
+  duration_ms: 0.250277
+  type: 'test'
+  ...
+# Subtest: booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429
+not ok 159 - booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429
+  ---
+  duration_ms: 20233.854188
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-route-http.test.mjs:140:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    the patched server started. stderr tail: node:internal/modules/package_json_reader:331
+      throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+            ^
+    
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-w0F7Uh/repo/commons/server.cut-http-5182.tmp.mjs
+        at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+        at packageResolve (node:internal/modules/esm/resolve:784:25)
+        at moduleResolve (node:internal/modules/esm/resolve:873:18)
+        at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+        at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+        at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+        at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+        at #resolve (node:internal/modules/esm/loader:687:17)
+        at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+        at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+      code: 'ERR_MODULE_NOT_FOUND'
+    }
+    
+    Node.js v24.22.3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    packageResolve (node:internal/modules/esm/resolve:784:25)
+    moduleResolve (node:internal/modules/esm/resolve:873:18)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    #resolve (node:internal/modules/esm/loader:687:17)
+    ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-route-http.test.mjs:178:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+  ...
+# Subtest: owner: 200; the video's file comes from fileFor, its size and audio from ffprobe, ffprobe is asked once
+ok 160 - owner: 200; the video's file comes from fileFor, its size and audio from ffprobe, ffprobe is asked once
+  ---
+  duration_ms: 3.374843
+  type: 'test'
+  ...
+# Subtest: stranger: 403, and ffprobe and ffmpeg are never started
+ok 161 - stranger: 403, and ffprobe and ffmpeg are never started
+  ---
+  duration_ms: 0.295935
+  type: 'test'
+  ...
+# Subtest: a phone clip flagged as rotated 90 degrees is measured as the frame ffmpeg will see (1920x1080 -> 1080x1920)
+ok 162 - a phone clip flagged as rotated 90 degrees is measured as the frame ffmpeg will see (1920x1080 -> 1080x1920)
+  ---
+  duration_ms: 0.273442
+  type: 'test'
+  ...
+# Subtest: a video with no audio stream renders with hasAudio:false; no video stream / ffprobe failure is 422
+ok 163 - a video with no audio stream renders with hasAudio:false; no video stream / ffprobe failure is 422
+  ---
+  duration_ms: 0.728066
+  type: 'test'
+  ...
+# Subtest: music from the audio store: your own 200 (its file reaches ffmpeg), someone else's 403, unknown 404
+ok 164 - music from the audio store: your own 200 (its file reaches ffmpeg), someone else's 403, unknown 404
+  ---
+  duration_ms: 0.791472
+  type: 'test'
+  ...
+# Subtest: the real child process: a bad edit comes back as 400 with the refusal text (type survives the fork); slots are released
+ok 165 - the real child process: a bad edit comes back as 400 with the refusal text (type survives the fork); slots are released
+  ---
+  duration_ms: 42.02239
+  type: 'test'
+  ...
+# Subtest: not ready -> 409 with the maker sentence; no probe, no render
+ok 166 - not ready -> 409 with the maker sentence; no probe, no render
+  ---
+  duration_ms: 1.554291
+  type: 'test'
+  ...
+# Subtest: failed conversion -> 409 with its own sentence (retrying will never help); render never runs
+ok 167 - failed conversion -> 409 with its own sentence (retrying will never help); render never runs
+  ---
+  duration_ms: 0.300272
+  type: 'test'
+  ...
+# Subtest: ready -> the render runs (200)
+ok 168 - ready -> the render runs (200)
+  ---
+  duration_ms: 0.231689
+  type: 'test'
+  ...
+# Subtest: a store that does not report ready (older fakes) is not refused
+ok 169 - a store that does not report ready (older fakes) is not refused
+  ---
+  duration_ms: 0.253191
+  type: 'test'
+  ...
+# Subtest: someone else's not-ready video is still 403, so the 409 does not leak another member's state
+ok 170 - someone else's not-ready video is still 403, so the 409 does not leak another member's state
+  ---
+  duration_ms: 0.379061
+  type: 'test'
+  ...
+# Subtest: through the real adapter: a pending upload (publicVideo shape) reaches the route as 409; the same upload once ready renders
+ok 171 - through the real adapter: a pending upload (publicVideo shape) reaches the route as 409; the same upload once ready renders
+  ---
+  duration_ms: 0.413333
+  type: 'test'
+  ...
+# Subtest: a good edit by the owner answers 200 { ok, url, seconds } and ffmpeg is asked once
+ok 172 - a good edit by the owner answers 200 { ok, url, seconds } and ffmpeg is asked once
+  ---
+  duration_ms: 3.910641
+  type: 'test'
+  ...
+# Subtest: hasAudio from the probe reaches the job; a silent video renders without an audio map
+ok 173 - hasAudio from the probe reaches the job; a silent video renders without an audio map
+  ---
+  duration_ms: 0.326662
+  type: 'test'
+  ...
+# Subtest: someone else's video is 403 and nothing is probed or rendered; unknown video is 404
+ok 174 - someone else's video is 403 and nothing is probed or rendered; unknown video is 404
+  ---
+  duration_ms: 0.374925
+  type: 'test'
+  ...
+# Subtest: someone else's music is 403; a public label track and your own music are allowed; unknown music is 404
+ok 175 - someone else's music is 403; a public label track and your own music are allowed; unknown music is 404
+  ---
+  duration_ms: 0.939796
+  type: 'test'
+  ...
+# Subtest: body.musicId wins over edit.music.id when both are given; music asked for with no id is 400
+ok 176 - body.musicId wins over edit.music.id when both are given; music asked for with no id is 400
+  ---
+  duration_ms: 0.553874
+  type: 'test'
+  ...
+# Subtest: no member is 401; a bad body is 400 and never reaches the lookups
+ok 177 - no member is 401; a bad body is 400 and never reaches the lookups
+  ---
+  duration_ms: 0.541766
+  type: 'test'
+  ...
+# Subtest: a bad edit is 400 with the refusal's own message, and ffmpeg never runs
+ok 178 - a bad edit is 400 with the refusal's own message, and ffmpeg never runs
+  ---
+  duration_ms: 0.927307
+  type: 'test'
+  ...
+# Subtest: over 60 s is 400 from the job's own limit
+ok 179 - over 60 s is 400 from the job's own limit
+  ---
+  duration_ms: 0.323187
+  type: 'test'
+  ...
+# Subtest: a second export from the same member while one runs is 429 'one export at a time'; another member is fine; the slot frees afterwards
+ok 180 - a second export from the same member while one runs is 429 'one export at a time'; another member is fine; the slot frees afterwards
+  ---
+  duration_ms: 6.268318
+  type: 'test'
+  ...
+# Subtest: the site cap (maxJobs, default 2) answers 429 to a third member; a rejected request holds no slot
+ok 181 - the site cap (maxJobs, default 2) answers 429 to a third member; a rejected request holds no slot
+  ---
+  duration_ms: 0.885263
+  type: 'test'
+  ...
+# Subtest: an ffmpeg failure is 500 'the render failed', the stderr goes to log only, and slots are released
+ok 182 - an ffmpeg failure is 500 'the render failed', the stderr goes to log only, and slots are released
+  ---
+  duration_ms: 0.382527
+  type: 'test'
+  ...
+# Subtest: a synchronous throw inside renderJob is also 500 and releases the slots
+ok 183 - a synchronous throw inside renderJob is also 500 and releases the slots
+  ---
+  duration_ms: 0.19255
+  type: 'test'
+  ...
+# Subtest: a probe that throws or answers nonsense is 422, never renders, and releases the slots
+ok 184 - a probe that throws or answers nonsense is 422, never renders, and releases the slots
+  ---
+  duration_ms: 0.296566
+  type: 'test'
+  ...
+# Subtest: without deps.probe the video record's hasAudio is used; publicUrl is honoured
+ok 185 - without deps.probe the video record's hasAudio is used; publicUrl is honoured
+  ---
+  duration_ms: 0.197998
+  type: 'test'
+  ...
+# Subtest: the member cannot choose the path or the output: client-sent path/outDir fields are ignored
+ok 186 - the member cannot choose the path or the output: client-sent path/outDir fields are ignored
+  ---
+  duration_ms: 0.161413
+  type: 'test'
+  ...
+# Subtest: visible /cut/ tap targets at 320x568 (document fits 320)
+not ok 187 - visible /cut/ tap targets at 320x568 (document fits 320)
+  ---
+  duration_ms: 20125.049422
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-tap-targets-320.mjs:50:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    isolated Commons server booted; stderr=node:internal/modules/package_json_reader:331
+      throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+            ^
+    
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-w0F7Uh/repo/commons/server.mjs
+        at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+        at packageResolve (node:internal/modules/esm/resolve:784:25)
+        at moduleResolve (node:internal/modules/esm/resolve:873:18)
+        at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+        at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+        at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+        at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+        at #resolve (node:internal/modules/esm/loader:687:17)
+        at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+        at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+      code: 'ERR_MODULE_NOT_FOUND'
+    }
+    
+    Node.js v24.22.3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    packageResolve (node:internal/modules/esm/resolve:784:25)
+    moduleResolve (node:internal/modules/esm/resolve:873:18)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    #resolve (node:internal/modules/esm/loader:687:17)
+    ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-tap-targets-320.mjs:60:140)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: visible /cut/ tap targets at 375x812
+not ok 188 - visible /cut/ tap targets at 375x812
+  ---
+  duration_ms: 20120.843937
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-tap-targets.mjs:50:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    isolated Commons server booted; stderr=node:internal/modules/package_json_reader:331
+      throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+            ^
+    
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-w0F7Uh/repo/commons/server.mjs
+        at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+        at packageResolve (node:internal/modules/esm/resolve:784:25)
+        at moduleResolve (node:internal/modules/esm/resolve:873:18)
+        at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+        at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+        at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+        at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+        at #resolve (node:internal/modules/esm/loader:687:17)
+        at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+        at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+      code: 'ERR_MODULE_NOT_FOUND'
+    }
+    
+    Node.js v24.22.3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    packageResolve (node:internal/modules/esm/resolve:784:25)
+    moduleResolve (node:internal/modules/esm/resolve:873:18)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    #resolve (node:internal/modules/esm/loader:687:17)
+    ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-tap-targets.mjs:60:140)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: media time: round half away from zero, -0 normalised, integers only
+ok 189 - media time: round half away from zero, -0 normalised, integers only
+  ---
+  duration_ms: 1.048099
+  type: 'test'
+  ...
+# Subtest: split: halves add up to the total at rate 1.5 with odd ticks
+ok 190 - split: halves add up to the total at rate 1.5 with odd ticks
+  ---
+  duration_ms: 4.393067
+  type: 'test'
+  ...
+# Subtest: split at an edge or outside does nothing; retainSide works; old tracks untouched (undo)
+ok 191 - split at an edge or outside does nothing; retainSide works; old tracks untouched (undo)
+  ---
+  duration_ms: 0.247653
+  type: 'test'
+  ...
+# Subtest: split carries animation keys: left keeps <= split, right keeps >= split, shifted
+ok 192 - split carries animation keys: left keeps <= split, right keeps >= split, shifted
+  ---
+  duration_ms: 0.288054
+  type: 'test'
+  ...
+# Subtest: ripple: deleting a middle clip pulls later clips left, never right
+ok 193 - ripple: deleting a middle clip pulls later clips left, never right
+  ---
+  duration_ms: 0.607094
+  type: 'test'
+  ...
+# Subtest: ripple: shortening a clip closes the gap; adding or lengthening makes no adjustment
+ok 194 - ripple: shortening a clip closes the gap; adding or lengthening makes no adjustment
+  ---
+  duration_ms: 0.294484
+  type: 'test'
+  ...
+# Subtest: ripple: a clip moved to another track is not a gap; a replacement fills the gap
+ok 195 - ripple: a clip moved to another track is not a gap; a replacement fills the gap
+  ---
+  duration_ms: 0.281764
+  type: 'test'
+  ...
+# Subtest: snapping: threshold is 10 px, 50 px/s base: 24000 ticks at zoom 1, 240 ticks at zoom 100
+ok 196 - snapping: threshold is 10 px, 50 px/s base: 24000 ticks at zoom 1, 240 ticks at zoom 100
+  ---
+  duration_ms: 0.142565
+  type: 'test'
+  ...
+# Subtest: snapping: snaps inside the threshold to the nearest point, not outside it
+ok 197 - snapping: snaps inside the threshold to the nearest point, not outside it
+  ---
+  duration_ms: 0.351139
+  type: 'test'
+  ...
+# Subtest: update pipeline: retime 1.5 rounds duration, clamps the rate
+ok 198 - update pipeline: retime 1.5 rounds duration, clamps the rate
+  ---
+  duration_ms: 0.455266
+  type: 'test'
+  ...
+# Subtest: update pipeline: main track startTime rule
+ok 199 - update pipeline: main track startTime rule
+  ---
+  duration_ms: 0.251919
+  type: 'test'
+  ...
+# Subtest: trim: start trim moves the clip and the source offset; end trim shortens; limits hold
+ok 200 - trim: start trim moves the clip and the source offset; end trim shortens; limits hold
+  ---
+  duration_ms: 0.215225
+  type: 'test'
+  ...
+# Subtest: scenes: one main scene; it cannot be deleted; others can
+ok 201 - scenes: one main scene; it cannot be deleted; others can
+  ---
+  duration_ms: 0.235094
+  type: 'test'
+  ...
+# Subtest: split invariant holds over many odd splits and rates (kills 'right half rounded on its own')
+ok 202 - split invariant holds over many odd splits and rates (kills 'right half rounded on its own')
+  ---
+  duration_ms: 4.39512
+  type: 'test'
+  ...
+# Subtest: ripple: two gaps on one track are applied latest first, so a later clip moves by both
+ok 203 - ripple: two gaps on one track are applied latest first, so a later clip moves by both
+  ---
+  duration_ms: 0.247303
+  type: 'test'
+  ...
+# Subtest: snapping: exactly at the threshold snaps; nearest of two candidates wins; order does not matter
+ok 204 - snapping: exactly at the threshold snaps; nearest of two candidates wins; order does not matter
+  ---
+  duration_ms: 0.161603
+  type: 'test'
+  ...
+# Subtest: zoom clamps to 0.1 .. 100
+ok 205 - zoom clamps to 0.1 .. 100
+  ---
+  duration_ms: 0.107412
+  type: 'test'
+  ...
+# Subtest: no React or DOM in the port
+ok 206 - no React or DOM in the port
+  ---
+  duration_ms: 0.717951
+  type: 'test'
+  ...
+# Subtest: POST /api/videos: failed conversion is visible through GET /api/videos?by=me
+ok 207 - POST /api/videos: failed conversion is visible through GET /api/videos?by=me # SKIP real conversion-failure route not run: missing ffmpeg; install it or set FFMPEG
+  ---
+  duration_ms: 0.79664
+  type: 'test'
+  ...
+# Subtest: no ffprobe, real ffmpeg: a short clip still converts and becomes ready (ffprobe is not needed for convert)
+ok 208 - no ffprobe, real ffmpeg: a short clip still converts and becomes ready (ffprobe is not needed for convert) # SKIP no ffmpeg on PATH
+  ---
+  duration_ms: 0.700405
+  type: 'test'
+  ...
+# Subtest: no ffprobe: a clip over 2 minutes is ACCEPTED, silently (current behaviour, the finding)
+ok 209 - no ffprobe: a clip over 2 minutes is ACCEPTED, silently (current behaviour, the finding) # SKIP no ffmpeg on PATH
+  ---
+  duration_ms: 0.097997
+  type: 'test'
+  ...
+# Subtest: no ffprobe: a clip over 2 minutes is refused with a 413 the maker can read (videos.mjs:52 only checks when secs != null)
+ok 210 - no ffprobe: a clip over 2 minutes is refused with a 413 the maker can read (videos.mjs:52 only checks when secs != null) # TODO
+  ---
+  duration_ms: 0.068683
+  type: 'test'
+  ...
+# Subtest: no ffprobe, conversion failure: maker sees a failure in their own video list
+ok 211 - no ffprobe, conversion failure: maker sees a failure in their own video list # SKIP no ffmpeg on PATH
+  ---
+  duration_ms: 0.074442
+  type: 'test'
+  ...
+# Subtest: no ffmpeg and no ffprobe: upload reports ready:true at once and serves the original; no length, no poster
+ok 212 - no ffmpeg and no ffprobe: upload reports ready:true at once and serves the original; no length, no poster
+  ---
+  duration_ms: 34.09571
+  type: 'test'
+  ...
+# Subtest: ready after two polls
+ok 213 - ready after two polls
+  ---
+  duration_ms: 1.472629
+  type: 'test'
+  ...
+# Subtest: failed returns the server reason, so Cut can show it and withhold "Post it"
+ok 214 - failed returns the server reason, so Cut can show it and withhold "Post it"
+  ---
+  duration_ms: 0.17275
+  type: 'test'
+  ...
+# Subtest: only the asked-for id counts (another ready video does not end the wait)
+ok 215 - only the asked-for id counts (another ready video does not end the wait)
+  ---
+  duration_ms: 0.18557
+  type: 'test'
+  ...
+# Subtest: a failed fetch or network error is retried, then times out; it never claims ready
+ok 216 - a failed fetch or network error is retried, then times out; it never claims ready
+  ---
+  duration_ms: 0.23864
+  type: 'test'
+  ...
+# Subtest: export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box
+ok 217 - export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box
+  ---
+  duration_ms: 1.545148
+  type: 'test'
+  ...
+# Subtest: export flow: the upload response itself says failed -> same message, nothing to post
+ok 218 - export flow: the upload response itself says failed -> same message, nothing to post
+  ---
+  duration_ms: 0.44477
+  type: 'test'
+  ...
+# Subtest: export flow: a video that becomes ready still offers Post it (the failure path did not break success)
+ok 219 - export flow: a video that becomes ready still offers Post it (the failure path did not break success)
+  ---
+  duration_ms: 1.383274
+  type: 'test'
+  ...
+# Subtest: export flow: failed with no reason from the poll -> the plain default sentence, once
+ok 220 - export flow: failed with no reason from the poll -> the plain default sentence, once
+  ---
+  duration_ms: 0.508096
+  type: 'test'
+  ...
+# Subtest: export flow: failed on the upload answer with no reason -> the plain default sentence
+ok 221 - export flow: failed on the upload answer with no reason -> the plain default sentence
+  ---
+  duration_ms: 0.370638
+  type: 'test'
+  ...
+# Subtest: failedVideoMessage: reason alone, trimmed; blank or non-string gives the default
+ok 222 - failedVideoMessage: reason alone, trimmed; blank or non-string gives the default
+  ---
+  duration_ms: 0.209336
+  type: 'test'
+  ...
+# Subtest: waitForVideo: failed with no reason resolves reason "" (the page supplies the default)
+ok 223 - waitForVideo: failed with no reason resolves reason "" (the page supplies the default)
+  ---
+  duration_ms: 0.128604
+  type: 'test'
+  ...
+# Subtest: export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden
+ok 224 - export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden
+  ---
+  duration_ms: 0.235845
+  type: 'test'
+  ...
+# Subtest: export save HTTP 500 with no response body: status fallback, Post box hidden
+ok 225 - export save HTTP 500 with no response body: status fallback, Post box hidden
+  ---
+  duration_ms: 0.322226
+  type: 'test'
+  ...
+# Subtest: GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only, newest first
+not ok 226 - GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only, newest first
+  ---
+  duration_ms: 20208.074958
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/cut-videos-mine.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    server started. stderr tail: node:internal/modules/package_json_reader:331
+      throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+            ^
+    
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-w0F7Uh/repo/commons/server.mjs
+        at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+        at packageResolve (node:internal/modules/esm/resolve:784:25)
+        at moduleResolve (node:internal/modules/esm/resolve:873:18)
+        at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+        at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+        at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+        at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+        at #resolve (node:internal/modules/esm/loader:687:17)
+        at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+        at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+      code: 'ERR_MODULE_NOT_FOUND'
+    }
+    
+    Node.js v24.22.3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    packageResolve (node:internal/modules/esm/resolve:784:25)
+    moduleResolve (node:internal/modules/esm/resolve:873:18)
+    defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    #resolve (node:internal/modules/esm/loader:687:17)
+    ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    TestContext.<anonymous> (file:///tmp/kin-py-w0F7Uh/repo/commons/test/cut-videos-mine.test.mjs:39:10)
+    async Test.run (node:internal/test_runner/test:1409:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+  ...
+# Subtest: maps Words text elements to text effects with tick-derived on-screen enable times
+ok 227 - maps Words text elements to text effects with tick-derived on-screen enable times
+  ---
+  duration_ms: 1.964179
+  type: 'test'
+  ...
+# Subtest: empty Words track maps to no effects; Unicode and punctuation remain data
+ok 228 - empty Words track maps to no effects; Unicode and punctuation remain data
+  ---
+  duration_ms: 0.286371
+  type: 'test'
+  ...
+# Subtest: rejects invalid track, element schema, duplicate IDs, content and timing
+ok 229 - rejects invalid track, element schema, duplicate IDs, content and timing
+  ---
+  duration_ms: 1.5666
+  type: 'test'
+  ...
+# node:internal/modules/package_json_reader:331
+#   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+#         ^
+# Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'sharp' imported from /tmp/kin-py-w0F7Uh/repo/commons/lib/merchsets.mjs
+#     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+#     at packageResolve (node:internal/modules/esm/resolve:784:25)
+#     at moduleResolve (node:internal/modules/esm/resolve:873:18)
+#     at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+#     at \#cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+#     at \#resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+#     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+#     at \#resolve (node:internal/modules/esm/loader:687:17)
+#     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+#     at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+#   code: 'ERR_MODULE_NOT_FOUND'
+# }
+# Node.js v24.22.3
+# Subtest: commons/test/video-link-card.mjs
+not ok 35 - commons/test/video-link-card.mjs
+  ---
+  duration_ms: 85.7016
+  type: 'test'
+  location: '/tmp/kin-py-w0F7Uh/repo/commons/test/video-link-card.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: a video uploads, and only its maker can post it
+ok 231 - a video uploads, and only its maker can post it
+  ---
+  duration_ms: 6.792752
+  type: 'test'
+  ...
+# Subtest: topics: guessed when not chosen, chosen when given
+ok 232 - topics: guessed when not chosen, chosen when given
+  ---
+  duration_ms: 2.480106
+  type: 'test'
+  ...
+# Subtest: political posts stay off every feed but Political
+ok 233 - political posts stay off every feed but Political
+  ---
+  duration_ms: 0.390198
+  type: 'test'
+  ...
+# Subtest: a steward can move a post to Political; others cannot move someone else's
+ok 234 - a steward can move a post to Political; others cannot move someone else's
+  ---
+  duration_ms: 0.538711
+  type: 'test'
+  ...
+# Subtest: the video filter shows only video posts
+ok 235 - the video filter shows only video posts
+  ---
+  duration_ms: 0.15318
+  type: 'test'
+  ...
+# Subtest: deleted while ffmpeg is encoding (exit 0): no crash, no ghost row, no files left
+ok 236 - deleted while ffmpeg is encoding (exit 0): no crash, no ghost row, no files left
+  ---
+  duration_ms: 5054.253757
+  type: 'test'
+  ...
+# Subtest: deleted while ffmpeg is encoding (exit 1): no crash, no ghost row, no files left
+ok 237 - deleted while ffmpeg is encoding (exit 1): no crash, no ghost row, no files left
+  ---
+  duration_ms: 5049.692002
+  type: 'test'
+  ...
+# Subtest: deleted while the poster is being made: no crash, no ghost row, no files left
+ok 238 - deleted while the poster is being made: no crash, no ghost row, no files left
+  ---
+  duration_ms: 5045.686392
+  type: 'test'
+  ...
+# Subtest: restart mid-conversion: unfinished record with its original is converted again; a record with no files is failed
+ok 239 - restart mid-conversion: unfinished record with its original is converted again; a record with no files is failed
+  ---
+  duration_ms: 4590.793894
+  type: 'test'
+  ...
+1..239
+# tests 239
+# suites 0
+# pass 217
+# fail 7
+# cancelled 0
+# skipped 14
+# todo 1
+# duration_ms 60743.817411
+
+--- STDERR ---

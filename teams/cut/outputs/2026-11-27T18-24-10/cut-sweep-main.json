@@ -1,0 +1,33 @@
+{
+  "exit_code": 1,
+  "elapsed_sec": 60.778,
+  "file_count": 37,
+  "parsed_file_count": 1,
+  "rows": [
+    {
+      "file": "commons/test/video-link-card.mjs",
+      "tests": null,
+      "pass": null,
+      "fail": null,
+      "cancelled": null,
+      "skipped": null,
+      "todo": null,
+      "special": [
+        "not ok 35 - commons/test/video-link-card.mjs"
+      ]
+    }
+  ],
+  "final": {
+    "tests": 239,
+    "suites": 0,
+    "pass": 217,
+    "fail": 7,
+    "cancelled": 0,
+    "skipped": 14,
+    "todo": 1,
+    "duration_ms": 60743.817411
+  },
+  "ffmpeg": null,
+  "ffprobe": null,
+  "node": "v24.22.3"
+}

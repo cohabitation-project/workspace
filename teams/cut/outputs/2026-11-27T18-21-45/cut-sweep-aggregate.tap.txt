@@ -1,0 +1,456 @@
+✔ inserts Words as an overlay text track and preserves other scene tracks (3.238138ms)
+✔ replaces the existing named Words track in place without changing other tracks (0.198659ms)
+✔ replaces by matching Words name when the previous track id differs (0.208063ms)
+✔ rejects ambiguous matches, ID collisions, and cross-track element collisions (0.485431ms)
+✔ does not replace a text track outside overlay and rejects malformed SceneTracks (0.218228ms)
+✔ removes the Words overlay immutably and preserves every other track (0.214453ms)
+✔ removes by Words name when its id differs, but leaves unrelated text tracks untouched (0.211779ms)
+✔ no matching Words track returns the exact original state (0.116816ms)
+✔ refuses ambiguous matches, Words tracks outside overlay, and invalid selectors (0.532282ms)
+✔ maps caption blocks to a Words TextTrack and flat text-element params (2.391393ms)
+✔ IDs are deterministic, URL-escaped, unique across blocks, and collision-checked (1.302052ms)
+✔ preserves integer tick timing exactly, including safe large tick values (0.300242ms)
+✔ rejects malformed blocks, unsafe/non-integer timing, and overflowing end ticks (0.348314ms)
+✔ Whisper sample creates ordered, timed Words-track caption blocks with preserved source duration (2.182889ms)
+✔ input order can be unsorted; blank speech is skipped without losing original segment index (0.249375ms)
+✔ captions remain correctable in text and timing without changing identity (0.301715ms)
+✔ rejects invalid intervals and invalid corrections instead of fabricating timings (0.619323ms)
+✔ tiny intervals collapse to one caption rather than creating zero-length blocks (0.209035ms)
+✔ tick partition stays exact near the safe-integer limit (0.219451ms)
+✔ rejects timestamps whose tick values cannot be represented safely (0.204899ms)
+✔ sweepRenders treats a not-yet-created render directory as empty (8.979523ms)
+✔ sweepRenders removes expired eligible files and preserves recent and unrelated entries (8.969623ms)
+✔ sweepRenders does not follow or remove symlinks (4.233007ms)
+✔ size cap removes the oldest eligible files first (3.450058ms)
+✔ size cap keeps deleting oldest files until eligible bytes fit (3.936421ms)
+✔ sweepRenders refuses invalid path and limits (1.024454ms)
+✔ coverInRange keeps a cover inside the range and pulls an outside one to the nearest end (1.134719ms)
+✔ coverInRange does not hide a broken range or a non-number from the server (0.220542ms)
+✔ the untouched-cover case: trim 1..3 with cover 0 is refused raw, accepted after coverInRange (0.885714ms)
+✔ the export click builds its edit through coverInRange (0.257178ms)
+✔ trim 1..3 with the cover at 0: the scrubber itself shows 1 after the trim moves, not only the Export body (1.410755ms)
+✔ a cover already inside the trim is left alone, and one beyond the trim end is pulled to it (0.330938ms)
+✔ a draft saved with trim 2..4 and cover 0 loads with the scrubber at 2 (1.155681ms)
+✔ a draft cover inside its trim is restored as saved, and one past the trim end loads at the end (2.085091ms)
+✔ refuses trimEnd <= trimStart (1.277965ms)
+✔ refuses a trim outside 0..durationSec (0.196887ms)
+✔ refuses non-numbers and non-objects (0.456237ms)
+✔ refuses text over 80 characters, a newline, or a control character (1.411576ms)
+✔ refuses a text line that cannot fit the frame width, or that leaves the frame vertically (1.737718ms)
+✔ refuses music volume outside 0..1 and a bad music id (0.470819ms)
+✔ refuses coverSec outside the trimmed range (inclusive ends are allowed) (0.29199ms)
+✔ a good edit: integer ticks, the right trim, text and music elements, and buildRenderPlan accepts it (2.585205ms)
+✔ no text and no music: only the main clip; blank text body draws nothing (0.257858ms)
+✔ caption placement: middle is centred, top is above middle, bottom below; a long line gets a smaller font (0.481265ms)
+✔ end to end: a good edit -> editToTracks -> renderTimeline with a fake run: trim, text, music and a safe argv (0.58382ms)
+✔ end to end: a hostile caption stays inside the filter string and never adds an argv flag (0.436648ms)
+﹣ real ffmpeg: a good edit (trim 2..4 + hostile-ish text + music) renders a ~2 s file (0.678402ms) # no ffmpeg
+✔ fade emits the exact ffmpeg filter string (1.320529ms)
+✔ crop emits the exact ffmpeg filter string (0.222135ms)
+✔ text emits the exact ffmpeg filter string (0.435205ms)
+✔ fade rejects a zero or negative duration (0.50456ms)
+✔ crop rejects a rectangle outside a supplied frame and incomplete dimensions (0.450909ms)
+✔ text escapes apostrophe, colon, backslash and filtergraph delimiters exactly (0.23243ms)
+✔ text uses unquoted two-level escaping: lone apostrophe, colon, edge whitespace, trailing backslash (0.363788ms)
+﹣ text: real ffmpeg draws hostile strings identically to a textfile= render (skipped if no ffmpeg) (0.117127ms) # SKIP
+✔ text puts expansion=none before text= (real ffmpeg rejects the reverse for apostrophe + %{x}) (0.199581ms)
+✔ text accepts only a finite decimal between(t,start,end) and emits it before text (0.521095ms)
+✔ text rejects arbitrary, malformed, negative, non-finite, and empty enable expressions (0.25919ms)
+✔ text rejects NUL and line breaks instead of emitting a malformed graph (0.188093ms)
+✔ every top-level key in the editor's Export body is read by the render handler (3.631571ms)
+✔ the server forwards the parsed request body without renaming or dropping keys (0.345771ms)
+✔ the complete edit object reaches the render job; no nested edit keys are picked off (0.253172ms)
+✔ the comparison detects a future browser key that the route does not read (0.353562ms)
+﹣ POST /api/cut/render: three trims reuse one 4s upload and export the expected durations (0.938484ms) # real export not run: missing ffmpeg and ffprobe; install it or set FFMPEG/FFPROBE
+﹣ /cut/ at 375x812: a finished export offers a Post it link (>=44px) to the Feed composer carrying the new video id (0.723069ms) # browser hand-off check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH
+﹣ /cut/ at 390x844: an export whose saved video cannot be converted shows the failure message and no Post control (0.835378ms) # browser failure check not run: missing ffmpeg and ffprobe and playwright; install it or set FFMPEG/FFPROBE/CHROME_PATH
+✔ handoffHref only builds a link for a plain video id (1.784929ms)
+✔ the composer accepts exactly the ids the editor links with (0.247794ms)
+✔ feed.js: a /cut video counts as a video at all four points (0.255925ms)
+✔ the editor page has the post link, hidden until an export is saved, and cut.js uses the real upload (0.293582ms)
+✔ every POST fetch in cut.js sends X-Commons, so a signed-in member can export and import (0.328234ms)
+✔ the stock search fetch sends X-Commons too (its route is a write-gated houseWriter) (0.20555ms)
+✔ the editor previews /cut/?videoId=<id> by itself (src comes from /videos/<id>) (0.231439ms)
+✔ removing a video from the ?cut= composer clears the id before submit (0.280763ms)
+✔ factories: unknown types and non-integer ticks are refused (4.400449ms)
+✔ retimable: video and audio only (0.153311ms)
+✔ track order is overlay, main, audio; timeline end is the latest start + duration on any track (0.840807ms)
+✔ animation keys: exactly 0..duration survive (both ends inclusive) (1.14205ms)
+✔ splitAnimationsAtTime: no animations in, undefined out; a boundary key lands on both sides when included (0.363467ms)
+✔ scenes: the main scene is added at the FRONT; deleting an unknown id is a no-op that does not throw (0.234924ms)
+✔ update: a duration change clamps animation keys; so does a retime that shortens the clip (0.455967ms)
+✔ update: a retime patch on a text clip does not derive a duration or clamp the rate (0.231098ms)
+✔ update: visible source never goes below 0 when trims exceed the source (0.243587ms)
+✔ update: a stored sourceDuration is used; with none, source length is inferred from duration plus both trims (0.379482ms)
+✔ update: params merge key by key, they are not replaced (0.219661ms)
+✔ start-time rule: the main-track 'first clip snaps to 0' rule (0.266532ms)
+✔ start-time rule: a lone main clip moved right snaps back to 0 (it is never compared with itself) (0.169766ms)
+✔ start-time rule: other tracks only clamp at 0; the main-track snap does not apply to them (0.308565ms)
+✔ trim: the end edge can un-trim only what was trimmed, and never below 1 tick long (0.250938ms)
+✔ trim: bad arguments are refused loudly (0.155264ms)
+✔ trim at a retime rate moves the source edge by round(delta * rate) (0.128134ms)
+✔ cut.js fetches /api/cut/music, never the missing /api/label/tracks (1.10878ms)
+✖ GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule (20235.285443ms)
+✖ signed-in /cut/ has no horizontal document overflow at 390x844 (20128.905209ms)
+✔ runs ffmpeg with an argv array: -y, plan args, codec args, outPath last (2.979609ms)
+✔ the music input is passed as a second -i and the result reports ignored overlay tracks (0.396457ms)
+✔ ffmpeg exit != 0 throws with the last 20 stderr lines only (0.923542ms)
+✔ a failed spawn, a timeout and a signal each throw a clear message (0.668397ms)
+✔ planner refusals propagate as RenderPlanError and ffmpeg is never run (0.323888ms)
+✔ outPath that is empty, multi-line, or looks like an option is refused before running (0.474866ms)
+﹣ real ffmpeg: a clip with audio plus a music element renders 1.0 s with a video and an audio stream (0.124708ms) # ffmpeg not available
+﹣ real ffmpeg: a 2 s testsrc clip trimmed to 1 s renders a 1.0 +/- 0.1 s file (0.117697ms) # ffmpeg not available
+✔ a good edit runs ffmpeg once with the trim, the caption and the music; output is cut_<hex>.mp4 in outDir (3.462025ms)
+✔ two renders get different file names (0.405641ms)
+✔ a hostile caption cannot add an input or a flag (0.410409ms)
+✔ refuses a trimmed length over 60 s; exactly 60 s is allowed (0.587565ms)
+✔ refuses bad outDir, bad video and bad music paths before running anything (0.76359ms)
+✔ refuses bad video numbers; odd sizes round down to even (0.516418ms)
+✔ a bad edit is refused by editToTracks and ffmpeg never runs (0.382947ms)
+✔ music given but not asked for by the edit is ignored (0.2326ms)
+✔ a silent source (hasAudio false) gets generated silence in the graph (0.333933ms)
+✔ ffmpeg failure throws with the stderr tail and removes the half-written file (0.635778ms)
+﹣ real ffmpeg: a 3 s clip trimmed 0.5..1.5 with a caption comes out about 1 s (0.109134ms) # no ffmpeg
+Cut music-fade render test ffmpeg: unavailable (render test will skip)
+﹣ placed planner fades music in: first 0.1s RMS is at least 12 dB below 0.6s RMS (0.492552ms) # real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)
+✔ two-clip sample: exact trim + concat plan (5.877315ms)
+✔ retime 1.5: source span is duration*rate, video setpts divides, audio gets atempo (0.340883ms)
+✔ retime with a trim: source window starts at trimStart and is duration*rate long (0.223927ms)
+✔ a rate outside 0.01..5 is clamped the same way the model clamps it (video and audio agree) (0.271118ms)
+✔ plan.maps names the concat outputs, video first (0.218128ms)
+✔ atempoChain: every instance in 0.5..2 and the product equals the rate (seeded sweep over 0.01..5) (1.8782ms)
+✔ gap between clips becomes black video + silence of the gap length (0.452832ms)
+✔ a gap before the first clip is filled too (0.263347ms)
+✔ clips are placed by startTime, not by array order (0.270978ms)
+✔ a source with hasAudio:false gets silence, and no [n:a] pad is read (0.353322ms)
+✔ the same file used twice gets two inputs, so no pad is reused (0.244629ms)
+✔ nothing silently dropped: overlay and main-track text elements are reported in `ignored` (0.234293ms)
+✔ one music element: exact trim + delay + amix plan; a second is refused (0.543229ms)
+✔ music volume: 0.5 is emitted before adelay, default/explicit 1 is omitted, invalid values are refused (0.487975ms)
+✔ music fades: exact afade chain, zero omitted, invalid timings refused (1.063372ms)
+✔ overlay Words track: exact timed drawtext chain after concat, not ignored (0.676299ms)
+✔ a hostile src stays one argv element and never enters a filter string (0.117117ms)
+✔ refuses what it cannot plan, with a RenderPlanError (0.367914ms)
+✔ an element asking for slightly past the source end by rounding is allowed (0.166791ms)
+✔ secs: exact text for common ticks, and always within a microsecond of the tick (seeded sweep) (0.757181ms)
+✔ seeded sweep: random timelines always yield a closed label graph and the right total length (4.511657ms)
+✔ fade in + crop + fade out on one clip: exact string, in array order, between trim and scale (0.477019ms)
+✔ effects are per clip: the clip next to an effect clip is unchanged, and the audio chain never gets a video filter (0.204549ms)
+✔ effects with retime: the fade time is measured on the clip's output, after setpts (0.175094ms)
+✔ an empty or missing effects list changes nothing; an effect with no params uses the registry defaults (0.139169ms)
+✔ a source size with only one dimension is ignored, not half-applied (0.1393ms)
+✔ an unknown effect id is a RenderPlanError naming the clip and the id (prototype keys included) (0.387634ms)
+✔ malformed effects entries are refused, not skipped (0.321174ms)
+✔ a registry guard failure comes out as a RenderPlanError that names the effect (0.39813ms)
+✔ crop is checked against the source size when the caller supplies it, and not when it doesn't (0.279912ms)
+✔ a half-given frame size in the effect still fails, even when the source map has a size (0.15293ms)
+✔ an error that is not a registry guard (a bug) is rethrown as itself, not hidden (0.143116ms)
+✔ text effect: hostile text is escaped by the registry and stays inside one filter in one chain (0.171167ms)
+Cut Words render test ffmpeg: unavailable (render test will skip)
+Cut Words render test fc-match sans: DejaVuSans.ttf: "DejaVu Sans" "Book"
+﹣ placed planner renders a timed Words caption: absent / visible / absent (0.766855ms) # real-ffmpeg test requires FFMPEG or ffmpeg on PATH (spawnSync ffmpeg ENOENT)
+✔ a timed-out render leaves no ffmpeg process running (1907.571895ms)
+✔ a render that finishes in time still resolves (38.946525ms)
+✔ timeout: the half file is there while it runs, gone after the timeout (804.705088ms)
+✔ child dies without an answer: its file is removed too (27.043241ms)
+✔ success: the finished file is kept (24.304696ms)
+✔ a path arriving in the job is ignored: the parent only ever deletes a name it chose (602.494856ms)
+✔ render-job: uses the outPath it is given, refuses one outside outDir or off-pattern (2.788541ms)
+✔ applyHunk puts all four pieces in, once each, and leaves every other line of server.mjs alone (11.266463ms)
+✔ the placed-versus-unplaced switch: a server.mjs that already holds the hunk is not given it twice; an unplaced one gets all of it (1.230364ms)
+✔ the hunk in this test is the hunk in route-wire.md (skipped when that note is not in the checkout) (0.237187ms)
+✖ booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429 (20220.15495ms)
+✔ owner: 200; the video's file comes from fileFor, its size and audio from ffprobe, ffprobe is asked once (3.104256ms)
+✔ stranger: 403, and ffprobe and ffmpeg are never started (0.273552ms)
+✔ a phone clip flagged as rotated 90 degrees is measured as the frame ffmpeg will see (1920x1080 -> 1080x1920) (0.21865ms)
+✔ a video with no audio stream renders with hasAudio:false; no video stream / ffprobe failure is 422 (0.599644ms)
+✔ music from the audio store: your own 200 (its file reaches ffmpeg), someone else's 403, unknown 404 (0.645522ms)
+✔ the real child process: a bad edit comes back as 400 with the refusal text (type survives the fork); slots are released (38.380965ms)
+✔ not ready -> 409 with the maker sentence; no probe, no render (1.594191ms)
+✔ failed conversion -> 409 with its own sentence (retrying will never help); render never runs (0.281094ms)
+✔ ready -> the render runs (200) (0.223636ms)
+✔ a store that does not report ready (older fakes) is not refused (0.210807ms)
+✔ someone else's not-ready video is still 403, so the 409 does not leak another member's state (0.404139ms)
+✔ through the real adapter: a pending upload (publicVideo shape) reaches the route as 409; the same upload once ready renders (0.424079ms)
+✔ a good edit by the owner answers 200 { ok, url, seconds } and ffmpeg is asked once (4.205826ms)
+✔ hasAudio from the probe reaches the job; a silent video renders without an audio map (0.281995ms)
+✔ someone else's video is 403 and nothing is probed or rendered; unknown video is 404 (0.359151ms)
+✔ someone else's music is 403; a public label track and your own music are allowed; unknown music is 404 (4.214579ms)
+✔ body.musicId wins over edit.music.id when both are given; music asked for with no id is 400 (0.521726ms)
+✔ no member is 401; a bad body is 400 and never reaches the lookups (0.472201ms)
+✔ a bad edit is 400 with the refusal's own message, and ffmpeg never runs (1.021909ms)
+✔ over 60 s is 400 from the job's own limit (0.366302ms)
+✔ a second export from the same member while one runs is 429 'one export at a time'; another member is fine; the slot frees afterwards (5.625003ms)
+✔ the site cap (maxJobs, default 2) answers 429 to a third member; a rejected request holds no slot (0.965645ms)
+✔ an ffmpeg failure is 500 'the render failed', the stderr goes to log only, and slots are released (0.445371ms)
+✔ a synchronous throw inside renderJob is also 500 and releases the slots (0.211198ms)
+✔ a probe that throws or answers nonsense is 422, never renders, and releases the slots (0.349707ms)
+✔ without deps.probe the video record's hasAudio is used; publicUrl is honoured (0.29196ms)
+✔ the member cannot choose the path or the output: client-sent path/outDir fields are ignored (0.20559ms)
+✖ visible /cut/ tap targets at 320x568 (document fits 320) (20124.838343ms)
+✖ visible /cut/ tap targets at 375x812 (20126.817209ms)
+✔ media time: round half away from zero, -0 normalised, integers only (1.021198ms)
+✔ split: halves add up to the total at rate 1.5 with odd ticks (4.659999ms)
+✔ split at an edge or outside does nothing; retainSide works; old tracks untouched (undo) (0.279922ms)
+✔ split carries animation keys: left keeps <= split, right keeps >= split, shifted (0.293963ms)
+✔ ripple: deleting a middle clip pulls later clips left, never right (0.607275ms)
+✔ ripple: shortening a clip closes the gap; adding or lengthening makes no adjustment (0.293963ms)
+✔ ripple: a clip moved to another track is not a gap; a replacement fills the gap (0.269286ms)
+✔ snapping: threshold is 10 px, 50 px/s base: 24000 ticks at zoom 1, 240 ticks at zoom 100 (0.176035ms)
+✔ snapping: snaps inside the threshold to the nearest point, not outside it (0.369777ms)
+✔ update pipeline: retime 1.5 rounds duration, clamps the rate (0.471931ms)
+✔ update pipeline: main track startTime rule (0.248605ms)
+✔ trim: start trim moves the clip and the source offset; end trim shortens; limits hold (0.222154ms)
+✔ scenes: one main scene; it cannot be deleted; others can (0.390618ms)
+✔ split invariant holds over many odd splits and rates (kills 'right half rounded on its own') (4.523134ms)
+✔ ripple: two gaps on one track are applied latest first, so a later clip moves by both (0.27891ms)
+✔ snapping: exactly at the threshold snaps; nearest of two candidates wins; order does not matter (0.204568ms)
+✔ zoom clamps to 0.1 .. 100 (0.109695ms)
+✔ no React or DOM in the port (0.724712ms)
+﹣ POST /api/videos: failed conversion is visible through GET /api/videos?by=me (0.563769ms) # real conversion-failure route not run: missing ffmpeg; install it or set FFMPEG
+﹣ no ffprobe, real ffmpeg: a short clip still converts and becomes ready (ffprobe is not needed for convert) (0.674166ms) # no ffmpeg on PATH
+﹣ no ffprobe: a clip over 2 minutes is ACCEPTED, silently (current behaviour, the finding) (0.095974ms) # no ffmpeg on PATH
+✔ no ffprobe: a clip over 2 minutes is refused with a 413 the maker can read (videos.mjs:52 only checks when secs != null) (0.064186ms) # TODO
+﹣ no ffprobe, conversion failure: maker sees a failure in their own video list (0.071928ms) # no ffmpeg on PATH
+✔ no ffmpeg and no ffprobe: upload reports ready:true at once and serves the original; no length, no poster (37.983271ms)
+✔ ready after two polls (1.455242ms)
+✔ failed returns the server reason, so Cut can show it and withhold "Post it" (0.17911ms)
+✔ only the asked-for id counts (another ready video does not end the wait) (0.169044ms)
+✔ a failed fetch or network error is retried, then times out; it never claims ready (0.246742ms)
+✔ export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (1.562524ms)
+✔ export flow: the upload response itself says failed -> same message, nothing to post (3.615476ms)
+✔ export flow: a video that becomes ready still offers Post it (the failure path did not break success) (1.151855ms)
+✔ export flow: failed with no reason from the poll -> the plain default sentence, once (0.489758ms)
+✔ export flow: failed on the upload answer with no reason -> the plain default sentence (0.371069ms)
+✔ failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.182555ms)
+✔ waitForVideo: failed with no reason resolves reason "" (the page supplies the default) (0.164178ms)
+✔ export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden (0.240973ms)
+✔ export save HTTP 500 with no response body: status fallback, Post box hidden (0.262866ms)
+✖ GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only, newest first (20218.35434ms)
+✔ maps Words text elements to text effects with tick-derived on-screen enable times (1.712339ms)
+✔ empty Words track maps to no effects; Unicode and punctuation remain data (0.296246ms)
+✔ rejects invalid track, element schema, duplicate IDs, content and timing (1.337044ms)
+node:internal/modules/package_json_reader:331
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'sharp' imported from /tmp/kin-py-ZqF0Tp/repo/commons/lib/merchsets.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+    at packageResolve (node:internal/modules/esm/resolve:784:25)
+    at moduleResolve (node:internal/modules/esm/resolve:873:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+    at #resolve (node:internal/modules/esm/loader:687:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v24.22.3
+✖ commons/test/video-link-card.mjs (89.544064ms)
+✔ a video uploads, and only its maker can post it (6.487923ms)
+✔ topics: guessed when not chosen, chosen when given (2.465764ms)
+✔ political posts stay off every feed but Political (0.468836ms)
+✔ a steward can move a post to Political; others cannot move someone else's (0.591461ms)
+✔ the video filter shows only video posts (0.21268ms)
+✔ deleted while ffmpeg is encoding (exit 0): no crash, no ghost row, no files left (5051.066684ms)
+✔ deleted while ffmpeg is encoding (exit 1): no crash, no ghost row, no files left (5048.447857ms)
+✔ deleted while the poster is being made: no crash, no ghost row, no files left (5044.828328ms)
+✔ restart mid-conversion: unfinished record with its original is converted again; a record with no files is failed (4589.90863ms)
+ℹ tests 239
+ℹ suites 0
+ℹ pass 217
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 14
+ℹ todo 1
+ℹ duration_ms 60740.246927
+
+✖ failing tests:
+
+test at commons/test/cut-music-list.test.mjs:24:1
+✖ GET /api/cut/music: 401 signed out; own uploads only, newest first, no path; ids work in the render route's music rule (20235.285443ms)
+  AssertionError [ERR_ASSERTION]: server started. stderr tail: node:internal/modules/package_json_reader:331
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-ZqF0Tp/repo/commons/server.mjs
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.22.3
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-music-list.test.mjs:52:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-phone-overflow.mjs:115:1
+✖ signed-in /cut/ has no horizontal document overflow at 390x844 (20128.905209ms)
+  AssertionError [ERR_ASSERTION]: Commons server booted on an isolated temporary data directory
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-phone-overflow.mjs:138:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-route-http.test.mjs:140:1
+✖ booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); signed-out 401; stranger 403; unknown 404; bad edit 400; second export 429 (20220.15495ms)
+  AssertionError [ERR_ASSERTION]: the patched server started. stderr tail: node:internal/modules/package_json_reader:331
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-ZqF0Tp/repo/commons/server.cut-http-4599.tmp.mjs
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.22.3
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-route-http.test.mjs:178:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-tap-targets-320.mjs:50:1
+✖ visible /cut/ tap targets at 320x568 (document fits 320) (20124.838343ms)
+  AssertionError [ERR_ASSERTION]: isolated Commons server booted; stderr=node:internal/modules/package_json_reader:331
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-ZqF0Tp/repo/commons/server.mjs
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.22.3
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-tap-targets-320.mjs:60:140)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-tap-targets.mjs:50:1
+✖ visible /cut/ tap targets at 375x812 (20126.817209ms)
+  AssertionError [ERR_ASSERTION]: isolated Commons server booted; stderr=node:internal/modules/package_json_reader:331
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-ZqF0Tp/repo/commons/server.mjs
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.22.3
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-tap-targets.mjs:60:140)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-videos-mine.test.mjs:14:1
+✖ GET /api/videos?by=me: 401 signed out, 400 without by=me, own videos only, newest first (20218.35434ms)
+  AssertionError [ERR_ASSERTION]: server started. stderr tail: node:internal/modules/package_json_reader:331
+    throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+          ^
+  
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'dotenv' imported from /tmp/kin-py-ZqF0Tp/repo/commons/server.mjs
+      at Object.getPackageJSONURL (node:internal/modules/package_json_reader:331:9)
+      at packageResolve (node:internal/modules/esm/resolve:784:25)
+      at moduleResolve (node:internal/modules/esm/resolve:873:18)
+      at defaultResolve (node:internal/modules/esm/resolve:1006:11)
+      at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)
+      at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)
+      at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)
+      at #resolve (node:internal/modules/esm/loader:687:17)
+      at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)
+      at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33) {
+    code: 'ERR_MODULE_NOT_FOUND'
+  }
+  
+  Node.js v24.22.3
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-ZqF0Tp/repo/commons/test/cut-videos-mine.test.mjs:39:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at commons/test/video-link-card.mjs:1:1
+✖ commons/test/video-link-card.mjs (89.544064ms)
+  'test failed'
+
+--- STDERR ---
