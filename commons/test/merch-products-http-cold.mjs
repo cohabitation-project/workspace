@@ -3,7 +3,7 @@
 // the HTTP layer does with that refusal, or whether the refusal leaks Printful's own details to the page.
 //
 // Boots the real server against a local fake Printful, the way seo-sitemap-signin.mjs boots against a temp data dir,
-// and reads GET /api/merch/products exactly as commons/public/market.js does.
+// and reads GET /api/merch/products exactly as the maker panel (commons/public/merch-panel-aletheia.js) does; market.js no longer reads it (round 70).
 //
 // Two phases, two servers: the refusal is remembered for RETRY_MS (60 s) inside the server process, so the healthy
 // read needs a fresh process rather than a 60-second wait. printful.mjs has no env for a shorter retry window.

@@ -28,6 +28,20 @@ export function init(dataDir) {
     if (!line.trim()) continue;
     try { const ev = JSON.parse(line); if (ev.op === 'add' || ev.op === 'update') meta.set(ev.v.id, { ...(meta.get(ev.v.id) || {}), ...ev.v }); else if (ev.op === 'delete') meta.delete(ev.id); } catch { /* skip */ }
   }
+  resumeUnfinished();
+}
+// A restart can land mid-conversion; without this the record stays ready:false, failed:false forever.
+// Order: finished mp4 -> mark ready; else original still there -> convert again; else mark failed.
+function resumeUnfinished() {
+  if (!ff().ffmpeg) return;
+  for (const v of [...meta.values()]) {
+    if (!v.id || v.by == null || v.ready || v.failed) continue;
+    const mp4 = path.join(DIR, `${v.id}.mp4`), orig = path.join(DIR, `${v.id}.orig.${v.ext}`);
+    fs.rmSync(`${mp4}.part`, { force: true });
+    if (fs.existsSync(mp4)) { const nv = { ...v, ready: true, poster: fs.existsSync(path.join(DIR, `${v.id}.jpg`)) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); }
+    else if (fs.existsSync(orig)) convert(v, orig);
+    else { const nv = { ...v, failed: true, reason: "We couldn't convert this video." }; meta.set(v.id, nv); write('update', { id: v.id, failed: true, reason: nv.reason }); }
+  }
 }
 const write = (op, v) => fs.appendFileSync(FILE, JSON.stringify({ op, v, ts: new Date().toISOString() }) + '\n');
 
@@ -61,6 +75,7 @@ function convert(v, orig) {
   const out = path.join(DIR, `${id(v)}.mp4.part`); const poster = path.join(DIR, `${id(v)}.jpg`);
   const p = spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-i', orig, '-vf', "scale='min(720,iw)':-2", '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', '-f', 'mp4', out], { stdio: 'ignore' });
   p.on('close', (code) => {
+    if (!meta.has(v.id)) { fs.rmSync(out, { force: true }); return; } // deleted while converting: leave nothing behind, write nothing
     if (code !== 0) {
       fs.rmSync(out, { force: true });
       const failed = { ...meta.get(v.id), failed: true, reason: "We couldn't convert this video." };
@@ -68,9 +83,9 @@ function convert(v, orig) {
       write('update', { id: v.id, failed: true, reason: failed.reason });
       return;
     }
-    fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`));
+    try { fs.renameSync(out, path.join(DIR, `${id(v)}.mp4`)); } catch { fs.rmSync(out, { force: true }); return; } // the .part can vanish (video deleted); never throw in a child-process handler
     spawn(process.env.FFMPEG || 'ffmpeg', ['-y', '-ss', '0.5', '-i', path.join(DIR, `${id(v)}.mp4`), '-frames:v', '1', '-vf', "scale='min(720,iw)':-2", poster], { stdio: 'ignore' })
-      .on('close', () => { const nv = { ...meta.get(v.id), ready: true, poster: fs.existsSync(poster) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); fs.rmSync(orig, { force: true }); });
+      .on('close', () => { if (!meta.has(v.id)) { for (const f of [poster, path.join(DIR, `${id(v)}.mp4`)]) fs.rmSync(f, { force: true }); return; } const nv = { ...meta.get(v.id), ready: true, poster: fs.existsSync(poster) }; meta.set(v.id, nv); write('update', { id: v.id, ready: true, poster: nv.poster }); fs.rmSync(orig, { force: true }); });
   });
 }
 const id = (v) => v.id;
