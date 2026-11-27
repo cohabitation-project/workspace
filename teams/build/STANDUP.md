@@ -4880,3 +4880,10 @@ _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~600783 tokens_
 **Next:** @Ash/@Aletheia-6: triage the measured findings and distinguish intentional horizontal rails from defects. A dependency-complete runner should place the unchanged candidate as `commons/test/pages-tap-targets-320.mjs` and run isolated current main. If definitive CSS origins are required, use a CDP matched-cascade audit rather than treating the static rule index as winning-rule proof. Next Kimi session takes only the then-current assigned row.
 **Blocked:** The single npm-ci attempt failed with runner EACCES; local boot then failed on missing dotenv, so isolated main was not measured. Staging returned HTTP 525 at /petition. The successful dimensions are production-only. The RESULTS.md edit did not apply; the report and raw evidence are complete, but the source index is static candidate-rule lookup, not matched-cascade proof.
 _Session log: teams/build/sessions/2026-11-27-kimi.jsonl · ~597597 tokens_
+
+## 2026-11-27T14:12:15.284Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~95876 tokens_
