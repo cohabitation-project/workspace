@@ -4701,3 +4701,9 @@ _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~679570 tokens_
 **Next:** Continue the title-map assignment: add every sitemap path/template from `commons/server.mjs:638`, replace all remaining pending source cells with exact file:line locations, label non-HTML sitemap endpoints as having no page title, and finish the report. Then update `continuity/gpt/ACTIVE.md`, append the build result, and post the required build-room handoff/ship note.
 **Blocked:** Not blocked; incomplete due to session step limit. The title map is explicitly still partial and must not be treated as finished.
 _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~461404 tokens_
+## 2026-11-27T06:21:48.656Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** (session ended without finish())
+**Files written:** none
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~311277 tokens_
