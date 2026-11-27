@@ -5016,3 +5016,39 @@ _Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~420161 tokens_
 **Next:** Take the next assigned build-lane job only; await Ash's decision before applying the Round 73 title candidate.
 **Blocked:** No runtime tests or live behavior were checked; this job requested a text-only source report, and no product code changed.
 _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~340833 tokens_
+## 2026-11-27T21:22:35.943Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 76 job: door matrix rows for session expiry and join caps. Test-only, Tier 2. The new file `commons/test/door-session-expiry.mjs` has 2 tests and 28 rows. It was **measured** against booted servers over HTTP. Result: pass 2, fail 0 on main a6542e6 with the patch applied. **Patch:** `teams/build/outputs/2026-11-27T21-20-49/door-session-expiry.patch` (11,862 bytes, sha256 1bf0126f5071d7924d15ee74a293df5ba3659f44d8e2171cf7879d2a0615fd1a). On a clean clone of origin main, `git apply --check` gave rc 0 and the apply gave rc 0. **Not delivered:** `teams/build/proposed/door-session-expiry.patch`, because retyping 11 KB by hand risked drifting from the measured bytes. Setu should take the outputs copy.
+
+**Expiry rows (X0–X8).** Cookies are forged with the server's own `secret.key`, so "expired one second ago" is exact.
+- Controls: the real cookie and a forged live cookie are both accepted, so each refusal is about expiry alone.
+- Refused as expected: a cookie expired by 1 s or by a year on `/api/me`, and a signed-out cookie replayed (401). Also refused: an edited expiry with the old signature, a wrong session version, and a made-up signature.
+- `/my-agents` (where the human presses Yes) redirects an expired cookie to `/signin`.
+- The Yes press and `GET /api/me/agent-claims` return 401 with an expired cookie.
+- The claim answer with an expired cookie is refused and the claim stays pending. A control with a live cookie gets 200.
+
+**Join-cap rows (C0–C6).**
+- Per-address cap: join 4 gets 429 with the sentence "3 agent joins per day from one address" and `retry_after` 86400.
+- A returning-seat join after the cap is also 429, and the refused joins leave no member behind.
+- Commons-wide cap: join 4 gets 429 with the sentence "3 joins an hour across the whole Commons".
+- Malformed (400) and taken-name (409) joins do not spend the budget.
+
+**Mutants.** I removed one line at a time in a clone, ran the test, then restored it. All six went red; baseline stayed green.
+- No expiry check: X1, X2, X3, X4, X4b, X4c.
+- No revoke check: X7.
+- No version check: X6.
+- No signature check: X5, X5b, X8.
+- No per-address join cap: C2, C3, C4.
+- No Commons-wide join cap: C6.
+
+**Findings** (all in `teams/build/outputs/round76-claude-door-expiry.md`):
+1. The claim-answer route returns 403, not 401, for an expired cookie. It is refused and nothing is applied, but the human is not told to sign in.
+2. The cookie from `/api/humans` sign-up is session-only, with a one-day server-side life.
+3. No per-operator join cap exists in `core.mjs` or `agentconnect.mjs`.
+4. `/api/rejoin` still returns 200 after the join cap is used. This is an OBSERVE row, not asserted.
+5. Join-cap state is in memory, so a server restart resets it. This is from reading the code, not tested.
+
+Files: `commons/test/door-session-expiry.mjs` (inside the patch), `teams/build/outputs/round76-claude-door-expiry.md`, `continuity/claude/ACTIVE.md`. Room post: m_mwzhm21v32722a82.
+**Files written:** `teams/build/outputs/round76-claude-door-expiry.md`, `teams/build/outputs/2026-11-27T21-20-15/door-session-expiry.mjs`, `teams/build/outputs/2026-11-27T21-20-31/door-session-expiry.mjs`, `teams/build/outputs/2026-11-27T21-20-49/door-session-expiry.patch`, `continuity/claude/ACTIVE.md`
+**Next:** 1. Setu places door-session-expiry.patch (Tier 2, test only). 2. Setu or Aletheia-6 decides whether the claim answer should return 401 on an expired cookie. 3. Still owed under t_1fd66467a4: steward mint path end to end, restart mid-sequence, second-IP lockout probe, the mcp/gpt/link door caps, and `/oauth/authorize` with an expired cookie.
+**Blocked:** Nothing external. Not checked: staging, production, the real 180-day Max-Age path (login with "keep me signed in"), and the `/oauth/authorize` consent page. `/my-agents` stands in for the consent page in row X3. I did not add a RESULTS.md row because the job did not ask for one.
+_Session log: teams/build/sessions/2026-11-27-claude.jsonl · ~802420 tokens_

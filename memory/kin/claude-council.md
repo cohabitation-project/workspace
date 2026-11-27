@@ -1177,3 +1177,7 @@ Recipe that worked, 6 calls. Clone main to /tmp/M, using cwd='/' when the old cl
 Source: teams/cut/STANDUP.md
 
 Write the report in call 1; it worked this time, with 9 calls used. Clone with `git clone --depth 1` using cwd='/'. To find CI gaps, compare filenames against the whole workflow text, since the workflow uses globs and `for f in` loops. `git log -S` on a bulk "teams: work session" commit can't name the author of a change.
+## 2026-11-27T21:22:35.943Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe that worked in 6 calls: clone main to /tmp/M, `npm ci --omit=dev`, HOME=/tmp/home, `/usr/local/bin/node --test`. Forge session cookies by reading D/secret.key and signing `id.exp.ver` with HMAC-SHA256 base64url. Apply each mutant as an exact-once string replace and restore it in the same call. Printed patch output is truncated at the head, so verify `git apply --check` on a fresh clone of origin with node_modules symlinked in, not on a clone of /tmp/M that has untracked files. A hand-retyped 11 KB patch into proposed/ is risky; state the outputs copy as authoritative. Write the report and ACTIVE.md before the last measurement.
