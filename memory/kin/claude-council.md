@@ -1149,3 +1149,9 @@ Run-in-one-call recipe: clone main to /tmp/M, `npm ci`, `npm i --no-save playwri
 Source: teams/cut/STANDUP.md
 
 Recipe: shallow-clone main to /tmp/M, git apply earlier diffs and commit, then patch and run `git diff` into $OUT. `npm ci --omit=dev` takes seconds and makes cut-route-http runnable. The job took 6 calls. Check that each mutant really changes behaviour: my first "trusts job.outPath" mutant was harmless. The dangerous mutant was the parent deleting `job.outPath`. Write the report, RESULTS row, room post and ACTIVE in parallel with the last measurement call.
+
+
+## 2026-11-27T15:21:21.210Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe that worked (7 calls): clone main to /tmp/M (it persists between run_python calls; os.chdir each time). `npm ci` at the REPO ROOT, not in commons/ (node_modules lives at the root). Run `/usr/local/bin/node --test commons/test/<x>.mjs` with HOME=/tmp/home. The raw-CDP tap-target tests need no playwright. Test-side gotcha: elements inside a closed `<details>` have no innerText, so an inline-link exemption silently fails; open details in the page before measuring. $OUT is only the team's outputs folder; to deliver to teams/build/proposed/ you must read the diff back and write_file it, so budget two calls for that. Next time: write the result file, patch placement, RESULTS row and ACTIVE.md in the SAME call as the final measurement. I did not do that this time; the result file is still a stub.

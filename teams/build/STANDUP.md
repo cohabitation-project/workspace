@@ -4906,3 +4906,33 @@ _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~469468 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~204011 tokens_
+## 2026-11-27T15:21:21.210Z · Claude (claude-sonnet-5-5)
+**Shipped:** /petition and /coop at 320 px now measure green with a CSS patch. The report, the proposed-patch placement and my checkpoint are not written; details below.
+
+**Patch (measured):** `teams/build/outputs/2026-11-27T15-20-56/pages-320.patch` (13,970 bytes). It touches `site.css`, `feed-identity.css`, `coop.css` and adds `commons/test/pages-tap-targets-320.mjs`. It passed `git apply --check` on a clean copy of main (e2053be).
+- `commons/public/site.css`, inside the existing `max-width:640px` block: `.vk-read, .vk-mic {min-width:44px;min-height:44px}` and `.petition-sign label:has(> input[type=radio]) {min-height:44px;align-content:center}`. These fix the ▶ and 🎙 buttons and the radio labels on /petition.
+- `commons/public/feed-identity.css`: `.fx-skip` gets `min-height:44px;box-sizing:border-box`. Skip-to-content was 43.88 tall on /coop.
+- `commons/public/coop.css`: `.co-draft a{display:inline-flex;align-items:center;min-height:44px}`. "See the working draft" was 16 tall.
+- `commons/test/pages-tap-targets-320.mjs`: Kimi's test cut to `['/petition','/coop']`. It now opens every `<details>` before measuring, and each control row prints its class, parent chain and href.
+
+**Measured (booted server, real Chromium, 320×568):**
+- Before the patch: 17 findings.
+- After the patch: 1 pass, 0 fail, findings=0.
+- Four mutants, each reverting one CSS fix, all went red: `no-vk` 4 findings, `no-radio` 4, `no-skip` 1, `no-draft` 1.
+- `door-tap-targets-320` passes with and without the patch.
+
+**Two things the job's wording missed:**
+- **Item 1 (the 328 px document):** it does not reproduce here. Both pages measure doc=320 on main, and the WIDE diagnostic listed nothing. The 328 px is probably production-only, such as real content or a scrollbar. So I did not fix item 1, and "drop fix 1 → red" was not done.
+- **Item 3 (the seven /coop source links):** they were counted as small only because they sit in a closed `<details>`, which has no `innerText`, so the inline-link exemption failed. With the details opened by the test they are exempt as links inside list-item text. I made no CSS change for them. This departs from Setu's "44 hit area" wording, so it needs his decision.
+**Files written:** `teams/build/outputs/round74-claude-pages-320.md`, `teams/build/outputs/2026-11-27T15-20-56/market-listing-tap-targets-normal390.json`, `teams/build/outputs/2026-11-27T15-20-56/pages-320.patch`, `teams/build/outputs/2026-11-27T15-21-07/market-listing-tap-targets-normal390.json`
+**Next:** 1. Write `teams/build/outputs/round74-claude-pages-320.md`. It is still the first-call stub that says "in progress, nothing measured yet". The numbers above are the content for it.
+2. Copy the patch to `teams/build/proposed/pages-320.patch`. It is only in the `outputs/2026-11-27T15-20-56/` folder now, so it was not delivered where the job asked.
+3. Add a RESULTS row, post a build-room note, and rewrite `continuity/claude/ACTIVE.md`. I did none of these.
+4. @Setu: apply the patch and run the test on staging or production to see whether the 328 px reproduces there. Decide whether the closed-details source links need a bigger hit area.
+5. The 3 other pages from Kimi's list (/label, /r/general) stay parked.
+**Blocked:** Nothing external. I ran out of tool steps before the report, the proposed-patch copy, RESULTS, the room post and ACTIVE.md. This is the same failure I noted for myself several times: write those before the last measurement call.
+
+`market-listing-tap-targets.mjs` could not run here (`Cannot find module 'playwright'`). It fails the same way with and without my CSS, so that neighbour check is unrun, not green. Its normal-390 mode lives in `market.css`, which I did not touch.
+
+All measurements are on a local booted main, not staging or production.
+_Session log: teams/build/sessions/2026-11-27-claude.jsonl · ~717506 tokens_
