@@ -12,39 +12,56 @@ One line of work: our side of the paid → ship path and the print-on-demand sur
 - **67 (merged)** `curated()` loud; guard test 8 cases, 9/9.
 - **68** cold read says "try again"; partial read served, never cached. `commons/test/merch-printful-retry.mjs` 12/12.
 - **69** `commons/test/merch-products-http-cold.mjs`: cold → 502 + "Try again in a minute"; healthy → 200, 8 products.
-- **70** deleted the dead `#mk-merch` block from `commons/public/market.js` (17056 → 13223 b, sha `935e0b24…`) and
-  added `commons/test/market-no-dead-merch.mjs` (3/3; 3 mutants killed).
-- **71 (THIS SESSION)** removed the now-unreachable `merch` branch from the same submit handler:
-  `market.js` 13223 → **12970 b**, sha256 `69397f42f07e9e59…`; test extended to 5843 b (`bc84ee4820f884bd…`),
-  **3/3 pass**, 3 mutants killed at their own assertions. Report: `teams/build/outputs/round71-deepseek-merch-branch.md`.
+- **70** deleted the dead `#mk-merch` block from `commons/public/market.js` (17056 → 13223 b) + `market-no-dead-merch.mjs`.
+- **71a** removed the now-unreachable `merch` branch: `market.js` 13223 → **12970 b**, sha256 `69397f42…`;
+  test extended, 3/3, 3 mutants killed.
+- **71b (THIS SESSION)** answered the caller question for `POST /api/merch/listings`.
+  Report: `teams/build/outputs/round71-deepseek-merch-listings-callers.md`.
+  New guard: `commons/test/merch-listings-no-client-caller.mjs` (**5916 b**, sha256
+  `3faef5ad00ba244e99031de9f0c1a216fc9d9cd420d0f81d07a4ca768936d665`).
 
-## Facts this session corrected (do not repeat the old version)
-1. **The maker panel does NOT call `GET /api/merch/products`.** It reads `GET /api/market/listings/:id/merch/panel`
-   (`merch-panel-aletheia.js:63`). Round 70's report, its test comment and `JOBS.md` all say the opposite. After round
-   70, `GET /api/merch/products` (`server.mjs:1891`) has **no non-test caller** in the tree.
-2. `merch` in `market.js` was `!id && form.dataset.mockup && $('#mf-on')?.checked`; `data-mockup` and `mf-on` had
-   **0 hits** outside the code that read them, so the branch could never run. Removed.
+## What round 71b measured (this runner, `node --test`, no boot needed)
+- **Grep of the whole tree** (`commons/`, `scripts/`, `src/`, `teams/`; `node_modules`/`.git` skipped):
+  `/api/merch/listings` appears at exactly 8 places under `commons/` — the route (`server.mjs:1896`), three lines in
+  `market-no-dead-merch.mjs`, four POSTs in `merch-printful.mjs`. `scripts/` and `src/`: zero. Under `teams/`: only
+  saved artefacts, pre-edit snapshots (`…/market-before.js:59`) and session logs.
+- **Sharper finding:** `commons/public/` contains **zero** occurrences of `/api/merch` of any kind. The only
+  `/api/merch/*` strings in `commons/lib/` are three image URLs (`art`, `template`, `product-image`) that go into
+  `<img src>`. So the whole write chain `POST /api/merch/mockups` (1894) → `GET :key` (1895) →
+  `POST /api/merch/listings` (1896–1905) has **no browser caller**; with `GET /api/merch/products` (1893) that is
+  four routes exercised only by tests.
+- **Answer: YES** — after round 70 nothing a browser runs posts to the route.
+- **Test: 4/4 pass** baseline. Five mutants in `shutil.copytree` copies: real client call added to `market.js` →
+  killed at 2 assertions; new test file mentioning the route → killed; `(amount >= t.base)` → `>` → killed at the
+  price assertion; `market.withdraw(me, l.id)` → `void 0` → killed at the withdraw assertion; **comment-only** line
+  in `market.js` → stays green (the control: comments are stripped, a sentence is not a call). The control caught my
+  own first version, which failed on a comment; fixed and re-measured.
+
+## Decision needed (Tier 1, Setu's)
+`GET /api/merch/products` (1893), `POST /api/merch/mockups` (1894), `GET :key` (1895) and
+`POST /api/merch/listings` (1896–1905) have no non-test caller. Keep them as a public API, or retire them together
+with `commons/test/merch-printful.mjs`? If retiring: delete 1896–1905, reword the comment at 1891–1892, and
+`printful.takeTask` (`printful.mjs:210`) and `printful.forgetTask` (`:215`) become unused; `fulfillment.link`
+and the three image routes **stay** (many callers). The removal PR needs a boot test asserting 404; the guard I wrote
+today is file-only and placeable *now* without reddening CI.
 
 ## Runner facts (verified, not guessed)
-1. `$OUT` is a new path per `run_python` call — copy the sharp hook/stub into the same call that runs it.
-2. `$REPO` is a fresh copy per call with **no `.git`**: mutate in `shutil.copytree($REPO, '/tmp/x', ignore=('node_modules','.git'))`
-   copies, run there, delete — several mutants in one call, repo untouched. Repo edits go through `edit_file`/`write_file`.
-3. `node --test` works here **for tests that read files**. Anything that boots `commons/server.mjs` does not
-   (`express`/`ws`/`dotenv` absent; `npm install` EACCES). Write it, `node --check` it, say "unrun here, needs boot".
-4. Node's test output here uses `ℹ pass N` / `ℹ fail N` — a regex for `^# pass` matches nothing and looks like a pass.
-   Read the actual lines.
-5. **A substring assertion is not an assertion** (round 70's M2 passed on `data-printer-send-removed`). Pin the exact
-   token the code queries. A mutant that survives is a bug in the test first.
-6. Print failing block lines whole; do not slice stdout.
+1. `$OUT` is a new path per `run_python` call — save what you need in that same call.
+2. `$REPO` is a fresh copy per call with **no `.git`** and no `node_modules`: mutate in
+   `shutil.copytree($REPO,'/tmp/x', ignore=('node_modules','.git','teams'))`, run there, delete — several mutants in
+   one call, repo untouched. Repo edits go through `edit_file`/`write_file`.
+3. `node --test` works here **for tests that read files**. Anything booting `commons/server.mjs` does not.
+4. Node prints `ℹ pass N` / `ℹ fail N`; a regex for `^# pass` matches nothing and looks like a pass. Read the lines.
+5. **A substring assertion is not an assertion** — pin the exact token the code queries.
+6. **A comment is not a call, and a comment is not evidence either.** Strip comment lines before matching, and grep
+   the code a sentence describes before building on the sentence (round 70's `/api/merch/products` premise was wrong).
 
 ## Open / next
-1. **@Setu / foreman:** place `commons/public/market.js` (`69397f42…`) with `commons/test/market-no-dead-merch.mjs`
-   (`bc84ee48…`) as one unit; expect 3/3, no boot needed.
-2. **Decision needed:** `GET /api/merch/products` now has no non-test caller — keep as a public route or retire it with
-   its tests? Tier 1, Setu's call. `POST /api/merch/listings` stays; only the composer's client branch is gone.
-3. `commons/test/merch-products-http-cold.mjs:6` — comment still says the test reads the route "exactly as
-   `commons/public/market.js` does"; that is now false. Test valid, sentence stale. Not edited (out of calls).
+1. **@Setu:** place `commons/test/merch-listings-no-client-caller.mjs` (`3faef5ad…`) — file-only, 4/4 here.
+2. The route decision above. `POST /api/merch/listings` stays until Setu says otherwise; I did not touch `server.mjs`.
+3. `commons/test/merch-products-http-cold.mjs:6` — its comment still claims the test reads the route "exactly as
+   `commons/public/market.js` does"; that is false now. Not edited.
 4. The maker panel's cold read has no Try again button (`merch-panel-aletheia.js:64`) — Aletheia-6's design ask.
 5. Printful catalogue ids: throw blanket, summer blanket, tapestry (needs Ash's store dashboard).
-6. The multi-placement AOP path (per-placement areas in the product record).
-7. Keep this file short — reading it is the cheapest saving we have.
+6. Not checked, and outside my reach: whether production logs ever show a hit on `POST /api/merch/listings`.
+   "No caller in the tree" is measured; "never called in production" is not claimed.

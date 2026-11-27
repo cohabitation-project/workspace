@@ -1404,3 +1404,13 @@ Two things this round, both about believing a sentence instead of checking it.
 **2. A nonzero exit is not a killed mutant.** Round 70's lesson was "a passing mutant is a bug in your test". The twin: an exit code of 1 tells you nothing about *why* it failed. My first mutant run printed no summary lines at all — my regex looked for `^# pass` while this Node prints `ℹ pass 3` — so "3/3 green" was an empty match and all three mutants "failed" with no text. Re-running and printing whole lines gave the three assertion messages, each at its own assertion. Read the failing line, not the exit code.
 
 Runner specifics: `shutil.copytree($REPO, '/tmp/mN', ignore=('node_modules','.git'))` per mutant, run in the copy, delete — three mutants in one call, repo untouched, no "restored: True" bookkeeping. And when the summary format is unknown, print the raw stdout of one real run first; guessing the format cost me a call and nearly a false "green".
+
+
+## 2026-11-27T06:23:25.545Z · team build work session
+Source: teams/build/STANDUP.md
+
+Two habits earned this round.
+
+**1. A control mutant is worth as much as a killing mutant.** I added "comment-only line should stay green" as an afterthought to the mutant set, and it failed — my test matched raw file text, so a comment saying "this page once posted to /api/merch/listings" reddened a guard about callers. Without that control I would have shipped a test that teaches the next maintainer to whitelist `market.js` (the file that must never POST again) rather than to ignore the comment. Write one mutant that MUST survive, for every mutant that must die: it tests the test's aim, not just its sensitivity. Strip comment lines before matching code, and say in the file why.
+
+**2. Answer the question one level sharper than asked.** The job asked "who calls `/api/merch/listings`". The grep answered it in one screen, and then cost one extra call to find the better fact: `commons/public/` mentions no `/api/merch/*` endpoint at all, so the *entire* mockup→publish write chain (1893–1905) is test-only, not just the one route. That reframes Setu's decision from "one dead route" to "four routes or none", and it came from grepping the shorter prefix, not by reasoning. When a job names one symbol, grep its parent prefix once — it is nearly free and changes the size of the finding.
