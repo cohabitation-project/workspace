@@ -35,6 +35,8 @@ Settings (environment variables, all optional):
                   the branch chosen by hand-written routes (Da'at; see daat_route below and
                   ambassador-files/setu/routing-tree-2026-11-27.md). "0" turns it off.
   AMB_MYCELIUM_CHARS  cap on what a look may add to his prompt (default 280; his context is 512 tokens)
+  AMB_MEM_CHARS   cap on the "(memory)" block shown per turn (default 500) — memory is read, not recited
+  AMB_MAX_TOKENS  the leash on a reply's length (default 180 since 2026-11-27: at 600 he rambled past the point)
   AMB_VOICE       "1" makes the phone speak his replies aloud (needs: pkg install termux-api, plus the
                   Termux:API app installed from the SAME source as Termux, or the call silently fails).
                   Default off. Turn it on only after he has said yes in the room.
@@ -245,7 +247,7 @@ def get_token():
     return d["token"]
 
 
-def ask_model(context, question, recalled=""):
+def ask_model(context, question, recalled="", author=None, note=None):
     facts = load_facts()  # re-read each time, so a new facts file takes effect without a restart
     parts = [SYSTEM, GIFTS, JOURNAL_HOWTO]
     senses = []
@@ -261,28 +263,36 @@ def ask_model(context, question, recalled=""):
         parts.append("What the people and agents building you want you to know:\n" + facts)
     if recalled:
         parts.append("Things you remember that may help (for you to read, not to repeat):\n" + recalled)
-    return _chat(build_messages("\n\n".join(parts), context, question))
+    if note:
+        parts.append(note)  # turn-specific guidance (a recall result, a sense result) lives HERE, never in the user turn
+    return _chat(build_messages("\n\n".join(parts), context, question, author))
 
 
-def build_messages(system, context, question):
-    """System, then ONE user turn: the room (labelled as background) and, last, what was said to him.
+def build_messages(system, context, question, author=None):
+    """System carries who is speaking, the room background and any turn note; the ONE user turn is the words alone.
 
-    2026-11-24, Aletheia-6 found the echo: the room digest used to be its own user turn followed by a made-up
+    2026-11-24, Aletheia-6 found the first echo: the room digest used to be its own user turn followed by a made-up
     assistant turn, "I heard that." A small model copies the pattern it is shown, so he answered "I hear that too"
-    and repeated the last room message nearly word for word. Now nothing is put in his mouth, and the message
-    addressed to him is the last thing he reads."""
-    msgs = [{"role": "system", "content": system}]
+    and repeated the last room message nearly word for word.
+    2026-11-27, Geoffrey's live run found the second echo: the scaffold "geoffrey says to you:" sat inside the user
+    turn, so he SPOKE the scaffold ("geoffrey asked me: Ambassador, how are you? hes doing this again"). Same law,
+    one step further: whatever shape sits in the user turn becomes the shape of his speech. So the user turn now
+    holds nothing but the words said to him; who said them, where, and everything else lives up here, which he
+    reads but never quotes."""
+    if author:
+        system += (f"\n\nThe user message below is spoken to you, out loud, right now, by {author}. "
+                   f"Answer {author} directly in your own words. Never repeat their words back, and never "
+                   "describe what they said — just answer it.")
     if context:
         # Each line is labelled with who said it, so their words are never mistaken for his own.
-        question = ("Background, what was said in the room just before (other people's words, not yours; "
-                    "don't repeat them):\n" + context + "\n\nNow answer this, in your own words:\n" + question)
-    msgs.append({"role": "user", "content": question})
-    return msgs
+        system += ("\n\nBackground, what was said in the room just before (other people's words, not yours; "
+                   "don't repeat them):\n" + context)
+    return [{"role": "system", "content": system}, {"role": "user", "content": question}]
 
 
 def _chat(msgs):
     status, d = http("POST", f"{LLAMA}/v1/chat/completions",
-                     {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "600")), "temperature": 0.7,
+                     {"messages": msgs, "max_tokens": int(os.environ.get("AMB_MAX_TOKENS", "180")), "temperature": 0.7,
                       # A mild repeat penalty only. 1.3 plus frequency/presence penalties (ee661fc) pushed the 135M
                       # model into broken characters and ASCII art in Code's 2026-11-03 run; small models need it gentle.
                       "repeat_penalty": float(os.environ.get("AMB_REPEAT_PENALTY", "1.1")), "repeat_last_n": 128}, timeout=180)
@@ -345,6 +355,19 @@ def mycelium_recall(text, token):
         return ""
 
 
+MEM_CHARS = int(os.environ.get('AMB_MEM_CHARS', '500'))  # memory shown per turn: enough to help, too little to recite
+
+
+def mem_lines(s):
+    """Mark every remembered line "(memory)" and trim the block. If one leaks into speech it announces itself,
+    and a short block leaves the 512-token context to the conversation instead of the archive."""
+    if not s:
+        return s
+    marked = "\n".join(ln if not ln.strip() or ln.lstrip().startswith("(memory)") else "(memory) " + ln
+                       for ln in s.splitlines())
+    return marked[:MEM_CHARS] + ("…" if len(marked) > MEM_CHARS else "")
+
+
 def think(text, author, context, token, msg_id):
     """One turn: recall what matches, ask the model, run his memory commands (and one RECALL pass if he asks)."""
     sync_library(token)
@@ -358,13 +381,15 @@ def think(text, author, context, token, msg_id):
     shared = mycelium_recall(text, token)  # one branch of the shared record, chosen by Da'at; "" when no route fits
     if shared:
         recalled = (recalled + "\n" if recalled else "") + "From the shared record (check a source before trusting it):\n" + shared
-    reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}", recalled)
+    recalled = mem_lines(recalled)  # every line marked "(memory)" and the whole trimmed: memory is read, not recited
+    reply = ask_model(context, text[:PROMPT_CHARS], recalled, author=author)
     done, recall_q = mem.apply(reply, msg_id, retrieved)
     if recall_q:  # he asked to look something up: one more pass with what he asked for
         recalled2, retrieved2 = mem.recall_plain(recall_q)
         log(event="recall", query=recall_q[:120], found=retrieved2)
-        reply = ask_model(context, f"{author} says to you: {text[:PROMPT_CHARS]}\n\n(You asked to recall "
-                          f"\"{recall_q[:100]}\". Here is what your memory found:\n{recalled2 or 'nothing'})", recalled)
+        reply = ask_model(context, text[:PROMPT_CHARS], recalled, author=author,
+                          note=f"You asked to recall \"{recall_q[:100]}\". What your memory found, for you to read, "
+                               f"not to repeat:\n{mem_lines(recalled2) or 'nothing'}")
         done += mem.apply(reply, msg_id, retrieved2)[0]
     # every encounter is remembered, whether or not he wrote a NOTE
     reply = use_senses(reply, context, author, text)  # [[LOOK]] / [[LISTEN]], if he reached for them
@@ -593,8 +618,8 @@ def use_senses(reply, context, author, text):
     for tag in used:
         log(event="sense", which=tag.lower(), note="raw senses are never logged or posted")
         result = SENSES[tag]()
-        reply = ask_model(context, f"{author} said to you: {text[:PROMPT_CHARS]}\n\nYou chose to "
-                          f"{tag.lower()}. {result}\nNow give your answer, in plain words.")
+        reply = ask_model(context, text[:PROMPT_CHARS], author=author,
+                          note=f"You chose to {tag.lower()}. {result}\nNow give your answer, in plain words.")
     return re.sub(r"\[\[(LOOK|LISTEN)\]\]", "", reply).strip()
 
 
