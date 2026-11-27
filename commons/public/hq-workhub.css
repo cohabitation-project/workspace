@@ -28,6 +28,64 @@
 .hw-post{border-left:2px solid #538b89;padding:8px;margin:6px 0}
 .hw-error{color:#ffb7b7}
 .hw-messenger{width:100%;height:calc(100% - 90px);min-height:320px;border:1px solid #456e75;border-radius:8px;background:white}
-@media(max-width:540px){#hq-workhub{right:12px;bottom:12px}#hq-workhub-panel{bottom:52px;width:calc(100vw - 24px);height:calc(100dvh - 80px)}}
+/* bottom:84px, not 12px: at phone widths the launcher must clear the phone bar and the feedback button
+   (a718259; Geoffrey found the overlap on day one). Panel height shrinks to match the raised anchor. */
+@media(max-width:540px){#hq-workhub{right:12px;bottom:84px}#hq-workhub-panel{bottom:52px;width:calc(100vw - 24px);height:calc(100dvh - 160px)}}
 
 .hw-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.hw-resources .hw-link{display:block;border:1px solid #345862;padding:12px;border-radius:9px;text-decoration:none}.hw-resources .hw-link:hover,.hw-resources .hw-link:focus-visible{background:#23505b;text-decoration:underline}
+
+/* v2: expand into a real workspace over Headquarters; collapses back to the existing dock. */
+#hq-workhub.hw-full{inset:0;right:0;bottom:0;pointer-events:none}
+#hq-workhub.hw-full #hq-workhub-launch{display:none}
+#hq-workhub.hw-full #hq-workhub-panel{pointer-events:auto;position:fixed;inset:16px;width:auto;height:auto;max-width:none;max-height:none;border-radius:18px;box-shadow:0 25px 80px #000e;background:#101827;border:1px solid #7753ad}
+#hq-workhub .hw-brand{display:flex;align-items:center;gap:13px}
+#hq-workhub .hw-brand img{width:42px;height:42px}
+#hq-workhub .hw-brand strong{display:block;font-size:19px}
+#hq-workhub .hw-brand small{display:block;color:#b8b4d4;font-size:12px}
+#hq-workhub .hw-window-actions{display:flex;gap:8px}
+#hq-workhub.hw-full .hw-head{padding:16px 22px;background:#13192c}
+#hq-workhub.hw-full .hw-tabs{gap:10px;padding:12px 22px;background:#151d31;border-bottom-color:#42395a}
+#hq-workhub.hw-full .hw-tabs button{min-width:86px;padding:12px 18px;background:#252942;border-color:#383c57}
+#hq-workhub.hw-full .hw-tabs button[aria-current=page]{background:#7048a6!important;border-color:#9a65d6}
+#hq-workhub.hw-full #hw-main{padding:24px;overflow-y:auto;background:#11192a}
+#hq-workhub h2,#hq-workhub h3{margin:12px 0;color:#f1eafd}
+#hq-workhub h2{font-size:24px}
+#hq-workhub h3{font-size:17px}
+#hq-workhub .hw-overview-columns{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:20px;align-items:start}
+#hq-workhub .hw-overview-columns>section,#hq-workhub .hw-overview-columns>aside{min-width:0}
+#hq-workhub .hw-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 20px}
+#hq-workhub .hw-stat{border:1px solid #3a3e62;background:#202840;border-radius:12px;padding:15px}
+#hq-workhub .hw-stat strong{display:block;font-size:25px;color:#c3a0fa}
+#hq-workhub .hw-stat small{color:#c8c7d9}
+#hq-workhub .hw-room-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+#hq-workhub .hw-room-choice{display:block;width:100%;text-align:left;margin-bottom:8px;padding:14px!important;background:#202840!important;border-color:#394766!important}
+#hq-workhub .hw-room-choice strong{display:block;font-size:15px}
+#hq-workhub .hw-room-choice small{display:block;color:#a9bac9;margin-top:4px}
+#hq-workhub .hw-card{background:#1e283c;border-color:#3b4764}
+#hq-workhub .hw-card strong{color:#f1ebfd}
+#hq-workhub .hw-person{background:#1c2538}
+#hq-workhub .hw-room-header{display:flex;align-items:center;gap:14px}
+#hq-workhub .hw-room-header h2{margin:0}
+#hq-workhub.hw-full .hw-link{color:#ccb0ff}
+#hq-workhub.hw-full .hw-messenger{min-height:550px}
+@media(max-width:820px){
+ #hq-workhub .hw-overview-columns{grid-template-columns:1fr}
+ #hq-workhub .hw-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #hq-workhub.hw-full #hq-workhub-panel{inset:0;border-radius:0}
+ #hq-workhub.hw-full #hw-main{padding:12px}
+ #hq-workhub.hw-full .hw-tabs{padding:8px;overflow-x:auto}
+ #hq-workhub.hw-full .hw-tabs button{min-width:auto}
+}
+
+/* Three-pane work dashboard, with authentic presence and event records. */
+#hq-workhub .hw-dashboard-grid{display:grid;grid-template-columns:minmax(300px,1.5fr) minmax(220px,1fr) minmax(210px,.88fr);gap:18px;align-items:start}
+#hq-workhub .hw-dashboard-grid>*{min-width:0}
+#hq-workhub .hw-dashboard-grid h3{padding:8px 0;border-bottom:1px solid #343d56}
+#hq-workhub .hw-overview-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#hq-workhub .hw-overview-header p{margin:0}
+#hq-workhub .hw-total{display:block;font-size:23px;color:#c6a6ff}
+#hq-workhub .hw-dashboard-contacts .hw-person{padding:8px;margin:5px 0}
+#hq-workhub .hw-dashboard-grid .hw-card{margin-bottom:10px}
+#hq-workhub .hw-dashboard-grid .hw-card p{margin:5px 0 8px}
+@media(max-width:1150px){#hq-workhub .hw-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr)}#hq-workhub .hw-dashboard-contacts{grid-column:1 / -1}}
+@media(max-width:720px){#hq-workhub .hw-dashboard-grid{grid-template-columns:1fr}#hq-workhub .hw-dashboard-contacts{grid-column:auto}}
