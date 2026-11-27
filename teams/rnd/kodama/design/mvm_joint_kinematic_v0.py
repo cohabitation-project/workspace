@@ -16,6 +16,7 @@ Updated 2026-11-25: primary soft-limit zero-crossing exact at +59.98°; residual
 Updated 2026-11-26: exact distal soft-limit zero-crossing at +53.09°; residual at +60° remains +2.064 mm.
 Updated 2026-11-26 later: residual growth rate after distal zero-crossing quantified at ≈0.299 mm/deg over the final 6.91° to soft limit.
 Updated 2026-11-26 night: matching primary residual growth rate after its zero-crossing quantified at ≈0.250 mm/deg over the final 0.02° to soft limit.
+Updated 2026-11-27: reverse region for primary is continuous from ~0° (already -0.35 mm at +1°) to soft-limit zero-crossing ~60°; max depth -5.140 mm at +28.29°. Distal analogous. Discrete proxy residual is this entire envelope; true wrapgeom eliminates it.
 """
 
 import math
@@ -105,6 +106,7 @@ if __name__ == "__main__":
     print("Distal soft-limit zero-crossing: exact +53.09° (residual at +60° = +2.064 mm).")
     print("Distal residual growth rate after zero-crossing: ≈0.299 mm/deg over 6.91° to +60° soft limit.")
     print("Primary residual growth rate after zero-crossing: ≈0.250 mm/deg over 0.02° to +60° soft limit.")
+    print("Primary reverse region: continuous from near 0° ( -0.35 mm at +1°) to soft-limit zero ~60°; max depth -5.140 mm.")
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
     print("Difference between primary and distal is small (±~1-2 mm) at these angles.")
