@@ -1,0 +1,8 @@
+file:///tmp/kin-py-1ull0w/repo/teams/build/outputs/round74-kimi-328-audit.mjs:34
+  if(measured.exceptionDetails)throw new Error(JSON.stringify(measured.exceptionDetails));
+                                     ^
+
+Error: {"exceptionId":1,"text":"Uncaught","lineNumber":4,"columnNumber":57,"scriptId":"9","exception":{"type":"object","subtype":"error","className":"SyntaxError","description":"SyntaxError: Unexpected token '{'","objectId":"-2573042461370129387.1.2"}}
+    at file:///tmp/kin-py-1ull0w/repo/teams/build/outputs/round74-kimi-328-audit.mjs:34:38
+
+Node.js v24.22.3
