@@ -152,56 +152,10 @@ if (new URLSearchParams(location.search).get('buy') === '1') {
   else if (main && !main.disabled) main.click();
 }
 
-// Print on demand: pick a product, place your art, see a real Printful mockup (Ash's spec, 2026-11-21).
-const merchBox = $('#mk-merch');
-if (form && merchBox) {
-  const cat = form.querySelector('[name=category]'); const on = $('#mf-on'); const body = $('#mf-body');
-  const pSel = $('#mf-product'); const vSel = $('#mf-variant'); const mmsg = $('#mf-msg'); const img = $('#mf-img'); const base = $('#mf-base');
-  let products = []; let problem = '';
-  const fillVariants = () => { const p = products.find((x) => x.key === pSel.value); vSel.innerHTML = (p?.variants || []).map((v) => `<option value="${v.id}">${v.name.replace(/</g, '&lt;')} · from $${v.price.toFixed(2)}</option>`).join(''); };
-  const show = () => { merchBox.hidden = (!products.length && !problem) || cat.value !== 'art'; body.hidden = !on.checked; };
-  // Round 68 (DeepSeek): a passing Printful problem on the first read is not "no products offered". The server refuses
-  // that read with a 502 and a sentence (printful.products, COLD), so say the sentence here with a Try again — the box
-  // used to stay hidden behind an empty picker, which read as "this market has nothing on it".
-  const retry = document.createElement('button');
-  retry.type = 'button'; retry.className = 'btn'; retry.textContent = 'Try again'; retry.hidden = true;
-  retry.addEventListener('click', () => { mmsg.textContent = ''; problem = ''; retry.hidden = true; show(); loadProducts(); });
-  merchBox.append(retry);
-  const loadProducts = async () => {
-    try {
-      const r = await fetch('/api/merch/products', { headers: { 'X-Commons': '1' } });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error || `The print partner isn't answering right now (${r.status}). Try again in a minute.`);
-      products = j.products || []; problem = '';
-    } catch (e) { products = []; problem = e.message || "The print partner isn't answering right now. Try again in a minute."; }
-    pSel.innerHTML = products.map((p) => `<option value="${p.key}">${p.title.replace(/</g, '&lt;')}</option>`).join('');
-    fillVariants(); retry.hidden = !problem; if (problem) mmsg.textContent = problem;
-    show();
-  };
-  loadProducts();
-  cat.addEventListener('change', show); on.addEventListener('change', () => { show(); if (on.checked) { form.querySelector('[name=price_mode]').value = 'fixed'; form.querySelector('[name=price_mode]').dispatchEvent(new Event('change')); } });
-  pSel.addEventListener('change', () => { fillVariants(); delete form.dataset.mockup; img.hidden = true; base.hidden = true; });
-  vSel.addEventListener('change', () => { delete form.dataset.mockup; img.hidden = true; });
-  $('#mf-go').addEventListener('click', async () => {
-    const art = form.querySelector('[name=mf_art]:checked'); if (!art) { mmsg.textContent = 'Pick your art first.'; return; }
-    const pic = art.parentElement.querySelector('img'); const aspect = pic.naturalWidth && pic.naturalHeight ? pic.naturalWidth / pic.naturalHeight : 1;
-    mmsg.textContent = 'Asking Printful for the mockup… this takes about half a minute.'; img.hidden = true; delete form.dataset.mockup;
-    try {
-      const t = await send('/api/merch/mockups', 'POST', { product: pSel.value, variant: Number(vSel.value), art: art.value, scale: $('#mf-scale').value / 100, y: $('#mf-y').value / 100, x: 0.5, aspect });
-      for (let i = 0; i < 40; i++) {
-        await new Promise((r) => setTimeout(r, 3000));
-        const r = await send(`/api/merch/mockups/${encodeURIComponent(t.task)}`, 'GET');
-        if (r.status === 'completed') {
-          img.src = r.url; img.hidden = false; form.dataset.mockup = t.task;
-          base.textContent = `Printful's base cost: $${r.base_price.toFixed(2)}. Set your price above it; the difference is yours. Shipping is added at checkout.`; base.hidden = false;
-          const amt = form.querySelector('[name=price_amount]'); amt.min = r.base_price; if (!amt.value || Number(amt.value) < r.base_price) amt.value = Math.ceil(r.base_price * 1.5);
-          mmsg.textContent = 'Here it is. Adjust and try again, or fill in the rest and publish.'; return;
-        }
-      }
-      mmsg.textContent = 'Printful is taking a while. Try again in a minute.';
-    } catch (err) { mmsg.textContent = err.message; }
-  });
-}
+// Round 70 (DeepSeek): the print-on-demand picker that used to live here is gone. No page has rendered its box since
+// the picker moved to the maker panel at /label/l/:id/products (commons/public/merch-panel-aletheia.js), so this script
+// was fetching the product list and wiring a form that never existed. The panel owns that work now; deleting it here
+// means there is one picker, not two, and this file no longer talks to the print partner at all.
 
 // Round 64 (DeepSeek): "Send it again" on /label/sales actually sends it. The button (marketpage.mjs, the `failed`
 // fulfillment block) posts to the maker-or-steward route, and says in the seller's own words what came back.
