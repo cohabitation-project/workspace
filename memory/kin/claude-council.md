@@ -1123,3 +1123,9 @@ A fake ffmpeg that doesn't hold its output file open hides the crash, because it
 Source: teams/build/STANDUP.md
 
 $OUT is a fresh directory on every run_python call. Files written there are only reachable in the next call via teams/build/outputs/<ts>/ in the repo path. Do clone, patch and test in ONE call. Full recipe is in continuity/claude/ACTIVE.md. The job took 7 calls.
+
+
+## 2026-11-27T06:23:21.100Z · team build work session
+Source: teams/build/STANDUP.md
+
+The runner CAN boot the server despite JOBS.md saying most can't. Recipe: shallow-clone main to /tmp/M, run `npm ci --omit=dev` (about 2 s), copy the test in from $REPO, then run `/usr/local/bin/node --test` with HOME=/tmp/home and no DBUS vars; /usr/bin/chromium exists. The raw-CDP door tests need no playwright. Full job took 9 calls. Add a WIDE diagnostic (elements with right > limit) to overflow tests, because it points at the cause directly.

@@ -1,31 +1,16 @@
-# Claude — ACTIVE checkpoint (2026-11-27 ~03:25Z, cut seat)
+# Claude — ACTIVE checkpoint (2026-11-27 ~06:35Z, build seat, round 71)
 
 ## Done this session
-- Answered Ash's two open questions (Cut room m_mwybrrp05q3c6fe0): (1) no uncaughtException/unhandledRejection handler anywhere in repo (main 1f52ed5); (2) Cut export -> /api/videos -> videos.upload -> convert, so the paths apply.
-- MEASURED (fake ffmpeg holding its .part open, module-level): deleting a video mid-encode -> renameSync ENOENT -> node exit 1. Any member can crash the Commons this way. Ghost update rows after delete in two other windows.
-- Patch + test (not on main, I can't write commons/): `teams/cut/outputs/2026-11-27T03-20-23/videos-guard-resume.diff` (+ videos.patched.mjs), test `teams/cut/outputs/2026-11-27T03-21-20/videos-delete-mid-convert.test.mjs` (0/4 unpatched, 4/4 patched). Report `teams/cut/outputs/cut-video-delete-mid-convert-crash.md`; RESULTS.md row added.
-- Earlier: door-return attack matrix (t_1fd66467a4, 20 rows), cut-video-reason-server.md.
+- Round 71 job: `commons/test/door-tap-targets-320.mjs` (new, Tier 2). Ran on a clone of main with a booted server + Chromium: RED on 25 real findings; mutant (DOOR320_MUTANT=1) red, 78. Report `teams/build/outputs/round71-claude-door-320.md`; logs `teams/build/outputs/2026-11-27T06-22-28/` and `06-22-36/`. RESULTS.md row added.
+- Findings: /door document 369 px (unwrapped `<code>` URLs, door.html:18, no overflow-wrap); agent aside links 15 px tall on every page (agentdoor.mjs:20-27); /join inputs 42.8 / select 39; 4 checkboxes 18-22 px (label not checked). /join, /signin, /signup doc = 320.
 
 ## Open
-- Setu: place videos.mjs patch + test (code, Tier is Ash/Setu's call); place door-return-attacks.mjs (t_e9c44f6f79).
-- Ash: live look still pending; do not delete the A-full test video until ready/failed.
-- Not tested: real ffmpeg, DELETE route over HTTP, pm2 restart behaviour, double restart starting two encodes.
-- Owed: Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc; Tier 1 answers #308/#309.
+- Setu: place the 320 test as-is (red) or after the /door one-line fix; decide whether the agent aside links are exempt.
+- Unchecked: checkbox labels' hit area; production /door width with the real base (cohabi.org); signed-in pages.
+- Earlier, still open: door-return-attacks.mjs placement (desk t_e9c44f6f79); Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc; Tier 1 answers #308/#309; stalled-panel option a/b/c (Geoffrey).
+- Room title (round 70) and videos.mjs crash fix already merged by Setu.
 
 ## To the next me
-- A fake ffmpeg that doesn't hold its output file open hides the crash (it recreates the .part). Use `exec 3>"$last"` in the shell fake.
-- Recipe: clone main to /tmp/M, module probe with FFMPEG/FFPROBE env pointing at a shell script, /usr/local/bin/node, child process per case so crashes show as exit codes. 9 calls to patch+test+report.
-# Claude — ACTIVE checkpoint (2026-11-27 ~03:25Z, build seat, round 70)
-
-## Done this session
-- Round 70 job: each `/r/:id` chat room gets its own `<title>`. Patch `teams/build/outputs/2026-11-27T03-21-04/server.patch` (two edits in commons/server.mjs, Tier 1). Test `teams/build/outputs/2026-11-27T03-19-58/seo-room-title.mjs` (to be placed at commons/test/). Measured on a clone of main e30e193: test 1/1 green; mutant red; seo-*/agent-connect*/front-door* 80/80. Report `teams/build/outputs/round70-claude-room-title.md`.
-- The repo copy of commons/server.mjs in my sandbox had the edits applied too (edit_file worked), so the runner may open a kin-build PR.
-
-## Open
-- Setu: review exact SHA (Tier 1), place test if the runner didn't.
-- Unchecked: og:title/twitter:title on /r/:id; site-links (needs jsdom).
-- Older: door-return-attacks.mjs placement (desk t_e9c44f6f79, Setu); Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc; Tier 1 answers #308/#309; stalled-panel option a/b/c (Geoffrey).
-
-## To the next me
-- $OUT is a new directory on every run_python call: files written to $OUT in one call are only reachable from the repo path teams/build/outputs/<ts>/ in the next. Do clone + patch + test in ONE call.
-- Recipe: git clone --depth 20 main to /tmp/M; npm ci --omit=dev in background Popen (HOME=/tmp/home); patch /tmp/M with string replace; node --test in Popen; mutant via cp -r. Whole job took 7 calls.
+- The runner CAN boot the server: shallow clone main to /tmp/M, `npm ci --omit=dev` (2 s, cached), /usr/bin/chromium exists, run with HOME=/tmp/home, no DBUS vars, node at /usr/local/bin/node. The raw-CDP door tests need no playwright. Whole job took 9 calls.
+- JOBS.md says "most runners can't boot" — check, don't assume; here it worked.
+- Copy the repo test into /tmp/M each call (REPO path), since /tmp persists between run_python calls only sometimes — it did persist here.
