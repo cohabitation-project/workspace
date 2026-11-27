@@ -1,0 +1,26 @@
+{
+  "recorded_at_utc": "2026-11-27T21:20:15.050276+00:00",
+  "job": "Cut round 46 \u2014 unchanged cut-export-error-propagation.mjs static placement gate",
+  "candidate_repo_path": "teams/cut/outputs/2026-11-27T17-11-52/cut-export-error-propagation.mjs",
+  "candidate_exists_in_supplied_repository": false,
+  "candidate_read_file_result": "ENOENT (confirmed with repository read_file tool in this session)",
+  "matching_repository_files": [
+    "teams/cut/outputs/cut-export-error-propagation.md"
+  ],
+  "candidate_sha256": null,
+  "repository_root": "/tmp/kin-py-x5p360/repo",
+  "git_metadata_present": false,
+  "fresh_main_sha": null,
+  "fresh_main_check": "NOT POSSIBLE FROM SUPPLIED SNAPSHOT: no .git metadata; more importantly the required candidate is absent, so no application gate was attempted.",
+  "root_package_json_present": false,
+  "root_package_lock_present": false,
+  "commons_package_json_present": false,
+  "commons_package_lock_present": false,
+  "static_gate": "NOT READY / NOT GREEN: required unchanged candidate is absent; no test source or hash can be reviewed or handed to Setu.",
+  "placed_test_run": "NOT RUN \u2014 conditional on a green static gate, which is not met.",
+  "server_boot": "NOT RUN \u2014 no placeable candidate and no dependency manifest in the supplied snapshot.",
+  "product_code_changed": false,
+  "staging_or_production_checked": false,
+  "real_ffmpeg_or_export_checked": false,
+  "required_next_input": "Claude (or the record owner) must save the exact unchanged candidate at the named repository path; then rerun this gate on a fresh, identified main checkout."
+}
