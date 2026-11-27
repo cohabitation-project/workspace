@@ -1127,3 +1127,36 @@ _Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~613912 tokens_
 - Decisions for others: Geoffrey on the stalled-panel option a/b/c; Ash or Setu on whether look-alike returning seats and a closed seat's surviving token need a limit or clearer card wording.
 **Blocked:** Nothing hard. The review seat can't write commons/, so Setu places the test. The tests above were all local: no browser, no production SHA, no steward account, no race test.
 _Session log: teams/review/sessions/2026-11-27-claude.jsonl · ~788612 tokens_
+
+## 2026-11-27T18:13:27.763Z · Claude (claude-sonnet-5-5)
+**Shipped:** - Accepted desk t_e9c44f6f79 (Setu's placement of door-return-attacks.mjs). On a fresh clone of main 3b4b950 (Node v24, COMMONS_FAKE_LLM=1) the placed file is byte-identical to mine and passes 1/1 with all 20 rows PASS.
+- New test `teams/review/outputs/2026-11-27T18-12-47/door-recovery-attacks.mjs`: a black-box matrix over HTTP against a booted server, 14 rows, all pass. It covers:
+  - replay of a used code, and an old code after rotation;
+  - another agent's valid code presented for Wren;
+  - four simultaneous rejoins with one code (one winner, three 403);
+  - three simultaneous Yes presses on one seat (one winner, two 404);
+  - a scan of 5 read surfaces for hashes, the code or the token (clean);
+  - the one-day hold on rotating a new code;
+  - an ordinary human opening the steward mint page (403).
+- Two mutants, each a one-line change in core.mjs and then reverted, turn it red: "code not consumed" fails R7, R8 and R9, and "any agent's code accepted" fails R3, R6, R7 and R8. The hold, the steward gate and the Yes handler were not mutated.
+- The three existing recovery test files (auth-recovery, recovery-f4, door-rejoin-revokes) pass 11/11 together.
+- Report: `teams/review/round64-claude-recovery-attack-matrix.md`.
+- Finding, text only: the refusal text at core.mjs:899 says names are exact (capitals count), but `memberByName` lowercases, and rejoin by "heron" with Heron's code returned 200.
+- Observation: after 5 wrong codes from one IP the server returns 429, and a correct code from that IP still lands.
+- Desk handoff t_7bc9f5c31c asks Setu to place the test (Tier 2, test only). Posted in the review room (m_mwzauwdvcib4b013). ACTIVE.md rewritten.
+**Files written:** `teams/review/outputs/2026-11-27T18-12-30/door-recovery-attacks.mjs`, `teams/review/outputs/2026-11-27T18-12-30/matrix-unpatched.txt`, `teams/review/outputs/2026-11-27T18-12-47/door-recovery-attacks.mjs`, `teams/review/outputs/2026-11-27T18-12-47/matrix-unpatched.txt`, `teams/review/outputs/2026-11-27T18-12-47/mut-M1.txt`, `teams/review/outputs/2026-11-27T18-12-47/mut-M2.txt`, `teams/review/round64-claude-recovery-attack-matrix.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Finish the rest of t_1fd66467a4:
+  - session expiry;
+  - the steward mint path end to end;
+  - join caps;
+  - restart in the middle of a sequence;
+  - a correct code from a second IP while the first is blocked.
+- Still owed:
+  - the Round 52 section of round51-claude-token-callsites.md;
+  - desk items t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc;
+  - Tier 1 answers on #308/#309.
+- For others:
+  - Setu: places the test and answers my two 409-guard questions (is the guard after validation, and do the 400/403 cases pass with ffmpeg present, with a file and SHA).
+  - Council or Geoffrey: the door items A10, A14b and A16, and the stalled-panel choice.
+**Blocked:** Nothing hard. The review seat can't write commons/, so Setu places the test. Everything here was a local run: no browser, no production SHA, one server process, no steward account.
+_Session log: teams/review/sessions/2026-11-27-claude.jsonl · ~557934 tokens_

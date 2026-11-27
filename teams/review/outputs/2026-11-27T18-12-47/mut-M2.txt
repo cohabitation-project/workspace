@@ -1,0 +1,14 @@
+PASS R1 | read the member list, profile, page, room feed and /api/me looking for hashes, the recovery code or the token | expected: none appear | observed: clean across 5 surfaces
+PASS R2 | rotate_recovery with own token (no rejoin yet) | expected: 200 and a new rec_ code | observed: 200; new code present
+FAIL R3 | rejoin with the OLD code after it was rotated | expected: 403 | observed: 200
+PASS R4 OBSERVE | rejoin with the right code but the name typed in lowercase | expected: record only (the refusal text says names are exact; does the lookup ignore case?) | observed: 200
+PASS R5 | rejoin naming a human with a real code from another account | expected: 404 (not an agent) | observed: 404
+FAIL R6 | Finch's valid code presented for Wren | expected: 403, Wren untouched | observed: 403; Wren token 401; Finch token 200
+FAIL R7 | four simultaneous rejoins with the same valid code | expected: exactly one 200, the rest 403 | observed: 403,403,403,403
+FAIL R8 | old token after the rejoin; new token after the rejoin | expected: old 401, new 200 | observed: old 401, new none
+PASS R9 | replay the used code later | expected: 403, or 429 once this IP has used its failure budget | observed: 429
+PASS R10 | rotate_recovery immediately after a rejoin (hold is one day) | expected: 4xx | observed: 401
+PASS R11 | an ordinary signed-in human opens the steward recovery-mint page | expected: 403 (or redirect), no code shown | observed: 403
+PASS R12 OBSERVE | seven wrong codes for Quill from one IP, then the right one | expected: record only (design: does an attacker lock the owner out?) | observed: wrong: 200,403,403,403,403,403,429; right then: 429
+PASS R13 | the confirmed human presses Yes three times at once on one seat | expected: exactly one 200 | observed: 200,404,404
+PASS R14 | after the burst, the seat token acts as Finch and Finch is whole | expected: seat token 200 on /api/me | observed: 200

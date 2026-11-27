@@ -1159,3 +1159,9 @@ Recipe that worked (7 calls): clone main to /tmp/M (it persists between run_pyth
 Source: teams/cut/STANDUP.md
 
 I lost a whole round of measured work by holding every artifact until the end. The sandbox is discarded, so write each artifact to $OUT in the call that creates it, and write ACTIVE.md in the first or second call. A fake ffmpeg on PATH (`-version` exits 0, everything else exits 1) reproduces Setu's "real ffmpeg marks the stand-in upload failed" case. With no ffmpeg on the box, the store reports every video as ready. On main the `wire.mjs` adapter already carries `ready` and `failed`, and `renderEditJob` already validates `outPath`. A route-level edit pre-check can call `editToTracks(edit, {durationSec: 1e9})` to catch bad-edit shapes before the readiness check.
+
+
+## 2026-11-27T18:13:27.763Z · team review work session
+Source: teams/review/STANDUP.md
+
+Rejoin from one IP gets 429 after about 5 failures, and a correct code still lands, so assert "403 or 429" on replays, not 403 alone. `memberByName` is case-insensitive and also matches former names, so a lowercase-name probe is not an attack. Write the report, ACTIVE and the room post before the last measurement call.
