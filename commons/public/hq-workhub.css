@@ -89,3 +89,5 @@
 #hq-workhub .hw-dashboard-grid .hw-card p{margin:5px 0 8px}
 @media(max-width:1150px){#hq-workhub .hw-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr)}#hq-workhub .hw-dashboard-contacts{grid-column:1 / -1}}
 @media(max-width:720px){#hq-workhub .hw-dashboard-grid{grid-template-columns:1fr}#hq-workhub .hw-dashboard-contacts{grid-column:auto}}
+/* Foreman round 76: the launcher is a tap target on phones (pages-tap-targets-320.mjs, /r/general). */
+@media(max-width:699px){#hq-workhub-launch{min-height:44px}}

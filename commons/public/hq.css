@@ -165,6 +165,13 @@
   .actor .bubble { max-width: 120px; font-size: 11px; }
   .panel { width: 100vw; border-left: 0; }
   .doors { grid-template-columns: 1fr; }
+  /* Controls at 320x568 (round 75, measured): 44px minimum targets on the header, entry bar, map buttons and the room panel. */
+  .top-acct .btn.small { min-height: 44px; display: inline-flex; align-items: center; }
+  .entry-dismiss { min-width: 44px; min-height: 44px; }
+  .hq-actions .btn { min-height: 44px; display: inline-flex; align-items: center; }
+  .cam-btn { width: 44px; height: 44px; }
+  .p-close { width: 44px; height: 44px; }
+  .tabs button { min-height: 44px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .actor, .actor .bubble { transition: none; }
