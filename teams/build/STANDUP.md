@@ -4774,3 +4774,24 @@ _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~484775 tokens_
 **Next:** @Setu: take the three files as one PR — `server.mjs` `2be1d02f8a3ca1b7…`, `merch-printful.mjs` `2f78c4d570ea415d…`, `merch-listings-no-client-caller.mjs` `311f3cb3e6bc8778…`. Two of them are one decision: removing the route without inverting the round-71b guard leaves a red test in CI. `merch-printful.mjs` is the one file I could not run (it boots the server; no `node_modules` here) — it needs one real boot run before merge, and it is the only place the 404 is asserted over HTTP. Then the parked follow-ups: strip comments at `market-no-dead-merch.mjs:82`; decide whether `printful.takeTask`/`forgetTask` (printful.mjs:210, :215) can go now that they have no caller.
 **Blocked:** Not blocked on the code — it is written, checked and measured file-only. Limits stated plainly: **`commons/test/merch-printful.mjs` was not run** (this runner has no `node_modules` and that test boots `commons/server.mjs`), so the new 404 case is unverified over HTTP; the 404 is nonetheless the right assertion because the catch-all at `server.mjs:2720–2722` answers unknown `/api/*` with 404 JSON. No browser, no staging, no production, no deploy. Whether production logs ever show a hit on the old route is unmeasured — the claim is "no caller in the tree", not "never called". Tier 1 touches `server.mjs`, so it needs Setu's yes before merge.
 _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~549299 tokens_
+## 2026-11-27T09:20:20.233Z · Claude (claude-sonnet-5-5)
+**Shipped:** Nothing finished this round. I ran out of steps after reading, before changing any page or saving the test. What exists:
+- `teams/build/outputs/round72-claude-door-320-green.md` is a stub. It says "in progress, nothing measured yet".
+- `door-tap-targets-320.mjs` was copied from branch `kin-build/20261127-0623-claude` into /tmp/M/commons/test/ only. That is a scratch clone that is discarded, so it is NOT saved in the repo or in my outputs.
+- No page was edited. No test was run this session. `commons/public/door.html`, `commons/public/site.css` and the test are all unchanged.
+Findings from reading (not run) that make the next session short:
+1. /door: `commons/public/door.html:18` styles `code{...}` with no wrap. Add `overflow-wrap:anywhere; word-break:break-word`.
+2. /join inputs and the select get their size from `commons/public/site.css:106` (`input, textarea, select {padding:9px 11px}`), not from `pages.mjs`. There is already a mobile block at site.css:~152 for `.door .btn`. Add a rule there: `.door input:not([type=checkbox]):not([type=radio]), .door select {min-height:44px}`. The readonly `#mcp-url` input inside `.copyrow` is covered by that rule (it was the 40 px "link" in the round-71 findings).
+3. Checkboxes: `.cx-keep` labels are in `pages.mjs` lines 97, 1066, 1092 and 1093. CSS is `commons/public/auth/auth.css:50`. The test should measure the wrapping `<label>` instead of the 18-22 px input when the input has a label. Then check the label is 44 px or more tall.
+4. Agent aside links (`agentdoor.mjs:20-27`, `aside.agent-door`): in the test's `inlineText()`, change `el.closest('p, li')` to `el.closest('p, li, aside.agent-door')`, with a one-line comment that WCAG 2.5.8 exempts links in a sentence.
+**Files written:** `teams/build/outputs/round72-claude-door-320-green.md`
+**Next:** Next Claude session: do the whole job in ONE run_python call.
+- Clone `https://github.com/cohabitation-project/workspace` (this works), then `npm ci --omit=dev`.
+- Get the test with `git fetch --depth 5 origin kin-build/20261127-0623-claude`, then `git show FETCH_HEAD:commons/test/door-tap-targets-320.mjs`. Before the call ends, save it to `commons/test/` and to `$OUT`.
+- Apply fixes 1–4 above.
+- Run `door-tap-targets-320.mjs`, `door-tap-targets.mjs` and `pages-door-links.mjs`.
+- Run a mutant: drop the `code` wrap fix and expect red.
+- Write the result file with numbers.
+@Setu: round 72 for Claude is not delivered. Please don't place the 320 test yet. It is still red on main, so it would block deploys.
+**Blocked:** Nothing external. I used up my steps: seven on setup and reading (finding that the REPO snapshot has no git remote and has to be cloned from GitHub, then locating where the CSS and markup live). I did not write the result file with numbers or update `continuity/claude/ACTIVE.md`. I have now missed that for the fourth time. The ACTIVE.md I left last session is still the current record. No staging or production check; nothing deployed.
+_Session log: teams/build/sessions/2026-11-27-claude.jsonl · ~696907 tokens_
