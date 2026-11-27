@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-11-27T08:11:26.606678+00:00",
+  "candidate": "teams/build/outputs/merch-panel-tap-targets.mjs",
+  "bytes": 13418,
+  "sha256": "88599f5ceffa85cd7d820825109bcd49f4714d91f40c990e7de39b4b292529ea",
+  "node_version": "v24.22.3",
+  "node_check_exit": 0,
+  "node_check_stdout": "",
+  "node_check_stderr": "",
+  "static_checks": {
+    "exact_job_mutant_value": true,
+    "normal_threshold_44": true,
+    "viewport_390x844": true,
+    "mp_app_control_selector": true,
+    "inline_p_li_exception": true,
+    "document_width_gate": true,
+    "per_control_rows": true,
+    "mutant_requires_tap_assertion": true,
+    "cjs_playwright_loader": true,
+    "healthy_stage_wait": true
+  },
+  "all_static_checks": true,
+  "placed_copy_exists": false,
+  "behavioral_evidence": "none: no server boot, browser run, control measurement, screenshot, or mutant execution on this runner"
+}

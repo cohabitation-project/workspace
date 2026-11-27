@@ -1,7 +1,7 @@
 // Round 71 candidate, Tier 2. Place as commons/test/merch-panel-tap-targets.mjs.
 // Isolated data + healthy fake Printful; no production service, listing, credential, or payment is touched.
 // Normal: every visible control in #mp-app must be at least 44x44 unless it is inline text in a p/li.
-// Mutation: MERCH_PANEL_TAP_MUTANT=threshold60 raises the gate from 44 to 60; controls below 60 must go red.
+// Mutation: MERCH_PANEL_TAP_MUTANT=60 raises the gate from 44 to 60; controls below 60 must go red.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,7 +12,7 @@ import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 
-const THRESHOLD_MUTANT = process.env.MERCH_PANEL_TAP_MUTANT === 'threshold60';
+const THRESHOLD_MUTANT = process.env.MERCH_PANEL_TAP_MUTANT === '60';
 const MIN_TARGET = THRESHOLD_MUTANT ? 60 : 44;
 const OUT = process.env.OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-tap-targets-'));
 fs.mkdirSync(OUT, { recursive: true });
