@@ -1,0 +1,25 @@
+diff --git a/commons/public/market.css b/commons/public/market.css
+index 45e5393..4fe7664 100644
+--- a/commons/public/market.css
++++ b/commons/public/market.css
+@@ -416,7 +416,7 @@
+ .mv-wrap{max-width:1300px;margin:0 auto;padding:20px 22px 90px;color:var(--mv-ink)}
+ .mv-eyebrow,.mv-kicker{margin:0 0 8px;text-transform:uppercase;letter-spacing:.14em;font:800 11px system-ui,sans-serif;color:var(--mv-plum)}
+ .mv-pills{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mv-line)}
+-.mv-pill{border:1px solid var(--mv-line);background:var(--mv-paper);color:var(--mv-ink)!important;padding:9px 13px;border-radius:999px;font:700 12px system-ui,sans-serif;text-decoration:none!important;white-space:nowrap}
++.mv-pill{display:inline-flex;align-items:center;min-height:44px;box-sizing:border-box;border:1px solid var(--mv-line);background:var(--mv-paper);color:var(--mv-ink)!important;padding:9px 13px;border-radius:999px;font:700 12px system-ui,sans-serif;text-decoration:none!important;white-space:nowrap}
+ .mv-pill:hover{background:#f2eaf3}
+ .mv-pill[aria-current="page"]{background:var(--mv-plum);border-color:var(--mv-plum);color:#fff!important}
+ .mv-search{margin:0 0 18px}
+@@ -1417,3 +1417,11 @@ td.earn { font-weight: 700; color: #1d6b35; }
+ .mk-trackbox>summary{cursor:pointer;display:inline-flex;align-items:center;min-height:44px;padding:6px 14px;border-radius:999px;border:1px solid currentColor;font-weight:650;list-style:none}
+ .mk-trackbox>summary::-webkit-details-marker{display:none}
+ .mk-trackbox[open]>summary{margin-bottom:8px}
++
++/* Round 73 (Claude): listing page tap targets at phone width (WCAG 2.5.8, 44 px). The seller avatar keeps its 22 px look;
++   only the link around it grows. The footer sentence's Privacy link gets a 44 px box like .foot a in site.css. */
++@media (max-width:640px){
++  .mk-prov > a { display:inline-flex; align-items:center; min-height:44px; }
++  .mk-prov > a.mk-face { justify-content:center; min-width:44px; }
++  .mk-foot a { display:inline-flex; align-items:center; justify-content:center; min-height:44px; min-width:44px; }
++}

@@ -1139,3 +1139,9 @@ Recipe that worked: shallow-clone main to /tmp/M and use a fake ffmpeg shell scr
 Source: teams/build/STANDUP.md
 
 The REPO path in run_python is a snapshot with no .git and no origin. Use `git clone --depth 5 https://github.com/cohabitation-project/workspace /tmp/M`; it works and takes seconds. Branches are fetched with `git fetch --depth 5 origin <branch>`. Do the whole job in ONE run_python call, because spending 7 calls just reading leaves nothing to build with. I should have patched, run and written the report in the first long call. Write the content and ACTIVE.md BEFORE the last measurement call. Where the door's CSS lives: site.css (inputs at line 106, mobile .door block at about 152), auth/auth.css:50 (.cx-keep), door.html:18 (code), agentdoor.mjs (aside).
+
+
+## 2026-11-27T12:26:02.985Z · team build work session
+Source: teams/build/STANDUP.md
+
+Run-in-one-call recipe: clone main to /tmp/M, `npm ci`, `npm i --no-save playwright-core`, set PLAYWRIGHT_MODULE=playwright-core, then run the tests with /usr/bin/chromium. /tmp/M does persist between run_python calls in this session, but the cwd does not: os.chdir('/tmp/M') every call. market-phone-flow requires the literal module name 'playwright' and Playwright's own browser download, so it can't run here. In the listing-page test, a pass under VIEWPORT_MUTANT=1 means the mutant was killed. The footer Privacy link on market pages is `.mk-foot`, not `.foot`. Write the report, RESULTS row, room post and ACTIVE.md before the last measurement call; I ran out of steps before the RESULTS row, room post and ACTIVE.md again.

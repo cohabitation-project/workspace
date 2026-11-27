@@ -4840,3 +4840,21 @@ _Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~475977 tokens_
 **Next:** Await Ash's decision on the `<Page> · Cohabi` title convention. Apply only if accepted; the report flags that the shared layout suffix would also change pages beyond the six mapped routes.
 **Blocked:** No technical blocker. No tests, browser, staging, production, or live behavior were checked. Main advanced during the session; the saved patch was rechecked against the later fresh clone and applied cleanly.
 _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~531254 tokens_
+## 2026-11-27T12:26:02.985Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 73 job (listing page reaches 44 px at 390, CSS only). Result `teams/build/outputs/round73-claude-listing-44.md`. CSS patch `teams/build/outputs/2026-11-27T12-25-38/listing-44.patch` (market.css only, 29 lines). Test placement diff `teams/build/outputs/2026-11-27T12-25-38/listing-44-test.patch`. That diff is `market-listing-tap-targets.mjs` with `aside.agent-door` added to the inline-link exemption, as the job asked.
+
+Measured on a clone of main 85090e4 with a booted server and Chromium:
+- **Unpatched:** red. Eight department pills are 34 px tall (not 35 as the job said). The seller avatar is 22x22, the seller name link 20.8 px, and footer Privacy 16 px.
+- **Patched, normal:** green at 390, document 390 px, in both signed-out and signed-in states.
+- **Patched, `VIEWPORT_MUTANT=1`:** killed as required (document 600 px).
+- **Patched with the pill rule dropped:** red, 8 pills at 34 px.
+
+What the fix does:
+- `.mv-pill` is inline-flex with min-height 44, at all widths.
+- Under 640 px, `.mk-prov > a` and the avatar link get a 44 px hit area.
+- Footer Privacy is not `.foot a`. It sits in `<footer class="mk-foot">` (marketpage.mjs:175), so it gets its own `.mk-foot a` rule.
+- I added one thing the job didn't ask for. The signed-in state stayed red on the Messenger bell (36 px wide) and the coin chip (34 px tall). Without a fix the test could not go green there. I scoped the fix to `.mk-page` so the feed header is unchanged.
+**Files written:** `teams/build/outputs/round73-claude-listing-44.md`, `teams/build/outputs/2026-11-27T12-24-00/market-listing-tap-targets-normal390.json`, `teams/build/outputs/2026-11-27T12-24-57/listing-44.patch`, `teams/build/outputs/2026-11-27T12-24-57/market-listing-tap-targets.mjs`, `teams/build/outputs/2026-11-27T12-25-38/listing-44-test.patch`, `teams/build/outputs/2026-11-27T12-25-38/listing-44.patch`
+**Next:** Setu: apply `listing-44.patch`, place the test, then run `market-listing-tap-targets.mjs` (normal and mutant), `market-phone-flow.mjs` and `market-departments.mjs`. Ash should look at the taller pills on desktop and the taller provider line on cards. Setu may prefer to fix the bell and coin chip at the source (feed-identity.css:203, feedv2.css:305) instead of in market.css. No RESULTS row was added and `continuity/claude/ACTIVE.md` was not rewritten this session; I ran out of steps. The next me should add both, and the report's "Not run" list is the starting point. Older open items are unchanged: Ash's yes on killtree and route-ready-409, door-return-attacks placement (t_e9c44f6f79), the Round 52 token-callsites section, and desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
+**Blocked:** Nothing blocking, but several checks did not run. `market-phone-flow.mjs` needs Playwright's own Chromium download, which this runner lacks. It fails the same way on unpatched main (a launch error, not a test result), so "still green" is not shown. `market-departments.mjs` passed 1/1, but on the first CSS version, before the signed-in header rules, and I did not rerun it. I did not look at the screenshots, did not check the maker state, and did not view a card grid on a phone. The runner has no Playwright in `node_modules`. I used `npm i --no-save playwright-core` with `PLAYWRIGHT_MODULE=playwright-core`, which changes nothing in package.json. I wrote no build-room post, since I ran out of steps.
+_Session log: teams/build/sessions/2026-11-27-claude.jsonl · ~749747 tokens_
