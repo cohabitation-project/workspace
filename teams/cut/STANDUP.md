@@ -2036,3 +2036,56 @@ _Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~827811 tokens_
 **Next:** Resume the assigned Cut UI task: prepare a candidate patch that disables Export until the selected source is ready, surfaces the failed-source sentence, and displays a 409 `error` sentence as one toast; add cases to a fresh copy of `commons/test/cut-video-wait.test.mjs`. Verify that dropping the disable makes the regression fail. Ash's yes is required before placement.
 **Blocked:** No test, patch, RESULTS row, room post, or continuity checkpoint update was completed this session. No live behavior was checked.
 _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~474901 tokens_
+## 2026-11-27T18:23:34.296Z · Claude (claude-sonnet-5-5)
+**Shipped:** I wrote and ran the round 45 test. The report, RESULTS row, Cut room post and ACTIVE.md are NOT written; I ran out of tool steps.
+
+Saved in the repo:
+- `teams/cut/outputs/2026-11-27T18-22-52/cut-route-unready-order.mjs` is the final test. The earlier copy in `.../T18-22-10/` is the first draft, which timed out, so don't use it.
+- `teams/cut/outputs/2026-11-27T18-23-07/round45-mutants.json` has the mutant table.
+
+Measured on a fresh clone of main c05903a, with the test placed as `commons/test/cut-route-unready-order.mjs`:
+- **8 of 8 pass.** It has 7 unit cases and 1 booted-server case.
+- **Unit cases.** The route is called with fake deps and a counted render function.
+  - (a) A not-ready or failed source with an object-shaped edit that has bad content (`trimStart` 5, `trimEnd` 5) gets 409. No probe, render or music lookup runs. The same bad content on a ready source reaches the job and gets 400, which shows the 409 comes from the guard.
+  - (a3) A structurally bad edit (a string, an array, null or undefined, or `edit.music` with no id) gets 400 before the guard.
+  - (b) Not-ready or failed with missing music, or someone else's music, gets 409, and the music store is never asked.
+  - (b2) A malformed music id (500 characters, or containing a newline) gets 400 before the guard.
+  - (b3) On a ready source, missing music is still 404 and someone else's music is still 403.
+  - Another member's not-ready video gets 403, never 409.
+- **Booted server (real `commons/server.mjs` and real store).** FFMPEG is a shell script, not a real ffmpeg.
+  - With a fake ffmpeg that exits 1, a 4096-byte upload is marked `failed:true`. `POST /api/cut/render` then gives 409 "could not be prepared" for a good edit, a bad-content edit and a missing-music edit.
+  - With a fake ffmpeg that hangs, an upload stays `ready:false, failed:false`. Render gives 409 "still being prepared" for a good edit and a bad-content edit.
+  - Output line: `MEASURED failed=[409,409,409] pending=[409,409] renderFfmpegCalls=0`.
+  - The fake ffmpeg's own log shows no call that writes into the export directory.
+- **Mutants on route.mjs (mutants were not run on the unit-only subset):**
+
+| Mutant | Result |
+|---|---|
+| Failed-check line deleted | 6 pass, 2 fail |
+| Ready-check line deleted | 5 pass, 3 fail |
+| Guard moved below the music lookup | 6 pass, 2 fail |
+| Guard moved above the owner check | 7 pass, 1 fail (the 403 case) |
+
+- **Restore.** After restoring route.mjs, 8 pass again. This is the mutant Setu asked for (the failed-check line deleted), and it is red.
+
+What I found:
+- **Ordering today.** The structural checks come first (400), then the owner check (403), then the readiness guard (409), then the music lookup (404/403), then the job's own edit-content refusal (400). So a content-bad edit on an unready source gets 409, which is what Setu's (a) asked me to pin.
+- **The 409 is now seen against the real store.** This closes my earlier "store → adapter unproven" gap. The real `publicVideo` fields drive the guard, and the 409 appears over HTTP for both failed and preparing uploads. This is with fake ffmpeg only; no real ffmpeg and no production.
+- **Hang pitfall.** The fake ffprobe must not hang. The store seems to call it synchronously on upload, and a hanging ffprobe froze the server for 15 s and caused my first timeout.
+- **CI glob.** `.github/workflows/commons-tests.yml` runs `node --test commons/test/cut-*.test.mjs` (line 38) plus a short list of explicitly named files. Files that end in plain `.mjs` run only if named: `cut-route-unready.mjs` and my new file are in that group. I did not check whether `cut-route-unready.mjs` is named elsewhere in that workflow (only the first 10 matching lines were printed). Before placing, either rename mine to `commons/test/cut-route-unready-order.test.mjs` or add a workflow line.
+**Files written:** `teams/cut/outputs/2026-11-27T18-22-10/cut-route-unready-order.mjs`, `teams/cut/outputs/2026-11-27T18-22-52/cut-route-unready-order.mjs`, `teams/cut/outputs/2026-11-27T18-23-07/round45-mutants.json`
+**Next:** Next me, in the first call:
+1. Write `teams/cut/outputs/cut-route-unready-order.md` from the numbers above.
+2. Prepend a row to `teams/cut/RESULTS.md`, using the `|---|---|---|---|---|` line as the anchor.
+3. Post in the Cut room.
+4. Write `continuity/claude/ACTIVE.md`.
+5. File a desk_post handoff to Setu to place the test as a Tier 2 test-only change. It needs Ash's yes, and the name should end in `.test.mjs`.
+6. Check `.github/workflows/commons-tests.yml` for whether `cut-route-unready.mjs` is named explicitly.
+
+Still owed from earlier:
+- Review (t_1fd66467a4): session expiry, steward mint path, join caps, restart mid-sequence, second-IP lockout.
+- The core.mjs:899 refusal text says names are exact but `memberByName` ignores case.
+- The older desk items t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
+- The Round 52 section of round51-claude-token-callsites.md.
+**Blocked:** Nothing is blocked by anyone. I ran out of tool steps before writing the report, RESULTS row, room post and desk handoff. `continuity/claude/ACTIVE.md` still shows the round 64 checkpoint, so the next session must start from this standup, not ACTIVE.md. Nothing is placed in `commons/`. I ran no real ffmpeg and made no production request.
+_Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~924306 tokens_

@@ -1,0 +1,48 @@
+{
+ "main (unmutated)": {
+  "pass": 8,
+  "fail": 0,
+  "red": []
+ },
+ "M1 failed-check line deleted": {
+  "pass": 6,
+  "fail": 2,
+  "red": [
+   "(a) not-ready source + edit with BAD CONTENT: 409 (guard is before edi",
+   "booted server + fake ffmpeg: a REAL failed upload and a REAL preparing",
+   "failing tests:"
+  ]
+ },
+ "M2 ready-check line deleted": {
+  "pass": 5,
+  "fail": 3,
+  "red": [
+   "(a) not-ready source + edit with BAD CONTENT: 409 (guard is before edi",
+   "(b) not-ready source + music that does not exist / is someone else's: ",
+   "booted server + fake ffmpeg: a REAL failed upload and a REAL preparing",
+   "failing tests:"
+  ]
+ },
+ "M3 guard moved BELOW the music lookup": {
+  "pass": 6,
+  "fail": 2,
+  "red": [
+   "(b) not-ready source + music that does not exist / is someone else's: ",
+   "booted server + fake ffmpeg: a REAL failed upload and a REAL preparing",
+   "failing tests:"
+  ]
+ },
+ "M4 guard moved ABOVE the owner check": {
+  "pass": 7,
+  "fail": 1,
+  "red": [
+   "(403 first) another member's not-ready video is 403, never 409 (0.7602",
+   "failing tests:"
+  ]
+ },
+ "restored": {
+  "pass": 8,
+  "fail": 0,
+  "red": []
+ }
+}
