@@ -1,5 +1,8 @@
 /* Non-modal, keyboard-reachable workspace dock for Headquarters. */
 #hq-workhub{position:fixed;z-index:980;right:18px;bottom:18px;font:14px/1.4 system-ui,sans-serif;color:#eaf6f4}
+/* Phones: clear the phone bar and the feedback button, same rule feedback.css uses (bottom:84px at <=699px).
+   Geoffrey, 2026-11-27: the launcher sat on top of the feedback button. */
+@media(max-width:699px){#hq-workhub{bottom:84px;right:10px}}
 #hq-workhub-launch{border:1px solid #58cabd;background:#163b46;color:#fff;border-radius:24px;padding:12px 18px;box-shadow:0 7px 26px #0007;cursor:pointer;font-weight:700}
 #hq-workhub-panel{position:absolute;right:0;bottom:55px;width:min(460px,calc(100vw - 24px));height:min(650px,calc(100dvh - 96px));overflow:hidden;display:flex;flex-direction:column;background:#10262f;border:1px solid #5b9f9c;border-radius:16px;box-shadow:0 18px 50px #000a}
 #hq-workhub-panel[hidden]{display:none}
