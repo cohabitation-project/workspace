@@ -71,19 +71,17 @@ test('a maker turns their art into a Printful product with a real mockup', async
     assert.equal(done.j.status, 'completed', JSON.stringify(done.j));
     const pic = await fetch(`${B}${done.j.url}`); assert.equal(pic.status, 200); assert.match(pic.headers.get('content-type') || '', /^image\//);
 
-    // Publishing: below the base cost is refused; at or above it makes a listing linked to the Printful product.
-    const listing = { title: 'Sunflower tee', text: 'My sunflower drawing on a soft black tee.', tags: 'sunflower', license: 'all-rights', made_by: 'human', rights: true, mockup: mk.j.task };
-    const low = await call('/api/merch/listings', 'POST', { ...listing, price: { amount: 10 } }, maker);
-    assert.equal(low.r.status, 400); assert.match(low.j.error, /12\.95/);
-    assert.equal((await call('/api/merch/listings', 'POST', { ...listing, price: { amount: 30 } }, other)).r.status, 404, "someone else can't publish your mockup");
-    const ok = await call('/api/merch/listings', 'POST', { ...listing, price: { amount: 25 } }, maker);
-    assert.equal(ok.r.status, 201, JSON.stringify(ok.j));
-    assert.equal(ok.j.category, 'art'); assert.equal(ok.j.price.amount, 25);
-    assert.deepEqual(ok.j.images.map((x) => x.id || x), [done.j.image, art.j.id], 'the mockup leads, the art follows');
-    const fl = await call(`/api/market/listings/${ok.j.id}/fulfillment`, 'GET', null, maker);
-    assert.equal(fl.j.link.provider, 'printful'); assert.equal(fl.j.link.product_id, '71'); assert.deepEqual(fl.j.link.variant_ids, ['4012']);
-    assert.equal(fl.j.link.design.art, art.j.id); assert.equal(fl.j.link.design.position.width, 900);
-    assert.equal((await call('/api/merch/listings', 'POST', { ...listing, price: { amount: 25 } }, maker)).r.status, 404, 'a mockup publishes once');
+    // Publishing is retired (round 72). A listing made from a mockup was only ever created by this file: round 71
+    // measured that nothing under commons/public reaches any /api/merch/* route, and /api/market/listings is how a
+    // listing is made. So the route is gone and this asserts the hole is closed, not that a page can still use it.
+    // The price floor (`amount >= t.base`) and the withdraw-on-failed-link path went with it; they are not covered
+    // anywhere now, and this comment says so rather than letting a reader think they are tested.
+    const gone = await call('/api/merch/listings', 'POST', { title: 'Sunflower tee', price: { amount: 25 }, mockup: mk.j.task }, maker);
+    assert.equal(gone.r.status, 404, 'POST /api/merch/listings is retired: the fall-through answers 404, so a re-added route reddens this test');
+    assert.match(String(gone.j.error || ''), /not found/, 'the 404 is the router\'s own, not a handler refusing a price');
+    // The routes that stay are still there: the mockup read above is the proof they work.
+    const all = await call('/api/market/listings');
+    assert.equal(all.j.listings.filter((l) => l.title === 'Sunflower tee').length, 0, 'that POST created no listing before it 404ed');
 
     // Printful's limit: a few mockups a minute for the whole market.
     await call('/api/merch/mockups', 'POST', { product: 'tee', variant: 4012, art: art.j.id }, maker);
