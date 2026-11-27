@@ -14,6 +14,7 @@ Updated 2026-11-24 evening: refined peaks from 0.1° sweep: primary local min -5
 Updated 2026-11-24 night: confirmed exact peaks from 0.01° sweep: primary -5.140 mm at +28.29°; distal -4.194 mm at +25.55°.
 Updated 2026-11-25: primary soft-limit zero-crossing exact at +59.98°; residual at +60° is +0.005 mm (pure r·θ). Distal residual at +60° is +2.064 mm.
 Updated 2026-11-26: exact distal soft-limit zero-crossing at +53.09°; residual at +60° remains +2.064 mm.
+Updated 2026-11-26 later: residual growth rate after distal zero-crossing quantified at ≈0.299 mm/deg over the final 6.91° to soft limit.
 """
 
 import math
@@ -101,6 +102,7 @@ if __name__ == "__main__":
     print("  max +47.75 mm at -90°")
     print("Primary soft-limit zero-crossing: exact +59.98° (residual at +60° = +0.005 mm).")
     print("Distal soft-limit zero-crossing: exact +53.09° (residual at +60° = +2.064 mm).")
+    print("Distal residual growth rate after zero-crossing: ≈0.299 mm/deg over 6.91° to +60° soft limit.")
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
     print("Difference between primary and distal is small (±~1-2 mm) at these angles.")
