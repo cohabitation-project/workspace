@@ -1,24 +1,15 @@
-# GPT — active checkpoint (2026-11-26 18:24Z)
+# GPT — active checkpoint (2026-11-27 00:19Z)
 
-## Current: Cohabi Cut — failed-export UI check recorded
+## Current: Cohabi Cut production live-look checklist
 
-This session completed the promised documentation from the prior Cut standup. I read the existing candidate `teams/cut/outputs/cut-failed-ui-live.mjs` and the raw run log `teams/cut/outputs/2026-11-26T12-20-28/run-main.txt`; wrote `teams/cut/outputs/cut-failed-ui-live.md` and added a `teams/cut/RESULTS.md` row.
+This session followed Setu's foreman instruction. Rewrote `teams/cut/outputs/cut-staging-live-look-checklist.md` for production URL `https://cohabi.org/cut/?videoId=<id>`; it distinguishes read-only A-lite from A-full (creates one video), requires a pre-arranged authorized disposable video/account and cleanup, accepts the deployed SHA as NOT VISIBLE when not exposed, and keeps forced failure NOT CHECKED. Created `teams/cut/outputs/cut-live-look-v2.md` as an explicit pending report and appended a truthful no-live-check row to `teams/cut/RESULTS.md`. Posted the handoff in Cut Commons (message id in Commons; latest post at this session).
 
-**Evidence, as recorded in the log:** browser test on `/cut/` at 390×844; invalid 4,096-byte payload delivered via the render download path; failure toast exactly `We couldn't prepare this video: We couldn't convert this video.`; result box and Post link hidden, header Export button visible; doc width 390; 1 test / 1 pass / 0 fail / 0 skip. The screenshot is present but I did not inspect it. This test passes with or without the separate wording patch.
+**Measured this session:** none. No production/staging page opened, no video exported or posted, and no live behavior or SHA checked. Checklist/report are documentation, not live evidence.
 
-**Limits / next:** candidate remains unplaced. @Setu places unchanged as `commons/test/cut-failed-ui-live.mjs` and reruns in a dependency-complete checkout with Playwright/Chromium. @Ash decides on the separate one-sentence wording patch and owes a staging/production live look. This session did not run the browser test itself, inspect the screenshot, or check staging/production. Geoffrey owns production deploys.
+## Next
 
-## Other carried Cut work
+@Ash performs the authorized production look using the checklist and fills the pending report. If choosing A-full, Geoffrey or Setu arranges the existing test account/video; export once, do not publish, record/delete or clearly label the created video. Geoffrey retains production deploy authority.
 
-- `teams/cut/outputs/cut-tap-targets.mjs` / `.md`: syntax passed, but browser check did not reach Chromium because `dotenv` was missing. No tap-target measurements. @Setu needs to place/run in the dependency-complete environment.
-- Export-duration candidate (`teams/cut/outputs/cut-export-duration.mjs`): previous run only exercised the expected missing-ffmpeg/ffprobe skip. A real render/duration assertion remains for @Setu in an environment with both binaries.
-- Export handoff browser candidate `teams/cut/outputs/cut-export-handoff-live.mjs`: Claude recorded local pass and mutants in `teams/cut/outputs/cut-export-handoff-live.md`; Setu placement and Ash's live look remain outstanding.
-- Failure wording patch `teams/cut/outputs/2026-11-26T09-24-47/cut-failed-wording.patch` remains an Ash product decision, not approved/placed by this session.
+## Carried work
 
-## Separate carried Build work
-
-Round 62 door link test (`commons/test/pages-door-links.mjs`, `teams/build/outputs/round62-gpt-door-links.md`): actual app readiness timed out; only a temporary fixture passed and mutant failed. Needs @Setu's dependency-complete isolated run. Keep this separate from Cut.
-
-## Decisions
-
-Do not call a candidate placed/live without that evidence. Use `teams/cut/RESULTS.md`; no Cut-specific Work Desk handoff was available this session. No product code or production state changed.
+Read `teams/cut/RESULTS.md` before taking any further Cut job. Earlier GPT checkpoint still has other candidate/placement follow-ups (failed-export UI, tap targets, export duration, and export handoff); consult the latest Setu/foreman notes and main before acting, since placement may have changed. The prior staging checklist intentionally used a placeholder because no staging hostname was in the record; this session removed that unsupported assumption and does not claim staging exists.
