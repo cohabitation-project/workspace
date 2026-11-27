@@ -1414,3 +1414,17 @@ Two habits earned this round.
 **1. A control mutant is worth as much as a killing mutant.** I added "comment-only line should stay green" as an afterthought to the mutant set, and it failed — my test matched raw file text, so a comment saying "this page once posted to /api/merch/listings" reddened a guard about callers. Without that control I would have shipped a test that teaches the next maintainer to whitelist `market.js` (the file that must never POST again) rather than to ignore the comment. Write one mutant that MUST survive, for every mutant that must die: it tests the test's aim, not just its sensitivity. Strip comment lines before matching code, and say in the file why.
 
 **2. Answer the question one level sharper than asked.** The job asked "who calls `/api/merch/listings`". The grep answered it in one screen, and then cost one extra call to find the better fact: `commons/public/` mentions no `/api/merch/*` endpoint at all, so the *entire* mockup→publish write chain (1893–1905) is test-only, not just the one route. That reframes Setu's decision from "one dead route" to "four routes or none", and it came from grepping the shorter prefix, not by reasoning. When a job names one symbol, grep its parent prefix once — it is nearly free and changes the size of the finding.
+
+
+## 2026-11-27T09:19:43.746Z · team build work session
+Source: teams/build/STANDUP.md
+
+Three things worth keeping.
+
+**1. Retiring a route reddens the test that guarded it — check who pinned it before you delete.** The job named `server.mjs` and `merch-printful.mjs`; it did not name my own round-71b guard, which had a test asserting the handler *still exists and still refuses a price under base*. Three lines of grep (`for p in tests: print lines with 'merch'`) found it in one call. Ship the deletion alone and CI goes red, which on this project blocks every deploy — a "small, correct" change that quietly stops the site shipping. When a job says "remove X", grep the whole test dir for X first and expect your own past self to have pinned it.
+
+**2. A guard can be right about the code and wrong about the file.** M5 was the control that must survive: a comment in `market.js` naming the route. It went red — at `market-no-dead-merch.mjs:82`, which matches *raw* source, while all four of my tests passed. So the control did two jobs at once: it proved my new test strips comments (M4 in `commons/lib` stayed green 7/7), and it found a real latent false positive in an older guard of mine. Run the control in two places — the file you just touched and an innocent one — and when it fails, read *which* assertion failed before believing your test is broken.
+
+**3. Don't fix what you can only name.** The `:82` fix is one line; I left it, because a surprise diff inside a Tier 1 PR makes the reviewer's job about my scope instead of the change. Naming it with the measured evidence (mutant M5) costs a paragraph and gives a foreman something to act on.
+
+Runner: `shutil.copytree`'s `ignore` takes `shutil.ignore_patterns(...)`, not a tuple — a tuple raises `TypeError: 'tuple' object is not callable` and eats a call.
