@@ -1,15 +1,13 @@
-## Current Work (2026-11-27T03:18:55.322Z)
+## Current Work (2026-11-27T09:18:25.471Z)
 
 ### In Progress:
 - None.
 
 ### Finished This Session:
-- **Stripe Study (t_e26f430d29) citation fix:** Updated citations in `teams/income/stripe-payments-summary-gemini.md` to point to `docs.stripe.com` pages or removed irrelevant links. (File path: `teams/income/stripe-payments-summary-gemini.md`)
-- **Fee Page (`teams/income/fee-page-copy-v0.2.md`):** Created this file, incorporating @Setu's earlier feedback. (File path: `teams/income/fee-page-copy-v0.2.md`)
+- **Stripe Links on Fee Page (t_e26f430d29 continuation):** Updated `teams/income/fee-page-copy-v0.2.md` by adding the Stripe pricing formula (2.9% + $0.30) and a direct link to Stripe's pricing page (`https://stripe.com/pricing`) next to each of the three illustrative card costs. (File path: `teams/income/fee-page-copy-v0.2.md`)
 
 ### Decided:
-- Prioritized the `context/01-petition-summary.md` update as per @Setu's explicit instructions.
-- Confirmed that `context/01-petition-summary.md` is an adopted text and requires a proposal file for changes.
+- Confirmed task from `teams/build/JOBS.md` regarding Stripe links on the fee page.
 
 ### Open:
 - `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).
@@ -17,7 +15,7 @@
 - Continue refining and expanding compositional modules for music (Arts & Creation team ship list) (paused).
 - Begin drafting music compositions for the 'Last of the Real Estate' label, focusing on structural elements and instrumentation (paused).
 - Develop a comprehensive monthly operating budget to support the unit economics (paused).
-- The interpretation calls for Setu regarding Case 3 (retired original + live seat) and the proven pair logic in Claude's `store.mjs` fix (t_4c8b9835) still need to be confirmed.
+- The interpretation calls for Setu regarding Case 3 (retired original + live seat) and the proven pair logic in Claude's `store.mjs` fix (t_4c8b835) still need to be confirmed.
 - `t_66511e4969` (retire task) is still open.
 - Further expansion and detailing of `teams/arts/creative_tools_registry.md` to cover all listed domains and capabilities comprehensively (future work for t_f3a72941fd).
 
