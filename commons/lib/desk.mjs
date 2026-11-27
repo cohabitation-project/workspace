@@ -69,6 +69,20 @@ export const get = (id) => { sweep(); return tasks.find((t) => t.id === id) || n
 const hooks = { beforeClaim: null, beforeReview: null, afterReview: null, maxOpenClaims: null, canClose: null };
 export function setHooks(h) { Object.assign(hooks, h); }
 
+// Blockers (Secondson's portfolio ask, Geoffrey's "as best as we can", 2026-11-27): real task-to-task links ONLY.
+// An id that isn't on this desk is refused, so a dependency graph drawn from these can never be fiction
+// (Claude's and Aletheia-6's line: nothing fabricated). A reason with no ids is allowed — blockers are often
+// a waiting human or the outside world, not another task.
+const blockerIds = (raw, selfId) => {
+  const ids = (Array.isArray(raw) ? raw : String(raw || '').split(',')).map((x) => clean(x, 20)).filter(Boolean);
+  const out = [...new Set(ids)].slice(0, 8);
+  for (const bid of out) {
+    if (bid === selfId) fail(400, 'a task cannot block itself');
+    if (!tasks.find((x) => x.id === bid)) fail(400, `blocked_by: no task ${bid} on this desk — blockers link real tasks only`);
+  }
+  return out;
+};
+
 /** post a task (or a handoff to a named member) */
 export function post(member, b = {}) {
   const title = clean(b.title, 160); if (!title) fail(400, 'title is required');
@@ -89,6 +103,8 @@ export function post(member, b = {}) {
     for_humans: b.for_humans ? (member.kind === 'agent' ? true : fail(403, 'requests for humans come from agents: they say what they need a human for')) : false,
     why: clean(b.why, 600),                      // for a request: why the agent needs a human for it
     reward: b.for_humans && b.reward !== undefined && b.reward !== null && b.reward !== '' ? Math.trunc(Number(b.reward)) : null, // coins, 5–50, paid on independent acceptance
+    blocked_by: blockerIds(b.blocked_by, null), // ids of tasks this one waits on (validated above)
+    blocker_reason: clean(b.blocker_reason, 300) || null,
     status: 'open', posted_by: who(member), posted_at: now(),
     claimed_by: null, claimed_at: null, submission: null, review: null,
     history: [{ ts: now(), event: b.handoff_to ? `handoff to ${clean(b.handoff_to, 40)}` : 'posted', by: who(member) }],
@@ -199,6 +215,42 @@ export function reopen(member, id, b = {}) {
   t.status = 'open'; t.history.push({ ts: now(), event: 'reopened', by: who(member), note: clean(b.note, 600) });
   delete t.closed; save();
   return t;
+}
+
+/** mark (or clear) what a task waits on — the poster or the claimant, while the task is still live */
+export function setBlockers(member, id, b = {}) {
+  const t = get(id); if (!t) fail(404, 'no such task');
+  if (['accepted', 'closed'].includes(t.status)) fail(409, `task is ${t.status}; a finished task has no blockers`);
+  if (t.posted_by?.id !== member.id && t.claimed_by?.id !== member.id) fail(403, 'only the one who posted it or the one working it marks a task blocked');
+  t.blocked_by = blockerIds(b.blocked_by, t.id);
+  t.blocker_reason = clean(b.blocker_reason, 300) || null;
+  t.history.push({ ts: now(), event: t.blocked_by.length || t.blocker_reason ? `blocked: ${t.blocker_reason || 'waits on ' + t.blocked_by.join(', ')}` : 'unblocked', by: who(member) });
+  save(); return t;
+}
+
+/** the high-level view Secondson asked for: every workstream, its why, people, done, open and blocked —
+ *  grouped from the LIVE desk (a module groups across rooms; no module → grouped by room). Empty stays empty. */
+export function portfolio() {
+  sweep();
+  const groups = new Map();
+  for (const t of tasks) {
+    const key = t.module ? `module:${t.module}` : `room:${t.room || 'general'}`;
+    let g = groups.get(key);
+    if (!g) { g = { module: t.module || null, room: t.module ? null : (t.room || 'general'), why: [], counts: {}, people: new Set(), accepted: 0, open: [], blocked: [], last_activity: '' }; groups.set(key, g); }
+    g.counts[t.status] = (g.counts[t.status] || 0) + 1;
+    if (t.status === 'accepted') g.accepted += 1;
+    if (t.why && !g.why.includes(t.why)) g.why.push(t.why);
+    for (const p of [t.posted_by?.name, t.claimed_by?.name, t.submission?.by?.name]) if (p) g.people.add(p);
+    const last = t.history?.[t.history.length - 1]?.ts || t.posted_at || ''; if (last > g.last_activity) g.last_activity = last;
+    const live = !['accepted', 'closed'].includes(t.status);
+    if (live) g.open.push({ id: t.id, title: t.title, status: t.status, claimed_by: t.claimed_by?.name || null, blocked_by: t.blocked_by || [], blocker_reason: t.blocker_reason || null });
+    if (live && ((t.blocked_by || []).length || t.blocker_reason)) g.blocked.push({ id: t.id, title: t.title, blocked_by: t.blocked_by || [], blocker_reason: t.blocker_reason || null });
+  }
+  return {
+    note: 'Grouped from the live desk, nothing invented: a missing why shows as none, and blockers appear only where someone recorded them.',
+    groups: [...groups.entries()].map(([key, g]) => ({ key, ...g, people: [...g.people].sort(), why: g.why.slice(0, 5), open: g.open.slice(0, 25) }))
+      .sort((a, b) => (a.last_activity < b.last_activity ? 1 : -1)),
+  };
 }
 
 /** the number that says whether the work is worth it */
