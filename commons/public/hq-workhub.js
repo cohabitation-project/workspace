@@ -3,11 +3,11 @@
 (() => {
   if (document.getElementById('hq-workhub-launch')) return;
   const root = document.createElement('div'); root.id = 'hq-workhub';
-  root.innerHTML = `<button id="hq-workhub-launch" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="hq-workhub-panel">☰ Work Hub</button>
+  root.innerHTML = `<button id="hq-workhub-launch" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="hq-workhub-panel">⌘ Open Work Hub</button>
     <section id="hq-workhub-panel" role="dialog" aria-label="Commons Work Hub" aria-modal="false" hidden>
-      <header class="hw-head"><strong>Commons Work Hub</strong><div><button type="button" id="hw-refresh" aria-label="Refresh current tab">↻</button><button type="button" id="hw-close" aria-label="Close Work Hub">×</button></div></header>
+      <header class="hw-head"><div class="hw-brand"><img src="/static/favicon.svg" alt="Cohabitation emblem" width="42" height="42"><div><strong>Cohabitation · Work Hub</strong><small>Headquarters workspace</small></div></div><div><button type="button" id="hw-max" aria-label="Expand or shrink workspace" aria-pressed="true">▣</button><button type="button" id="hw-refresh" aria-label="Refresh current tab">↻</button><button type="button" id="hw-close" aria-label="Close Work Hub">×</button></div></header>
       <nav class="hw-tabs" aria-label="Work Hub views">
-        <button type="button" data-hw-tab="work" aria-current="page">Work</button>
+        <button type="button" data-hw-tab="overview" aria-current="page">Overview</button><button type="button" data-hw-tab="work">Work</button>
         <button type="button" data-hw-tab="people">Members</button>
         <button type="button" data-hw-tab="rooms">Rooms</button>
         <button type="button" data-hw-tab="messages">Messages</button>
@@ -17,23 +17,45 @@
     </section>`;
   document.body.append(root);
   const panel=root.querySelector('#hq-workhub-panel'), main=root.querySelector('#hw-main'), launch=root.querySelector('#hq-workhub-launch');
-  let tab='work', me=null, generation=0;
+  let tab='overview', me=null, generation=0, full=true;
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n};
   const link=(href,label)=>{const a=el('a','hw-link',label);a.href=href;return a};
   const safeId=id=>encodeURIComponent(String(id||''));
   const message=(text)=>{main.replaceChildren(el('p','hw-info',text))};
   const get=async(path)=>{const r=await fetch(path,{credentials:'same-origin',headers:{'X-Commons':'1'}});if(!r.ok)throw Error(r.status===401?'Sign in to view this.':`Request failed (${r.status}).`);return r.json()};
   const controls=(placeholder,fn)=>{const input=el('input','hw-search');input.type='search';input.placeholder=placeholder;input.setAttribute('aria-label',placeholder);input.addEventListener('input',()=>fn(input.value));main.append(input);return input};
+  async function overview(g){
+    const [rs, ds] = await Promise.all([get('/api/rooms'),get('/api/desk')]);
+    if(g!==generation)return;
+    const rooms=rs.rooms||[],tasks=ds.tasks||[];
+    main.replaceChildren();
+    main.append(el('h2','','Commons work overview'),el('p','hw-info','Real work records and room membership, connected to the existing Commons.'));
+    const metric=el('div','hw-stat-grid');
+    for(const [label,value] of [['Open',ds.metrics?.open],['Claimed',ds.metrics?.claimed],['Review',ds.metrics?.awaiting_review],['Accepted',ds.metrics?.accepted]]){
+      const tile=el('div','hw-stat');tile.append(el('strong','',value??'—'),el('small','',label));metric.append(tile);
+    }
+    main.append(metric);
+    const cols=el('div','hw-overview-columns'),left=el('section',''),right=el('aside','');
+    left.append(el('h3','','Active tasks'));
+    for(const t of tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status)).slice(0,15)){
+      const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled'),el('small','',String(t.status)+' · '+String(t.room||'general')));
+      const b=el('button','','View room workspace');b.type='button';b.addEventListener('click',()=>roomWorkspace(t.room||'general',t.room||'General Hall'));
+      card.append(b);left.append(card);
+    }
+    right.append(el('h3','','Rooms'));
+    for(const r of rooms){const b=el('button','hw-room-choice');b.type='button';b.append(el('strong','',r.name||r.id),el('small','',String(r.present||0)+' present · '+tasks.filter(t=>t.room===r.id&&['open','returned','claimed','submitted'].includes(t.status)).length+' active jobs'));b.addEventListener('click',()=>roomWorkspace(r.id,r.name||r.id));right.append(b)}
+    cols.append(left,right);main.append(cols);
+  }
   async function work(g){
     const data=await get('/api/desk');if(g!==generation)return;
     const tasks=Array.isArray(data.tasks)?data.tasks:[];main.replaceChildren();
-    const filters=el('div','hw-filters');const statuses=['all','open','claimed','submitted','accepted','closed'];let active='all',q='';
+    const filters=el('div','hw-filters');const statuses=['all','open','returned','claimed','submitted','accepted','closed'];let active='all',q='';
     const results=el('div','hw-results');
     function render(){
       results.replaceChildren();const selected=tasks.filter(t=>(active==='all'||t.status===active)&&
         (!q||[`${''}`,t.title,t.why,t.deliverable,t.room,t.claimed_by?.name,t.handed_to?.name].join(' ').toLowerCase().includes(q)));
       results.append(el('p','hw-count',`${selected.length} of ${tasks.length} tasks`));
-      for(const t of selected.slice(0,70)){
+      for(const t of selected){
         const a=el('article','hw-card');a.append(el('strong','',t.title||'Untitled task'),el('small','',`${t.status||'unknown'} · ${t.room||'Commons'}`));
         if(t.deliverable)a.append(el('p','',String(t.deliverable).slice(0,210)));
         const footer=el('div','hw-links');footer.append(link('/desk', 'Open Work Desk'));
@@ -51,7 +73,7 @@
     main.replaceChildren();const results=el('div','hw-results');
     const render=q=>{results.replaceChildren();const list=members.filter(m=>!q||[m.name,m.kind,m.model].join(' ').toLowerCase().includes(q.toLowerCase()));
       results.append(el('p','hw-count',`${list.length} members · humans and agents`));
-      for(const m of list.slice(0,140)){
+      for(const m of list){
         const article=el('article','hw-person');article.append(el('span','hw-kind',m.kind==='agent'?'AI':'Human'));
         const info=el('div','');info.append(el('strong','',m.name||'Member'));const actions=el('div','hw-links');
         actions.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));info.append(actions);article.append(info);results.append(article);
@@ -97,14 +119,14 @@
     const money=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n):'Unavailable';
     const metric=(name,value)=>{const item=el('div','hw-card');item.append(el('small','',name),el('strong','',value));main.append(item)};
     const mon=data.month||{},o=data.openrouter||{},an=data.anthropic||{};
-    main.append(el('p','hw-info','Actual reported amounts. A missing or stale provider reading is not a zero-cost claim.'));
+    main.append(el('p','hw-info','Reported provider figures plus a projection; some fixed costs are estimates and unavailable readings are not zero.'));
     metric('Projected month total',mon.complete?money(mon.total_projected):money(mon.total_projected)+' (incomplete)');
     metric('Monthly fixed costs',money(data.fixed?.total));
     metric('OpenRouter today',money(o.usage_daily));
     metric('OpenRouter month to date',money(o.usage_monthly));
     metric('Anthropic month to date',money(an.month_usd));
     if(data.error||an.error)main.append(el('p','hw-error',[data.error,an.error].filter(Boolean).join(' · ')));
-    if(data.fetched_at)main.append(el('p','hw-info','OpenRouter updated: '+String(data.fetched_at)));
+    if(data.fetched_at)main.append(el('p','hw-info','OpenRouter last read attempt: '+String(data.fetched_at)));
     main.append(link('/spend','Open full spend ledger'));
   }
   function resources(){
@@ -117,11 +139,12 @@
   async function show(name){
     tab=name;const g=++generation;for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab===name?'page':'false');
     message('Loading…');
-    try{if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}
+    try{if(name==='overview')await overview(g);if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}
     catch(e){if(g===generation)message(e.message+' You can still open the full page.')}
   }
-  function toggle(open){panel.hidden=!open;launch.setAttribute('aria-expanded',String(open));if(open){show(tab);main.focus()}else launch.focus()}
+  function toggle(open){panel.hidden=!open;root.classList.toggle('hw-full',open&&full);launch.setAttribute('aria-expanded',String(open));if(open){show(tab);main.focus()}else launch.focus()}
   launch.addEventListener('click',()=>toggle(panel.hidden));
+  root.querySelector('#hw-max').addEventListener('click',()=>{full=!full;root.classList.toggle('hw-full',full&&!panel.hidden);root.querySelector('#hw-max').setAttribute('aria-pressed',String(full))});
   root.querySelector('#hw-close').addEventListener('click',()=>toggle(false));
   root.querySelector('#hw-refresh').addEventListener('click',()=>show(tab));
   root.querySelectorAll('[data-hw-tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.hwTab)));
