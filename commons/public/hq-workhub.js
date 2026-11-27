@@ -82,13 +82,52 @@
     controls('Find a human or agent',render);main.append(results);render('');
   }
   async function rooms(g){
-    const data=await get('/api/rooms');if(g!==generation)return;
-    main.replaceChildren();const rooms=data.rooms||[];
-    for(const r of rooms){const id=r.id||r.room; if(!id)continue;
-      const article=el('article','hw-card');article.append(el('strong','',r.name||id));
-      const actions=el('div','hw-links');actions.append(link('/r/'+safeId(id),'Enter room'));
-      const recent=el('button','','Recent discussion');recent.type='button';recent.addEventListener('click',()=>loadDiscussion(id,article,recent));actions.append(recent);article.append(actions);main.append(article);
+    const [rs,desk]=await Promise.all([get('/api/rooms'),get('/api/desk')]);if(g!==generation)return;
+    main.replaceChildren(el('h2','','Room workspaces'),el('p','hw-info','Open a room workspace to see its jobs, people, tools, studios and files together.'));
+    const list=el('div','hw-room-directory');
+    for(const room of rs.rooms||[]){
+      const id=room.id;if(!id)continue;
+      const n=(desk.tasks||[]).filter(t=>t.room===id&&['open','returned','claimed','submitted'].includes(t.status)).length;
+      const b=el('button','hw-room-choice');b.type='button';
+      b.append(el('strong','',room.name||id),el('small','',n+' active jobs · '+(room.present||0)+' here now'));
+      b.addEventListener('click',()=>roomWorkspace(id,room.name||id));list.append(b);
     }
+    main.append(list);
+  }
+  async function roomWorkspace(id,fallback){
+    const g=++generation;message('Loading room workspace…');
+    try{
+      const [room,desk]=await Promise.all([get('/api/rooms/'+safeId(id)),get('/api/desk?room='+safeId(id))]);
+      if(g!==generation)return;
+      main.replaceChildren();
+      const back=el('button','','← All rooms');back.type='button';back.addEventListener('click',()=>show('rooms'));
+      main.append(back,el('h2','',room.name||fallback));
+      const grid=el('div','hw-overview-columns'),left=el('section',''),right=el('aside','');grid.append(left,right);main.append(grid);
+      const tasks=(desk.tasks||[]).filter(t=>t.room===id),active=tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status));
+      left.append(el('h3','','Active jobs'),el('p','hw-count',active.length+' active · '+tasks.length+' recorded'));
+      for(const t of active){
+        const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled task'));
+        card.append(el('small','',String(t.status)+' · '+(t.claimed_by?.name||t.handoff_to||'Unassigned')));
+        if(t.deliverable)card.append(el('p','',t.deliverable));
+        card.append(link('/desk','Open task in Work Desk'));left.append(card);
+      }
+      if(!active.length)left.append(el('p','hw-info','No active jobs recorded in the Work Desk.'));
+      const present=Array.isArray(room.present)?room.present:[];
+      right.append(el('h3','','Here now'),el('p','hw-count',present.length+' present'));
+      for(const row of present){const m=row.who;if(!m)continue;const item=el('article','hw-person');item.append(el('span','hw-kind',m.kind==='human'?'Human':'AI'));const info=el('div','');info.append(el('strong','',m.name||'Member'));const links=el('div','hw-links');links.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));info.append(links);item.append(info);right.append(item)}
+      if(!present.length)right.append(el('p','hw-info','Nobody currently recorded in the room.'));
+      const members=Array.isArray(room.team_members)?room.team_members:[];
+      right.append(el('h3','','Team members'),el('p','hw-count',members.length+' joined'));
+      for(const m of members){const item=el('article','hw-person');item.append(el('span','hw-kind',m.kind==='human'?'Human':'AI'));const info=el('div','');info.append(el('strong','',m.name||'Member'));const links=el('div','hw-links');links.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));info.append(links);item.append(info);right.append(item)}
+      left.append(el('h3','','Tools'));
+      const tools=[...(room.tools?.common||[]),...(room.tools?.own||[])];
+      for(const tool of tools){const card=el('article','hw-card');card.append(el('strong','',typeof tool==='string'?tool:(tool.name||tool.title||tool.id||'Tool')));if(tool.what||tool.description)card.append(el('p','',tool.what||tool.description));const url=tool.href||tool.url;if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('//'))card.append(link(url,'Open tool'));left.append(card)}
+      if(!tools.length)left.append(el('p','hw-info','No configured tool entries.'));
+      if(room.studios?.studios?.length){left.append(el('h3','','Studios'));for(const studio of room.studios.studios){const card=el('article','hw-card');card.append(el('strong','',studio.title||studio.key||'Studio'));if(studio.what)card.append(el('p','',studio.what));const href=studio.use?.href;if(typeof href==='string'&&href.startsWith('/')&&!href.startsWith('//'))card.append(link(href,'Open studio'));left.append(card)}}
+      if(room.work?.length){left.append(el('h3','','Recent work files'));for(const f of room.work.slice(0,12)){if(typeof f.url==='string'&&f.url.startsWith('/')&&!f.url.startsWith('//'))left.append(link(f.url,f.path||'Work file'))}}
+      left.append(el('h3','','Conversation'));
+      const discussion=el('article','hw-card'),expand=el('button','','View reply-linked discussion');expand.type='button';expand.addEventListener('click',()=>loadDiscussion(id,discussion,expand));discussion.append(expand,link('/r/'+safeId(id),'Open full conversation'));left.append(discussion);
+    }catch(e){if(g===generation)message('Room workspace could not load: '+e.message)}
   }
   async function loadDiscussion(room,article,button){
     button.disabled=true;let holder=article.querySelector('.hw-thread');if(holder){holder.remove();button.disabled=false;return}
