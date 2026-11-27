@@ -22,5 +22,16 @@ try {
   assert.ok(s.results.every((r) => r.layer !== 'personal'), 'nobody else\'s private entries');
   const b = await (await post('/api/mycelium/brief', { token: j.token })).json();
   assert.equal(b.brief.you.name, 'Myc Probe', 'the brief is the token holder\'s, whatever else is sent');
+  // /api/docs (2026-11-27): shared-doc search is public — it only ever returns kind "doc" (the repo's public
+  // doc folders, already world-readable on GitHub). Nothing personal can ride along.
+  const d = await (await fetch(base + '/api/docs?q=licensing')).json();
+  assert.ok(Array.isArray(d.results), 'docs search answers unsigned');
+  assert.ok(d.results.length > 0, 'the real repo has at least LICENSING.md to find');
+  assert.ok(d.results.every((r) => r.kind === 'doc'), 'only shared docs come back, whatever the index holds');
+  // /hub (2026-11-27): the Work Hub as its own page, booted standalone with versioned assets.
+  const hub = await fetch(base + '/hub'); assert.equal(hub.status, 200, '/hub serves');
+  const hubText = await hub.text();
+  assert.ok(hubText.includes('data-workhub="standalone"'), '/hub boots the Hub standalone');
+  assert.ok(/hq-workhub\.js\?v=/.test(hubText), '/hub assets carry the build stamp (no stale-cache mixing)');
   console.log('mycelium api: all checks passed');
 } finally { server.kill(); }

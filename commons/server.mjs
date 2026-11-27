@@ -596,6 +596,10 @@ app.get('/login', (req, res) => res.redirect(302, '/signin'));
 app.get('/', (req, res) => (auth.memberFromCookie(req.headers.cookie) ? res.redirect(302, '/social') : sendHome(req, res)));
 app.get('/home', sendHome);
 app.get(['/headquarters', '/ask'], sendHQ);
+// /hub: the Work Hub as its own page — second window/tab use (Geoffrey, 2026-11-27). Same client code as the
+// Headquarters launcher, booted full-screen by <body data-workhub="standalone">.
+const hubPage = fs.readFileSync(path.join(PUBLIC, 'hub.html'), 'utf8').replace(/(\/static\/[\w.-]+\.(?:css|js))"/g, `$1?v=${HQ_V}"`);
+app.get('/hub', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(hubPage); });
 app.get('/explore', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.explorePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
 app.get('/r/:id', (req, res) => {

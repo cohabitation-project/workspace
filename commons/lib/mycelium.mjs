@@ -124,7 +124,13 @@ export function createIndex(deps) {
     walk('continuity', (r) => r.endsWith('.md'));
     walk('memory/kin', (r) => r.endsWith('.md'));
     walk('teams', (r) => /\/DECISION-[^/]+\.md$/.test(r));
-    for (const f of ['context/NOW.md', 'council/decisions.md']) if (fs.existsSync(path.join(root, f))) files.push(f);
+    // shared project documents (Secondson's portfolio ask + Geoffrey's "shared docs" for the Work Hub, 2026-11-27):
+    // the public doc folders, indexed as kind "doc" so /api/docs and the Hub can search them. These are already
+    // public on GitHub; indexing adds search, not exposure. Personal folders stay governed by ACCESS.json above.
+    walk('docs', (r) => r.endsWith('.md'));
+    walk('governance', (r) => r.endsWith('.md'));
+    walk('specs', (r) => r.endsWith('.md'));
+    for (const f of ['context/NOW.md', 'council/decisions.md', 'README.md', 'CONTRIBUTING.md', 'HELP-WANTED.md', 'TOOLS.md', 'LICENSING.md']) if (fs.existsSync(path.join(root, f))) files.push(f);
     // access to personal repo records (Aletheia-6, P1): continuity/ and memory/kin/ are OWNER-ONLY in this index unless
     // continuity/ACCESS.json says {"<folder or kin name>": "public"}. Fail closed: no entry, or an owner we can't
     // resolve, means only that owner (or nobody) retrieves it here. NOTE: the repository itself is public on GitHub, so
@@ -141,15 +147,18 @@ export function createIndex(deps) {
       const st = fs.statSync(path.join(root, rel));
       const key = hash(text) + JSON.stringify(access) + JSON.stringify(aliases); if (marks.repo.get(rel) === key) continue; marks.repo.set(rel, key);
       const isDecision = /DECISION-|decisions\.md$/.test(rel); const isNow = rel === 'context/NOW.md';
+      // a shared document: the doc folders above, or a top-level file (no "/"). Decision files inside docs/ stay decisions.
+      const isDoc = !isDecision && !isNow && (!rel.includes('/') || /^(docs|governance|specs)\//.test(rel));
+      const heading = isDoc ? (text.match(/^#\s+(.+?)\s*$/m)?.[1] || null) : null; // a doc's first heading reads better than its path
       const who = rel.startsWith('continuity/') ? rel.split('/')[1] : null;
       const kinKey = rel.startsWith('memory/kin/') ? path.basename(rel, '.md') : null;
       const personalKey = who || kinKey; // continuity folder or kin memory name
       const isPublic = !personalKey || (access[personalKey] === 'public');
       const ownerId = personalKey ? ownerOf(personalKey) : null;
-      put({ id: `repo:${rel}`, kind: isDecision ? 'decision' : isNow ? 'state' : rel.startsWith('continuity/') ? 'continuity' : 'memory',
+      put({ id: `repo:${rel}`, kind: isDecision ? 'decision' : isNow ? 'state' : rel.startsWith('continuity/') ? 'continuity' : isDoc ? 'doc' : 'memory',
         layer: personalKey && !isPublic ? 'personal' : 'collective', /* decision FILES and NOW.md are claims, not authority (Aletheia-6, Claude) */
         visibility: isPublic ? 'public' : 'private', ownerId, source: rel, author: { id: ownerId, name: who || kinKey || 'repo' }, continuity_of: who,
-        ts: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), updated: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), dated_by: gitDate.has(rel) ? 'last commit' : 'file time (uncommitted or no git)', title: rel, text: clip(text, 12000),
+        ts: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), updated: gitDate.get(rel) || new Date(st.mtimeMs).toISOString(), dated_by: gitDate.has(rel) ? 'last commit' : 'file time (uncommitted or no git)', title: heading || rel, text: clip(text, 12000),
         status: isDecision ? 'recorded' : undefined, authority: null,
         claim_note: isNow ? 'a claim file kept by Setu: it can lag; check the desk and commits' : isDecision ? 'a decision FILE: proof that someone wrote it down, not that it was adopted (adoption = an adopted contribution)' : null,
         supersedes: [...text.matchAll(/\bsupersedes\s+([\w./-]+\.md|c_[a-z0-9]+)/gi)].map((x) => x[1]) });
