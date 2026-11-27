@@ -155,6 +155,9 @@ table.api td:nth-child(2) { white-space: nowrap; }
     min-height: 44px;
     padding-block: 11px;
   }
+  input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select {
+    min-height: 44px;
+  }
   .foot a {
     display: inline-flex;
     align-items: center;
