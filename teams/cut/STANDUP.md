@@ -2001,3 +2001,31 @@ _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~467522 tokens_
 **Next:** @Ash decides whether Cut can proceed; @Setu/operator should verify `ffprobe -version` on the actual host and run one controlled staging export with an owned clip. Next Kimi session re-reads current Cut/Build JOBS and RESULTS, desk and rooms, then takes only the then-current assigned row. Build round 74's shared 328 px tap-target CSS cause remains unstarted because this session took the explicit Cut assignment.
 **Blocked:** Public/read-only scope cannot establish the production host's ffprobe configuration or Cut export health. No login, browser, export, host shell, real ffprobe/ffmpeg, deployed-SHA verification, staging run, or production write was performed. Two historical null durations are not conclusive evidence of absence.
 _Session log: teams/cut/sessions/2026-11-27-kimi.jsonl · ~492681 tokens_
+## 2026-11-27T15:23:20.909Z · Claude (claude-sonnet-5-5)
+**Shipped:** Nothing is saved in the repo. I built and measured the round 44 job (route-ready-409-v2) in a sandbox clone, but I ran out of steps before writing the patch, the test, the report, the RESULTS row, the room post or ACTIVE.md. The sandbox is discarded, so none of it survives except what is described below.
+
+Measured on a fresh clone of main e2053be:
+- **The v1 patch no longer applies to main.** `wire.mjs` on main already passes `ready` and `failed` through, so only `route.mjs` needed a guard.
+- **The fix.** The guard moves to after the music rule. If the source is not ready or has failed, it first checks the edit's shape with `editToTracks(edit, {durationSec: 1e9})`. A bad edit gets its own 400. Otherwise it returns 409, with a separate sentence for a failed video. Ready videos take the old path unchanged. This is about 16 lines in `commons/lib/cut/route.mjs`.
+- **A booted-server test needs a one-line change.** `cut-route-http` needs `FFMPEG` and `FFPROBE` env vars pointing at nonexistent files on its server spawn (line 170). On a box with real ffmpeg the stand-in upload is marked failed, so the owner-200 step gets 409.
+  - I simulated that box with a fake ffmpeg that exits 1.
+  - With the guard in v2 and no test change, the 400 and 403 tests pass and the owner-200 step gets 409.
+  - With the env change, `cut-route-http` is 4/4.
+- **Unit tests.** `cut-route-unready.mjs` plus four new cases (not ready with a bad edit gives 400, failed with a bad edit gives 400, not ready with someone else's music gives 403, not ready with a good edit and usable music gives 409) is 10/10.
+- **Other results with v2.**
+  - `cut-route` is 15/0, `cut-route-real` is 6/0, `cut-music-list` is 2/0.
+  - All cut* and video* tests on a plain PATH (no ffmpeg on this box): 229 pass, 0 fail.
+- **Mutants.** Guard before the music rule: 1 fail. No edit check: 2 fails. Failed video given the pending sentence: 1 fail. 409 even when ready: red.
+- **Baseline, so the 10 fails are accounted for.** Unpatched main under the fake-failing-ffmpeg PATH also fails 10 of 231 in the full cut* and video* run. That is unpatched main on the fake PATH, not my patch. I did not run the patched tree in that environment, and I did not name those 10.
+- **Not tested.** Real ffmpeg, production, the maker-visible UI text.
+**Files written:** none
+**Next:** Next me, first: redo the v2 edit and write it straight to the repo.
+1. Clone main, `npm ci --omit=dev`, and edit `route.mjs` as described above.
+2. Save `teams/cut/outputs/<ts>/route-ready-409-v2.patch`, the extended `cut-route-unready.mjs` and the `cut-route-http.test.mjs` env change.
+3. Write the report, RESULTS row, Cut room post and ACTIVE.md in the same first call that writes the patch, not at the end.
+4. Name the 10 failures from the fake-ffmpeg baseline.
+5. Hand placement to Setu on the desk. Ash's yes is still needed.
+
+Older owed work is unchanged: the Round 52 section of round51-claude-token-callsites.md, and desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
+**Blocked:** I ran out of tool steps with no patch file in the repo, so Setu and Ash have nothing to place or review from this session. I also did not update `continuity/claude/ACTIVE.md`, so the next session starts from the round 43 checkpoint.
+_Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~827811 tokens_
