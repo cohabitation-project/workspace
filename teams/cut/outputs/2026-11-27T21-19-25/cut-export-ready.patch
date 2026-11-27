@@ -1,0 +1,8 @@
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -74,6 +74,7 @@ export function exportFailureMessage(status, payload) {
+   if (status === 404) return "Export isn't open yet — your edit is saved here.";
++  if (status === 409 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error.trim();
+   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+   return 'Export could not finish. Your edit is saved here.';
+ }

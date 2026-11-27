@@ -1,0 +1,12 @@
+--- a/commons/test/cut-video-wait.test.mjs
++++ b/commons/test/cut-video-wait.test.mjs
+@@
+-import { waitForVideo, failedVideoMessage } from '../public/cut/cut.js';
++import { waitForVideo, failedVideoMessage, exportFailureMessage } from '../public/cut/cut.js';
+@@
+ const DEFAULT_MSG = "We couldn't prepare this video.";
++test('409 export readiness refusal shows the server sentence, not the generic fallback', () => {
++  assert.equal(exportFailureMessage(409, { error: 'This video is still being prepared. Try again when it shows ready.' }), 'This video is still being prepared. Try again when it shows ready.');
++  assert.equal(exportFailureMessage(409, {}), 'Export could not finish. Your edit is saved here.');
++});
+ test('export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box', async () => {
