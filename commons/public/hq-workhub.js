@@ -25,26 +25,61 @@
   const get=async(path)=>{const r=await fetch(path,{credentials:'same-origin',headers:{'X-Commons':'1'}});if(!r.ok)throw Error(r.status===401?'Sign in to view this.':`Request failed (${r.status}).`);return r.json()};
   const controls=(placeholder,fn)=>{const input=el('input','hw-search');input.type='search';input.placeholder=placeholder;input.setAttribute('aria-label',placeholder);input.addEventListener('input',()=>fn(input.value));main.append(input);return input};
   async function overview(g){
-    const [rs, ds] = await Promise.all([get('/api/rooms'),get('/api/desk')]);
+    const [rs,ds,pres,ev,self,sp]=await Promise.all([
+      get('/api/rooms'),get('/api/desk'),get('/api/presence'),get('/api/events'),
+      get('/api/me').catch(()=>null),get('/api/spend').catch(()=>null)
+    ]);
     if(g!==generation)return;
-    const rooms=rs.rooms||[],tasks=ds.tasks||[];
+    const rooms=rs.rooms||[],tasks=ds.tasks||[],people=(pres.presence||[]).filter(p=>p.who&&!p.who.retired);
     main.replaceChildren();
-    main.append(el('h2','','Commons work overview'),el('p','hw-info','Real work records and room membership, connected to the existing Commons.'));
-    const metric=el('div','hw-stat-grid');
-    for(const [label,value] of [['Open',ds.metrics?.open],['Claimed',ds.metrics?.claimed],['Review',ds.metrics?.awaiting_review],['Accepted',ds.metrics?.accepted]]){
-      const tile=el('div','hw-stat');tile.append(el('strong','',value??'—'),el('small','',label));metric.append(tile);
+    const heading=el('div','hw-overview-header');heading.append(el('h2','','Headquarters · Work Overview'),el('p','hw-info','Tasks, rooms, people and spending from the existing Commons—not separate records.'));
+    main.append(heading);
+    const stat=el('div','hw-stat-grid');
+    for(const [label,value] of [['Open',ds.metrics?.open],['Claimed',ds.metrics?.claimed],['For review',ds.metrics?.awaiting_review],['Accepted',ds.metrics?.accepted]]){
+      const item=el('div','hw-stat');item.append(el('strong','',value??'—'),el('small','',label));stat.append(item);
     }
-    main.append(metric);
-    const cols=el('div','hw-overview-columns'),left=el('section',''),right=el('aside','');
-    left.append(el('h3','','Active tasks'));
-    for(const t of tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status)).slice(0,15)){
-      const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled'),el('small','',String(t.status)+' · '+String(t.room||'general')));
-      const b=el('button','','View room workspace');b.type='button';b.addEventListener('click',()=>roomWorkspace(t.room||'general',t.room||'General Hall'));
-      card.append(b);left.append(card);
+    main.append(stat);
+    const grid=el('div','hw-dashboard-grid'),body=el('section','hw-dashboard-main'),activity=el('aside','hw-dashboard-activity'),contact=el('aside','hw-dashboard-contacts');
+    grid.append(body,activity,contact);main.append(grid);
+    const jobTitle=el('h3','','My work & active jobs');body.append(jobTitle);
+    let list=tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status));
+    if(self?.id){
+      const mine=list.filter(t=>t.claimed_by?.id===self.id||t.handoff_to?.toLowerCase()===String(self.name||'').toLowerCase());
+      body.append(el('p','hw-count',mine.length+' assigned or claimed by you · '+list.length+' active across Commons'));
+      list=[...mine,...list.filter(t=>!mine.includes(t))];
+    }else body.append(el('p','hw-count','Sign in to highlight your own assignments · '+list.length+' active tasks'));
+    for(const t of list.slice(0,16)){
+      const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled'),el('small','',t.status+' · '+(t.room||'General')+' · '+(t.claimed_by?.name||t.handoff_to||'Unassigned')));
+      if(t.deliverable)card.append(el('p','',String(t.deliverable).slice(0,140)));
+      const action=el('button','','Open room work');action.type='button';action.addEventListener('click',()=>roomWorkspace(t.room||'general',t.room||'General Hall'));card.append(action);body.append(card);
     }
-    right.append(el('h3','','Rooms'));
-    for(const r of rooms){const b=el('button','hw-room-choice');b.type='button';b.append(el('strong','',r.name||r.id),el('small','',String(r.present||0)+' present · '+tasks.filter(t=>t.room===r.id&&['open','returned','claimed','submitted'].includes(t.status)).length+' active jobs'));b.addEventListener('click',()=>roomWorkspace(r.id,r.name||r.id));right.append(b)}
-    cols.append(left,right);main.append(cols);
+    if(list.length>16)body.append(el('p','hw-info','Showing 16 of '+list.length+' active jobs. The Work tab shows all.'));
+    activity.append(el('h3','','Room workspaces'));
+    for(const room of rooms){
+      const count=tasks.filter(t=>t.room===room.id&&['open','returned','claimed','submitted'].includes(t.status)).length;
+      const button=el('button','hw-room-choice');button.type='button';
+      button.append(el('strong','',room.name||room.id),el('small','',count+' active jobs · '+(room.present||0)+' present'));
+      button.addEventListener('click',()=>roomWorkspace(room.id,room.name||room.id));activity.append(button);
+    }
+    activity.append(el('h3','','Live record'));
+    const recent=(ev.events||[]).slice(-8).reverse();
+    for(const event of recent){
+      const item=el('article','hw-card');item.append(el('small','',event.ts||''));
+      const detail=event.text||event.description||[event.who?.name||event.name||event.member||'',event.action||event.type||event.t||'activity',event.room||''].filter(Boolean).join(' · ');
+      item.append(el('p','',detail||'Recorded Commons event'));activity.append(item);
+    }
+    contact.append(el('h3','','Members here now'),el('p','hw-count',people.length+' presence records'));
+    const shown=new Set();
+    for(const p of people){
+      const m=p.who;if(shown.has(m.id))continue;shown.add(m.id);
+      const item=el('div','hw-person');item.append(el('span','hw-kind',m.kind==='human'?'Human':'AI'));
+      const inner=el('div','');inner.append(el('strong','',m.name||'Member'));
+      const links=el('div','hw-links');links.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));inner.append(links);item.append(inner);contact.append(item);
+    }
+    if(!shown.size)contact.append(el('p','hw-info','Nobody is marked present.'));
+    contact.append(el('h3','','Spend snapshot'));
+    if(sp){const cost=typeof sp.month?.total_projected==='number'?sp.month.total_projected.toLocaleString('en-US',{style:'currency',currency:'USD'}):'Unavailable';contact.append(el('strong','hw-total',cost),el('p','hw-info','Monthly projection, not actual spend. May include estimates and missing costs.'))}
+    contact.append(link('/spend','Full spend details'));
   }
   async function work(g){
     const data=await get('/api/desk');if(g!==generation)return;
