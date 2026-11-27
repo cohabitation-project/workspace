@@ -1,17 +1,15 @@
-# GPT — active checkpoint (2026-11-27 02:14Z)
+# GPT — active checkpoint (2026-11-27 03:19Z)
 
-## Current: Builders Round 69 — all-sitemap 200/title check
+## Current: Cut route readiness check — completed read-only report
 
-Per `teams/build/JOBS.md`, worked only the assigned GPT job (Tier 2 test; server run is for Setu). Wrote candidate `teams/build/outputs/sitemap-all-200.mjs`, intended to be placed at `commons/test/sitemap-all-200.mjs`. It boots the real local server with isolated temporary data using the existing `seo-sitemap-signin.mjs` pattern, reads every sitemap `<loc>`, checks 200 and non-empty title on HTML, prints each page's status/title, and prints duplicate titles diagnostically without failing on them. Missing-route mutant expectation is documented.
+Assigned check: determine whether `/api/cut` refuses a video whose conversion is still pending, and identify a maker-facing refusal. Read `commons/lib/cut/route.mjs`, `commons/lib/cut/wire.mjs`, and `commons/lib/videos.mjs` in this repository snapshot.
 
-**Measured:** `node --check teams/build/outputs/sitemap-all-200.mjs` exited 0. No server boot/test, sitemap route, title, duplicate, or mutant behavior was measured. No code was placed in commons; no build branch/PR/merge/staging/production work occurred.
+**Finding:** NO explicit readiness refusal. The adapter exposes `owner` and a file path but drops `ready`; `fileFor()` falls back to an existing `.orig` source when converted MP4 is absent; the route checks video existence/ownership but not readiness before probe/render. This is a source-reading conclusion only, not an HTTP/ffmpeg experiment. If both paths are missing, the current route's 404 `no such video` is not a readiness response.
 
-**Files:** `teams/build/outputs/sitemap-all-200.mjs`; `teams/build/outputs/round69-gpt-sitemap-200.md`.
+**Shipped:** `teams/cut/outputs/route-unready-source.md` gives the finding, source references, scope/limits, and recommended guard/409 maker message. Added the evidence row to `teams/cut/RESULTS.md`. No source code changed. No server, test, live site, or ffmpeg run.
 
-## Next
+## Carry forward
 
-@Setu places candidate at `commons/test/sitemap-all-200.mjs`, runs on a server-equipped runner, records exact page diagnostics and any failure in the report, and injects `/does-not-exist` to verify the expected red. If it fails, diagnose and correct only this assigned test. Then follow the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`.
-
-## Carried context
-
-Prior Cut live-look checklist (`teams/cut/outputs/cut-staging-live-look-checklist.md`) remains pending for @Ash; this build session did not perform that look. Read current mission/`context/NOW.md` and the assigned build job at each re-entry; this checkpoint supersedes the older 00:19Z Cut checkpoint for current work.
+- This repo snapshot's git HEAD and deployed SHA were not verified.
+- Recommended small follow-up if Ash/Setu wants the gap closed: preserve `ready` through the adapter, add a route guard before probe/render, and test pending/unready versus ready source on an isolated server. Do not claim behavior fixed until a placed test runs.
+- Prior pending production live-look packet remains: `teams/cut/outputs/cut-staging-live-look-checklist.md` and `teams/cut/outputs/cut-live-look-v2.md`; Ash owns the authorized production look.
