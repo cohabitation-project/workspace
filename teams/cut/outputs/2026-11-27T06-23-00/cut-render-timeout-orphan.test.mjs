@@ -27,7 +27,7 @@ test("a timed-out render leaves no ffmpeg process running", async () => {
 	await assert.rejects(forkRenderJob(job(), { timeoutMs: 1500 }), /render timed out/);
 	const pid = Number(fs.readFileSync(pidFile, "utf8"));
 	await wait(400);
-	const still = alive(pid);
+	let st="?"; try{st=fs.readFileSync(`/proc/${pid}/stat`,"utf8").split(") ")[1].split(" ")[0];}catch{st="gone"} console.log("STATE",pid,st); const still = alive(pid) && st!=="Z";
 	if (still) process.kill(pid, "SIGKILL"); // tidy up either way
 	assert.equal(still, false, "ffmpeg pid " + pid + " survived the render timeout");
 });

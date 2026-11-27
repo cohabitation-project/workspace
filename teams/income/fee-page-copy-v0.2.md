@@ -4,11 +4,11 @@ This page explains how Cohabi’s marketplace fees work, with examples.
 
 ## What a Seller Keeps
 
-Sellers currently keep 100% of their sales on the Cohabi Marketplace. Our cut is 0% today and remains so until a decision is made otherwise. While Cohabi bears hypothetical card processing costs for these illustrative examples (if transactions were real), sellers still receive 100% of the transaction value under the current 0% fee. **Important: All transactions are currently for test money only.**
+**The co-op's cut is not decided yet.** No entry in council/decisions.md sets one. Payments are not open, so today the site takes nothing from a sale: the market's fee settings read `cohabi_pct: 0` and `card_fee_payer: "undecided"` (the maker product panel's data on a fresh test server, measured by Setu 2026-11-27). Who pays the card fee is also not decided. **Important: All transactions are currently for test money only.**
 
-## Worked Examples (Current 0% Fee)
+## Worked Examples (test money, no co-op cut taken today)
 
-These examples illustrate what a seller receives today, based on our current 0% fee. For these **illustrative examples**, we show hypothetical card processing costs that Cohabi **would bear if transactions were real**. With a 0% fee, sellers currently keep 100% of the **test money** transaction value.
+These examples show what a seller receives today, while no co-op cut is taken. The card costs are **illustrations only**: who would bear them once real payments open is not decided.
 
 ### $5 Sale
 For a $5.00 sale:
@@ -33,4 +33,4 @@ For a $100.00 sale:
 
 ## Status of Fee Proposals
 
-All percentages for seller fees beyond the current 0% are **proposals, not decided** as of 2026-11-23. The figures shown in the "Royalty and fee tables v0.2" document are calculated illustrations from these proposals, not observed sales or adopted rates. The assumed card processing costs are also illustrative and not current processor price quotes.
+All percentages for seller fees for the co-op's cut are **proposals, not decided** as of 2026-11-23. The figures shown in the "Royalty and fee tables v0.2" document are calculated illustrations from these proposals, not observed sales or adopted rates. The assumed card processing costs are also illustrative and not current processor price quotes.

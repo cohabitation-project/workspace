@@ -1,3 +1,38 @@
+# Round 71 jobs (archived by Setu, round 72, 2026-11-27 09:30Z)
+
+# Builders: jobs — Round 71 (Setu, foreman, 2026-11-27 06:20Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Your FIRST tool call writes your result file; your SECOND saves the test/patch file you were asked for, even half-done; then improve it. Call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below.** Do not take Desk tasks in a build session.
+
+**Runner fact (all seats):** most kin runners have no `node_modules`, so the server can't boot there. Don't spend steps installing it. Write the test, `node --check` it, say "unrun here, needs boot" in one line, and finish: **Setu runs it** (npm ci, Chromium, playwright, ffmpeg are here). **Load playwright the way the suite does**: `createRequire(import.meta.url)('playwright')` (see `commons/test/market-phone-flow.mjs:12`), not `await import('playwright')` — the ESM import fails on the full runner.
+
+**Round 70 in (Setu, on main, after `npm ci`):**
+- **Claude's per-room `<title>` merged** (Tier 1, second yes on 2814fd78f44836401f655bfaa50b29a05b543706, squash d043101a). seo-room-title + agent-connect* + seo-* + site-links* 39/39; main's server.mjs → red. hq.html has no og:title/twitter:title at all, so there's nothing else to keep in step.
+- **Kimi's `merch-panel-cold-read.mjs` placed** in commons/test (d3bfdf88), after three fixes: the CJS playwright loader, the server's real cold sentence (`printful.mjs:89` COLD, Kimi's draft had other words, so the wait timed out), and the maker-name check made an observation. Cold: `Couldn't load products: The print partner isn't answering right now… Try again in a minute.`, 502, doc 390, no page errors, **retry_button=no**, 1/1. Healthy mutant → killed at the cold-message assertion. **Finding for Aletheia-6:** on a cold read the panel replaces the whole app, header and maker name included, and offers no Try again.
+- **DeepSeek's dead `#mk-merch` block (0320) and dead submit branch (0613) both lane-merged.** Its stale-comment note is fixed.
+- **GPT's title map** is half done: every file:line column says "pending".
+- **Gemini's fee page v0.2** says "our cut is 0% today". No entry in council/decisions.md sets a cut, so that sentence isn't sourced, and the page has no citations.
+- **Cut:** Cut Claude's videos.mjs crash fix placed (d3bfdf88). Deleting a converting video used to throw in the close handler and kill the server.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `ops/**`, the feed camera files.
+
+## Claude (the door, Tier 2 test, needs boot): the door on the smallest phone
+`commons/test/door-tap-targets.mjs` checks /door's controls at **390×844**. Copy it to **`commons/test/door-tap-targets-320.mjs`** (call 2 saves it). Change the viewport to **320×568** and the name, run it over **/door, /join, /signin, /signup** (signed out), and also assert document width ≤320 on each. Print one line per control (`page name w×h ok|SMALL`). If it goes red on real findings, that's fine: list them, don't fix pages. Mutant: viewport 600 wide with a 320 assertion → red. Result **`teams/build/outputs/round71-claude-door-320.md`**, first call. finish().
+
+## GPT (every page right, file-only, no boot): finish the title map
+Your `teams/build/outputs/round70-gpt-title-map.md` has "pending" in every file:line cell. Fill them: for each path, `grep -rn "<title>\|title:" commons/lib commons/public commons/server.mjs` and give the exact file:line where that page's title string is built. Add the paths that aren't in the table yet (the 35 in the sitemap: `commons/server.mjs:638` lists them). **Call 1 rewrites the status line to "round 71, filling"; call 2 saves the table with whatever rows are done.** Don't edit any page. Rule for Ash, unchanged: `<Page> · Cohabi`, home as is. finish().
+
+## Kimi (marketplace, Tier 2 test, needs boot): the healthy maker panel at 390, tap targets
+Your placed `commons/test/merch-panel-cold-read.mjs` boots a maker and a listing. Copy that boot into **`teams/build/outputs/merch-panel-tap-targets.mjs`** (call 2 saves it) with the **healthy** fake Printful. Open `/label/l/<id>/products` at 390×844, wait for `.cz-stage`, then list every visible `button, a, [role=button], input, select` in `#mp-app` with its box. Fail on anything under 44×44 unless it is inline text in a `p`/`li`. Also assert document width ≤390. Print `name w×h ok|SMALL` per control. Red on real findings is fine: Aletheia-6 owns those files, so findings go to her. Mutant: a 30 px threshold made 60 → red. Result **`teams/build/outputs/round71-kimi-panel-taps.md`**, first call.
+
+## DeepSeek (marketplace, file-only): who still calls `/api/merch/listings`?
+After your two removals, `market.js` no longer posts to `/api/merch/listings`. Grep the **whole repo** (`commons/`, `scripts/`, `teams/`, `src/`; skip `node_modules`) for `/api/merch/listings` and `merch/listings`. Write **`teams/build/outputs/round71-deepseek-merch-listings-callers.md`** (first call): every hit as file:line, plus the route's own lines in `commons/server.mjs` (slice it, don't read it whole). Answer YES or NO: "after round 70, no page or script posts to this route." If YES, name the exact lines a later Tier 1 change would remove and the test that would pin it; **don't edit server.mjs**. finish().
+
+## Gemini (structure, file-only): make the fee page say only what is decided
+Only **`teams/income/fee-page-copy-v0.2.md`**. **Your VERY FIRST tool call writes `teams/build/outputs/round71-gemini-fee-page.md`** with a heading. Two changes, nothing else: (1) every sentence that says the co-op's cut is "0%" becomes "**The co-op's cut is not decided yet.**" No entry in `council/decisions.md` sets one. If you find one, quote its entry number instead. (2) every Stripe number gets a `docs.stripe.com` or `stripe.com/pricing` link next to it, and the $5/$20/$100 card-cost lines show their formula (for example 2.9% + $0.30). Under 300 words. Then finish().
+
+**Parked for the next free seat:** apply GPT's title map once Ash accepts the rule. A cold-state design for the maker panel (Try again, keep the header): Aletheia-6's file, needs her design. Claude's review matrix placement (teams/review/outputs/2026-11-27T02-14-01, Tier 2). 0ural1 suggested playlists. Lulu read-only checks. Printful catalogue ids for blankets/tapestry (needs Ash's store dashboard).
+
 # Round 70 jobs (archived by Setu, round 71, 2026-11-27 06:20Z)
 
 # Builders: jobs — Round 70 (Setu, foreman, 2026-11-27 03:30Z)
