@@ -97,6 +97,26 @@ proc.kill(); await sleep(300);
     deskm.claim(W, t3.id);
     { let e = ''; try { deskm.close(A, t3.id, { reason: 'dropped', note: 'n' }); } catch (x) { e = x.message; } ok('claimed work is released before it closes', /claimer releases it first/.test(e)); }
   }
+
+  // blockers + portfolio (Secondson's portfolio ask, 2026-11-27): links are real or refused; the view invents nothing
+  {
+    const base = deskm.post(A, { title: 'the thing it waits on', deliverable: 'x', module: 'launch', why: 'doors open first' });
+    { let e = ''; try { deskm.post(A, { title: 'bad link', deliverable: 'x', blocked_by: ['t_nope123456'] }); } catch (x) { e = x.message; } ok('a blocker id that is not on the desk is refused', /no task t_nope123456/.test(e)); }
+    const dep = deskm.post(A, { title: 'waits on the thing', deliverable: 'y', module: 'launch', blocked_by: [base.id], blocker_reason: 'needs the doors' });
+    ok('a real blocker link is kept', dep.blocked_by.length === 1 && dep.blocked_by[0] === base.id && dep.blocker_reason === 'needs the doors');
+    { let e = ''; try { deskm.setBlockers(W, dep.id, { blocked_by: [] }); } catch (x) { e = x.message; } ok('a stranger cannot mark it blocked', /only the one who posted it or the one working it/.test(e)); }
+    { let e = ''; try { deskm.setBlockers(A, dep.id, { blocked_by: [dep.id] }); } catch (x) { e = x.message; } ok('a task cannot block itself', /cannot block itself/.test(e)); }
+    const cleared = deskm.setBlockers(A, dep.id, { blocked_by: [], blocker_reason: '' });
+    ok('the poster clears blockers, and history says so', cleared.blocked_by.length === 0 && !cleared.blocker_reason && cleared.history.at(-1).event === 'unblocked');
+    deskm.setBlockers(A, dep.id, { blocker_reason: 'waiting on a human yes' });
+    const pf = deskm.portfolio();
+    const launch = pf.groups.find((g) => g.module === 'launch');
+    ok('portfolio groups by module across rooms', !!launch && launch.open.length >= 2);
+    ok('the why rides along', !!launch && launch.why.includes('doors open first'));
+    ok('a reason with no ids still shows as blocked', !!launch && launch.blocked.some((t) => t.id === dep.id && t.blocker_reason === 'waiting on a human yes'));
+    ok('unblocked tasks are not listed as blocked', !!launch && !launch.blocked.some((t) => t.id === base.id));
+    ok('tasks without a module group by room, nothing dropped', pf.groups.some((g) => g.room && !g.module));
+  }
 }
 console.log(failures ? `\n${failures} FAILED` : '\nall desk tests passed');
 process.exit(failures ? 1 : 0);

@@ -2270,6 +2270,8 @@ const deskActs = (req) => { const m = deskActor(req); core.actsAllowed(m); retur
 const artActs = (req) => { const m = actor(req, { write: true }); if (m) core.actsAllowed(m); return m; };
 app.post('/api/desk/read', wrap((req) => { const m = deskActor(req); return { metrics: desk.metrics(), for_you: desk.offer(m, 10), ...desk.agenda(m), tasks: desk.all({}) }; }));
 app.post('/api/desk/tasks', wrap((req, res) => { const m = deskActs(req); const no = req.agentConnection && agentconnect.toolAllowed('desk_post', req.body || {}); if (no) throw new core.CommonsError(403, no); const t = desk.post(m, req.body || {}); res.status(201); return t; }));
+app.get('/api/desk/portfolio', wrap(() => desk.portfolio())); // Secondson's high-level view: public like /api/desk
+app.post('/api/desk/:id/blockers', wrap((req) => desk.setBlockers(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/claim', wrap((req) => desk.claim(deskActs(req), req.params.id)));
 app.post('/api/desk/:id/submit', wrap((req) => desk.submit(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.reviewAllowed(m); const no = req.agentConnection && agentconnect.toolAllowed('desk_review', { ...(req.body || {}), id: req.params.id }, { taskReward: (id) => desk.get(id)?.reward || null }); if (no) throw new core.CommonsError(403, no); return desk.review(m, req.params.id, req.body || {}); }));
