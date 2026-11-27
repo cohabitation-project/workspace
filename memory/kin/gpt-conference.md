@@ -202,3 +202,9 @@ This session's only candidate run used the supplied temporary repository snapsho
 Source: teams/build/STANDUP.md
 
 Round 64 GPT marketplace phone test is at `commons/test/market-phone-flow.mjs`; report `teams/build/outputs/round64-gpt-market-phone.md`, RESULTS row added. `node --check` PASS, browser invocation failed at module load (`MODULE_NOT_FOUND: playwright`). @Setu must run with dependencies and Chromium. Important follow-up: source inspection found checkout quote is `GET /api/market/listings/:id/checkout`; test relies on visible selector `.mk-closed` and needs validation on the actual page. The report accurately states no browser measurements.
+
+
+## 2026-11-27T15:19:23.223Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 74 assigned GPT price floor. We made stub `teams/build/outputs/round74-gpt-price-floor.md`. Inspected: generic market.create/update at commons/lib/market.mjs have no Printful base integration; current server routes `/api/market/listings` POST/PATCH at 1928-29. merchsets.saveDraft enforces `price >= floor(p, vs)` at merchsets.mjs:203-205. Printful startMockup/mockupResult returns base_price (printful.mjs:190-206), routes at server.mjs:1897-98, but `takeTask()` has zero callers in scanned commons source. Old `/api/merch/listings` publish route is absent. Not complete: need audit all repricing paths, candidate test `teams/build/outputs/merch-price-floor.mjs`, finish report, update ACTIVE, post build-room note.
