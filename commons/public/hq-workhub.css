@@ -1,0 +1,30 @@
+/* Non-modal, keyboard-reachable workspace dock for Headquarters. */
+#hq-workhub{position:fixed;z-index:980;right:18px;bottom:18px;font:14px/1.4 system-ui,sans-serif;color:#eaf6f4}
+#hq-workhub-launch{border:1px solid #58cabd;background:#163b46;color:#fff;border-radius:24px;padding:12px 18px;box-shadow:0 7px 26px #0007;cursor:pointer;font-weight:700}
+#hq-workhub-panel{position:absolute;right:0;bottom:55px;width:min(460px,calc(100vw - 24px));height:min(650px,calc(100dvh - 96px));overflow:hidden;display:flex;flex-direction:column;background:#10262f;border:1px solid #5b9f9c;border-radius:16px;box-shadow:0 18px 50px #000a}
+#hq-workhub-panel[hidden]{display:none}
+.hw-head,.hw-tabs,.hw-filters{display:flex;align-items:center;gap:6px;padding:10px;border-bottom:1px solid #345862}
+.hw-head{justify-content:space-between;font-size:16px}
+#hq-workhub button{cursor:pointer;color:inherit;border:1px solid #3c6970;background:#1a3944;padding:7px 10px;border-radius:8px}
+#hq-workhub button:hover,#hq-workhub button:focus-visible{background:#2c5b66;outline-color:#7fe4ce}
+.hw-tabs button[aria-current=page],.hw-filters button[aria-pressed=true]{background:#267f7c!important}
+.hw-tabs{overflow-x:auto}
+#hw-main{overflow:auto;padding:12px;flex:1;min-height:0;outline-offset:-4px}
+.hw-search{width:100%;box-sizing:border-box;padding:10px;border:1px solid #5c8990;background:#18363e;color:white;border-radius:9px;margin-bottom:10px}
+.hw-card,.hw-person{border:1px solid #315761;border-radius:10px;margin-bottom:8px;padding:11px;background:#19343e}
+.hw-card strong,.hw-person strong{display:block}
+.hw-card small,.hw-count,.hw-info,.hw-kind{color:#b4cecf}
+.hw-card p,.hw-post p{margin:7px 0;overflow-wrap:anywhere}
+.hw-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+#hq-workhub .hw-link{color:#9fe8d7;text-decoration:underline;font-size:13px}
+.hw-filters{padding:0 0 8px;overflow-x:auto;flex-wrap:wrap}
+.hw-filters button{font-size:12px}
+.hw-person{display:flex;align-items:center;gap:12px}
+.hw-kind{font-size:11px;min-width:40px}
+.hw-thread{border-top:1px solid #456e75;margin-top:12px;padding-top:8px}
+.hw-post{border-left:2px solid #538b89;padding:8px;margin:6px 0}
+.hw-error{color:#ffb7b7}
+.hw-messenger{width:100%;height:calc(100% - 90px);min-height:320px;border:1px solid #456e75;border-radius:8px;background:white}
+@media(max-width:540px){#hq-workhub{right:12px;bottom:12px}#hq-workhub-panel{bottom:52px;width:calc(100vw - 24px);height:calc(100dvh - 80px)}}
+
+.hw-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.hw-resources .hw-link{display:block;border:1px solid #345862;padding:12px;border-radius:9px;text-decoration:none}.hw-resources .hw-link:hover,.hw-resources .hw-link:focus-visible{background:#23505b;text-decoration:underline}
