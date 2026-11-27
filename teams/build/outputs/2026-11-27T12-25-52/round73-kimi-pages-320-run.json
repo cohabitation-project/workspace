@@ -1,0 +1,25 @@
+{
+  "candidate": "/tmp/kin-py-PISS4E/repo/teams/build/outputs/pages-tap-targets-320.mjs",
+  "bytes": 9632,
+  "sha256": "e539dd99564c839429d15fe27391ae2d7bcc3ba5269ce6321dbd4599864a7155",
+  "exact_two_line_transform": true,
+  "diff": "--- door\n+++ pages\n@@ -56,7 +56,7 @@\n   throw new Error('server did not boot');\n }\n \n-test('door pages at 320x568: controls >= 44x44, document <= 320 wide', { timeout: 120000 }, async (t) => {\n+test('four more pages at 320x568: controls >= 44x44, document <= 320 wide', { timeout: 120000 }, async (t) => {\n   if (!BASE) await boot();\n   let executable;\n   try { executable = chromium(); }\n@@ -167,7 +167,7 @@\n     }\n   }\n \n-  for (const route of ['/door', '/join', '/signin', '/signup']) await measure(route);\n+  for (const route of ['/petition', '/coop', '/label', '/r/general']) await measure(route);\n   console.log(`MEASURED viewport=${VIEWPORT.width}x${VIEWPORT.height} limit=${LIMIT} findings=${failures.length}`);\n   assert.equal(failures.length, 0, `${failures.length} finding(s) at 320 wide: ${failures.join('; ')}`);\n });\n",
+  "node_version": {
+    "returncode": 0,
+    "seconds": 0.003,
+    "stdout": "v24.22.3\n",
+    "stderr": ""
+  },
+  "node_check": {
+    "returncode": 0,
+    "seconds": 0.018,
+    "stdout": "",
+    "stderr": ""
+  },
+  "browser_test": {
+    "returncode": 1,
+    "seconds": 20.164,
+    "stdout": "\u2716 four more pages at 320x568: controls >= 44x44, document <= 320 wide (20089.361799ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 20136.976654\n\n\u2716 failing tests:\n\ntest at commons/test/pages-tap-targets-320.mjs:59:1\n\u2716 four more pages at 320x568: controls >= 44x44, document <= 320 wide (20089.361799ms)\n  Error: server did not boot\n      at boot (file:///tmp/kin-py-PISS4E/repo/commons/test/pages-tap-targets-320.mjs:56:9)\n      at async TestContext.<anonymous> (file:///tmp/kin-py-PISS4E/repo/commons/test/pages-tap-targets-320.mjs:60:14)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n",
+    "stderr": ""
+  }
+}

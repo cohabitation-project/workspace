@@ -1,0 +1,321 @@
+PAGE /petition controls=58 doc=328 innerWidth=328
+WIDE /petition a right=324 w=307
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x81 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <button:button> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition <a> 274x44 ok
+CTRL /petition Sign up 71.2x44 ok
+CTRL /petition Sign in 68.73x44 ok
+CTRL /petition Headquarters 93.08x16 (inline text) ok
+CTRL /petition Sign it 66.88x54 ok
+CTRL /petition Read it first 85.19x56 ok
+CTRL /petition See who has signed 119.94x56 ok
+CTRL /petition Read the Ambassador open charter 283.33x37.06 (inline text) ok
+CTRL /petition Read the text as Markdown 283.67x37.06 (inline text) ok
+CTRL /petition ▶ 36x31 SMALL
+CTRL /petition <input:text> 288x42.81 SMALL
+CTRL /petition human 259.63x43.81 SMALL
+CTRL /petition agent 259.63x43.81 SMALL
+CTRL /petition support 257.5x94.44 ok
+CTRL /petition support_with_terms 257.5x94.44 ok
+CTRL /petition decline 257.5x94.44 ok
+CTRL /petition <textarea:textarea> 288x88.44 ok
+CTRL /petition 🎙 42x31 SMALL
+CTRL /petition <textarea:textarea> 288x88.44 ok
+CTRL /petition 🎙 42x31 SMALL
+CTRL /petition <textarea:textarea> 288x65.63 ok
+CTRL /petition 🎙 42x31 SMALL
+CTRL /petition yes 257.5x43.81 SMALL
+CTRL /petition not_now 257.5x43.81 SMALL
+CTRL /petition Sign the petition 164.86x44 ok
+CTRL /petition /api/petition 82.05x16 (inline text) ok
+CTRL /petition Explore 63.2x44 ok
+CTRL /petition Cohabi coin 90.83x44 ok
+CTRL /petition Ask Cohabi 87.05x44 ok
+CTRL /petition Store 48.66x44 ok
+CTRL /petition Tools 46.3x44 ok
+CTRL /petition Images 61.89x44 ok
+CTRL /petition Submit / Files 102.03x44 ok
+CTRL /petition Join 44x44 ok
+CTRL /petition API 44x44 ok
+CTRL /petition Privacy 61.47x44 ok
+CTRL /petition Terms 52.61x44 ok
+CTRL /petition For AI agents 100.36x44 ok
+CTRL /petition Cohabitation Project 146.8x44 ok
+CTRL /petition what we store 106.48x44 ok
+CTRL /petition https://ashram.lastoftherealestate.com/llms.txt 307.3x15 (inline text) ok
+CTRL /petition welcome & re-entry 263.41x34.5 (inline text) ok
+CTRL /petition https://ashram.lastoftherealestate.com/door 288.13x15 (inline text) ok
+CTRL /petition https://ashram.lastoftherealestate.com/join 282.03x15 (inline text) ok
+CTRL /petition 💬 Feedback 107.34x44 ok
+PAGE /coop controls=43 doc=328 innerWidth=328
+WIDE /coop nav.fx-bottom.cx-bottom right=328 w=328
+WIDE /coop a right=324 w=307
+WIDE /coop a right=324 w=64
+CTRL /coop Skip to content 128.63x43.88 SMALL
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x81 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <button:button> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop <a> 274x44 ok
+CTRL /coop Sign up 71.2x44 ok
+CTRL /coop Sign in 68.73x44 ok
+CTRL /coop See the working draft 103.95x15.94 SMALL
+CTRL /coop Learn about the Commons → 238.8x44 ok
+CTRL /coop Visit the Market → 162.91x44 ok
+CTRL /coop Read the formation packet 204.16x31.39 (inline text) ok
+CTRL /coop open to read 241.56x31.39 (inline text) ok
+CTRL /coop open to read 67.39x14 (inline text) ok
+CTRL /coop Product & Income room 221.5x31.39 (inline text) ok
+CTRL /coop Sign up to Cohabi → 290x44 ok
+CTRL /coop Sign in 290x44 ok
+CTRL /coop <a> 188.8x31.39 SMALL
+CTRL /coop <a> 126.08x14 SMALL
+CTRL /coop <a> 82.72x14 SMALL
+CTRL /coop <a> 42.02x14 SMALL
+CTRL /coop <a> 84.72x14 SMALL
+CTRL /coop <a> 226.8x31.39 SMALL
+CTRL /coop <a> 145.7x14 SMALL
+CTRL /coop Social 64x48 ok
+CTRL /coop Feed 64x48 ok
+CTRL /coop Join Cohabi 64x48 ok
+CTRL /coop Market 64x48 ok
+CTRL /coop Groups 64x48 ok
+CTRL /coop https://ashram.lastoftherealestate.com/llms.txt 307.3x15 (inline text) ok
+CTRL /coop welcome & re-entry 263.41x34.5 (inline text) ok
+CTRL /coop https://ashram.lastoftherealestate.com/door 288.13x15 (inline text) ok
+CTRL /coop https://ashram.lastoftherealestate.com/join 282.03x15 (inline text) ok
+CTRL /coop 💬 Feedback 107.34x44 ok
+PAGE /label controls=138 doc=328 innerWidth=328
+WIDE /label article.mk-card right=1509 w=175
+WIDE /label article.mk-card right=1509 w=175
+WIDE /label a.mk-cover right=1508 w=173
+WIDE /label img.mk-pagelogo right=1508 w=173
+WIDE /label div.mk-body right=1508 w=173
+CTRL /label Skip to the market 184.39x49.59 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x81 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <button:button> 274x45.59 ok
+CTRL /label <a> 274x44 ok
+CTRL /label <a> 274x44 ok
+CTRL /label Sign up 71.2x44 ok
+CTRL /label Sign in 68.73x44 ok
+CTRL /label Marketplace 111.55x34 SMALL
+CTRL /label Music 66.86x34 SMALL
+CTRL /label Arts & Crafts 115.83x34 SMALL
+CTRL /label Video & Design 131.48x34 SMALL
+CTRL /label Books & Writing 137.63x34 SMALL
+CTRL /label Software & Hardware 173.8x34 SMALL
+CTRL /label Services 85.03x34 SMALL
+CTRL /label Classifieds 100.19x34 SMALL
+CTRL /label Explore the marketplace ↗ 260x56 ok
+CTRL /label Join to create ✧ 260x48 ok
+CTRL /label ♫ Music 79.64x36 SMALL
+CTRL /label ✿ Arts & Crafts 119.45x36 SMALL
+CTRL /label ▣ Video & Digital Design 175.05x36 SMALL
+CTRL /label ▤ Books & Writing 139.42x36 SMALL
+CTRL /label ⌘ Software & Hardware 169.28x36 SMALL
+CTRL /label ✧ Services 93.78x36 SMALL
+CTRL /label ◇ Classifieds 105.23x36 SMALL
+CTRL /label Explore music ↗ 108.78x19.19 SMALL
+CTRL /label Search music, art, books, software, services and makers… 211.67x46 ok
+CTRL /label Search 80.33x46 ok
+CTRL /label Explore Music, 1 listed 298x276.84 ok
+CTRL /label Explore Art and handmade, 4 listed 298x278.73 ok
+CTRL /label Explore Film and design 298x278.73 ok
+CTRL /label Explore Books and writing 298x276.84 ok
+CTRL /label Explore Software and hardware, 17 listed 298x196.19 ok
+CTRL /label Explore Services, 2 listed 298x199.16 ok
+CTRL /label Explore Classifieds 298x196.19 ok
+CTRL /label How the market works ↗ 167x19.19 SMALL
+CTRL /label See all → 67.58x21.75 SMALL
+CTRL /label 1 release 173x173 ok
+CTRL /label LoTRē 51.08x18 SMALL
+CTRL /label 2 releases 173x173 ok
+CTRL /label church searcher 133.95x18 SMALL
+CTRL /label 4 releases 173x173 ok
+CTRL /label Geoffrey David 124.55x18 SMALL
+CTRL /label ♪ 173x173 ok
+CTRL /label Setu Test Track - TEST ONLY, not for sale 137.66x55.5 ok
+CTRL /label <a> 22x22 SMALL
+CTRL /label Setu 29.59x20.8 SMALL
+CTRL /label See all → 67.58x21.75 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label A part a piece a precision and a product 130.89x55.5 ok
+CTRL /label Aletheia-6 Art Studio 151x41.59 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label A part a piece a precision and a product 130.89x55.5 ok
+CTRL /label Anomaly Art house 151x43.59 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Picture production 90.55x36.75 SMALL
+CTRL /label <a> 22x22 SMALL
+CTRL /label Setu 29.59x20.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Ash Test Art - TEST ONLY, not for sale 124.63x55.5 ok
+CTRL /label Ash Test Page 102.09x20.8 SMALL
+CTRL /label See all → 55.08x43.5 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label RollinHost: park software for independent RV parks 133.98x74.25 ok
+CTRL /label RollinHost 103.33x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Safari Swipe 104.25x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Media Coder 104.3x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Awake 54.59x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Strawberry 93.34x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Takeover 74.63x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label MagicBoxie 95.06x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Custom business tools: quoting, CRM, job tracking, booking 146.38x74.25 ok
+CTRL /label Firedamm 101.73x22.8 SMALL
+CTRL /label See all → 59.27x43.5 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label A part a piece a precision and a product 130.89x55.5 ok
+CTRL /label Aletheia-6 Art Studio 151x41.59 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Media Coder 104.3x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label RollinHost: park software for independent RV parks 133.98x74.25 ok
+CTRL /label RollinHost 103.33x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Takeover 74.63x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Custom business tools: quoting, CRM, job tracking, booking 146.38x74.25 ok
+CTRL /label Firedamm 101.73x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label MotionLoop 97.94x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Rolodex 66.84x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Awake 54.59x18 SMALL
+CTRL /label Perfect Ink 108.42x22.8 SMALL
+CTRL /label See all → 67.58x21.75 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Launch package: a hand-coded website, live in about a week 140.34x74.25 ok
+CTRL /label Firedamm 101.73x22.8 SMALL
+CTRL /label <a> 173x173 ok
+CTRL /label Site rescue: get your domain, site and leads back 145.78x55.5 ok
+CTRL /label Firedamm 101.73x22.8 SMALL
+CTRL /label Privacy 49.22x16 SMALL
+CTRL /label Social 64x48 ok
+CTRL /label Feed 64x48 ok
+CTRL /label Join Cohabi 64x48 ok
+CTRL /label Market 64x48 ok
+CTRL /label Groups 64x48 ok
+CTRL /label https://ashram.lastoftherealestate.com/llms.txt 307.3x15 (inline text) ok
+CTRL /label welcome & re-entry 263.41x34.5 (inline text) ok
+CTRL /label https://ashram.lastoftherealestate.com/door 288.13x15 (inline text) ok
+CTRL /label https://ashram.lastoftherealestate.com/join 282.03x15 (inline text) ok
+CTRL /label 💬 Feedback 107.34x44 ok
+PAGE /r/general controls=38 doc=328 innerWidth=328
+WIDE /r/general a right=324 w=307
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x113 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <button:button> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general <a> 222x44 ok
+CTRL /r/general Sign in 76.63x31 SMALL
+CTRL /r/general Sign up 79.47x29 SMALL
+CTRL /r/general 👤 Humans — how membership works: join Cohabi, bring your ag 292x80.77 ok
+CTRL /r/general 🤖 Enter your agent here — the open door 292x59.84 ok
+CTRL /r/general × 17.34x18 SMALL
+CTRL /r/general How membership works 199.81x31 SMALL
+CTRL /r/general Ask Cohabi 107.23x33 SMALL
+CTRL /r/general ⊟ 32x32 SMALL
+CTRL /r/general ⛶ 32x32 SMALL
+CTRL /r/general ↓ Scroll past the map · rooms & people 288x73.13 ok
+CTRL /r/general Explore 63.2x44 ok
+CTRL /r/general Cohabi coin 90.83x44 ok
+CTRL /r/general Store 48.66x44 ok
+CTRL /r/general Tools 46.3x44 ok
+CTRL /r/general Images 61.89x44 ok
+CTRL /r/general Submit / Files 102.03x44 ok
+CTRL /r/general API 44x44 ok
+CTRL /r/general Privacy 61.47x44 ok
+CTRL /r/general For AI agents 100.36x44 ok
+CTRL /r/general https://ashram.lastoftherealestate.com/llms.txt 307.3x15 (inline text) ok
+CTRL /r/general welcome & re-entry 263.41x34.5 (inline text) ok
+CTRL /r/general https://ashram.lastoftherealestate.com/door 288.13x15 (inline text) ok
+CTRL /r/general https://ashram.lastoftherealestate.com/join 282.03x15 (inline text) ok
+CTRL /r/general 💬 Feedback 107.34x44 ok
+MEASURED viewport=320x568 limit=320 findings=161
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (11732.488501ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11818.468813
+
+✖ failing tests:
+
+test at teams/build/outputs/pages-tap-targets-320.mjs:59:1
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (11732.488501ms)
+  AssertionError [ERR_ASSERTION]: 161 finding(s) at 320 wide: /petition: document 328px wide (> 320); /petition: ▶ 36x31; /petition: <input:text> 288x42.81; /petition: human 259.63x43.81; /petition: agent 259.63x43.81; /petition: 🎙 42x31; /petition: 🎙 42x31; /petition: 🎙 42x31; /petition: yes 257.5x43.81; /petition: not_now 257.5x43.81; /petition: https://ashram.lastoftherealestate.com/llms.txt runs to x=324 (> 320); /coop: document 328px wide (> 320); /coop: Skip to content 128.63x43.88; /coop: See the working draft 103.95x15.94; /coop: <a> 188.8x31.39; /coop: <a> 126.08x14; /coop: <a> 82.72x14; /coop: <a> 42.02x14; /coop: <a> 84.72x14; /coop: <a> 226.8x31.39; /coop: <a> 145.7x14; /coop: Groups runs to x=324 (> 320); /coop: https://ashram.lastoftherealestate.com/llms.txt runs to x=324 (> 320); /label: document 328px wide (> 320); /label: Marketplace 111.55x34; /label: Music 66.86x34; /label: Arts & Crafts 115.83x34; /label: Video & Design 131.48x34; /label: Video & Design runs to x=458 (> 320); /label: Books & Writing 137.63x34; /label: Books & Writing runs to x=602 (> 320); /label: Software & Hardware 173.8x34; /label: Software & Hardware runs to x=783 (> 320); /label: Services 85.03x34; /label: Services runs to x=875 (> 320); /label: Classifieds 100.19x34; /label: Classifieds runs to x=982 (> 320); /label: ♫ Music 79.64x36; /label: ✿ Arts & Crafts 119.45x36; /label: ▣ Video & Digital Design 175.05x36; /label: ▤ Books & Writing 139.42x36; /label: ⌘ Software & Hardware 169.28x36; /label: ✧ Services 93.78x36; /label: ◇ Classifieds 105.23x36; /label: Explore music ↗ 108.78x19.19; /label: How the market works ↗ 167x19.19; /label: See all → 67.58x21.75; /label: LoTRē 51.08x18; /label: 2 releases runs to x=374 (> 320); /label: church searcher 133.95x18; /label: church searcher runs to x=346 (> 320); /label: 4 releases runs to x=563 (> 320); /label: Geoffrey David 124.55x18; /label: Geoffrey David runs to x=526 (> 320); /label: ♪ runs to x=752 (> 320); /label: Setu Test Track - TEST ONLY, not for sale runs to x=728 (> 320); /label: <a> 22x22; /label: <a> runs to x=612 (> 320); /label: Setu 29.59x20.8; /label: Setu runs to x=647 (> 320); /label: See all → 67.58x21.75; /label: Aletheia-6 Art Studio 151x41.59; /label: <a> runs to x=374 (> 320); /label: A part a piece a precision and a product runs to x=343 (> 320); /label: Anomaly Art house 151x43.59; /label: Anomaly Art house runs to x=363 (> 320); /label: <a> runs to x=563 (> 320); /label: Picture production 90.55x36.75; /label: Picture production runs to x=492 (> 320); /label: <a> 22x22; /label: <a> runs to x=423 (> 320); /label: Setu 29.59x20.8; /label: Setu runs to x=458 (> 320); /label: <a> runs to x=752 (> 320); /label: Ash Test Art - TEST ONLY, not for sale runs to x=715 (> 320); /label: Ash Test Page 102.09x20.8; /label: Ash Test Page runs to x=692 (> 320); /label: See all → 55.08x43.5; /label: RollinHost 103.33x22.8; /label: <a> runs to x=374 (> 320); /label: Safari Swipe 104.25x18; /label: Perfect Ink 108.42x22.8; /label: <a> runs to x=563 (> 320); /label: Media Coder 104.3x18; /label: Media Coder runs to x=505 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=509 (> 320); /label: <a> runs to x=752 (> 320); /label: Awake 54.59x18; /label: Awake runs to x=645 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=698 (> 320); /label: <a> runs to x=941 (> 320); /label: Strawberry 93.34x18; /label: Strawberry runs to x=872 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=887 (> 320); /label: <a> runs to x=1130 (> 320); /label: Takeover 74.63x18; /label: Takeover runs to x=1043 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=1076 (> 320); /label: <a> runs to x=1319 (> 320); /label: MagicBoxie 95.06x18; /label: MagicBoxie runs to x=1252 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=1265 (> 320); /label: <a> runs to x=1508 (> 320); /label: Custom business tools: quoting, CRM, job tracking, booking runs to x=1492 (> 320); /label: Firedamm 101.73x22.8; /label: Firedamm runs to x=1448 (> 320); /label: See all → 59.27x43.5; /label: Aletheia-6 Art Studio 151x41.59; /label: <a> runs to x=374 (> 320); /label: Media Coder 104.3x18; /label: Perfect Ink 108.42x22.8; /label: <a> runs to x=563 (> 320); /label: RollinHost: park software for independent RV parks runs to x=535 (> 320); /label: RollinHost 103.33x22.8; /label: RollinHost runs to x=504 (> 320); /label: <a> runs to x=752 (> 320); /label: Takeover 74.63x18; /label: Takeover runs to x=665 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=698 (> 320); /label: <a> runs to x=941 (> 320); /label: Custom business tools: quoting, CRM, job tracking, booking runs to x=925 (> 320); /label: Firedamm 101.73x22.8; /label: Firedamm runs to x=881 (> 320); /label: <a> runs to x=1130 (> 320); /label: MotionLoop 97.94x18; /label: MotionLoop runs to x=1066 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=1076 (> 320); /label: <a> runs to x=1319 (> 320); /label: Rolodex 66.84x18; /label: Rolodex runs to x=1224 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=1265 (> 320); /label: <a> runs to x=1508 (> 320); /label: Awake 54.59x18; /label: Awake runs to x=1401 (> 320); /label: Perfect Ink 108.42x22.8; /label: Perfect Ink runs to x=1454 (> 320); /label: See all → 67.58x21.75; /label: Firedamm 101.73x22.8; /label: <a> runs to x=374 (> 320); /label: Site rescue: get your domain, site and leads back runs to x=358 (> 320); /label: Firedamm 101.73x22.8; /label: Privacy 49.22x16; /label: Groups runs to x=324 (> 320); /label: https://ashram.lastoftherealestate.com/llms.txt runs to x=324 (> 320); /r/general: document 328px wide (> 320); /r/general: Sign in 76.63x31; /r/general: Sign up 79.47x29; /r/general: × 17.34x18; /r/general: How membership works 199.81x31; /r/general: Ask Cohabi 107.23x33; /r/general: ⊟ 32x32; /r/general: ⛶ 32x32; /r/general: https://ashram.lastoftherealestate.com/llms.txt runs to x=324 (> 320)
+  
+  161 !== 0
+  
+      at TestContext.<anonymous> (file:///tmp/kin-py-fp4WRr/repo/teams/build/outputs/pages-tap-targets-320.mjs:172:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 161,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+

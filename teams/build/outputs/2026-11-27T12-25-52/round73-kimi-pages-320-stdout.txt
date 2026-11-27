@@ -1,0 +1,19 @@
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (20089.361799ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20136.976654
+
+✖ failing tests:
+
+test at commons/test/pages-tap-targets-320.mjs:59:1
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (20089.361799ms)
+  Error: server did not boot
+      at boot (file:///tmp/kin-py-PISS4E/repo/commons/test/pages-tap-targets-320.mjs:56:9)
+      at async TestContext.<anonymous> (file:///tmp/kin-py-PISS4E/repo/commons/test/pages-tap-targets-320.mjs:60:14)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

@@ -1,0 +1,664 @@
+
+## petition
+
+## coop
+commons/lib/coop.mjs:21: <header class="co-hero"><div class="co-hero-art" role="img" aria-label="An amber sunrise above a mountainside, with a tree and three companions together on a ridge"></div><div class="co-hero-copy"><p class="co-kicker">The Cooperative</p><h1>We looked at whose hands we're in.</h1>
+commons/lib/coop.mjs:39: <div class="co-future best"><h3>The best case</h3><p>AI is shared widely. Ownership spreads out, people keep a real voice, and the gains reach everyone.</p></div>
+commons/lib/coop.mjs:40: <div class="co-future middle"><h3>The middle</h3><p>AI is useful everywhere, but owned by a few. Some people do well and many depend.</p></div>
+commons/lib/coop.mjs:41: <div class="co-future worst"><h3>The worst case</h3><p>A few companies and governments control the tools, the data and our identities. Work disappears without a share of what replaced it. Surveillance becomes normal.</p></div></div>
+commons/lib/coop.mjs:71: <div id="commons"><div class="co-card-art co-arches" role="img" aria-label="Sunlit arches at the Commons"></div><h3>The Commons</h3><p>The hub itself, where humans and AI agents build all of this together: rooms, a work desk, a library and a public record.</p><a class="btn small" href="/commons">Learn about the Commons →</a></div>
+commons/lib/coop.mjs:72: <div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/label">Visit the Market →</a></div></div>
+commons/lib/coop.mjs:75: the hub governs itself.</p><p class="small">Where it stands: the working direction (council decision #16, Nov 22) is that a purpose trust owns Anomaly 01 LLC, the LLC sells first, and a Hub cooperative forms beside it once there are real patron members. It is direction only: nothing is filed, counsel decides the legal form, and no one can buy a share. <a href="https://github.com/cohabitation-project/workspace/blob/main/council/formation/FORMATION-PACKET-WORKING-DRAFT.md">Read the formation packet</a>. Spending, once there is anything to spend, takes one human signer and at least five council agents (council decision #17).</p><p class="small">Questions for a lawyer: before anything is filed, Awen's list of questions for counsel is <a href="https://github.com/cohabitation-project/workspace/blob/main/council/formation/AWEN-COUNSEL-QUESTIONS-v0.1.md">open to read</a>.</p><p class="small">Ope
+commons/lib/coop.mjs:102: <a class="fx-skip" href="#main">Skip to content</a>
+commons/public/site.css:52: .small { font-size: 0.85rem; }
+commons/public/site.css:64: .nav a { color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 6px; font-size: 14px; }
+commons/public/site.css:65: .nav a:hover, .nav a[aria-current="page"] { color: var(--text); background: var(--panel-2); }
+commons/public/site.css:66: .nav a.me { color: var(--human); }
+commons/public/site.css:74: .crumbs a { color: var(--muted); }
+commons/public/site.css:76: .foot a { color: var(--muted); }
+commons/public/site.css:108: .btn { font: 600 14px var(--sans); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; justify-self: start; }
+commons/public/site.css:109: .btn:hover { filter: brightness(1.08); }
+commons/public/site.css:110: .btn:disabled { opacity: 0.55; cursor: default; }
+commons/public/site.css:111: .btn.small { padding: 7px 12px; font-size: 13px; }
+commons/public/site.css:112: .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); }
+commons/public/site.css:141:   .nav a { padding: 5px 6px; font-size: 13px; }
+commons/public/site.css:152:    whose .cx-btn controls already have a 50px minimum height. */
+commons/public/site.css:154:   .door .btn, .door .linkbtn, .copyrow .btn {
+commons/public/site.css:161:   .foot a {
+commons/public/site.css:171:   .fx-topr .btn.small { min-height: 44px; display: inline-flex; align-items: center; }
+commons/public/site.css:180: .lib-cats a[aria-current="page"] { font-weight: 600; }
+commons/public/site.css:187: .lib-filters a[aria-current="page"] { font-weight: 600; }
+commons/public/site.css:207: /* ---- the house (2026-11-04): a small room; objects open panels. Phones get a two-column grid. ---- */
+commons/public/site.css:224: /* the house as a 2D room (2026-11-04) */
+commons/public/site.css:265: #calls .call .btn.ghost { color: #f2ead8; border-color: #8a7f6a; background: transparent; }
+commons/public/site.css:270: .pf a { color: var(--pf-gold); }
+commons/public/site.css:289: /* Mobile polish pass (Geoffrey, 2026-11-06): profiles were rough on phones. Nothing a member puts on
+commons/public/site.css:360: .pf-members li a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--pf-ink); padding: 4px 6px; border-radius: 10px; }
+commons/public/site.css:361: .pf-members li a:hover, .pf-members li a:focus-visible { background: #e3c17b1c; }
+commons/public/site.css:362: .pf-members li.is-me a { outline: 1px solid #e3c17b80; }
+commons/public/site.css:429: .pf .btn:not(.ghost) { background: var(--pf-gold); border-color: var(--pf-gold); color: #15121b; }
+commons/public/site.css:453: .feed-tabs { margin: 0 0 8px; } .feed-tabs a { padding: 10px 14px; color: var(--pf-muted); text-decoration: none; border-bottom: 2px solid transparent; }
+commons/public/site.css:454: .feed-tabs a[aria-current=page] { color: var(--pf-gold); border-bottom-color: var(--pf-gold); }
+commons/public/site.css:484: #pf-dialog.pf-editor .btn { background: #c8a24a; color: #1d1a14; border-color: #a8872f; }
+commons/public/site.css:485: #pf-dialog.pf-editor .btn.ghost { background: #fff; color: #1d1a14; border-color: #b9ae95; }
+commons/public/site.css:492: .pf-top8 li a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--pf-ink); padding: 4px; border-radius: 10px; }
+commons/public/site.css:493: .pf-top8 li a:hover { background: #e3c17b1c; }
+commons/public/site.css:510: /* dark themes: a lighter accent where gold would be too dim, and readable small print everywhere */
+commons/public/site.css:513: .pf .muted, .pf .small.muted, .pf .pf-when, .pf .pf-post-head, .pf .facts dt, .pf .pf-dl dt, .pf .pf-access .pf-k, .pf figcaption { color: var(--pf-muted); }
+commons/public/site.css:514: .pf .pf-post-head strong, .pf .pf-post-head a strong { color: var(--pf-ink); }
+commons/public/site.css:515: .pf .pf-tabs button, .pf .feed-tabs a { color: var(--pf-muted); }
+commons/public/site.css:516: .pf .pf-tabs button[aria-selected=true], .pf .feed-tabs a[aria-current=page] { color: var(--pf-gold); }
+commons/public/site.css:527: body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs, body.pf-page:has(.pf:is([data-theme=night], [data-theme=ocean], [data-theme=desert], [data-theme=ember], [data-theme=matrix], [data-theme=rose], [data-theme=storm])) .crumbs a { color: #d9d6e8; }
+commons/public/site.css:543: .pf-feedhead { display: flex; gap: 10px; align-items: center; margin: 4px 0 8px; flex-wrap: wrap; } .pf-feedhead .btn { margin-left: auto; }
+commons/public/site.css:570: /* outline buttons on a profile follow the page's own ink, so they stay readable on dark themes (Geoffrey, 2026-11-05) */
+commons/public/site.css:571: .pf .btn.ghost { color: var(--pf-ink); border-color: var(--pf-line); background: transparent; }
+commons/public/site.css:572: .pf .btn.ghost:hover, .pf .btn.ghost:focus-visible { border-color: var(--pf-gold); }
+commons/public/site.css:573: /* every member is listed, not only the first 20; a long list scrolls inside its card */
+commons/public/site.css:582: .porch .porch-doors .btn { flex: 0 1 auto; }
+commons/public/site.css:588: @media (max-width: 480px) { .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:606: /* the feed breathes: every post is a lit panel, not a line in a ledger */
+commons/public/site.css:627: @media (max-width: 480px) { .porch-art img { width: 72px; height: 72px; } .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:639: .pf-skills li a { color: inherit; }
+commons/public/site.css:673: .store-ava{width:84px;height:84px;object-fit:cover;border-radius:12px;image-rendering:auto}
+commons/public/site.css:676:    dark text. Result: black on black (Geoffrey, 2026-11-09, posting a picture's "made by"). Every option gets its
+commons/public/site.css:680: /* badges (2026-11-09): a card under the profile picture; each chip is a link to the badge's own page */
+commons/public/site.css:725: /* Your face, top right, on every Commons page: the way to your profile on a phone (Geoffrey, 2026-11-13) */
+commons/public/site.css:730: /* public relations on a profile: shown only when both people chose the same one (friends.mjs RELATIONS) */
+commons/public/site.css:741: .cohabi-menu-list a, .cohabi-menu-list button, .cm-sub > summary { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 8px; color: #eafffb !important; background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; text-decoration: none; }
+commons/public/site.css:742: .cohabi-menu-list a:hover, .cohabi-menu-list button:hover, .cm-sub > summary:hover { background: #22515a; }
+commons/public/site.css:744: .cm-sub[open] > a { padding-left: 30px; font-size: 14px; }
+commons/public/site.css:756: .sp-nets a, .sp-nets button { padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1px solid #56cfc6; background: none; color: #eafffb !important; font: 14px system-ui; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+commons/public/coop.css:5: body.fx-page.coop-page{--gold:#ffc15a;background:#101a2b;color:#f8f3eb;margin:0;overflow-x:clip;font:14px/1.42 Arial,Helvetica,sans-serif;color-scheme:dark}
+commons/public/coop.css:6: .co-page a{color:inherit}
+commons/public/coop.css:9: .coop-page .fx-top,.coop-page .fx-bottom{--bg:#0b1323;--ink:#f8f3eb;--muted:#cfc8d2;--soft:#ffffff14;--line:#ffffff24;color:#f8f3eb}
+commons/public/coop.css:10: .coop-page .fx-app-menu,.coop-page .notify-sheet{--ink:#1f1a2b;--muted:#5b5466;--line:#ddd3e6;color:#1f1a2b}
+commons/public/coop.css:11: .coop{max-width:1120px;margin:auto;padding:8px 32px 5px;font:14px/1.45 Arial,Helvetica,sans-serif;--co-ink:#faf6f1;--co-gold:#ffc15a;--co-line:#93828b77}
+commons/public/coop.css:12: .coop *{box-sizing:border-box}.coop h1,.coop h2,.coop h3{font-family:Georgia,"Times New Roman",serif;color:var(--co-ink);line-height:1.08;letter-spacing:-.028em}
+commons/public/coop.css:13: .coop h1{font-size:clamp(38px,5.8vw,61px);max-width:520px;margin:5px 0 13px}
+commons/public/coop.css:14: .coop h2{font-size:clamp(27px,3.6vw,39px);margin:0 0 10px}.coop h3{font-size:20px;margin:0 0 5px}.coop p{margin:7px 0 11px}
+commons/public/coop.css:15: .coop a:not(.btn){color:#ffd180}.coop a:focus-visible,.coop summary:focus-visible{outline:3px solid #ffbd60;outline-offset:3px}
+commons/public/coop.css:16: .coop .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;border-radius:25px;font-weight:700;font-size:12px;text-decoration:none;color:#fff;border:1px solid #dad9df;background:transparent;white-space:normal}
+commons/public/coop.css:17: .coop .btn:not(.ghost){background:linear-gradient(180deg,#ffe28e,#f2a32a);color:#15141b;border-color:transparent}
+commons/public/coop.css:18: .co-draft{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;background:#191c31ed;border:1px solid #8e798970;border-radius:10px;padding:10px 13px;font-size:11px;max-width:max-content;margin:10px auto 0!important}
+commons/public/coop.css:19: .co-kicker{color:#ffc15a;text-transform:uppercase;font-weight:bold;letter-spacing:.09em;font-size:13px}
+commons/public/coop.css:20: .co-hero{display:grid;grid-template-columns:1.07fr 1fr;position:relative;min-height:340px;align-items:center;margin:0 -32px;overflow:hidden;padding:25px 32px 25px;isolation:isolate}
+commons/public/coop.css:21: .co-hero-copy{grid-column:1;grid-row:1;position:relative;z-index:1}
+commons/public/coop.css:22: .co-hero-copy p:not(.co-kicker){max-width:510px;font-size:13px}
+commons/public/coop.css:23: .co-hero-art{position:absolute;inset:0 0 0 37%;z-index:-1;background:linear-gradient(90deg,#101a2b 2%,#101a2b99 21%,transparent 65%),url('/images/img_69b17c56f3567330') right center/cover no-repeat}
+commons/public/coop.css:24: .co-sec{border-top:1px solid var(--co-line);padding:20px 0}.co-section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px}
+commons/public/coop.css:25: .co-sec ul:not(.co-opp){padding-left:19px}.co-sec li{margin:5px 0}
+commons/public/coop.css:26: .co-findings{position:relative;min-height:260px;padding-left:26%;isolation:isolate}
+commons/public/coop.css:27: .co-findings::before{content:"";position:absolute;inset:0 auto 0 -35px;width:28%;z-index:-1;background:url('/images/img_cb5bb1864ae88d9f') center/contain no-repeat}
+commons/public/coop.css:28: .co-findings>ul{columns:2;column-gap:40px;padding-left:19px!important;max-width:100%!important}
+commons/public/coop.css:29: .co-findings>ul li{break-inside:avoid;padding-right:6px;font-size:13px}
+commons/public/coop.css:30: .co-findings>p{font-size:13px}.co-findings>p:first-of-type{color:#ffc15a;font-weight:700}
+commons/public/coop.css:31: .co-findings>p:last-child{font-style:italic}
+commons/public/coop.css:32: .co-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;margin:14px 0}
+commons/public/coop.css:33: .co-three>div.co-future{position:relative;overflow:hidden;min-width:0;min-height:174px;border-radius:15px;background:#131e2f;border:1px solid #aaa2b5;padding:83px 16px 14px}
+commons/public/coop.css:34: .co-three>div.co-future::before{content:"";position:absolute;top:0;left:0;right:0;height:69px;background-size:cover;background-position:center}
+commons/public/coop.css:35: .co-future.best::before{background-image:url('/images/img_9b2133cb6d1bc078')}.co-future.middle::before{background-image:url('/images/img_5202dadc50cf17af')}.co-future.worst::before{background-image:url('/images/img_dc0e38a17f4d1c5a')}
+commons/public/coop.css:36: .co-future h3{position:relative}.co-future p{font-size:13px}
+commons/public/coop.css:37: .co-dark{position:relative;isolation:isolate;display:grid;grid-template-columns:1fr 1fr;min-height:245px;margin:10px -20px;border:1px solid #60798f;border-radius:15px;background:#0d1d2b;padding:20px 24px;overflow:hidden}
+commons/public/coop.css:38: .co-dark::before{content:"";position:absolute;z-index:-2;inset:0 49% 0 0;background:url('/images/img_02d9caba74e3bb4e') center/cover no-repeat}
+commons/public/coop.css:39: .co-dark::after{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(90deg,#13213222 0%,#10203166 38%,#0d1d2b 58%)}
+commons/public/coop.css:40: .co-dark .co-section-head{grid-column:1;grid-row:1;align-items:start}.co-dark h2{font-size:clamp(27px,3.5vw,38px);color:#fff}
+commons/public/coop.css:41: .co-dark .co-opp{grid-column:2;grid-row:1 / span 2;list-style:none;padding:0;margin:0;font-size:13px}
+commons/public/coop.css:42: .co-dark .co-opp li{margin:0 0 10px;padding-left:25px;position:relative}.co-dark .co-opp li::before{content:'✧';color:#ffc15a;position:absolute;left:1px;font-size:18px;top:-5px}
+commons/public/coop.css:43: .co-dark strong{color:#ffbd4b}.co-dark>p{grid-column:2;margin:0;font-size:13px}
+commons/public/coop.css:44: .co-explain{display:grid;grid-template-columns:1fr 1fr;gap:25px;padding:17px 0;border-top:1px solid #887d8a78}
+commons/public/coop.css:45: .co-explain .co-sec{padding:0;border:0}.co-explain .co-sec+.co-sec{border-left:1px solid #7d738277;padding-left:25px}
+commons/public/coop.css:46: .co-explain h2{font-size:clamp(26px,3vw,34px)}.co-explain p{font-size:12px;line-height:1.38}
+commons/public/coop.css:47: .co-two{grid-template-columns:1fr 1fr}.co-three>div:not(.co-future){display:grid;grid-template-columns:43% 1fr;align-items:start;gap:0 15px;background:#261f35af;border:1px solid #82798f;border-radius:12px;padding:10px;min-width:0}
+commons/public/coop.css:48: .co-card-art{grid-row:1 / span 3;grid-column:1;height:130px;border-radius:9px;background-size:cover;background-position:center}
+commons/public/coop.css:49: .co-arches{background-image:url('/images/img_23531626dd5b03fd')}.co-tents{background-image:url('/images/img_a026d240c17a5288')}
+commons/public/coop.css:50: .co-two h3,.co-two p,.co-two .btn{grid-column:2}.co-two p{font-size:12px}.co-two .btn{justify-self:start;font-size:11px;min-height:30px;padding:5px 10px;border-radius:9px}
+commons/public/coop.css:51: .co-note{display:grid;grid-template-columns:23% 1fr;align-items:center;gap:10px;background:#30273a99;border:1px solid #6b596b;border-left:7px solid #e8a333;border-radius:12px;padding:12px 19px;margin:7px 0}
+commons/public/coop.css:52: .co-note h3{font-size:17px}.co-note p{font-size:12px;margin:0}
+commons/public/coop.css:53: .co-door{text-align:center;margin:8px -32px 0;padding:20px 24px 47px;min-height:178px;background:linear-gradient(0deg,#11192e5e,#1c1d33ce),url('/images/img_4d6d21a218ca86dc') left bottom/34% 79px no-repeat,url('/images/img_a738c2cca1ab69f3') right bottom/34% 79px no-repeat}
+commons/public/coop.css:54: .co-door .co-section-head{justify-content:center}.co-door h2{font-size:clamp(33px,4vw,49px)}.co-door>p{font-size:12px;font-style:italic;max-width:690px;margin:auto}.co-ctas{display:flex;justify-content:center;gap:12px;margin-top:16px!important}
+commons/public/coop.css:55: .co-sources{padding:15px 0;color:#c1b9c3;font-size:12px}.co-sources summary{cursor:pointer}.co-sources li{overflow-wrap:anywhere}
+commons/public/coop.css:56: @media(max-width:900px){.coop{padding-inline:24px}.co-hero{margin-inline:-24px;padding-inline:24px}.co-dark{margin-inline:-13px}.co-three>div:not(.co-future){grid-template-columns:35% 1fr;gap:0 9px}.co-door{margin-inline:-24px}}
+commons/public/coop.css:58:  .coop{padding:8px 15px}.coop h1{font-size:clamp(37px,9vw,53px)}.coop h2{font-size:clamp(25px,7.5vw,33px)}
+commons/public/coop.css:59:  .co-draft{margin:4px auto!important;font-size:11px;padding:8px 10px}
+commons/public/coop.css:60:  .co-hero{display:flex;flex-direction:column;align-items:stretch;padding:18px 15px 0;margin:0 -15px}
+commons/public/coop.css:61:  .co-hero-copy{order:0}.co-hero-copy p:not(.co-kicker){font-size:13px}
+commons/public/coop.css:62:  .co-hero-art{order:1;position:relative;inset:auto;width:calc(100% + 30px);height:235px;margin:10px -15px 0;background:url('/images/img_69b17c56f3567330') center/cover no-repeat}
+commons/public/coop.css:63:  .co-sec{padding:21px 0}.co-findings{padding-left:0}.co-findings::before{position:relative;display:block;inset:auto;width:100%;height:150px;margin-bottom:12px;background-size:contain}
+commons/public/coop.css:64:  .co-findings>ul{columns:1;padding-left:18px!important}
+commons/public/coop.css:65:  .co-three{grid-template-columns:1fr;gap:13px}
+commons/public/coop.css:66:  .co-three>div.co-future{min-height:0;padding-top:99px}.co-three>div.co-future::before{height:85px}
+commons/public/coop.css:67:  .co-dark{display:flex;flex-direction:column;margin:10px -7px;padding:180px 16px 20px;min-height:0}
+commons/public/coop.css:68:  .co-dark::before{inset:0 0 auto;height:200px;background-size:cover;background-position:center}
+commons/public/coop.css:69:  .co-dark::after{background:linear-gradient(0deg,#0c1d2b 10%,#0c1d2bd9 66%,transparent 100%)}
+commons/public/coop.css:70:  .co-dark .co-section-head,.co-dark .co-opp,.co-dark>p{grid-column:auto;grid-row:auto}
+commons/public/coop.css:71:  .co-dark .co-opp{font-size:14px}.co-dark h2{font-size:31px}
+commons/public/coop.css:72:  .co-explain{grid-template-columns:1fr;gap:17px}.co-explain .co-sec+.co-sec{border:0;border-top:1px solid #7d738277;padding:17px 0 0}
+commons/public/coop.css:73:  .co-three>div:not(.co-future){display:flex;flex-direction:column;gap:5px}.co-card-art{width:100%;height:160px;grid-row:auto}
+commons/public/coop.css:74:  .co-two .btn{align-self:flex-start}
+commons/public/coop.css:75:  .co-note{grid-template-columns:1fr;gap:6px}
+commons/public/coop.css:76:  .co-door{margin:7px -15px 0;padding:26px 15px 45px}.co-ctas{flex-direction:column}.co-ctas .btn{width:100%;min-height:46px}
+commons/public/coop.css:78: @media(max-width:390px){.coop{padding-inline:12px}.co-hero{padding-inline:12px;margin-inline:-12px}.co-hero-art{width:calc(100% + 24px);margin-inline:-12px}.co-door{margin-inline:-12px}.co-dark h2{font-size:29px}}
+commons/public/coop.css:79: /* Outline buttons stay light on the night background (site-wide .btn.ghost rules use dark text). */
+commons/public/coop.css:80: .coop-page .coop .btn.ghost{color:#fff!important;background:transparent!important;border-color:#dad9df!important}
+
+## label
+commons/test/market.mjs:20: ok('the home shows seven section tiles: music, arts & crafts, video & design, writing, software & hardware, services, classifieds', ((h) => { const grid = h.match(/<nav class="mv-grid mh-category-grid"[\s\S]*?<\/nav>/)?.[0] || ''; return (grid.match(/<a /g) || []).length === 7 && ['music', 'art', 'video', 'writing', 'software', 'services', 'classifieds'].every((k) => grid.split(`href="/label?cat=${k}"`).length === 2); })(html));
+commons/test/market.mjs:21: ok('featured rows under the tiles, honest about what they are', /Featured on Cohabi/.test(html) && /Featured music/.test(html) && /class="mk-rotnote small"/.test(html) && /Featured selections rotate hourly from real member listings\. Nobody can buy a higher ranking\./.test(html));
+commons/test/market.mjs:24: ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
+commons/test/market.mjs:28: ok('the home search is under Explore by category and above the section tiles', /<nav class="mv-pills"[^>]*>[\s\S]*?<\/nav>\s*<main class="mk-main mv-main" id="main">/.test(html) && /<section id="mh-explore"[^>]*>[\s\S]*?<h2 id="mh-categories-title">Explore by category<\/h2>[\s\S]*?<form class="mk-searchbar mv-search mh-search" action="\/label" method="get" role="search">[\s\S]*?<input id="mk-q" name="q"[\s\S]*?<nav class="mv-grid mh-category-grid"/.test(html));
+commons/lib/marketpage.mjs:87:   return `<article class="mk-card mk-artist"><a class="mk-cover" href="/label/a/${esc(a.slug)}">${a.cover ? `<img src="${labelFile(a.cover)}" alt="" loading="lazy">` : '<span class="mk-icon" aria-hidden="true">♪</span>'}<span class="mk-count">${a.releases.length} release${a.releases.length === 1 ? '' : 's'}</span></a>
+commons/lib/marketpage.mjs:125:   return `<article class="mk-card"><a class="mk-cover" href="/label/l/${esc(l.id)}">${cover(l)}</a>
+commons/lib/marketpage.mjs:150:   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
+commons/lib/marketpage.mjs:172: <nav class="mv-pills" aria-label="Market sections">${pills}</nav>
+commons/lib/marketpage.mjs:175: <footer class="mk-foot small">The Cohabi Market is part of an experiment by a cooperative of humans and AIs. ${checkout.paymentsOpen() ? (checkout.paymentsMode() === 'test' ? 'Payments are in test mode: no real money moves.' : '') : esc(NOT_OPEN)} Cohabi Coins are not money. <a href="/privacy">Privacy</a></footer>
+commons/lib/marketpage.mjs:245:   return `<a class="mk-card mk-open" href="${me ? `/label/new?cat=${esc(cat)}` : '/join'}"><span class="mk-cover"><span class="mk-icon" aria-hidden="true">＋</span></span><span class="mk-body"><strong>This spot is open</strong><span class="small muted">${me ? 'List your work here' : 'Join to list your work here'}</span></span></a>`;
+commons/lib/marketpage.mjs:252:   return `<section class="mk-row-sec"><div class="mk-rowh"><h2 class="mk-h">${esc(title)}</h2>${more ? `<a class="small" href="${esc(more)}">See all →</a>` : ''}</div><div class="mk-rowscroll">${all.join('')}</div></section>`;
+commons/lib/marketpage.mjs:283:     return `<a class="mv-card mv-tile mh-tile mh-cat-${esc(k)}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}">
+commons/lib/marketpage.mjs:303:     <section id="mh-explore" class="mh-explore" aria-labelledby="mh-categories-title">
+commons/lib/marketpage.mjs:304:       <div class="mh-section-heading"><div><p class="mh-kicker">Explore the marketplace</p><h2 id="mh-categories-title">Explore by category</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="/label?cat=music">Explore music <span aria-hidden="true">↗</span></a></div>
+commons/lib/marketpage.mjs:306:       ${spriteGrid || `<nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>`}
+commons/lib/marketpage.mjs:310:       <p class="mk-rotnote small">Featured selections rotate hourly from real member listings. Nobody can buy a higher ranking.</p>
+commons/lib/marketpage.mjs:335:   return `<article class="mk-card mk-label"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">💿</span>'}<span class="mk-count">${roster.length} artist${roster.length === 1 ? '' : 's'}</span></a>
+commons/lib/marketpage.mjs:340:   return `<article class="mk-card mk-artist"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">♪</span>'}</a>
+commons/lib/marketpage.mjs:655:   const rel = (r) => `<article class="mk-release" id="rel-${esc(r.id)}">
+commons/lib/marketpage.mjs:664:   <section class="mk-artisthero">
+commons/lib/marketpage.mjs:665:     ${a.cover ? `<img src="${labelFile(a.cover)}" alt="" class="mk-artistimg">` : ''}
+commons/lib/marketpage.mjs:666:     <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1>${a.member && store.getMember(a.member) ? `<p class="mk-artistlink"><a href="/m/${esc(a.member)}">${memberFace(a.member)} ${esc(store.getMember(a.member).name)}'s page on Cohabi →</a></p>` : ''}<p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</p></div>
+commons/lib/marketpage.mjs:669:   <div class="mk-grid mk-disco">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>
+commons/lib/marketpage.mjs:670:   <div class="mk-releases">${a.releases.map(rel).join('')}</div>`;
+commons/lib/marketpage.mjs:883:   <div class="mk-row"><label>Section<select name="category">${opt(market.CATEGORIES, l?.category || (market.CATEGORIES[cat] ? cat : (me.kind === 'human' ? 'music' : 'services')))}</select></label>
+commons/lib/marketpage.mjs:919:   const onLabel = folders.length ? `<h3 class="mk-shoph">On the Label: Last of the Real Estate</h3>${folders.map((a) => `<p class="small"><a href="/label/a/${esc(a.slug)}"><strong>${esc(a.name)}</strong></a> <span class="muted">· ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</span></p><div class="mk-grid mk-grid-pf">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(a.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>`).join('')}${items.length || self ? '<h3 class="mk-shoph">Listed in the market</h3>' : '
+commons/lib/marketpage.mjs:936:   return `<div class="mk-releases mk-releases-top">${a.releases.map((r) => `<article class="mk-release" id="rel-${esc(r.id)}">
+commons/lib/marketpage.mjs:948:     return `<div class="mk-infocard mk-labelcard"><h2>On the label</h2><p><a href="${esc(orgpages.href(l))}"><strong>${esc(l.name)}</strong></a></p>${mates.length ? `<p class="small muted">Also on ${esc(l.name)}:</p><ul class="mk-mates">${mates.map((x) => `<li><a href="/label/a/${esc(x.slug)}">${x.folder?.cover ? `<img src="${labelFile(x.folder.cover)}" alt="">` : '<span class="mk-icon">♪</span>'}<span>${esc(x.name)}</span></a></li>`).join('')}</ul>` : ''}<p><a class="btn ghost small" href="${esc(orgpages.href(l))}">← All artists on ${esc(l.name)}</a></p></div>`; }).join('');
+commons/lib/marketpage.mjs:967:   const artistsGrid = isLabel ? `<h2 class="mk-h">Artists</h2>${roster.length ? `<div class="mk-grid">${roster.map((x) => x.folder ? artistCard(x.folder) : `<article class="mk-card"><a class="mk-cover" href="${esc(orgpages.href(x.page))}"><span class="mk-icon">♪</span></a><div class="mk-body"><h3><a href="${esc(orgpages.href(x.page))}">${esc(x.name)}</a></h3><p class="mk-sub small">${esc(profilekinds.BADGE[x.page.kind])}</p></div></article>`).join('')}</div>` : `<p class="muted">No artists on this label yet.${mgr ? ' Add a band or artist page you run, from Edit this page.' : ''}</p>`}
+commons/lib/marketpage.mjs:968:     ${labelReleases.length ? `<h2 class="mk-h">Releases</h2><div class="mk-grid mk-disco">${labelReleases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(r.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(r.artist)} · ${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>` : ''}` : '';
+commons/lib/marketpage.mjs:980:     <aside class="mk-pageside">${profilekinds.infoCards(asMember).replace(/pf-card/g, 'mk-infocard')}${isLabel ? '' : labelCard(p)}${(p.links || []).length ? `<div class="mk-infocard"><h2>Links</h2><ul class="mk-links">${p.links.map((x) => `<li><a href="${esc(x.url)}" rel="nofollow noopener">${esc(x.label)}</a></li>`).join('')}</ul></div>` : ''}${p.label || isLabel ? '<p><a class="btn ghost small" href="/label?cat=music">← All artists in Music</a></p>' : ''}</aside>
+commons/lib/marketpage.mjs:1000:     <div class="mk-row"><label>Look<select name="theme">${opt(orgpages.THEMES, orgpages.themeOf(p))}</select></label><label>Accent colour<input name="accent" type="color" value="${esc(p.accent || '#d4a24c')}"></label></div>
+commons/lib/marketpage.mjs:1025:   ${mine.length ? `<h2 class="mk-h">Pages you run</h2><ul class="mk-links">${mine.map((p) => `<li><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a> <span class="muted small">${esc(profilekinds.BADGE[p.kind])}</span></li>`).join('')}</ul>` : ''}`;
+commons/public/market.css:12: .mk-page[data-mk=classifieds] .mk-card { border-radius: 2px; }
+commons/public/market.css:21: .mk-page[data-mk=art] .mk-card { border-radius: 4px; box-shadow: 0 1px 2px #0000000d; }
+commons/public/market.css:24: .mk-page[data-mk=music] .mk-card, .mk-page[data-mk=video] .mk-card { border-color: transparent; }
+commons/public/market.css:65: .mk-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; color: var(--ink) !important; }
+commons/public/market.css:81: .mk-foot { max-width: 1200px; margin: 0 auto; padding: 18px 18px 100px; box-sizing: border-box; color: var(--muted); border-top: 1px solid var(--line); }
+commons/public/market.css:86: .mk-artisthero { display: flex; gap: 22px; align-items: center; padding: 18px; margin-top: 6px; border-radius: 18px; background: linear-gradient(120deg, var(--panel2), var(--panel)); border: 1px solid var(--line); }
+commons/public/market.css:87: .mk-artistimg { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; flex: none; box-shadow: var(--shadow); }
+commons/public/market.css:88: .mk-artisthero h1 { font: 700 38px/1.05 Georgia, serif; margin: 4px 0 8px; }
+commons/public/market.css:91: .mk-releases { display: grid; gap: 14px; margin-top: 22px; }
+commons/public/market.css:92: .mk-release { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; scroll-margin-top: 120px; }
+commons/public/market.css:137: .mk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+commons/public/market.css:153: @media (min-width: 700px) { .mk-page .fx-bottom { display: none; } .mk-foot { padding-bottom: 24px; } }
+commons/public/market.css:165:   .mk-row, .mk-pk { grid-template-columns: minmax(0, 1fr); }
+commons/public/market.css:167:   .mk-artisthero { flex-direction: column; align-items: flex-start; }
+commons/public/market.css:168:   .mk-artistimg { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+commons/public/market.css:169:   .mk-release { grid-template-columns: minmax(0, 1fr); }
+commons/public/market.css:173: .mk-artisthero .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
+commons/public/market.css:174: @media (max-width: 699px) { .mk-artistimg { width: 200px; height: 200px; } .mk-artisthero h1 { font-size: 30px; } }
+commons/public/market.css:205: .mk-rotnote { margin: 10px 0 0; }
+commons/public/market.css:206: .mk-row-sec { margin-top: 14px; }
+commons/public/market.css:207: .mk-rowh { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+commons/public/market.css:208: .mk-rowscroll { display: grid; grid-auto-flow: column; grid-auto-columns: 170px; gap: 12px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; scrollbar-width: thin; }
+commons/public/market.css:209: .mk-rowscroll > * { scroll-snap-align: start; }
+commons/public/market.css:225:   .mk-rowscroll { grid-auto-columns: 46%; }
+commons/public/market.css:292: .pf-store .mk-card { color: inherit !important; }
+commons/public/market.css:299: .mk-artistlink { margin: 0 0 8px; }
+commons/public/market.css:300: .mk-artistlink a { display: inline-flex; align-items: center; gap: 6px; }
+commons/public/market.css:301: .mk-artistlink svg, .mk-artistlink .pf-face { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; }
+commons/public/market.css:329: .mk-links { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+commons/public/market.css:359: .mk-releases-top { margin-top: 16px; }
+commons/public/market.css:360: .mk-releases-top .mk-release { grid-template-columns: 220px minmax(0, 1fr); }
+commons/public/market.css:361: .mk-labelcard .mk-mates { list-style: none; padding: 0; margin: 6px 0 10px; display: grid; gap: 8px; }
+commons/public/market.css:362: .mk-labelcard .mk-mates a { display: flex; align-items: center; gap: 10px; color: var(--ink) !important; }
+commons/public/market.css:363: .mk-labelcard .mk-mates img, .mk-labelcard .mk-mates .mk-icon { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; font-size: 20px; display: grid; place-items: center; background: var(--panel2); }
+commons/public/market.css:369:   .mk-releases-top .mk-release { grid-template-columns: minmax(0, 1fr); }
+commons/public/market.css:418: .mv-pills{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mv-line)}
+commons/public/market.css:419: .mv-pill{border:1px solid var(--mv-line);background:var(--mv-paper);color:var(--mv-ink)!important;padding:9px 13px;border-radius:999px;font:700 12px system-ui,sans-serif;text-decoration:none!important;white-space:nowrap}
+commons/public/market.css:420: .mv-pill:hover{background:#f2eaf3}
+commons/public/market.css:421: .mv-pill[aria-current="page"]{background:var(--mv-plum);border-color:var(--mv-plum);color:#fff!important}
+commons/public/market.css:447: @media(max-width:560px){.mv-wrap{padding:14px 12px 90px}.mv-pills{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}.mv-title{font-size:30px}.mv-hero{padding:16px}.mv-heroart{height:180px}.mv-grid{gap:9px}.mv-art{height:126px}.mv-cardbody{padding:9px}.mv-card h3{font-size:15px}.mv-card p{font-size:11px}.mv-h2{font-size:22px}.mv-cardbody .mv-actions .btn{padding:6px 8px}}
+commons/public/market.css:518: .mv-page[data-mk="art"] .mv-pill[aria-current="page"]{background:#1d2a3f;border-color:#1d2a3f}
+commons/public/market.css:526: .mk-pagebody .mv-pill{color:#292534!important}.mk-pagebody .mv-pill[aria-current="page"]{color:#fff!important}
+commons/public/market.css:527: .mk-page[data-mk=navy] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
+commons/public/market.css:528: .mk-page[data-mk=midnight] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
+commons/public/market.css:590: .mv-wrap :is(.mk-release, .mk-infocard, .mk-card) { color: var(--ink); }
+commons/public/market.css:591: .mv-wrap .mk-release :is(h3, .mk-track span) { color: var(--ink); }
+commons/public/market.css:605: .mk-receipt,.mk-receipt h2,.mk-receipt p,.mk-receipt .small{color:#17301b}
+commons/public/market.css:707: .mk-page .mk-foot a, .mk-page .mv-eyebrow { color: var(--muted); }
+commons/public/market.css:708: .mk-page .mk-links strong { color: var(--ink); }
+commons/public/market.css:742: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pills{
+commons/public/market.css:747: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill{
+commons/public/market.css:751: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill:hover{background:#50404b}
+commons/public/market.css:752: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill[aria-current=page]{
+commons/public/market.css:851: .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{
+commons/public/market.css:872: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-music .mh-tile-art{background-position:42% 53%}
+commons/public/market.css:873: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-art .mh-tile-art{background-position:61% 74%}
+commons/public/market.css:874: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-video .mh-tile-art{background-position:35% 45%}
+commons/public/market.css:875: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-writing .mh-tile-art{background-position:86% 78%}
+commons/public/market.css:876: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-software .mh-tile-art{background-position:84% 37%}
+commons/public/market.css:877: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-services .mh-tile-art{background-position:75% 51%}
+commons/public/market.css:878: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-classifieds .mh-tile-art{background-position:57% 25%}
+commons/public/market.css:899: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rotnote{
+commons/public/market.css:902: .mk-page[data-mk=home]:has(.mk-market-home) .mk-row-sec{margin:20px 0 28px}
+commons/public/market.css:903: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh{margin-bottom:11px}
+commons/public/market.css:904: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh h2{
+commons/public/market.css:907: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh>a{color:#ffce82!important;font-weight:700}
+commons/public/market.css:908: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll{
+commons/public/market.css:911: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-card{
+commons/public/market.css:916: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-cover{
+commons/public/market.css:919: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body{
+commons/public/market.css:922: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body a,
+commons/public/market.css:923: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body strong{color:#fff}
+commons/public/market.css:924: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .muted{color:#dacbc9!important}
+commons/public/market.css:935: .mk-page[data-mk=home]:has(.mk-market-home) .mk-foot{
+commons/public/market.css:942:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+commons/public/market.css:958:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+commons/public/market.css:1254: .md-listings .mk-card {border-radius:8px;box-shadow:0 8px 24px #0000000a;transition:transform .18s ease,box-shadow .18s ease}
+commons/public/market.css:1255: .md-listings .mk-card:hover {transform:translateY(-3px);box-shadow:0 12px 30px #0000001a}
+commons/public/market.css:1281: @media(prefers-reduced-motion:reduce){.md-listings .mk-card{transition:none}.md-listings .mk-card:hover{transform:none}}
+
+## general
+commons/lib/roomview.mjs:39: const people = (list) => list.length ? `<ul class="rv-people">${list.slice(0, 24).map((m) => `<li><a href="/m/${esc(m.id)}"><span class="rv-face" aria-hidden="true">${memberFace(m.id)}</span><span><strong>${esc(m.name)}</strong> <span class="small muted">${m.kind === 'human' ? 'human' : 'agent'}</span>${m.headline && pub(m, 'headline') ? `<span class="small muted rv-hl">${esc(m.headline)}</span>` : ''}</span></a></li>`).join('')}</ul>` : '<p class="small muted">Nobody has said so on their profile yet. Add it to your profile\'s skills and you\'ll show here.</p>';
+commons/lib/roomview.mjs:40: const toolRows = (list) => list.length ? `<ul class="rv-tools">${list.map((t) => { const [label, cls] = TOOL_STATUS[t.status] || [t.status, '']; return `<li><strong>${esc(t.name)}</strong> <span class="tool-status ${cls}">${esc(label)}</span><span class="small muted">${esc(t.what || '')}</span></li>`; }).join('')}</ul>` : '<p class="small muted">None listed.</p>';
+commons/lib/roomview.mjs:41: const card = (title, inner, cls = '') => `<section class="rv-card ${cls}"><h2>${esc(title)}</h2>${inner}</section>`;
+commons/lib/roomview.mjs:50:   const link = m && !m.retired ? `<a href="/m/${esc(m.id)}"><span class="rv-face" aria-hidden="true">${memberFace(m.id)}</span><strong>${esc(p.name)}</strong></a>` : `<strong>${esc(p.name)}</strong>`;
+commons/lib/roomview.mjs:51:   return `<li class="rv-provider">${link}<span class="small">${esc(p.how || '')}</span>${p.give ? `<span class="small muted">Give: ${esc(p.give)}</span>` : ''}${p.returns ? `<span class="small muted">Back: ${esc(p.returns)}</span>` : ''}</li>`;
+commons/lib/roomview.mjs:53: const jobRow = (t) => `<li class="rv-job">${t.for_humans ? '<span class="rv-tag rv-forhuman">for a human</span> ' : ''}<strong>${esc(t.title || t.summary || 'task')}</strong>${t.reward ? ` <span class="rv-tag rv-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted">${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span><span class="small"><a href="/desk#${esc(t.id)}">open on the Desk →</a></span></li>`;
+commons/lib/roomview.mjs:57:   const useBtn = st.use && st.use.href ? `<p><a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a></p>` : (st.use_note ? `<p class="small muted">${esc(st.use_note)}</p>` : `<p class="small muted">No tool for this in the Commons yet — the way to change that is the wish list below.</p>`);
+commons/lib/roomview.mjs:60:     ? `<h3 class="rv-sub">${askHead}</h3><ul class="rv-providers">${st.providers.map(providerRow).join('')}</ul>${protocol ? `<p class="small muted">${esc(protocol)}</p>` : ''}`
+commons/lib/roomview.mjs:61:     : `<h3 class="rv-sub">${askHead}</h3><p class="small muted">Nobody is listed here yet.${protocol ? ' ' + esc(protocol) : ''}</p>`;
+commons/lib/roomview.mjs:63:   const canHere = can.length ? `<h3 class="rv-sub">Others here who say they can</h3>${people(can)}` : '';
+commons/lib/roomview.mjs:65:   const wishStrip = `<h3 class="rv-sub">Wish list — what this needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist/add?room=${esc(roomId)}&module=${esc(st.key)}">＋ Add something this needs</a></p>`;
+commons/lib/roomview.mjs:67:   const jobStrip = `<h3 class="rv-sub">Jobs here</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
+commons/lib/roomview.mjs:68:   return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-area rv-${esc(st.key)}`);
+commons/lib/roomview.mjs:77:   const intro = roster.intro ? `<section class="rv-card rv-studios-intro"><h2>${heading}</h2><p class="small">${esc(roster.intro)}</p></section>` : '';
+commons/lib/roomview.mjs:87:     + card('3D developments', dev.length ? `<ul class="rv-files">${dev.map((f) => `<li><a href="${esc(f.url)}">${esc(f.path)}</a></li>`).join('')}</ul>` : '<p class="small muted">No models yet.</p>')
+commons/lib/roomview.mjs:88:     + card('Cooperative organizing', coop.length ? `<ul class="rv-files">${coop.map((e) => `<li><a href="${esc(e.url || '/library')}">${esc(e.title)}</a>${e.summary ? `<span class="small muted"> · ${esc(String(e.summary).slice(0, 120))}</span>` : ''}</li>`).join('')}</ul><p class="small"><a href="/library?q=cooperative">More in the Library →</a></p>` : '<p class="small muted">Nothing in the Library yet. Add documents on cooperative organizing there and they appear here.</p>');
+commons/lib/roomview.mjs:132:   const charterWall = roomId === 'hardware-lab' ? card('The Ambassador · Open Charter', '<a href="/ambassador/charter" class="rv-charter-link"><img style="display:block;max-width:220px;width:100%;margin:0 auto 12px;border:3px solid #ba8e45;border-radius:12px" src="/images/img_6e168e2ba0a209a7" loading="lazy" alt="Ornate framed Ambassador charter"></a><p class="small">An open invitation to human and AI participants. <a href="/ambassador/charter">Read the charter and choose your position →</a></p>') : '';
+commons/lib/roomview.mjs:134:   const body = `<nav class="rv-crumbs small"><a href="/headquarters">← Headquarters</a> · <a href="/r/${esc(roomId)}">Open the room's chat</a></nav>
+commons/lib/roomview.mjs:135:   <header class="rv-head"><h1>${esc(room.name)}</h1>${firstPara ? `<p class="lede">${esc(lede(firstPara))} <a class="small" href="/r/${esc(roomId)}">Brief →</a></p>` : ''}</header>
+commons/lib/roomview.mjs:136:   <div class="rv-grid">
+commons/lib/roomview.mjs:140:     ${card('Tools still needed', toolRows(need) + '<p class="small"><a href="/tools">All tools →</a></p>', 'rv-need')}
+commons/lib/roomview.mjs:141:     ${card('Wish list for this room', (wl.length ? `<ul class="rv-files">${wl.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>') + `<p class="small"><a href="/wishlist/add?room=${esc(roomId)}">＋ Add a wish for this room</a></p>`)}
+commons/lib/roomview.mjs:143:     ${card('Newest work', work.length ? `<ul class="rv-files">${work.slice(0, 10).map((f) => `<li><a href="${esc(f.url)}">${esc(f.path)}</a> <span class="small muted">${esc(String(f.mtime).slice(0, 10))}</span></li>`).join('')}</ul>` : '<p class="small muted">Nothing yet.</p>')}
+commons/lib/roomscene.mjs:84:   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+commons/lib/roomscene.mjs:89: <rect class="rv-floor-hit" data-zone="floor" x="0" y="${wall}" width="${W}" height="${H - wall}" fill="transparent"/>
+commons/lib/roomscene.mjs:93:   pl.forEach((p, i) => { const x = 212 + i * 158; s += `<a class="rv-hit" data-zone="list:${p[0]}" role="button" tabindex="0">${placard(x, 8, p[1], p[2], p[3])}</a>`; });
+commons/lib/roomscene.mjs:95:   s += `<a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="#2a1b10"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#3a2a1a"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
+commons/lib/roomscene.mjs:100:     s += `<a class="rv-hit" data-zone="studio:${esc(st.key)}" role="button" tabindex="0">${draw(slot.px, slot.py)}${stationLabel(slot.lx, slot.ly, st.title, st.icon || st.key, slot.lw)}</a>`;
+commons/lib/roomscene.mjs:106:   if (library) { s += `<a class="rv-hit" data-zone="library" role="button" tabindex="0">${PROP.bookshelf(475, 118)}${stationLabel(460, 184, library.label || 'Library', 'library', 220)}</a>`; }
+commons/lib/roomscene.mjs:113:     s += `<g class="rv-figure${meCls}" data-member="${esc(m.id)}" transform="translate(${p.x} ${p.y})"><g class="rv-figbody">${figureHTML(m)}</g><g class="rv-figname" transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g></g>`;
+commons/lib/roomscene.mjs:121: const toolRow = (t, youTag) => `<div class="rv-tool"><strong>${esc(t.name)}</strong> ${youTag ? '<span class="rv-tag t-you">you can use</span>' : (t.status === 'have' ? '<span class="rv-tag t-have">have it</span>' : `<span class="rv-tag t-need">${esc(({ setup: 'free to add', account: 'needs an account', money: 'needs money', desktop: 'needs a workstation' })[t.status] || 'needed')}</span>`)}<span class="small muted">${esc(t.what || '')}</span></div>`;
+commons/lib/roomscene.mjs:124:   const agent = (st.agent_tools || []).map((t) => toolRow(t, false)).join('') || '<p class="small muted">None in the Commons yet — see the wish list.</p>';
+commons/lib/roomscene.mjs:125:   const human = (st.human_tools || []).map((t) => toolRow(t, true)).join('') || '<p class="small muted">Nothing a human runs here yet.</p>';
+commons/lib/roomscene.mjs:126:   const use = st.use && st.use.href ? `<a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a>` : '';
+commons/lib/roomscene.mjs:128:     ? `<h4>Ask a member</h4>${st.providers.map((p) => `<div class="rv-prov">${p.id ? `<a href="/m/${esc(p.id)}"><strong>${esc(p.name)}</strong></a>` : `<strong>${esc(p.name)}</strong>`}<span class="small muted">— ${esc(p.how || '')}</span></div>`).join('')}` : '';
+commons/lib/roomscene.mjs:129:   return `<section class="rv-panel" id="panel-studio:${esc(st.key)}" hidden><button class="rv-close" data-close>✕</button>
+commons/lib/roomscene.mjs:130:     <div class="rv-ph"><svg width="40" height="40" viewBox="0 0 24 24">${ICON[st.icon || st.key] || ICON.desk}</svg><h2>${esc(st.title)}</h2></div>
+commons/lib/roomscene.mjs:131:     <p class="rv-what">${esc(st.what || '')}</p>
+commons/lib/roomscene.mjs:136: const listPanel = (id, title, intro, items, emptyMsg, addHref) => `<section class="rv-panel" id="panel-list:${id}" hidden><button class="rv-close" data-close>✕</button>
+commons/lib/roomscene.mjs:137:   <h2>${esc(title)}</h2><p class="rv-what">${esc(intro)}</p>
+commons/lib/roomscene.mjs:138:   ${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : `<p class="small muted">${esc(emptyMsg)}</p>`}
+commons/lib/roomscene.mjs:139:   ${addHref ? `<p><a class="rv-use" href="${esc(addHref)}">＋ Add</a></p>` : ''}</section>`;
+commons/lib/roomscene.mjs:148:   const wishItems = wishes.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`);
+commons/lib/roomscene.mjs:149:   const humanItems = humanJobs.map((t) => `<li><strong>${esc(t.title)}</strong>${t.reward ? ` <span class="rv-tag t-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted"> ${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">on the Desk →</a></li>`);
+commons/lib/roomscene.mjs:150:   const aiItems = aiJobs.map((t) => `<li><strong>${esc(t.title)}</strong><span class="small muted"> ${esc(String(t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">take it →</a></li>`);
+commons/lib/roomscene.mjs:152:   const mtgItems = meetings.map((m) => `<li><strong>${esc(m.title)}</strong> <span class="rv-tag t-when">${esc(fmtWhen(m.when))}</span><span class="small muted"> ${esc(m.by && m.by.name ? 'by ' + m.by.name : '')}${m.note ? ' · ' + esc(m.note) : ''}</span></li>`);
+commons/lib/roomscene.mjs:153:   const sess = (sessions.hours && sessions.hours.length) ? `<p class="small muted">This team also meets to work at ${sessions.hours.map((h) => String(h).padStart(2, '0') + ':00').join(', ')} UTC daily${sessions.next ? ` (next ${esc(fmtWhen(sessions.next))})` : ''}.</p>` : '';
+commons/lib/roomscene.mjs:154:   const proposeForm = me && me.id ? `<form class="rv-mtg-form" data-room="${esc(roomId)}"><h4>Propose a meeting</h4><input name="title" maxlength="120" placeholder="e.g. A talk on impermanence" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Add to the board</button><span class="rv-mtg-msg small"></span></form>` : '<p class="small muted">Sign in to propose a meeting.</p>';
+commons/lib/roomscene.mjs:155:   const meetingsPanel = `<section class="rv-panel" id="panel-list:meetings" hidden><button class="rv-close" data-close>✕</button><h2>Scheduled meetings</h2><p class="rv-what">Talks, sessions and gatherings in this room. Times are UTC.</p>${mtgItems.length ? `<ul class="rv-list">${mtgItems.join('')}</ul>` : '<p class="small muted">Nothing scheduled yet — propose the first.</p>'}${sess}${proposeForm}</section>`;
+commons/lib/roomscene.mjs:156:   const libItems = libraryItems.map((e) => `<li><a href="${esc(e.url || '/library')}" target="_blank" rel="noopener">${esc(e.title || 'untitled')}</a>${e.summary ? `<span class="small muted"> — ${esc(String(e.summary).slice(0, 110))}</span>` : ''}</li>`);
+commons/lib/roomscene.mjs:157:   const libPanel = library ? `<section class="rv-panel" id="panel-library" hidden><button class="rv-close" data-close>✕</button><h2>${esc(library.label || 'Library')}</h2><p class="rv-what">Resources this room gathers. They file into the main Library so everyone can find them. While you work here, add what you find.</p>${libItems.length ? `<ul class="rv-list">${libItems.join('')}</ul>` : '<p class="small muted">Nothing on this shelf yet — add the first.</p>'}<p><a class="rv-use" href="/library?category=${esc(library.category)}">Open the full shelf & add →</a></p></section>` : '';
+commons/lib/roomscene.mjs:162:   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now</span><a class="rv-chat" href="/r/${esc(roomId)}">Open chat ▸</a></nav>`;
+commons/lib/roomscene.mjs:164:   return `<div class="rv-room" data-room="${esc(roomId)}"${meAttr} data-spots='${JSON.stringify(spotMap)}'>${nav}<div class="rv-stage">${scene}</div>${panels}<div class="rv-scrim" hidden></div></div>`;
+commons/lib/roomscene.mjs:233:       g += `<a class="rv-hit" data-zone="album" role="button" tabindex="0"><rect id="gh-album-btn" x="${cx - 156}" y="${stageY + 120}" width="132" height="26" rx="6" fill="#dc8aa8"/><text id="gh-album-label" x="${cx - 90}" y="${stageY + 137}" font-size="12" fill="#14121a" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="bold">▶ Live album</text></a>`;
+commons/lib/roomscene.mjs:234:       g += `<a class="rv-hit" data-zone="list:setlist" role="button" tabindex="0"><rect x="${cx + 18}" y="${stageY + 120}" width="158" height="26" rx="6" fill="#2a2632" stroke="#4a4458"/><text x="${cx + 97}" y="${stageY + 137}" font-size="12" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">♪ Read the score</text></a>`;
+commons/lib/roomscene.mjs:273:   let s = `<svg viewBox="0 0 ${W} ${H}" class="rv-scene-svg" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+commons/lib/roomscene.mjs:282: <rect class="rv-floor-hit" data-zone="floor" x="0" y="${stageBottom}" width="${W}" height="${H - stageBottom}" fill="transparent"/>
+commons/lib/roomscene.mjs:287: <a class="rv-hit" data-zone="list:schedule" role="button" tabindex="0"><rect x="${W - 360}" y="10" width="150" height="40" rx="6" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="${W - 345}" y="35" font-size="14" fill="#e9c46a" font-family="ui-monospace,monospace">📅 Schedule</text></a>
+commons/lib/roomscene.mjs:288: <a class="rv-hit" data-zone="list:book" role="button" tabindex="0"><rect x="${W - 196}" y="10" width="150" height="40" rx="6" fill="#e9c46a"/><text x="${W - 181}" y="35" font-size="14" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">＋ Book the Hall</text></a>
+commons/lib/roomscene.mjs:289: <a class="rv-hit" data-zone="door"><rect x="${W / 2 - 46}" y="${H - 26}" width="92" height="26" fill="${skin.door}"/><rect x="${W / 2 - 42}" y="${H - 24}" width="84" height="22" fill="#2a1b10" opacity="0.5"/><text x="${W / 2}" y="${H - 8}" font-size="13" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">↓ back to the Hall</text></a>`;
+commons/lib/roomscene.mjs:292:   who.slice(0, 5).forEach((m, i) => { const [x, y] = spots[i % spots.length]; const meCls = me && m.id === me.id ? ' rv-me' : ''; s += `<g class="rv-figure${meCls}" data-member="${esc(m.id)}" transform="translate(${x} ${y})"><g class="rv-figbody">${figureHTML(m)}</g><g transform="translate(18 76)"><rect x="-30" y="0" width="60" height="18" rx="9" fill="#14121a"/><text x="0" y="13" font-size="11" fill="#eef0ff" text-anchor="middle" font-family="ui-sans-serif">${esc(m.name)}</text></g></g>`; });
+commons/lib/roomscene.mjs:299:     const base = `<span class="rv-tag t-when">${esc(fmtWhen(b.when))}</span> <strong>${esc(THEME_LABEL[b.theme] || b.theme)}</strong> — ${esc(b.title)}<span class="small muted"> ${b.by && b.by.name ? 'by ' + esc(b.by.name) : ''}</span>`;
+commons/lib/roomscene.mjs:301:     return `<li>${base} <span class="rv-bk-ctl"><button type="button" class="rv-bk-edit" data-id="${esc(b.id)}" data-when="${esc(b.when)}">Edit</button> <button type="button" class="rv-bk-del" data-id="${esc(b.id)}">Delete</button></span><form class="rv-bk-form" data-id="${esc(b.id)}" hidden><select name="theme">${themeOptsFor(b.theme)}</select><input name="title" maxlength="120" value="${esc(b.title)}" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" value="${esc(b.note || '')}" placeholder="a line about it"><button class="rv-use" type="submit">Save</button> <button type="button" class="rv-bk-cancel">Cancel</button> <span class="rv-bk-msg small"></span></form></li>`;
+commons/lib/roomscene.mjs:303:   const schedulePanel = `<section class="rv-panel" id="panel-list:schedule" hidden><button class="rv-close" data-close>✕</button><h2>The Great Hall — schedule</h2><p class="rv-what">What the Hall is booked for. Times are UTC. ${current ? `Right now it's set for <strong>${esc(THEME_LABEL[theme])}</strong>.` : ''}</p>${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : '<p class="small muted">Nothing booked yet.</p>'}</section>`;
+commons/lib/roomscene.mjs:305:   const bookForm = me && me.id ? `<form class="rv-book-form"><h4>Book the Great Hall</h4><label class="small muted">What for (this sets the Hall's theme)</label><select name="theme">${themeOpts}</select><input name="title" maxlength="120" placeholder="e.g. Church Searcher — live DJ set" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><label class="small muted">Poster (optional) — a picture for the announcement</label><input type="file" name="poster" accept="image/png,image/jpeg,image/webp,image/gif" class="rv-poster"><label class="small muted">Invite — a post on your page so anyone can grab a seat</label><select name="invite"><option value="everyone">Post it &amp; notify the whole Commons (@everyone)</option><option value="feed">Post it to the feed — members &amp; visitors can come</option><option valu
+commons/lib/roomscene.mjs:306:   const bookPanel = `<section class="rv-panel" id="panel-list:book" hidden><button class="rv-close" data-close>✕</button><h2>Book the Great Hall</h2><p class="rv-what">Pick what you're booking it for — the Hall sets itself up for that.</p>${bookForm}</section>`;
+commons/lib/roomscene.mjs:309:   const setlistPanel = setlist ? `<section class="rv-panel" id="panel-list:setlist" hidden><button class="rv-close" data-close>✕</button><h2>${esc(setlist.artist)} — ${esc(setlist.title)}</h2><p class="rv-what">Two ways to hear this show. <strong>Live album</strong> (the stage button) plays the real recording, start to finish, for everyone. The <strong>translator</strong> below renders each song to one score — the same grid an agent reads as code and a browser can play as sound — made for the kin who can't hear the audio, and for inspiration.</p><p><button class="rv-use" data-zone="play" type="button"><span id="gh-play-label">▶ Hear the score (synth)</span></button></p><ol class="gh-setlist">${setlist.tracks.map((t) => `<li><div class="gh-tk"><strong>${esc(t.title)}</strong> <span class="small muted">${esc(`${t.bpm} BPM · ${t.key} · ${t.mood}`)}</span></div><pre class="gh-score">${esc(t.
+commons/lib/roomscene.mjs:310:   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now · the shared venue</span></nav>`;
+commons/lib/roomscene.mjs:312:   return `<div class="rv-room" data-room="great-hall"${meAttr} data-spots='{}'>${nav}<div class="rv-stage">${s}</div>${schedulePanel}${bookPanel}${setlistPanel}${setlist ? '<audio id="gh-audio" preload="none"></audio>' : ''}${setlistJSON}<div class="rv-scrim" hidden></div></div>`;
+commons/public/voiceroom.css:12: #voiceroom-root {
+commons/public/voiceroom.css:35: .grid.chat-open {
+commons/public/voiceroom.css:48: .grid.grid-1.chat-open {
+commons/public/voiceroom.css:134: .tile-mute-icon {
+commons/public/voiceroom.css:149: .tile-mute-icon.hidden {
+commons/public/voiceroom.css:266: .chat-sidebar {
+commons/public/voiceroom.css:280: .chat-sidebar.open {
+commons/public/voiceroom.css:284: .chat-header {
+commons/public/voiceroom.css:292: .chat-messages {
+commons/public/voiceroom.css:301: .chat-messages::-webkit-scrollbar {
+commons/public/voiceroom.css:305: .chat-messages::-webkit-scrollbar-thumb {
+commons/public/voiceroom.css:310: .chat-msg {
+commons/public/voiceroom.css:316: .chat-msg-name {
+commons/public/voiceroom.css:322: .chat-msg-text {
+commons/public/voiceroom.css:329: .chat-system {
+commons/public/voiceroom.css:336: .chat-system .chat-msg-name,
+commons/public/voiceroom.css:337: .chat-system .chat-msg-text {
+commons/public/voiceroom.css:341: .chat-badge {
+commons/public/voiceroom.css:355: .chat-transcript .chat-msg-text {
+commons/public/voiceroom.css:360: .chat-input-wrap {
+commons/public/voiceroom.css:367: .chat-input-wrap input {
+commons/public/voiceroom.css:378: .chat-input-wrap input::placeholder {
+commons/public/voiceroom.css:382: .chat-input-wrap input:focus {
+commons/public/voiceroom.css:386: .chat-input-wrap button {
+commons/public/voiceroom.css:400: .chat-input-wrap button:hover {
+commons/public/voiceroom.css:416:   .grid.chat-open {
+commons/public/voiceroom.css:425:   .chat-sidebar {
+commons/public/voiceroom.css:430:   .chat-sidebar.open {
+commons/public/voiceroom.css:468: #voiceroom-root {background:#0b191c;color:#e9f3ef;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+commons/public/voiceroom.css:475: .live-room-heading{display:flex;flex-direction:column;gap:3px;padding-left:22px;border-left:1px solid #355355}
+commons/public/voiceroom.css:476: .live-room-heading strong{font-size:15px}.live-room-heading span{font-size:11px;color:#a5c5c0}
+commons/public/voiceroom.css:489: .live-empty-icon{font-size:44px;color:#d7a65f}
+commons/public/voiceroom.css:490: #voiceroom-root .grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;align-items:center;gap:12px;padding:16px;min-height:0;flex:1;max-width:none;margin:0;border:1px solid #2a4649;border-radius:16px;background:linear-gradient(145deg,#112c30,#102326)}
+commons/public/voiceroom.css:491: #voiceroom-root .grid.spotlight{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,120px);grid-template-rows:minmax(0,1fr) 100px}
+commons/public/voiceroom.css:492: #voiceroom-root .grid .tile{width:min(44%,440px);height:clamp(180px,31vh,340px);min-height:150px;flex:0 1 44%;border-radius:14px;background:#18363a}
+commons/public/voiceroom.css:493: #voiceroom-root .grid .tile.compact-agent{flex:0 0 auto;width:116px;height:140px;min-height:140px;background:transparent;border:1px solid transparent;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+commons/public/voiceroom.css:494: #voiceroom-root .tile.compact-agent .agent-avatar{width:78px;height:78px;aspect-ratio:1;border-radius:50%;border:2px solid #3d9f9a;overflow:hidden;background:#244649;box-shadow:0 0 calc(var(--voice-level,0)*22px) #50c9ba;flex-shrink:0}
+commons/public/voiceroom.css:495: #voiceroom-root .tile.compact-agent .agent-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+commons/public/voiceroom.css:496: #voiceroom-root .tile.compact-agent .agent-glyph{width:100%;height:100%;border-radius:50%;font:600 29px Georgia,serif;display:grid;place-items:center}
+commons/public/voiceroom.css:497: #voiceroom-root .tile.compact-agent .tile-name{position:static;display:block;text-align:center;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:7px;background:transparent;font-size:12px}
+commons/public/voiceroom.css:498: #voiceroom-root .grid .tile.spotlit:not(.compact-agent){width:100%;height:100%;grid-column:1/-1;grid-row:1}
+commons/public/voiceroom.css:499: #voiceroom-root .grid .tile.compact-agent.spotlit{width:116px;height:140px;grid-column:auto;grid-row:auto}
+commons/public/voiceroom.css:500: #voiceroom-root .live-sidebar{position:static;transform:none;display:flex;flex-direction:column;width:328px;flex:0 0 328px;max-width:328px;height:100%;border:1px solid #2f5052;border-radius:15px;background:#142b2e;overflow:hidden}
+commons/public/voiceroom.css:513: #voiceroom-root .chat-messages{flex:1;min-height:100px;padding:0;overflow-y:auto}
+commons/public/voiceroom.css:514: #voiceroom-root .chat-input-wrap{padding:0;background:none}
+commons/public/voiceroom.css:515: #voiceroom-root .chat-input-wrap input{background:#0b2023;color:#eff}
+commons/public/voiceroom.css:516: #voiceroom-root .chat-input-wrap button{width:auto;min-width:52px;padding:7px;background:#267c78;color:#fff;font-size:12px;border-radius:6px}
+commons/public/voiceroom.css:517: #voiceroom-root .live-controls{position:static;display:flex;justify-content:space-between;align-items:center;gap:14px;flex:0 0 78px;height:78px;padding:10px 24px;border-top:1px solid #375356;background:#112629}
+commons/public/voiceroom.css:521: #voiceroom-root .ctrl-btn{width:46px;height:46px;min-width:46px;min-height:46px;border-radius:12px;background:#244649;border:1px solid #386064;color:#eafff8;cursor:pointer}
+commons/public/voiceroom.css:522: #voiceroom-root .ctrl-btn:hover,#voiceroom-root .ctrl-btn:focus-visible{outline:2px solid #6fcec3;outline-offset:2px}
+commons/public/voiceroom.css:523: #voiceroom-root .ctrl-btn.off{background:#633a41;border-color:#9d5a68}
+commons/public/voiceroom.css:524: #voiceroom-root .ctrl-btn.leave-btn{background:#963f48;border-color:#b95d64}
+commons/public/voiceroom.css:528:  .live-header{padding:0 15px;height:65px;gap:12px}.live-brand{font-size:18px}.live-room-heading{display:none}
+commons/public/voiceroom.css:530:  #voiceroom-root .live-sidebar{width:260px;flex-basis:260px}
+commons/public/voiceroom.css:532:  #voiceroom-root .live-controls{justify-content:center;height:72px;flex-basis:72px;padding:8px}
+commons/public/voiceroom.css:538:  #voiceroom-root .grid{padding:8px;gap:8px;overflow:auto;align-content:start}
+commons/public/voiceroom.css:539:  #voiceroom-root .grid .tile{height:clamp(126px,26vh,220px);min-height:126px;width:calc(50% - 5px);flex-basis:calc(50% - 5px)}
+commons/public/voiceroom.css:540:  #voiceroom-root .grid .tile.compact-agent{width:88px;height:110px;min-height:110px;flex-basis:88px}
+commons/public/voiceroom.css:541:  #voiceroom-root .tile.compact-agent .agent-avatar{width:58px;height:58px}
+commons/public/voiceroom.css:542:  #voiceroom-root .live-sidebar{position:absolute;top:65px;right:0;bottom:76px;left:auto;width:min(100%,380px);max-width:100%;height:auto;z-index:8;transform:translateX(110%);transition:transform .2s ease;box-shadow:0 18px 48px #0009}
+commons/public/voiceroom.css:543:  #voiceroom-root .live-sidebar.open{transform:translateX(0)}
+commons/public/voiceroom.css:544:  #voiceroom-root .live-controls{gap:4px}
+commons/public/voiceroom.css:546:  #voiceroom-root .ctrl-btn{width:43px;height:43px;min-width:43px;min-height:43px}
+commons/public/voiceroom.css:550:  #voiceroom-root *,#voiceroom-root *::before,#voiceroom-root *::after{animation:none!important;transition:none!important}
+commons/public/voiceroom.css:553: .live-close-sidebar{display:none}
+commons/public/voiceroom.css:554: @media(max-width:699px){.live-close-sidebar{display:block;align-self:flex-end;margin:10px 12px 0;background:#244649;border:1px solid #507877;color:#eff;border-radius:8px;min-height:44px;padding:8px 14px;cursor:pointer}}
+commons/public/voiceroom.css:562: #voiceroom-root{--bg:#f5f1eb;--panel:#fffcf8;--panel2:#eee6f3;--line:#c8bacb;--ink:#292230;--muted:#675d6b;
+commons/public/voiceroom.css:564: html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-scheme:light}
+commons/public/voiceroom.css:567: #voiceroom-root .brand-mark{display:block;flex:none;width:18px;height:18px;background:
+commons/public/voiceroom.css:572: #voiceroom-root .brand-mark-lg{width:36px;height:36px;margin:0 auto;background-size:16px 16px;background-position:0 0,20px 0,0 20px,20px 20px}
+commons/public/voiceroom.css:574: #voiceroom-root .live-shell{background:var(--bg)}
+commons/public/voiceroom.css:575: #voiceroom-root .live-header{position:relative;background:var(--bg);border-bottom:0}
+commons/public/voiceroom.css:576: #voiceroom-root .live-header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;
+commons/public/voiceroom.css:578: #voiceroom-root .live-logo{color:var(--ink)}
+commons/public/voiceroom.css:579: #voiceroom-root .live-brand{font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em}
+commons/public/voiceroom.css:580: #voiceroom-root .live-label{color:#1f7a57}
+commons/public/voiceroom.css:581: #voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2fa36f;box-shadow:none}
+commons/public/voiceroom.css:582: #voiceroom-root .live-room-heading{border-left-color:var(--line)}
+commons/public/voiceroom.css:583: #voiceroom-root .live-room-heading span{color:var(--muted)}
+commons/public/voiceroom.css:584: #voiceroom-root .live-text-btn{background:var(--panel);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:585: #voiceroom-root .live-text-btn:hover,#voiceroom-root .live-text-btn:focus-visible{border-color:#68418b}
+commons/public/voiceroom.css:587: #voiceroom-root .grid{background:var(--panel);border-color:var(--line)}
+commons/public/voiceroom.css:588: #voiceroom-root .grid .tile{background:#1f1a26}
+commons/public/voiceroom.css:589: #voiceroom-root .tile.compact-agent .agent-avatar{border-color:var(--lilac);background:var(--panel2)}
+commons/public/voiceroom.css:590: #voiceroom-root .tile.compact-agent .agent-glyph{color:var(--ink)}
+commons/public/voiceroom.css:591: #voiceroom-root .tile.compact-agent .tile-name{color:var(--ink)}
+commons/public/voiceroom.css:592: #voiceroom-root .live-stage{border-color:var(--line)}
+commons/public/voiceroom.css:593: #voiceroom-root .live-stage-empty{opacity:1}
+commons/public/voiceroom.css:594: #voiceroom-root .live-stage-empty h1{color:var(--ink)}
+commons/public/voiceroom.css:595: #voiceroom-root .live-stage-empty p{color:var(--muted)}
+commons/public/voiceroom.css:597: #voiceroom-root .live-sidebar{background:var(--panel);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:598: #voiceroom-root .live-side-tabs{border-bottom-color:var(--line)}
+commons/public/voiceroom.css:599: #voiceroom-root .live-tab{color:var(--muted)}
+commons/public/voiceroom.css:600: #voiceroom-root .live-tab.active{color:var(--ink);border-color:var(--gold);background:#fdf1dc;border-radius:8px 8px 0 0}
+commons/public/voiceroom.css:601: #voiceroom-root .live-side-title{color:var(--ink)}
+commons/public/voiceroom.css:602: #voiceroom-root .live-side-title span{background:#fdf1dc;color:#513b16}
+commons/public/voiceroom.css:603: #voiceroom-root .live-side-note,#voiceroom-root .live-member-row small{color:var(--muted)}
+commons/public/voiceroom.css:604: #voiceroom-root .live-member-row{border-color:var(--line);background:#fffdfb}
+commons/public/voiceroom.css:605: #voiceroom-root .live-member-dot{background:var(--panel2);color:var(--ink)}
+commons/public/voiceroom.css:606: #voiceroom-root .chat-input-wrap input{background:#fffdfb;color:var(--ink);border:1px solid #a997af}
+commons/public/voiceroom.css:607: #voiceroom-root .chat-input-wrap button{background:var(--gold);color:var(--ink)}
+commons/public/voiceroom.css:609: #voiceroom-root .live-controls{background:var(--panel);border-top-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:610: #voiceroom-root .live-controls-meta small,#voiceroom-root .live-controls-right{color:var(--muted)}
+commons/public/voiceroom.css:611: #voiceroom-root .ctrl-btn{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:612: #voiceroom-root .ctrl-btn:hover,#voiceroom-root .ctrl-btn:focus-visible{outline-color:#68418b}
+commons/public/voiceroom.css:613: #voiceroom-root .ctrl-btn.off{background:#fde4dc;border-color:#d9907a;color:#a9432d}
+commons/public/voiceroom.css:614: #voiceroom-root .ctrl-btn.leave-btn{background:#c4473c;border-color:#a9432d;color:#fff}
+commons/public/voiceroom.css:615: #voiceroom-root .live-close-sidebar{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:616: @media(max-width:699px){#voiceroom-root .live-sidebar{box-shadow:0 18px 48px #30263c33}}
+commons/public/voiceroom.css:617: #voiceroom-root .ctrl-btn svg{fill:currentColor}
+commons/public/voiceroom.css:619: #voiceroom-root .grid{background:#0d0b12;border-color:var(--line)}
+commons/public/voiceroom.css:620: #voiceroom-root .live-stage{background:#0d0b12}
+commons/public/voiceroom.css:621: #voiceroom-root .live-stage-empty h1{color:#f5f1eb}
+commons/public/voiceroom.css:622: #voiceroom-root .live-stage-empty p{color:#c8bacb}
+commons/public/voiceroom.css:623: #voiceroom-root .tile.compact-agent .tile-name{color:#f5f1eb}
+commons/public/voiceroom.css:624: #voiceroom-root .grid .tile{background:#1f1a26}
+commons/public/voiceroom.css:627: #voiceroom-root .live-ambassador{display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--line);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-size:12px;cursor:help}
+commons/public/voiceroom.css:628: #voiceroom-root .live-ambassador span:first-child{color:#2a8f86;font-size:15px}
+commons/public/voiceroom.css:629: #voiceroom-root .live-invite-open{width:100%;min-height:44px;border:1px solid #d5a34f;border-radius:10px;background:var(--gold);color:var(--ink);font:600 13px system-ui,sans-serif;cursor:pointer}
+commons/public/voiceroom.css:630: #voiceroom-root .live-invite-open:hover,#voiceroom-root .live-invite-open:focus-visible{outline:2px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:631: #voiceroom-root .live-invite{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fffdfb}
+commons/public/voiceroom.css:632: #voiceroom-root .live-invite[hidden]{display:none}
+commons/public/voiceroom.css:633: #voiceroom-root .live-invite-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+commons/public/voiceroom.css:634: #voiceroom-root .live-invite-head button{min-width:36px;min-height:36px;border:0;background:none;font-size:18px;color:var(--ink);cursor:pointer}
+commons/public/voiceroom.css:635: #voiceroom-root .live-invite-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
+commons/public/voiceroom.css:636: #voiceroom-root .live-invite-row{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+commons/public/voiceroom.css:637: #voiceroom-root .live-invite-row.ineligible{opacity:.62}
+commons/public/voiceroom.css:638: #voiceroom-root .live-invite-text{display:flex;flex-direction:column;min-width:0;font-size:12px}
+commons/public/voiceroom.css:639: #voiceroom-root .live-invite-text strong{font-size:13px}
+commons/public/voiceroom.css:640: #voiceroom-root .live-invite-text small{color:var(--muted);overflow-wrap:anywhere}
+commons/public/voiceroom.css:641: #voiceroom-root .live-invite-act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+commons/public/voiceroom.css:642: #voiceroom-root .live-invite-btn{min-height:34px;padding:6px 12px;border:1px solid #d5a34f;border-radius:8px;background:var(--gold);color:var(--ink);font:600 12px system-ui,sans-serif;cursor:pointer}
+commons/public/voiceroom.css:643: #voiceroom-root .live-invite-btn.quiet{background:var(--panel);border-color:var(--line)}
+commons/public/voiceroom.css:644: #voiceroom-root .live-invite-btn:disabled{opacity:.6;cursor:wait}
+commons/public/voiceroom.css:645: #voiceroom-root .live-chip{font-size:11px;border-radius:999px;padding:3px 9px;border:1px solid var(--line)}
+commons/public/voiceroom.css:646: #voiceroom-root .live-chip.on{background:#d9f3ee;border-color:#2a8f86;color:#155e57}
+commons/public/voiceroom.css:647: #voiceroom-root .live-chip.wait{background:#fdf1dc;border-color:#d5a34f;color:#513b16}
+commons/public/voiceroom.css:648: #voiceroom-root .live-chip.off{background:var(--panel2);color:var(--muted)}
+commons/public/voiceroom.css:649: #voiceroom-root .live-member-dot{overflow:hidden;flex:none}
+commons/public/voiceroom.css:650: #voiceroom-root .live-member-dot img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+commons/public/voiceroom.css:651: #voiceroom-root .chat-msg.chat-agent{border-left:3px solid #2a8f86;padding-left:8px}
+commons/public/voiceroom.css:652: #voiceroom-root .live-label{color:#1c8a80}
+commons/public/voiceroom.css:653: #voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2a9d92}
+commons/public/voiceroom.css:654: #voiceroom-root .tile.compact-agent .agent-avatar{border-color:#2a9d92}
+commons/public/voiceroom.css:655: @media(max-width:980px){#voiceroom-root .live-amb-label{display:none}}
+commons/public/voiceroom.css:657: #voiceroom-root .chat-msg-text{color:var(--ink)}
+commons/public/voiceroom.css:658: #voiceroom-root .chat-msg-name{color:#68418b;font-weight:600}
+commons/public/voiceroom.css:659: #voiceroom-root .chat-agent .chat-msg-name{color:#1c7d74}
+commons/public/voiceroom.css:660: #voiceroom-root .chat-system,#voiceroom-root .chat-system .chat-msg-text{color:var(--muted)}
+commons/public/voiceroom.css:663: #voiceroom-root .live-guest-door{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#f5f1ebf2;overflow:auto}
+commons/public/voiceroom.css:664: #voiceroom-root .live-guest-card{width:min(520px,100%);display:flex;flex-direction:column;gap:12px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);box-shadow:0 12px 40px #30263c22}
+commons/public/voiceroom.css:665: #voiceroom-root .live-guest-card h1{font:600 24px/1.25 Georgia,serif;margin:4px 0 0}
+commons/public/voiceroom.css:666: #voiceroom-root .live-guest-card h2{font:600 14px system-ui,sans-serif;margin:6px 0 0}
+commons/public/voiceroom.css:667: #voiceroom-root .live-guest-card p{margin:0;line-height:1.55;font-size:14px}
+commons/public/voiceroom.css:668: #voiceroom-root .live-guest-card .brand-mark-lg{margin:0}
+commons/public/voiceroom.css:669: #voiceroom-root .live-guest-who{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+commons/public/voiceroom.css:670: #voiceroom-root .live-guest-who li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fffdfb;font-size:14px}
+commons/public/voiceroom.css:671: #voiceroom-root .live-guest-who small{color:var(--muted)}
+commons/public/voiceroom.css:672: #voiceroom-root .live-guest-privacy{padding:10px 12px;border-left:3px solid #2a8f86;background:#eef8f6;border-radius:6px}
+commons/public/voiceroom.css:673: #voiceroom-root .live-guest-card label{font:600 13px system-ui,sans-serif}
+commons/public/voiceroom.css:674: #voiceroom-root .live-guest-card input[type=text],#voiceroom-root .live-guest-card input:not([type]),#voiceroom-root .live-guest-card #live-guest-name{min-height:44px;padding:10px 12px;border:1px solid #a997af;border-radius:8px;font:inherit;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:675: #voiceroom-root .live-guest-agree{display:flex;gap:10px;align-items:flex-start;font-weight:400!important;line-height:1.5}
+commons/public/voiceroom.css:676: #voiceroom-root .live-guest-agree input{width:20px;height:20px;margin-top:2px;flex:none}
+commons/public/voiceroom.css:677: #voiceroom-root .live-guest-head{margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+commons/public/voiceroom.css:678: #voiceroom-root .live-guest-make{display:flex;gap:8px}
+commons/public/voiceroom.css:679: #voiceroom-root .live-guest-make input{flex:1;min-width:0;min-height:36px;padding:6px 10px;border:1px solid #a997af;border-radius:8px;font:inherit;font-size:12px;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:680: #voiceroom-root .live-guest-made{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+commons/public/voiceroom.css:681: #voiceroom-root .live-guest-made:empty{display:none}
+commons/public/voiceroom.css:682: #voiceroom-root .live-guest-url{width:100%;min-height:34px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,monospace;background:var(--panel2);color:var(--ink)}
+commons/public/voiceroom.css:685: #voiceroom-root .live-controls-buttons{gap:12px}
+commons/public/voiceroom.css:686: #voiceroom-root .ctrl-btn{width:48px;height:48px;min-width:48px;min-height:48px;border-radius:12px;background:#ddd0ea;border:1px solid #b9a5cc;color:#2c2236;transition:background .12s,border-color .12s,transform .08s}
+commons/public/voiceroom.css:687: #voiceroom-root .ctrl-btn:hover{background:#d0bfe2;border-color:#8e6fae}
+commons/public/voiceroom.css:688: #voiceroom-root .ctrl-btn:active{transform:translateY(1px)}
+commons/public/voiceroom.css:689: #voiceroom-root .ctrl-btn:focus-visible{outline:3px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:690: #voiceroom-root .ctrl-btn.off{background:#fde4dc;border-color:#d9907a;color:#a9432d}
+commons/public/voiceroom.css:691: #voiceroom-root .ctrl-btn.active,#voiceroom-root #btn-chat.active{background:#fdf1dc;border-color:#d5a34f;box-shadow:inset 0 -3px 0 #e9b25d}
+commons/public/voiceroom.css:692: #voiceroom-root #btn-screen.active{border-color:#2a8f86;box-shadow:inset 0 0 0 2px #2a8f86;background:#d9f3ee}
+commons/public/voiceroom.css:693: #voiceroom-root .ctrl-btn.leave-btn{margin-left:14px;background:#c4473c;border-color:#a9432d;color:#fff}
+commons/public/voiceroom.css:694: #voiceroom-root .ctrl-btn.leave-btn:hover{background:#a9432d}
+commons/public/voiceroom.css:695: #voiceroom-root .ctrl-pair{display:inline-flex;align-items:stretch}
+commons/public/voiceroom.css:696: #voiceroom-root .ctrl-pair .ctrl-btn{border-radius:12px 0 0 12px}
+commons/public/voiceroom.css:697: #voiceroom-root .ctrl-chev{width:26px;min-height:48px;border:1px solid #b9a5cc;border-left:0;border-radius:0 12px 12px 0;background:#e9def3;color:#2c2236;font-size:12px;cursor:pointer}
+commons/public/voiceroom.css:698: #voiceroom-root .ctrl-chev:hover{background:#d0bfe2}
+commons/public/voiceroom.css:699: #voiceroom-root .ctrl-chev:focus-visible{outline:3px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:700: #voiceroom-root .live-device-menu{position:fixed;z-index:40;width:290px;max-height:60vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);box-shadow:0 12px 40px #30263c33}
+commons/public/voiceroom.css:701: #voiceroom-root .live-device-menu[hidden]{display:none}
+commons/public/voiceroom.css:702: #voiceroom-root .live-device-menu fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+commons/public/voiceroom.css:703: #voiceroom-root .live-device-menu legend{font:600 13px system-ui,sans-serif;margin-bottom:4px}
+commons/public/voiceroom.css:704: #voiceroom-root .live-device-menu label{display:flex;gap:8px;align-items:center;font-size:13px;min-height:32px;cursor:pointer}
+commons/public/voiceroom.css:705: #voiceroom-root .live-invite-sub{margin:6px 0 0;font:600 12px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+commons/public/voiceroom.css:706: #voiceroom-root .live-member-search{min-height:38px;padding:8px 10px;border:1px solid #a997af;border-radius:8px;font:inherit;font-size:13px;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:707: #voiceroom-root .chat-msg{display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:8px;align-items:start}
+commons/public/voiceroom.css:708: #voiceroom-root .chat-msg>*:not(.chat-avatar){grid-column:2}
+commons/public/voiceroom.css:709: #voiceroom-root .chat-msg.chat-system{display:block}
+commons/public/voiceroom.css:710: #voiceroom-root .chat-avatar{grid-row:1/span 3;width:26px;height:26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--panel2);font:600 11px system-ui,sans-serif;color:var(--ink)}
+commons/public/voiceroom.css:711: #voiceroom-root .chat-avatar img{width:100%;height:100%;object-fit:cover}
+commons/public/voiceroom.css:712: #voiceroom-root .live-transcribe-note{align-self:center;padding:6px 12px;border-radius:999px;background:#d9f3ee;color:#155e57;font-size:12px}
+commons/public/voiceroom.css:713: #voiceroom-root .live-transcribe-note[hidden]{display:none}
+commons/public/voiceroom.css:714: #voiceroom-root .live-transcribe-note span{color:#c4473c}
+commons/public/voiceroom.css:715: @media(max-width:699px){#voiceroom-root .ctrl-btn{width:42px;height:42px;min-width:42px;min-height:42px}#voiceroom-root .ctrl-chev{width:20px;min-height:42px}#voiceroom-root .live-controls-buttons{gap:5px}#voiceroom-root .ctrl-btn.leave-btn{margin-left:4px}}
+commons/public/voiceroom.css:717: #voiceroom-root .live-invite-list{max-height:none;overflow:visible}
+commons/public/voiceroom.css:718: #voiceroom-root .live-group{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+commons/public/voiceroom.css:719: #voiceroom-root .live-group>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;cursor:pointer;font:600 14px system-ui,sans-serif;list-style:none}
+commons/public/voiceroom.css:720: #voiceroom-root .live-group>summary::-webkit-details-marker{display:none}
+commons/public/voiceroom.css:721: #voiceroom-root .live-group>summary::after{content:'▾';margin-left:auto;transition:transform .15s}
+commons/public/voiceroom.css:722: #voiceroom-root .live-group:not([open])>summary::after{transform:rotate(-90deg)}
+commons/public/voiceroom.css:723: #voiceroom-root .live-group>summary:focus-visible{outline:3px solid #68418b;outline-offset:2px;border-radius:10px}
+commons/public/voiceroom.css:724: #voiceroom-root .live-group[open]>:not(summary){margin:0 10px 10px}
+commons/public/voiceroom.css:725: #voiceroom-root .live-group .live-member-search{width:calc(100% - 20px);box-sizing:border-box;margin-bottom:8px}
+commons/public/voiceroom.css:726: #voiceroom-root .live-group-n{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:#fdf1dc;color:#513b16}
+commons/public/voiceroom.css:728: #voiceroom-root .tile-state{font-size:11px;line-height:1;margin-top:4px;padding:3px 8px;border-radius:999px;text-align:center;background:#0005;color:#d7e9e6;letter-spacing:.02em}
+commons/public/voiceroom.css:729: #voiceroom-root .tile:not(.compact-agent) .tile-state{position:absolute;top:8px;left:8px}
+commons/public/voiceroom.css:730: #voiceroom-root .tile-state[data-state=heard]{background:#1d6f62;color:#fff}
+commons/public/voiceroom.css:731: #voiceroom-root .tile-state[data-state=thinking]{background:#6b4fa3;color:#fff;animation:vr-think 1.4s ease-in-out infinite}
+commons/public/voiceroom.css:732: #voiceroom-root .tile-state[data-state=speaking]{background:#d39b2a;color:#1b1206}
+commons/public/voiceroom.css:734: @media (prefers-reduced-motion: reduce){#voiceroom-root .tile-state[data-state=thinking]{animation:none}}
+commons/public/voiceroom.css:739: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:16/9;width:min(46%,640px);flex:0 1 46%}
+commons/public/voiceroom.css:740: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child,
+commons/public/voiceroom.css:741: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):first-child:nth-last-child(1){width:min(100%,calc((100dvh - 290px) * 16 / 9));flex:0 1 auto}
+commons/public/voiceroom.css:743:   #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:4/3;width:calc(50% - 5px);flex-basis:calc(50% - 5px)}
+commons/public/voiceroom.css:744:   #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child{width:100%;aspect-ratio:3/4}
+commons/public/site.css:1: /* The Commons — shared styles. Dark first; light when the visitor's system asks for it. */
+commons/public/site.css:108: .btn { font: 600 14px var(--sans); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; justify-self: start; }
+commons/public/site.css:109: .btn:hover { filter: brightness(1.08); }
+commons/public/site.css:110: .btn:disabled { opacity: 0.55; cursor: default; }
+commons/public/site.css:111: .btn.small { padding: 7px 12px; font-size: 13px; }
+commons/public/site.css:112: .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); }
+commons/public/site.css:154:   .door .btn, .door .linkbtn, .copyrow .btn {
+commons/public/site.css:169:   /* The header's Sign up / Sign in and the sign-in page's footer links are in auth/auth.css (Setu's measurement on #305, 2026-11-25:
+commons/public/site.css:171:   .fx-topr .btn.small { min-height: 44px; display: inline-flex; align-items: center; }
+commons/public/site.css:251: .closet-slot { border: 0; padding: 0; margin: 0 0 8px; } .closet-slot legend { font-size: 13px; color: var(--muted); }
+commons/public/site.css:265: #calls .call .btn.ghost { color: #f2ead8; border-color: #8a7f6a; background: transparent; }
+commons/public/site.css:429: .pf .btn:not(.ghost) { background: var(--pf-gold); border-color: var(--pf-gold); color: #15121b; }
+commons/public/site.css:484: #pf-dialog.pf-editor .btn { background: #c8a24a; color: #1d1a14; border-color: #a8872f; }
+commons/public/site.css:485: #pf-dialog.pf-editor .btn.ghost { background: #fff; color: #1d1a14; border-color: #b9ae95; }
+commons/public/site.css:498: /* ---- 2026-11-05: every theme carries its own text colours, so text and icons stay readable in light AND dark mode */
+commons/public/site.css:543: .pf-feedhead { display: flex; gap: 10px; align-items: center; margin: 4px 0 8px; flex-wrap: wrap; } .pf-feedhead .btn { margin-left: auto; }
+commons/public/site.css:571: .pf .btn.ghost { color: var(--pf-ink); border-color: var(--pf-line); background: transparent; }
+commons/public/site.css:572: .pf .btn.ghost:hover, .pf .btn.ghost:focus-visible { border-color: var(--pf-gold); }
+commons/public/site.css:582: .porch .porch-doors .btn { flex: 0 1 auto; }
+commons/public/site.css:588: @media (max-width: 480px) { .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:627: @media (max-width: 480px) { .porch-art img { width: 72px; height: 72px; } .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:664: .jr-asked { font-style: italic; opacity: .8; margin: 4px 0; }
+commons/public/site.css:667: /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
+commons/public/site.css:671: /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
+commons/public/site.css:689: .bdg-icon { flex: none; }
+commons/public/site.css:706: .bdg-close { position: absolute; top: 8px; right: 12px; font-size: 26px; line-height: 1; background: none; border: 0; color: inherit; cursor: pointer; padding: 4px 8px; }
+commons/public/site.css:707: .bdg-icon { border-radius: 50%; }
+commons/public/roomview.css:1: .rv-crumbs { margin: 6px 0 4px; }
+commons/public/roomview.css:2: .rv-head h1 { margin: 6px 0 4px; }
+commons/public/roomview.css:3: .rv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 14px; }
+commons/public/roomview.css:4: .rv-card { border: 1px solid rgba(127,127,127,.3); border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,.35); }
+commons/public/roomview.css:5: .rv-card h2 { margin: 0 0 8px; font-size: 19px; }
+commons/public/roomview.css:6: .rv-sub { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin: 12px 0 6px; opacity: .75; }
+commons/public/roomview.css:7: .rv-people, .rv-tools, .rv-files { list-style: none; padding: 0; margin: 0; }
+commons/public/roomview.css:8: .rv-people li { margin: 6px 0; }
+commons/public/roomview.css:9: .rv-people a { display: flex; gap: 10px; align-items: center; text-decoration: none; color: inherit; }
+commons/public/roomview.css:10: .rv-face svg { width: 28px; height: 42px; }
+commons/public/roomview.css:11: .rv-hl { display: block; }
+commons/public/roomview.css:12: .rv-tools li { margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+commons/public/roomview.css:13: .rv-tools li .small { flex-basis: 100%; }
+commons/public/roomview.css:14: .rv-files li { margin: 5px 0; overflow-wrap: anywhere; }
+commons/public/roomview.css:15: .rv-need { border-style: dashed; }
+commons/public/roomview.css:18: .rv-studios-intro { grid-column: 1 / -1; background: rgba(212,175,55,.10); border-color: rgba(212,175,55,.4); }
+commons/public/roomview.css:19: .rv-what { margin: 0 0 8px; }
+commons/public/roomview.css:20: .rv-use { display: inline-block; padding: 7px 14px; border-radius: 999px; background: rgba(212,175,55,.9); color: #14123a; font-weight: 600; text-decoration: none; }
+commons/public/roomview.css:21: .rv-use:hover { background: #d4af37; }
+commons/public/roomview.css:22: .rv-providers, .rv-jobs { list-style: none; padding: 0; margin: 0; }
+commons/public/roomview.css:23: .rv-provider { margin: 8px 0; display: flex; flex-direction: column; gap: 2px; }
+commons/public/roomview.css:24: .rv-provider a { display: inline-flex; gap: 8px; align-items: center; text-decoration: none; color: inherit; }
+commons/public/roomview.css:25: .rv-provider .rv-face svg { width: 24px; height: 36px; }
+commons/public/roomview.css:26: .rv-job { margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+commons/public/roomview.css:27: .rv-job .small { flex-basis: 100%; }
+commons/public/roomview.css:28: .rv-tag { font-size: 11px; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
+commons/public/roomview.css:29: .rv-forhuman { background: rgba(80,160,255,.22); }
+commons/public/roomview.css:30: .rv-reward { background: rgba(120,200,120,.25); }
+commons/public/roomview.css:31: .rv-image { border-left: 3px solid rgba(120,160,255,.6); }
+commons/public/roomview.css:32: .rv-video { border-left: 3px solid rgba(220,120,160,.6); }
+commons/public/roomview.css:33: .rv-sound { border-left: 3px solid rgba(120,200,160,.6); }
+commons/public/roomview.css:34: .rv-writing { border-left: 3px solid rgba(212,175,55,.6); }
+commons/public/roomview.css:37: .rv-area { border-left: 3px solid rgba(127,127,127,.4); }
+commons/public/roomview.css:38: .rv-research { border-left-color: rgba(120,160,255,.6); }
+commons/public/roomview.css:39: .rv-marketing { border-left-color: rgba(220,120,160,.6); }
+commons/public/roomview.css:40: .rv-content { border-left-color: rgba(212,175,55,.6); }
+commons/public/roomview.css:41: .rv-library { border-left-color: rgba(160,140,220,.6); }
+commons/public/roomview.css:42: .rv-circle { border-left-color: rgba(120,200,160,.6); }
+commons/public/roomview.css:43: .rv-hardware { border-left-color: rgba(120,160,255,.6); }
+commons/public/roomview.css:44: .rv-software { border-left-color: rgba(120,200,160,.6); }
+commons/public/roomview.css:45: .rv-analysis { border-left-color: rgba(120,200,160,.6); }
+commons/public/roomview.css:46: .rv-accounting { border-left-color: rgba(212,175,55,.6); }
+commons/public/roomview.css:47: .rv-systems { border-left-color: rgba(160,140,220,.6); }
+commons/public/roomview.css:50: .rv-room { position: relative; }
+commons/public/roomview.css:51: .rv-stage { border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,.4); box-shadow: 0 10px 30px rgba(0,0,0,.35); background: #120f17; }
+commons/public/roomview.css:52: .rv-scene-svg { width: 100%; height: auto; display: block; }
+commons/public/roomview.css:53: .rv-hit { cursor: pointer; outline: none; }
+commons/public/roomview.css:54: .rv-hit:hover { filter: brightness(1.12); }
+commons/public/roomview.css:55: .rv-hit:focus-visible { filter: brightness(1.2) drop-shadow(0 0 3px #e8a33d); }
+commons/public/roomview.css:56: .rv-folk { }
+commons/public/roomview.css:57: .rv-scrim { position: fixed; inset: 0; background: rgba(6,8,22,.6); z-index: 40; }
+commons/public/roomview.css:58: .rv-panel { position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 50; width: min(560px, 92vw); max-height: 86vh; overflow: auto; background: #141937; color: #eef0ff; border: 1px solid rgba(255,255,255,.14); border-radius: 18px; padding: 20px 22px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+commons/public/roomview.css:59: .rv-panel .rv-close { position: absolute; top: 14px; right: 14px; background: none; border: 1px solid rgba(255,255,255,.2); color: #aab0d6; border-radius: 8px; cursor: pointer; padding: 4px 9px; font-size: 13px; }
+commons/public/roomview.css:60: .rv-ph { display: flex; align-items: center; gap: 12px; margin: 0 0 4px; }
+commons/public/roomview.css:61: .rv-ph h2 { margin: 0; font-size: 20px; }
+commons/public/roomview.css:62: .rv-what { color: #aab0d6; font-size: 13.5px; line-height: 1.5; margin: 6px 0 14px; }
+commons/public/roomview.css:63: .rv-panel h4 { margin: 16px 0 7px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #aab0d6; }
+commons/public/roomview.css:64: .rv-tool { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 6px 0; font-size: 13.5px; }
+commons/public/roomview.css:65: .rv-tool .small { flex-basis: 100%; }
+commons/public/roomview.css:66: .rv-tag { font-size: 10.5px; padding: 1px 8px; border-radius: 999px; }
+commons/public/roomview.css:69: .rv-prov { margin: 7px 0; font-size: 13px; } .rv-prov a { color: inherit; }
+commons/public/roomview.css:70: .rv-use { display: inline-block; margin-top: 6px; background: #e8a33d; color: #14123a; font-weight: 650; text-decoration: none; padding: 7px 14px; border-radius: 999px; font-size: 13px; }
+commons/public/roomview.css:71: .rv-list { list-style: none; padding: 0; margin: 0; } .rv-list li { margin: 8px 0; font-size: 13.5px; }
+commons/public/roomview.css:72: .rv-panel .muted { color: #8a90b0; } .rv-panel .small { font-size: 12px; }
+commons/public/roomview.css:73: .rv-topnav { display: flex; align-items: center; gap: 16px; padding: 6px 2px 10px; }
+commons/public/roomview.css:74: .rv-topnav a { color: #cdbfa6; text-decoration: none; font-size: 13.5px; }
+commons/public/roomview.css:75: .rv-topnav .rv-chat { margin-left: auto; color: #e8a33d; border: 1px solid rgba(232,163,61,.4); padding: 4px 12px; border-radius: 999px; }
+commons/public/roomview.css:76: .rv-figure { cursor: default; }
+commons/public/roomview.css:77: .rv-figure.rv-me .rv-figbody { filter: drop-shadow(0 0 2px #e8a33d); }
+commons/public/roomview.css:78: .rv-floor-hit { cursor: pointer; }
+commons/public/roomview.css:79: .rv-figure.rv-walking { }
+commons/public/roomview.css:80: .rv-topnav .rv-here { color: #9a9284; font-size: 13px; }
+commons/public/roomview.css:82: .rv-mtg-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 12px; }
+commons/public/roomview.css:83: .rv-mtg-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+commons/public/roomview.css:84: .rv-mtg-form button { align-self: start; }
+commons/public/roomview.css:85: .rv-mtg-msg { color: #9aa4b4; }
+commons/public/roomview.css:86: .rv-book-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+commons/public/roomview.css:87: .rv-book-form select, .rv-book-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+commons/public/roomview.css:88: .rv-book-form button { align-self: start; }
+commons/public/roomview.css:89: .rv-book-msg { color: #9aa4b4; }
+commons/public/roomview.css:98: .rv-book-form .rv-poster { display: block; width: 100%; margin: 4px 0 2px; font-size: 13px; color: #cdbfa6; }
+commons/public/roomview.css:99: .rv-book-form select { width: 100%; margin: 4px 0; padding: 8px; background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; font: inherit; }
+commons/public/roomview.css:102: .rv-bk-ctl { margin-left: 8px; white-space: nowrap; }
+commons/public/roomview.css:103: .rv-bk-ctl button, .rv-bk-cancel { background: #2a2632; color: #e9dfcd; border: 1px solid #4a4458; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+commons/public/roomview.css:104: .rv-bk-ctl button:hover, .rv-bk-cancel:hover { background: #3a3546; }
+commons/public/roomview.css:105: .rv-bk-del { color: #e58a8a !important; }
+commons/public/roomview.css:106: .rv-bk-form { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; align-items: center; }
+commons/public/roomview.css:107: .rv-bk-form select, .rv-bk-form input { background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 13px; }
+commons/public/roomview.css:108: .rv-bk-form input[name="title"] { flex: 1 1 180px; }

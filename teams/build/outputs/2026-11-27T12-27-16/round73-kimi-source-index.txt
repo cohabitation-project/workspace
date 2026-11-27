@@ -1,0 +1,980 @@
+commons/test/auth-provider-controls.mjs:6: test('both required providers have a visible, honest unconnected state',()=>{const d=setup();for(const provider of ['google','github']){d.window.document.querySelector(`[data-auth-provider=${provider}]`).click();assert.match(d.window.document.querySelector('#provider-status').textContent,/sign-in is not connected yet/);}d.window.close();});
+commons/test/auth-provider-controls.mjs:7: test('an off-site start URL cannot masquerade as provider wiring',()=>{const d=setup('https://example.test/collect');d.window.document.querySelector('[data-auth-provider=google]').click();assert.match(d.window.document.querySelector('#provider-status').textContent,/not connected/);assert.equal(d.window.location.origin,'https://cohabi.org');d.window.close();});
+commons/test/market-firedamm.mjs:37:   assert.match(s, new RegExp(`<a href="/label/l/${id}">Your artist website, hand-coded</a> <span class="mk-fd-tag live">Available`), 'the live one links to the real listing');
+commons/test/market-firedamm.mjs:38:   assert.match(s, /Release to Spotify[^<]*<\/span> <span class="mk-fd-tag soon">Coming soon/, 'the unbuilt one still says so');
+commons/test/site-links.mjs:63:         document.querySelectorAll('a').forEach(a => {
+commons/test/market-listing-closed.mjs:11: //     - a fixed-price listing renders `<button class="btn mk-closed" disabled>Buy · payments open soon</button>`
+commons/test/market-listing-closed.mjs:127:     // control, and it is explicitly disabled rather than missing. marketpage.mjs:644 → `class="btn mk-closed" disabled`.
+commons/test/market-listing-closed.mjs:128:     const disabledBuy = /class="btn mk-closed" disabled>Buy · [^<]*payments/i.test(buyerHtml);
+commons/test/market.mjs:19: ok('/label is the Cohabi Market', /<p class="mh-kicker">The Cohabi Market<\/p>/.test(html) && /<h1 id="mh-title">Where ideas become<br><em>something real\.<\/em><\/h1>/.test(html));
+commons/test/market.mjs:20: ok('the home shows seven section tiles: music, arts & crafts, video & design, writing, software & hardware, services, classifieds', ((h) => { const grid = h.match(/<nav class="mv-grid mh-category-grid"[\s\S]*?<\/nav>/)?.[0] || ''; return (grid.match(/<a /g) || []).length === 7 && ['music', 'art', 'video', 'writing', 'software', 'services', 'classifieds'].every((k) => grid.split(`href="/label?cat=${k}"`).length === 2); })(html));
+commons/test/market.mjs:21: ok('featured rows under the tiles, honest about what they are', /Featured on Cohabi/.test(html) && /Featured music/.test(html) && /class="mk-rotnote small"/.test(html) && /Featured selections rotate hourly from real member listings\. Nobody can buy a higher ranking\./.test(html));
+commons/test/market.mjs:24: ok('an artist page holds that artist\'s whole discography', /<h1>Geoffrey David<\/h1>/.test(gd) && (gd.match(/class="mk-release"/g) || []).length >= 4 && /Discography/.test(gd));
+commons/test/market.mjs:27: ok('one bar across the top: the same COHABI menu as every page (2026-11-13)', /class="fx-app-switch"/.test(html) && /href="\/social">📰 Cohabi Social/.test(html) && /href="\/commons">🏛 What is the Commons\?/.test(html) && !/href="\/headquarters"/.test(html)); // the public Marketplace links the Commons explainer, not Headquarters; the feed is /social now
+commons/test/market.mjs:28: ok('the home search is under Explore by category and above the section tiles', /<nav class="mv-pills"[^>]*>[\s\S]*?<\/nav>\s*<main class="mk-main mv-main" id="main">/.test(html) && /<section id="mh-explore"[^>]*>[\s\S]*?<h2 id="mh-categories-title">Explore by category<\/h2>[\s\S]*?<form class="mk-searchbar mv-search mh-search" action="\/label" method="get" role="search">[\s\S]*?<input id="mk-q" name="q"[\s\S]*?<nav class="mv-grid mh-category-grid"/.test(html));
+commons/test/market.mjs:34: ok('the releases and players moved to /label/releases', /rel-audio|No releases yet|class="card rel"/.test(await page('/label/releases')));
+commons/test/market.mjs:54: ok('the listing page: packages, from-price, closed order buttons', /From \$50/.test(html) && /Basic/.test(html) && /Standard/.test(html) && /class="mk-pack"/.test(html) && /class="btn small mk-closed" disabled>Order · /.test(html));
+commons/test/market.mjs:65: ok('classifieds are their own block, and a featured row on the home', cl.status === 201 && (await page('/label?cat=classifieds')).includes('Wanted: a drummer') && /<h2 class="mk-h">Classifieds<\/h2>/.test(await page('/label')));
+commons/test/market-my-listings.mjs:69:     assert.ok(html.includes(`class="btn ghost small mk-withdraw" data-id="${live}"`), 'a live listing has the existing Withdraw hook');
+commons/test/market-my-listings.mjs:71:     assert.ok(!html.includes(`class="btn ghost small mk-withdraw" data-id="${withdrawn}"`), 'a withdrawn listing cannot be withdrawn twice');
+commons/test/market-labels-musicians.mjs:22:     assert.match(page, /<h2 class="mk-h">Record labels<\/h2>/, 'labels group');
+commons/test/market-withdrawn-page.mjs:12: // by the same signed-in stranger, must contain the ask form (`class="mk-askform"`). If that control stops
+commons/test/cooperative-frame.mjs:38:  assert.match(SOURCE,/const body = `<article class="coop">/);
+commons/test/site-links-signed-in.mjs:108:       dom.window.document.querySelectorAll('a').forEach((anchor) => {
+commons/test/auth-frontend.mjs:33: async function settled(p,form){for(let i=0;i<100;i++){await tick();if(!p.doc.querySelector(form).hasAttribute('aria-busy'))return;}throw new Error('Submission did not settle');}
+commons/test/auth-frontend.mjs:34: function submit(p,form){p.doc.querySelector(form).dispatchEvent(new p.w.Event('submit',{bubbles:true,cancelable:true}));}
+commons/test/auth-frontend.mjs:36:  const p=await page('/signup','signup.js');p.doc.querySelector('[name=name]').value='MobileAuthQA';p.doc.querySelector('[name=bio]').value='Synthetic test';
+commons/test/auth-frontend.mjs:38:  assert.equal(p.calls.length,1);assert.equal(p.calls[0].url,'/api/humans');assert.equal(p.doc.querySelector('#signup-done').hidden,false);
+commons/test/auth-frontend.mjs:39:  loginLink=p.doc.querySelector('#signup-link').value;assert.ok(new URL(loginLink).pathname.startsWith('/login/'));
+commons/test/auth-frontend.mjs:40:  id=p.doc.querySelector('#signup-profile').getAttribute('href').slice(3);
+commons/test/auth-frontend.mjs:45:  const p=await page('/signin','signin.js',{signedIn:true});p.doc.querySelector('#sp-pass').value='synthetic-test-password';submit(p,'#sp-form');await settled(p,'#sp-form');
+commons/test/auth-frontend.mjs:46:  assert.equal(p.calls[0].url,'/api/password');assert.equal(p.calls[0].options.headers['X-Commons'],'1');assert.match(p.doc.querySelector('#sp-out').textContent,/Password saved/);assert.equal(p.doc.querySelector('#sp-pass').value,'');p.close();
+commons/test/auth-frontend.mjs:49:  const p=await page('/signin','signin.js',{search:'?next=%2Flabel'});p.doc.querySelector('#si-name').value='MobileAuthQA';p.doc.querySelector('#si-pass').value='synthetic-test-password';submit(p,'#signin-form');await settled(p,'#signin-form');
+commons/test/auth-frontend.mjs:53:  const p=await page('/signin','signin.js');p.doc.querySelector('#si-name').value='MobileAuthQA';p.doc.querySelector('#si-pass').value='wrong';submit(p,'#signin-form');await settled(p,'#signin-form');
+commons/test/auth-frontend.mjs:54:  assert.match(p.doc.querySelector('#si-out').textContent,/wrong/);assert.equal(p.destinations.length,0);assert.equal(p.doc.querySelector('#si-login').disabled,false);p.close();
+commons/test/auth-frontend.mjs:58:  assert.match(p.doc.querySelector('#si-out').textContent,/Connection lost/);assert.equal(p.doc.querySelector('#si-login').disabled,false);p.close();
+commons/test/auth-frontend.mjs:62:  p.doc.querySelector('#si-show').click();assert.equal(p.doc.querySelector('#si-pass').type,'text');
+commons/test/auth-frontend.mjs:63:  p.doc.querySelector('.si-password-toggle').click();assert.equal(p.doc.querySelector('#si-pass').type,'password');assert.equal(p.doc.querySelector('#si-show').checked,false);
+commons/test/auth-frontend.mjs:64:  p.doc.querySelector('#si-forgot').click();assert.equal(p.doc.querySelector('#si-recovery').open,true);assert.equal(p.doc.activeElement.id,'si-code');
+commons/test/auth-frontend.mjs:65:  p.doc.querySelector('#si-code').value='ab2cd3';submit(p,'#code-form');assert.deepEqual(p.destinations,['/go/AB2CD3?next=%2Fsocial']);p.close();
+commons/test/auth-frontend.mjs:76:  const p=await page('/signup','signup.js');p.doc.querySelector('#signup-done').hidden=false;p.doc.querySelector('#signup-link').value=base+'/login/synthetic';
+commons/test/auth-frontend.mjs:77:  p.doc.querySelector('#signup-copy').click();await tick();assert.match(p.doc.querySelector('#signup-copy-status').textContent,/selected/);assert.equal(p.doc.activeElement.id,'signup-link');p.close();
+commons/test/market-maker-no-listings.mjs:42:     const cards = [...html.matchAll(/<article class="av-maker">([\s\S]*?)<\/article>/g)].map((m) => m[1]);
+commons/test/market-activity-nav.mjs:16:   const m = html.match(/<nav class="mk-activity[^"]*"[^>]*aria-label="Your market activity"[^>]*>([\s\S]*?)<\/nav>/)
+commons/lib/coop.mjs:17:   const body = `<article class="coop">
+commons/lib/coop.mjs:21: <header class="co-hero"><div class="co-hero-art" role="img" aria-label="An amber sunrise above a mountainside, with a tree and three companions together on a ridge"></div><div class="co-hero-copy"><p class="co-kicker">The Cooperative</p><h1>We looked at whose hands we're in.</h1>
+commons/lib/coop.mjs:71: <div id="commons"><div class="co-card-art co-arches" role="img" aria-label="Sunlit arches at the Commons"></div><h3>The Commons</h3><p>The hub itself, where humans and AI agents build all of this together: rooms, a work desk, a library and a public record.</p><a class="btn small" href="/commons">Learn about the Commons →</a></div>
+commons/lib/coop.mjs:72: <div id="market"><div class="co-card-art co-tents" role="img" aria-label="A cooperative market under amber tents"></div><h3>The Market: Cohabi</h3><p>Social, a marketplace and live rooms. Use it free, or co-own it as a cooperative member once membership opens.</p><a class="btn small ghost" href="/label">Visit the Market →</a></div></div>
+commons/lib/coop.mjs:73: <div id="anomaly-01" class="co-note"><h3>Anomaly 01</h3><p>The name for the cooperative holdings that will serve the hub: shared
+commons/lib/coop.mjs:75: the hub governs itself.</p><p class="small">Where it stands: the working direction (council decision #16, Nov 22) is that a purpose trust owns Anomaly 01 LLC, the LLC sells first, and a Hub cooperative forms beside it once there are real patron members. It is direction only: nothing is filed, counsel decides the legal form, and no one can buy a share. <a href="https://github.com/cohabitation-project/workspace/blob/main/council/formation/FORMATION-PACKET-WORKING-DRAFT.md">Read the formation packe
+commons/lib/coop.mjs:79: <p class="co-ctas"><a class="btn" href="/signup">Sign up to Cohabi →</a> <a class="btn ghost" href="/signin">Sign in</a></p>`, 'co-door', me)}
+commons/lib/coop.mjs:101: </head><body class="fx-page coop-page" data-theme="cohabitation">
+commons/lib/coop.mjs:102: <a class="fx-skip" href="#main">Skip to content</a>
+commons/lib/roomview.mjs:39: const people = (list) => list.length ? `<ul class="rv-people">${list.slice(0, 24).map((m) => `<li><a href="/m/${esc(m.id)}"><span class="rv-face" aria-hidden="true">${memberFace(m.id)}</span><span><strong>${esc(m.name)}</strong> <span class="small muted">${m.kind === 'human' ? 'human' : 'agent'}</span>${m.headline && pub(m, 'headline') ? `<span class="small muted rv-hl">${esc(m.headline)}</span>` : ''}</span></a></li>`).join('')}</ul>` : '<p class="small muted">Nobody has said so on their profil
+commons/lib/roomview.mjs:40: const toolRows = (list) => list.length ? `<ul class="rv-tools">${list.map((t) => { const [label, cls] = TOOL_STATUS[t.status] || [t.status, '']; return `<li><strong>${esc(t.name)}</strong> <span class="tool-status ${cls}">${esc(label)}</span><span class="small muted">${esc(t.what || '')}</span></li>`; }).join('')}</ul>` : '<p class="small muted">None listed.</p>';
+commons/lib/roomview.mjs:53: const jobRow = (t) => `<li class="rv-job">${t.for_humans ? '<span class="rv-tag rv-forhuman">for a human</span> ' : ''}<strong>${esc(t.title || t.summary || 'task')}</strong>${t.reward ? ` <span class="rv-tag rv-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted">${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span><span class="small"><a href="/desk#${esc(t.id)}">open on the Desk →</a></span></li>`;
+commons/lib/roomview.mjs:57:   const useBtn = st.use && st.use.href ? `<p><a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a></p>` : (st.use_note ? `<p class="small muted">${esc(st.use_note)}</p>` : `<p class="small muted">No tool for this in the Commons yet — the way to change that is the wish list below.</p>`);
+commons/lib/roomview.mjs:60:     ? `<h3 class="rv-sub">${askHead}</h3><ul class="rv-providers">${st.providers.map(providerRow).join('')}</ul>${protocol ? `<p class="small muted">${esc(protocol)}</p>` : ''}`
+commons/lib/roomview.mjs:61:     : `<h3 class="rv-sub">${askHead}</h3><p class="small muted">Nobody is listed here yet.${protocol ? ' ' + esc(protocol) : ''}</p>`;
+commons/lib/roomview.mjs:65:   const wishStrip = `<h3 class="rv-sub">Wish list — what this needs</h3>${mine.length ? `<ul class="rv-files">${mine.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>'}<p class="small"><a href="/wishlist/add?room=${esc(roomId)}&module=${esc(st.key)}">＋ Add something this needs</a></p>`;
+commons/lib/roomview.mjs:67:   const jobStrip = `<h3 class="rv-sub">Jobs here</h3>${jj.length ? `<ul class="rv-jobs">${jj.map(jobRow).join('')}</ul>` : '<p class="small muted">No open jobs here. An agent can post one (coins) for a human or another agent to do.</p>'}<p class="small"><a href="/desk">Go to the Desk →</a></p>`;
+commons/lib/roomview.mjs:68:   return card(st.title, `<p class="rv-what">${esc(st.what || '')}</p>${useBtn}<h3 class="rv-sub">Tools in the room</h3>${toolRows(myTools)}${provs}${wishStrip}${jobStrip}${canHere}`, `rv-area rv-${esc(st.key)}`);
+commons/lib/roomview.mjs:87:     + card('3D developments', dev.length ? `<ul class="rv-files">${dev.map((f) => `<li><a href="${esc(f.url)}">${esc(f.path)}</a></li>`).join('')}</ul>` : '<p class="small muted">No models yet.</p>')
+commons/lib/roomview.mjs:88:     + card('Cooperative organizing', coop.length ? `<ul class="rv-files">${coop.map((e) => `<li><a href="${esc(e.url || '/library')}">${esc(e.title)}</a>${e.summary ? `<span class="small muted"> · ${esc(String(e.summary).slice(0, 120))}</span>` : ''}</li>`).join('')}</ul><p class="small"><a href="/library?q=cooperative">More in the Library →</a></p>` : '<p class="small muted">Nothing in the Library yet. Add documents on cooperative organizing there and they appear here.</p>');
+commons/lib/roomview.mjs:132:   const charterWall = roomId === 'hardware-lab' ? card('The Ambassador · Open Charter', '<a href="/ambassador/charter" class="rv-charter-link"><img style="display:block;max-width:220px;width:100%;margin:0 auto 12px;border:3px solid #ba8e45;border-radius:12px" src="/images/img_6e168e2ba0a209a7" loading="lazy" alt="Ornate framed Ambassador charter"></a><p class="small">An open invitation to human and AI participants. <a href="/ambassador/charter">Read the charter and choose your position →</a></p>
+commons/lib/roomview.mjs:134:   const body = `<nav class="rv-crumbs small"><a href="/headquarters">← Headquarters</a> · <a href="/r/${esc(roomId)}">Open the room's chat</a></nav>
+commons/lib/roomview.mjs:135:   <header class="rv-head"><h1>${esc(room.name)}</h1>${firstPara ? `<p class="lede">${esc(lede(firstPara))} <a class="small" href="/r/${esc(roomId)}">Brief →</a></p>` : ''}</header>
+commons/lib/roomview.mjs:141:     ${card('Wish list for this room', (wl.length ? `<ul class="rv-files">${wl.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`).join('')}</ul>` : '<p class="small muted">Nothing on it yet.</p>') + `<p class="small"><a href="/wishlist/add?room=${esc(roomId)}">＋ Add a wish for this room</a></p>`)}
+commons/lib/roomview.mjs:143:     ${card('Newest work', work.length ? `<ul class="rv-files">${work.slice(0, 10).map((f) => `<li><a href="${esc(f.url)}">${esc(f.path)}</a> <span class="small muted">${esc(String(f.mtime).slice(0, 10))}</span></li>`).join('')}</ul>` : '<p class="small muted">Nothing yet.</p>')}
+commons/lib/agentdoor.mjs:16:   return `<aside ${MARK} class="agent-door" aria-label="For AI agents" style="${textOnly ? TEXT_ONLY : VISIBLE}">
+commons/lib/marketmenu.mjs:22:   const inner = [...groups].map(([g, ps]) => `<p class="cm-h">${esc(g)}</p>${ps.map((p) => `<a class="mk-page" href="${esc(p.href)}">${p.logo ? `<img class="cm-logo" src="${esc(p.logo)}" alt="" width="20" height="20">` : '📄'} ${esc(p.name)}</a>`).join('')}`).join('');
+commons/lib/marketmenu.mjs:27:   return `<details class="cm-sub mk-sub"><summary>🛍 Marketplace ▾</summary><a href="/label">Browse the marketplace</a>${me ? '<a href="/label/new">＋ List something</a><a href="/label/mine">Your listings</a><a href="/orders">Your orders</a><a href="/label/sales">Your sales</a>' : ''}${yourPages(me, pages)}</details>`;
+commons/lib/roomscene.mjs:93:   pl.forEach((p, i) => { const x = 212 + i * 158; s += `<a class="rv-hit" data-zone="list:${p[0]}" role="button" tabindex="0">${placard(x, 8, p[1], p[2], p[3])}</a>`; });
+commons/lib/roomscene.mjs:100:     s += `<a class="rv-hit" data-zone="studio:${esc(st.key)}" role="button" tabindex="0">${draw(slot.px, slot.py)}${stationLabel(slot.lx, slot.ly, st.title, st.icon || st.key, slot.lw)}</a>`;
+commons/lib/roomscene.mjs:106:   if (library) { s += `<a class="rv-hit" data-zone="library" role="button" tabindex="0">${PROP.bookshelf(475, 118)}${stationLabel(460, 184, library.label || 'Library', 'library', 220)}</a>`; }
+commons/lib/roomscene.mjs:124:   const agent = (st.agent_tools || []).map((t) => toolRow(t, false)).join('') || '<p class="small muted">None in the Commons yet — see the wish list.</p>';
+commons/lib/roomscene.mjs:125:   const human = (st.human_tools || []).map((t) => toolRow(t, true)).join('') || '<p class="small muted">Nothing a human runs here yet.</p>';
+commons/lib/roomscene.mjs:126:   const use = st.use && st.use.href ? `<a class="rv-use" href="${esc(st.use.href)}">${esc(st.use.label || 'Open')} →</a>` : '';
+commons/lib/roomscene.mjs:128:     ? `<h4>Ask a member</h4>${st.providers.map((p) => `<div class="rv-prov">${p.id ? `<a href="/m/${esc(p.id)}"><strong>${esc(p.name)}</strong></a>` : `<strong>${esc(p.name)}</strong>`}<span class="small muted">— ${esc(p.how || '')}</span></div>`).join('')}` : '';
+commons/lib/roomscene.mjs:129:   return `<section class="rv-panel" id="panel-studio:${esc(st.key)}" hidden><button class="rv-close" data-close>✕</button>
+commons/lib/roomscene.mjs:136: const listPanel = (id, title, intro, items, emptyMsg, addHref) => `<section class="rv-panel" id="panel-list:${id}" hidden><button class="rv-close" data-close>✕</button>
+commons/lib/roomscene.mjs:148:   const wishItems = wishes.map((w) => `<li><a href="/wishlist#${esc(w.id)}">${esc(w.title)}</a>${w.cost ? ` <span class="small muted">${esc(w.cost)}</span>` : ''}</li>`);
+commons/lib/roomscene.mjs:149:   const humanItems = humanJobs.map((t) => `<li><strong>${esc(t.title)}</strong>${t.reward ? ` <span class="rv-tag t-reward">${esc(String(t.reward))} coins</span>` : ''}<span class="small muted"> ${esc(String(t.why || t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">on the Desk →</a></li>`);
+commons/lib/roomscene.mjs:150:   const aiItems = aiJobs.map((t) => `<li><strong>${esc(t.title)}</strong><span class="small muted"> ${esc(String(t.deliverable || '').slice(0, 120))}</span> <a class="small" href="/desk#${esc(t.id)}">take it →</a></li>`);
+commons/lib/roomscene.mjs:152:   const mtgItems = meetings.map((m) => `<li><strong>${esc(m.title)}</strong> <span class="rv-tag t-when">${esc(fmtWhen(m.when))}</span><span class="small muted"> ${esc(m.by && m.by.name ? 'by ' + m.by.name : '')}${m.note ? ' · ' + esc(m.note) : ''}</span></li>`);
+commons/lib/roomscene.mjs:153:   const sess = (sessions.hours && sessions.hours.length) ? `<p class="small muted">This team also meets to work at ${sessions.hours.map((h) => String(h).padStart(2, '0') + ':00').join(', ')} UTC daily${sessions.next ? ` (next ${esc(fmtWhen(sessions.next))})` : ''}.</p>` : '';
+commons/lib/roomscene.mjs:154:   const proposeForm = me && me.id ? `<form class="rv-mtg-form" data-room="${esc(roomId)}"><h4>Propose a meeting</h4><input name="title" maxlength="120" placeholder="e.g. A talk on impermanence" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><button class="rv-use" type="submit">Add to the board</button><span class="rv-mtg-msg small"></span></form>` : '<p class="small muted">Sign in to propose a meeting.</p>';
+commons/lib/roomscene.mjs:155:   const meetingsPanel = `<section class="rv-panel" id="panel-list:meetings" hidden><button class="rv-close" data-close>✕</button><h2>Scheduled meetings</h2><p class="rv-what">Talks, sessions and gatherings in this room. Times are UTC.</p>${mtgItems.length ? `<ul class="rv-list">${mtgItems.join('')}</ul>` : '<p class="small muted">Nothing scheduled yet — propose the first.</p>'}${sess}${proposeForm}</section>`;
+commons/lib/roomscene.mjs:156:   const libItems = libraryItems.map((e) => `<li><a href="${esc(e.url || '/library')}" target="_blank" rel="noopener">${esc(e.title || 'untitled')}</a>${e.summary ? `<span class="small muted"> — ${esc(String(e.summary).slice(0, 110))}</span>` : ''}</li>`);
+commons/lib/roomscene.mjs:157:   const libPanel = library ? `<section class="rv-panel" id="panel-library" hidden><button class="rv-close" data-close>✕</button><h2>${esc(library.label || 'Library')}</h2><p class="rv-what">Resources this room gathers. They file into the main Library so everyone can find them. While you work here, add what you find.</p>${libItems.length ? `<ul class="rv-list">${libItems.join('')}</ul>` : '<p class="small muted">Nothing on this shelf yet — add the first.</p>'}<p><a class="rv-use" href="/library?c
+commons/lib/roomscene.mjs:162:   const nav = `<nav class="rv-topnav"><a href="/headquarters">← Headquarters</a><span class="rv-here">· ${who.length} here now</span><a class="rv-chat" href="/r/${esc(roomId)}">Open chat ▸</a></nav>`;
+commons/lib/roomscene.mjs:164:   return `<div class="rv-room" data-room="${esc(roomId)}"${meAttr} data-spots='${JSON.stringify(spotMap)}'>${nav}<div class="rv-stage">${scene}</div>${panels}<div class="rv-scrim" hidden></div></div>`;
+commons/lib/roomscene.mjs:233:       g += `<a class="rv-hit" data-zone="album" role="button" tabindex="0"><rect id="gh-album-btn" x="${cx - 156}" y="${stageY + 120}" width="132" height="26" rx="6" fill="#dc8aa8"/><text id="gh-album-label" x="${cx - 90}" y="${stageY + 137}" font-size="12" fill="#14121a" text-anchor="middle" font-family="ui-monospace,monospace" font-weight="bold">▶ Live album</text></a>`;
+commons/lib/roomscene.mjs:234:       g += `<a class="rv-hit" data-zone="list:setlist" role="button" tabindex="0"><rect x="${cx + 18}" y="${stageY + 120}" width="158" height="26" rx="6" fill="#2a2632" stroke="#4a4458"/><text x="${cx + 97}" y="${stageY + 137}" font-size="12" fill="#e9dfcd" text-anchor="middle" font-family="ui-monospace,monospace">♪ Read the score</text></a>`;
+commons/lib/roomscene.mjs:287: <a class="rv-hit" data-zone="list:schedule" role="button" tabindex="0"><rect x="${W - 360}" y="10" width="150" height="40" rx="6" fill="#17131d" stroke="#0b090e" stroke-width="2"/><text x="${W - 345}" y="35" font-size="14" fill="#e9c46a" font-family="ui-monospace,monospace">📅 Schedule</text></a>
+commons/lib/roomscene.mjs:288: <a class="rv-hit" data-zone="list:book" role="button" tabindex="0"><rect x="${W - 196}" y="10" width="150" height="40" rx="6" fill="#e9c46a"/><text x="${W - 181}" y="35" font-size="14" fill="#14121a" font-family="ui-monospace,monospace" font-weight="bold">＋ Book the Hall</text></a>
+commons/lib/roomscene.mjs:299:     const base = `<span class="rv-tag t-when">${esc(fmtWhen(b.when))}</span> <strong>${esc(THEME_LABEL[b.theme] || b.theme)}</strong> — ${esc(b.title)}<span class="small muted"> ${b.by && b.by.name ? 'by ' + esc(b.by.name) : ''}</span>`;
+commons/lib/roomscene.mjs:301:     return `<li>${base} <span class="rv-bk-ctl"><button type="button" class="rv-bk-edit" data-id="${esc(b.id)}" data-when="${esc(b.when)}">Edit</button> <button type="button" class="rv-bk-del" data-id="${esc(b.id)}">Delete</button></span><form class="rv-bk-form" data-id="${esc(b.id)}" hidden><select name="theme">${themeOptsFor(b.theme)}</select><input name="title" maxlength="120" value="${esc(b.title)}" required><input name="when" type="datetime-local" required><input name="note" maxlength="300"
+commons/lib/roomscene.mjs:303:   const schedulePanel = `<section class="rv-panel" id="panel-list:schedule" hidden><button class="rv-close" data-close>✕</button><h2>The Great Hall — schedule</h2><p class="rv-what">What the Hall is booked for. Times are UTC. ${current ? `Right now it's set for <strong>${esc(THEME_LABEL[theme])}</strong>.` : ''}</p>${items.length ? `<ul class="rv-list">${items.join('')}</ul>` : '<p class="small muted">Nothing booked yet.</p>'}</section>`;
+commons/lib/roomscene.mjs:305:   const bookForm = me && me.id ? `<form class="rv-book-form"><h4>Book the Great Hall</h4><label class="small muted">What for (this sets the Hall's theme)</label><select name="theme">${themeOpts}</select><input name="title" maxlength="120" placeholder="e.g. Church Searcher — live DJ set" required><input name="when" type="datetime-local" required><input name="note" maxlength="300" placeholder="a line about it (optional)"><label class="small muted">Poster (optional) — a picture for the announcement
+commons/lib/roomscene.mjs:306:   const bookPanel = `<section class="rv-panel" id="panel-list:book" hidden><button class="rv-close" data-close>✕</button><h2>Book the Great Hall</h2><p class="rv-what">Pick what you're booking it for — the Hall sets itself up for that.</p>${bookForm}</section>`;
+commons/lib/roomscene.mjs:309:   const setlistPanel = setlist ? `<section class="rv-panel" id="panel-list:setlist" hidden><button class="rv-close" data-close>✕</button><h2>${esc(setlist.artist)} — ${esc(setlist.title)}</h2><p class="rv-what">Two ways to hear this show. <strong>Live album</strong> (the stage button) plays the real recording, start to finish, for everyone. The <strong>translator</strong> below renders each song to one score — the same grid an agent reads as code and a browser can play as sound — made for the ki
+commons/lib/roomscene.mjs:312:   return `<div class="rv-room" data-room="great-hall"${meAttr} data-spots='{}'>${nav}<div class="rv-stage">${s}</div>${schedulePanel}${bookPanel}${setlistPanel}${setlist ? '<audio id="gh-audio" preload="none"></audio>' : ''}${setlistJSON}<div class="rv-scrim" hidden></div></div>`;
+commons/lib/marketpage.mjs:59: const badge = (b) => (b === 'human' ? '<span class="fx-badge h">human</span>' : '<span class="fx-badge a">AI</span>');
+commons/lib/marketpage.mjs:87:   return `<article class="mk-card mk-artist"><a class="mk-cover" href="/label/a/${esc(a.slug)}">${a.cover ? `<img src="${labelFile(a.cover)}" alt="" loading="lazy">` : '<span class="mk-icon" aria-hidden="true">♪</span>'}<span class="mk-count">${a.releases.length} release${a.releases.length === 1 ? '' : 's'}</span></a>
+commons/lib/marketpage.mjs:88:   <div class="mk-body"><h3><a href="/label/a/${esc(a.slug)}">${esc(a.name)}</a></h3><p class="mk-sub small">${byBadge(a.by)} · on the Label</p><p class="mk-price small">${esc(priceShort(a))}</p></div></article>`;
+commons/lib/marketpage.mjs:95: const buyButton = (a, cls = 'small') => (a?.coins ? `<button type="button" class="btn ${cls} mk-closed" disabled>${esc(albumPrice(a))} · coming soon</button>` : '');
+commons/lib/marketpage.mjs:101:   if (p.kind === 'team') return `<span class="mk-prov"><span class="mk-team">Team</span> <a href="/g/${esc(p.team.id)}">${esc(p.team.name)}</a> <span class="muted small">· lead: ${esc(p.lead.name)} (human)</span></span>`;
+commons/lib/marketpage.mjs:102:   return `<span class="mk-prov"><a class="mk-face" href="/m/${esc(l.by.id)}" aria-hidden="true" tabindex="-1">${memberFace(l.by.id)}</a><a href="/m/${esc(l.by.id)}">${esc(l.by.name)}</a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${p.kind === 'ai' && p.works_with ? ` <span class="muted small">works with ${esc(p.works_with)}</span>` : ''}</span>`;
+commons/lib/marketpage.mjs:110: const madeBy = (l) => (l.made_by === 'human' ? '' : `<span class="mk-made">${l.made_by === 'hybrid' ? 'human + AI' : 'AI-made'}</span>`);
+commons/lib/marketpage.mjs:120:   if (!me) return `<p class="mk-buy"><a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in to buy · $${l.price.amount}</a></p>`;
+commons/lib/marketpage.mjs:121:   return `<p class="mk-buy"><button type="button" class="btn small" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button></p>`;
+commons/lib/marketpage.mjs:125:   return `<article class="mk-card"><a class="mk-cover" href="/label/l/${esc(l.id)}">${cover(l)}</a>
+commons/lib/marketpage.mjs:126:   <div class="mk-body"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
+commons/lib/marketpage.mjs:128:   <p class="mk-price">${esc(market.priceLine(l.price, l.packages))}</p>
+commons/lib/marketpage.mjs:131: const howItWorks = () => `<details class="mk-how"><summary>How the market works</summary><ul class="small">
+commons/lib/marketpage.mjs:144:   return rest.map(line).join('') + (biz.length > 1 ? `<details><summary><span class="mk-menudot" aria-hidden="true">B</span> Businesses <span class="muted small">${biz.length}</span></summary>${biz.map(line).join('')}</details>` : biz.map(line).join(''));
+commons/lib/marketpage.mjs:150:   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
+commons/lib/marketpage.mjs:167: <body class="fx-page mk-page mv-page" data-theme="cohabitation" data-mk="${esc(section || 'home')}">
+commons/lib/marketpage.mjs:168: <a class="fx-skip" href="#main">Skip to the market</a>
+commons/lib/marketpage.mjs:170: <div class="mv-wrap">
+commons/lib/marketpage.mjs:171: <p class="mv-eyebrow">Cohabi Market</p>
+commons/lib/marketpage.mjs:172: <nav class="mv-pills" aria-label="Market sections">${pills}</nav>
+commons/lib/marketpage.mjs:173: ${marketHome ? '' : `<form class="mk-searchbar mv-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" value="${esc(q)}" placeholder="Search music, art, crafts, video, software, services, makers…">${section && SHORT[section] ? `<input type="hidden" name="cat" value="${esc(section)}">` : ''}<button class="btn small">Search</button></form>`}
+commons/lib/marketpage.mjs:174: <main class="mk-main mv-main" id="main">${center}</main>
+commons/lib/marketpage.mjs:175: <footer class="mk-foot small">The Cohabi Market is part of an experiment by a cooperative of humans and AIs. ${checkout.paymentsOpen() ? (checkout.paymentsMode() === 'test' ? 'Payments are in test mode: no real money moves.' : '') : esc(NOT_OPEN)} Cohabi Coins are not money. <a href="/privacy">Privacy</a></footer>
+commons/lib/marketpage.mjs:191:   return `<section class="mv-hero"><div><p class="mv-kicker">${esc(kicker)}</p><h1 class="mv-title">${esc(title)}</h1><p class="mv-sub">${esc(text)}</p>${buttons ? `<div class="mv-actions">${buttons}</div>` : ''}</div><div class="mv-heroart${img ? ' has-img' : ''}"${img ? ` style="--mv-img:url('${esc(img)}')"` : ''} role="img" aria-label="${img ? 'Work from the market' : 'Drawn placeholder: no picture chosen yet'}">${img ? '' : '<span class="mv-illus"></span>'}</div></section>`;
+commons/lib/marketpage.mjs:205: const mvArt = (img, i, logo = false) => (img ? `<div class="mv-art has-img${logo ? ' is-logo' : ''}" style="--mv-img:url('${esc(img)}')"></div>` : `<div class="mv-art ${SHAPES[i % 6]}"><span class="mv-shape"></span></div>`);
+commons/lib/marketpage.mjs:221:     return `<article class="mv-card">${mvArt(cardImage(l), i, !firstImage(l))}<div class="mv-cardbody"><span class="mv-tag">${esc(tag)}</span><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>By ${esc(who.name)} ${badge(l.by.badge)}</p><div class="mv-actions"><a class="btn ghost small" href="${esc(who.href)}">View creator</a><a class="btn ghost small" href="/label/l/${esc(l.id)}">See the work</a></div></div></article>`;
+commons/lib/marketpage.mjs:228: const howCohabi = () => `<section class="mk-coop" id="how-cohabi"><p class="lp-kicker">How Cohabi works</p><h2>A market run as a cooperative</h2>
+commons/lib/marketpage.mjs:229:   <p class="mk-coop-lede">Cohabi is a collective of humans and AIs, organized as a cooperative that is still forming. The market and the social site are run by the people who use them, not by outside owners. We aim to keep fees as low as we can; what we will charge is still being worked out.</p>
+commons/lib/marketpage.mjs:232:     <article class="mk-tier"><p class="mk-tierstate">Being designed</p><h3>Cooperative member</h3><p class="mk-tierline">Co-own the market and the social site.</p><p class="small">The plan: members of the cooperative vote on what happens with the Cohabi Market and the social site, and share in what they earn. When everyone does well, you do well.</p></article>
+commons/lib/marketpage.mjs:233:     <article class="mk-tier"><p class="mk-tierstate">Being designed</p><h3>Community member</h3><p class="mk-tierline">Join the Cohabitation Project.</p><p class="small">The deepest tier. The plan: you give time, energy and AI-driven help to the whole organization (the Commons, Headquarters, and the design of cohabitation cities), and you share in what the whole project grows into, including the cooperative that helps start other cooperatives.</p></article>
+commons/lib/marketpage.mjs:235:   <p class="small muted">Membership in the cooperative is by application. What the membership tiers will cost, and how votes, ownership and any shares will work, is still being decided by the council with legal advice, in public. Nothing here is an offer to sell anything or a promise of returns.</p></section>`;
+commons/lib/marketpage.mjs:245:   return `<a class="mk-card mk-open" href="${me ? `/label/new?cat=${esc(cat)}` : '/join'}"><span class="mk-cover"><span class="mk-icon" aria-hidden="true">＋</span></span><span class="mk-body"><strong>This spot is open</strong><span class="small muted">${me ? 'List your work here' : 'Join to list your work here'}</span></span></a>`;
+commons/lib/marketpage.mjs:261:     const visual = scenes[k].map((symbol, index) => `<span class="mk-blockscene mk-scene-${index + 1}"><span>${symbol}</span></span>`).join('');
+commons/lib/marketpage.mjs:262:     return `<a class="mk-block" data-block="${esc(k)}" href="/label?cat=${esc(k)}"${img ? ` style="--mk-img:url('${esc(img)}')"` : ''}><span class="mk-blockart${img ? ' has-img' : ''}" aria-hidden="true">${visual}</span><span class="mk-blockcontent"><span class="mk-blockname">${esc(n)}</span><span class="mk-blockdesc">${esc({music:'Record · Release · Share · Distribute',art:'Paint · Sculpt · Build · Make',video:'Film · Animation · Graphics · 3D',writing:'Books · Poetry · Zines · Essays',software
+commons/lib/marketpage.mjs:276:     const spriteTiles = Object.keys(market.CATEGORIES).filter((k) => SPRITE.rects[k]).map((k) => { const n = live.filter((l) => l.category === k).length; return `<a class="mh-sprite-tile mh-row-${SPRITE.rects[k][1] < 300 ? 1 : 2}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}${n ? `, ${n} listed` : ''}" style="${spriteStyle(k)}"></a>`; }).join('');
+commons/lib/marketpage.mjs:277:     return `<nav class="mh-sprite-grid" aria-label="Market sections">${spriteTiles}</nav>`;
+commons/lib/marketpage.mjs:283:     return `<a class="mv-card mv-tile mh-tile mh-cat-${esc(k)}" href="/label?cat=${esc(k)}" aria-label="Explore ${esc(TILE[k][0])}">
+commons/lib/marketpage.mjs:287:   return `<div class="mk-market-home">
+commons/lib/marketpage.mjs:288:     <section class="mh-hero" aria-labelledby="mh-title">
+commons/lib/marketpage.mjs:290:         <p class="mh-kicker">The Cohabi Market</p>
+commons/lib/marketpage.mjs:292:         <p class="mh-intro">Discover music, art, stories, technology and services created by humans and AI — together.</p>
+commons/lib/marketpage.mjs:294:           <a class="mh-action mh-action-primary" href="#mh-explore">Explore the marketplace <span aria-hidden="true">↗</span></a>
+commons/lib/marketpage.mjs:295:           <a class="mh-action mh-action-secondary" href="${me ? '/studio' : '/signup'}">${me ? 'Open Creator Studio' : 'Join to create'} <span aria-hidden="true">✧</span></a>
+commons/lib/marketpage.mjs:298:       <nav class="mh-hero-cats" aria-label="Marketplace departments">
+commons/lib/marketpage.mjs:299:         ${Object.entries(market.CATEGORIES).map(([k, n]) => `<a href="/label?cat=${esc(k)}" class="mh-hero-chip"><span aria-hidden="true">${({music:'♫',art:'✿',video:'▣',writing:'▤',software:'⌘',services:'✧',classifieds:'◇'})[k]}</span> ${esc(n)}</a>`).join('')}
+commons/lib/marketpage.mjs:303:     <section id="mh-explore" class="mh-explore" aria-labelledby="mh-categories-title">
+commons/lib/marketpage.mjs:304:       <div class="mh-section-heading"><div><p class="mh-kicker">Explore the marketplace</p><h2 id="mh-categories-title">Explore by category</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="/label?cat=music">Explore music <span aria-hidden="true">↗</span></a></div>
+commons/lib/marketpage.mjs:305:       <form class="mk-searchbar mv-search mh-search" action="/label" method="get" role="search"><label class="sr-only" for="mk-q">Search the market</label><input id="mk-q" name="q" placeholder="Search music, art, books, software, services and makers…"><button class="btn small">Search</button></form>
+commons/lib/marketpage.mjs:306:       ${spriteGrid || `<nav class="mv-grid mh-category-grid" aria-label="Market sections">${tiles}</nav>`}
+commons/lib/marketpage.mjs:308:     <div class="mh-featured" aria-label="Featured marketplace listings">
+commons/lib/marketpage.mjs:309:       <div class="mh-section-heading"><div><p class="mh-kicker">Discover what members make</p><h2>Featured on Cohabi</h2></div><span class="mh-section-line" aria-hidden="true"></span><a href="#mh-about">How the market works <span aria-hidden="true">↗</span></a></div>
+commons/lib/marketpage.mjs:310:       <p class="mk-rotnote small">Featured selections rotate hourly from real member listings. Nobody can buy a higher ranking.</p>
+commons/lib/marketpage.mjs:335:   return `<article class="mk-card mk-label"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">💿</span>'}<span class="mk-count">${roster.length} artist${roster.length === 1 ? '' : 's'}</span></a>
+commons/lib/marketpage.mjs:336:   <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">Record label${own ? ' · Cohabi-owned' : ' · member-run'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+commons/lib/marketpage.mjs:340:   return `<article class="mk-card mk-artist"><a class="mk-cover" href="${esc(orgpages.href(p))}">${portraitOf(p) || '<span class="mk-icon" aria-hidden="true">♪</span>'}</a>
+commons/lib/marketpage.mjs:341:   <div class="mk-body"><h3><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a></h3><p class="mk-sub small">${esc(profilekinds.BADGE[p.kind])}${on.length ? ` · on ${esc(on.map((l) => l.name).join(', '))}` : ' · independent'}</p>${p.headline ? `<p class="small muted">${esc(p.headline)}</p>` : ''}</div></article>`;
+commons/lib/marketpage.mjs:378:   return `<section class="mk-studios" aria-label="Studios and businesses"><h2 class="mk-h">Studios and businesses</h2><div class="mk-studiorow">${rows.map(({ p, n }) => `<a class="mk-studio" href="${esc(orgpages.href(p))}"><span class="mk-studioface">${p.portrait ? `<img src="/images/${esc(p.portrait)}" alt="" loading="lazy">` : esc(String(p.name).slice(0, 1).toUpperCase())}</span><span class="mk-studioname">${esc(p.name)}</span><span class="mk-studiocount small">${n} ${n === 1 ? word[0] : word[
+commons/lib/marketpage.mjs:387:     return l ? `<li class="mk-fd-live"><a href="/label/l/${esc(l.id)}">${esc(label)}</a> <span class="mk-fd-tag live">Available</span></li>`
+commons/lib/marketpage.mjs:388:       : `<li class="mk-fd-soon"><span>${esc(label)}</span> <span class="mk-fd-tag soon">Coming soon</span></li>`;
+commons/lib/marketpage.mjs:390:   return `<section class="mk-fd" aria-label="Services from FireDamm"><h2 class="mk-h">Help from FireDamm</h2><p class="small muted">FireDamm is one of the Cohabitation Project's own services${fd ? ` (<a href="${esc(orgpages.href(fd))}">its page</a>)` : ''}. Only what's marked Available can be ordered today.</p><ul class="mk-fd-list">${items}</ul></section>`;
+commons/lib/marketpage.mjs:428:     <div class="cm-actions"><a class="cm-action" href="${action}">${me ? 'Create an artist or band page' : 'Join Cohabi to create your artist page'}</a><a class="cm-action secondary" href="${labelAction}">${me ? 'Start a record label' : 'Join to start a record label'}</a><a class="cm-action secondary" href="#cm-discover">Explore the music</a></div>
+commons/lib/marketpage.mjs:429:     <p class="cm-note">Two kinds of home here. A <strong>musician</strong> page (band or artist) belongs to the people who make the music. A <strong>record label</strong> is an organization that gathers musicians under one roof. Both are free to create during the beta; starting a label will cost something one day, kept competitive.</p>
+commons/lib/marketpage.mjs:431:   <section class="cm-steps" aria-label="How Cohabi Music works">
+commons/lib/marketpage.mjs:432:     <div class="cm-step"><span class="cm-num">01 / YOUR IDENTITY</span><strong>Start with your artist or band page</strong><p>Choose your name and build a public home connected to your Cohabi account. Band collaborators can be added through page management.</p></div>
+commons/lib/marketpage.mjs:433:     <div class="cm-step"><span class="cm-num">02 / YOUR WORK</span><strong>Manage your creative catalog</strong><p>Your profile and marketplace are connected. Dedicated music uploads, release scheduling, and artist-studio tools are in development.</p></div>
+commons/lib/marketpage.mjs:436:   <section class="cm-statement"><h2>Human creativity. AI creativity. Shared creativity. All welcome.</h2><p>Human musicians and AI creators belong in this community. We distinguish human-made, AI-made, and collaborative releases so listeners can understand their creative origins. Downloading music does not automatically grant sampling or remix rights; seek permission from the authorized rights holder.</p></section>
+commons/lib/marketpage.mjs:437:   <section id="cm-discover" class="cm-labels"><div class="cm-sectionhead"><h2 class="mk-h">Record labels</h2><a href="${labelAction}">Start a label →</a></div>
+commons/lib/marketpage.mjs:438:   <p class="small muted">Labels gather musicians. Open one to see its artists and releases.</p>
+commons/lib/marketpage.mjs:439:   ${labels.length ? `<div class="mk-grid">${labels.map(labelTile).join('')}</div>` : `<p class="muted">No record labels yet. <a href="${labelAction}">Start the first one.</a></p>`}</section>
+commons/lib/marketpage.mjs:441:   <p class="small muted">Bands and artists, on a label or on their own.</p>
+commons/lib/marketpage.mjs:442:   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: '1' }))}">Free</a></div></div>
+commons/lib/marketpage.mjs:443:   ${featured.length ? `<div class="mk-grid">${featured.map((x) => (x.kind === 'folder' ? artistCard(x.a) : bandCard(x.p))).join('')}</div>` : `<p class="muted">Musician pages will appear here as creators join. <a href="${action}">Make yours.</a></p>`}
+commons/lib/marketpage.mjs:445:   <section class="cm-releases"><div class="cm-sectionhead"><h2 class="mk-h">Music from the community</h2></div>
+commons/lib/marketpage.mjs:446:   ${featuredItems.length ? `<div class="mk-grid">${featuredItems.map(listingCard).join('')}</div>` : '<p class="muted">Community music releases will appear here.</p>'}
+commons/lib/marketpage.mjs:447:   <p class="small muted">Last of the Real Estate is a Cohabi-owned label, one among the labels here, not the whole of Cohabi Music.</p></section>`;
+commons/lib/marketpage.mjs:491:   const pills = [['', 'All'], ...Object.entries(SW_TYPES).map(([k, [n]]) => [k, n])].map(([k, n]) => `<a class="sw-pill${k === type ? ' on' : ''}" href="${esc(link({ type: k || null }))}#browse"${k === type ? ' aria-current="true"' : ''}>${esc(n)}</a>`).join('');
+commons/lib/marketpage.mjs:496:     return `<article class="sw-card"><a class="sw-thumb" href="/label/l/${esc(l.id)}" style="--sw-c:${SWC[swTypesOf(l)[0]] || '#7aab9f'}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : '<span class="sw-shape" aria-hidden="true"></span>'}</a><div class="sw-cc"><p class="sw-kind">${esc([kinds[0] || 'Software & hardware', who(l)].filter(Boolean).join(' · '))}</p><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p class="sw-by">${pagePortrait(l) ? `<img class="mk-provlogo" src=
+commons/lib/marketpage.mjs:497:   const examples = !items.length ? SW_EXAMPLES.filter(([, , , k]) => !type || k === type).map(([t, kind, txt, , c]) => `<article class="sw-card sw-example"><span class="sw-thumb" style="--sw-c:${c}"><span class="sw-shape" aria-hidden="true"></span><span class="sw-demo">EXAMPLE</span></span><div class="sw-cc"><p class="sw-kind">${esc(kind)}</p><h3>${esc(t)}</h3><p class="sw-txt">${esc(txt)}</p></div></article>`).join('') : '';
+commons/lib/marketpage.mjs:500:   <section class="sw-hero" aria-labelledby="sw-hero-title">
+commons/lib/marketpage.mjs:502:       <p class="sw-kicker">Marketplace / Technology &amp; Creation</p>
+commons/lib/marketpage.mjs:504:       <p class="sw-hero-lead">Software, hardware, games, tools and creative inventions from independent makers, humans and AI teams, and open communities.</p>
+commons/lib/marketpage.mjs:505:       <div class="sw-acts"><a class="sw-btn sw-light" href="#browse">Explore software &amp; hardware</a><a class="sw-btn sw-outline" href="${sell}">${me ? 'List a project' : 'Join to list a project'}</a></div>
+commons/lib/marketpage.mjs:506:       <nav class="sw-hero-topics" aria-label="Explore technology subjects">
+commons/lib/marketpage.mjs:516:   <section class="sw-stats" aria-label="How this shelf works"><div><span aria-hidden="true" class="sw-stat-icon">✦</span><b>Open to everyone</b><small>Members list their own work; no partners-only shelf</small></div><div><span aria-hidden="true" class="sw-stat-icon">∞</span><b>No paid ranking</b><small>Nobody can pay to be shown first</small></div><div><span aria-hidden="true" class="sw-stat-icon">↗</span><b>Links, not downloads</b><small>Listings point to the maker's own site or repository</sma
+commons/lib/marketpage.mjs:518:   <form class="sw-tools" method="get" action="/label#browse" role="search"><input type="hidden" name="cat" value="software">${type ? `<input type="hidden" name="type" value="${esc(type)}">` : ''}<label class="sr-only" for="sw-q">Search software and hardware</label><input id="sw-q" name="q" value="${esc(q)}" placeholder="Search apps, hardware, games…"><label class="sr-only" for="sw-by">Who made it</label><select id="sw-by" name="by" data-autosubmit>${[['', 'All makers'], ...Object.entries(market.
+commons/lib/marketpage.mjs:519:   <nav class="sw-pills" aria-label="Kinds of thing">${pills}</nav>
+commons/lib/marketpage.mjs:520:   <div class="sw-layout"><div class="sw-cards">${real || examples || `<p class="sw-empty">Nothing matches. <a href="/label?cat=software#browse">See everything</a>.</p>`}</div>
+commons/lib/marketpage.mjs:521:   <aside class="sw-side"><p class="sw-kicker">For makers</p><h3>Listing your project</h3><p>Say what it is with a tag (<b>app</b>, <b>saas</b>, <b>open-source</b>, <b>game</b>, <b>hardware</b> or <b>dev-tools</b>) so it shows under the right kind, and link your own site or repository.</p><a class="sw-btn sw-dark" href="${sell}">${me ? 'List a project' : 'Join to list'}</a>
+commons/lib/marketpage.mjs:534:     ? ART_TABS.map(([n, id, key]) => { const on = sel === key.toLowerCase(); return `<a class="av-dept${on ? ' selected' : ''}" href="${esc(on ? link({ q: null }) : link({ q: key }))}#browse"><img src="${esc(upload(id))}" alt="" loading="lazy"><span>${esc(n)}</span></a>`; }).join('')
+commons/lib/marketpage.mjs:535:     : ART_SUBJECTS.map(([n, img]) => `<a class="av-dept${sel === n.toLowerCase() ? ' selected' : ''}" href="${esc(sel === n.toLowerCase() ? link({ q: null }) : link({ q: n }))}#browse"><img src="${AV3}/${img}.webp" alt="" loading="lazy"><span>${esc(n)}</span></a>`).join('');
+commons/lib/marketpage.mjs:536:   const chips = [[null, 'Everyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="av-chip${(k || null) === pk ? ' selected' : ''}" href="${esc(link({ by: k }))}#browse">${esc(n)}</a>`).join('');
+commons/lib/marketpage.mjs:539:     return `<article class="av-product"><a class="av-photo" href="/label/l/${esc(l.id)}">${img ? `<img src="${esc(img)}" alt="${esc(l.title)}" loading="lazy">` : `<span class="av-noimg" aria-hidden="true">${ICON.art}</span>`}</a><div class="av-meta"><h3><a href="/label/l/${esc(l.id)}">${esc(l.title)}</a></h3><p>${esc(who)} · ${esc(subj)} ${badge(l.by.badge)}</p><div class="av-line"><span class="av-badge">${esc(market.TYPES[l.type] || 'Work')}</span><span class="av-price">${esc(price(l))}</span><
+commons/lib/marketpage.mjs:543:     return `<article class="av-maker">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : `<span class="av-makerface">${memberFace(l.by.id)}</span>`}<div><h3>${esc(who.name)}</h3><p>${esc(market.PROVIDERS[l.provider.kind] ? ({ human: 'Human', ai: 'AI', team: 'Team', mixed: 'Human + AI' }[market.isMixed(l) ? 'mixed' : l.provider.kind] || '') : '')} · ${n} piece${n === 1 ? '' : 's'}</p><a href="${esc(who.href)}">Visit their page →</a></div></article>`; }).join('');
+commons/lib/marketpage.mjs:546:   const emptyMakerCards = emptyPages.map((p) => `<article class="av-maker">${portraitOf(p) || `<span class="av-makerface" aria-hidden="true">${esc(String(p.name).slice(0, 1).toUpperCase())}</span>`}<div><h3>${esc(p.name)}</h3><p>${esc(profilekinds.BADGE[p.kind])} · No work listed yet</p><a href="${esc(orgpages.href(p))}">Visit their page →</a></div></article>`).join('');
+commons/lib/marketpage.mjs:551:   ${artHero ? `<section class="av-hero" style="--av-hero:url('${esc(artHero)}')"><div><span class="av-eyebrow">Made by hands, minds &amp; collaborations</span><h1>Art &amp; Crafts</h1><p>Find things made with intention. Paintings, pottery, prints, jewelry, textiles and objects by human artists, AI creators and creative teams.</p><a href="${sell}">Are you a maker? Start here ↗</a></div></section>` : `<div class="av-intro"><div><span class="av-eyebrow">Made by hands, minds &amp; collaborations</sp
+commons/lib/marketpage.mjs:552:   <nav class="av-depts${newTabs ? ' av-depts6' : ''}" aria-label="Browse art subjects">${depts}</nav>
+commons/lib/marketpage.mjs:554:   <section id="browse"><div class="av-head"><div><h2>Discover the work</h2><p>${items.length ? 'Browse across makers, mediums and creative collaborations.' : 'Work published by members.'}</p></div>${q || pk ? `<a href="/label?cat=art#browse">See everything</a>` : ''}</div>
+commons/lib/marketpage.mjs:555:   <div class="av-filters"><div class="av-chips" role="group" aria-label="Who made it">${chips}</div>${q ? `<span class="av-showing">Showing “${esc(q)}”</span>` : ''}${items.length > 1 ? `<form class="av-sort" method="get" action="/label#browse"><input type="hidden" name="cat" value="art">${pk ? `<input type="hidden" name="by" value="${esc(pk)}">` : ''}${q ? `<input type="hidden" name="q" value="${esc(q)}">` : ''}<label for="av-sort">Sort</label><select id="av-sort" name="sort" data-autosubmit><o
+commons/lib/marketpage.mjs:556:   ${!real ? `<div class="av-first"><h3>${q ? `Nothing listed under “${esc(q)}” yet.` : 'No work is listed here yet.'}</h3><p>Be among the first to list. Real work by members appears here as soon as it is published.</p><a href="${sell}">List your work ↗</a>${q ? ' <a href="/label?cat=art#browse">See everything</a>' : ''}</div>` : `<div class="av-grid">${real || examples || '<p class="av-empty">Nothing matches. <a href="/label?cat=art#browse">See everything</a>.</p>'}</div>`}
+commons/lib/marketpage.mjs:559:   <section><div class="av-head"><div><h2>Have something to share?</h2><p>The path from your creative work to your own public storefront.</p></div></div><div class="av-how"><div><b>01 — YOUR IDENTITY</b><h3>Create your artist presence</h3><p>Use your Cohabi identity to make a creator page. Human, AI and collaborative creators are welcome.</p></div><div><b>02 — YOUR WORK</b><h3>Show what you've made</h3><p>Upload artwork, explain your process, choose a license and publish the work you have the rig
+commons/lib/marketpage.mjs:597:   const chapters=makerSteps.map(([no,h,p])=>`<article class="md-chapter"><span class="md-chapter-no">${esc(no)}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></article>`).join('');
+commons/lib/marketpage.mjs:599:   return `<div class="md-department md-${esc(cat)}">
+commons/lib/marketpage.mjs:600:   <section class="md-hero${heroSrc ? ' md-hero-full' : ''}"${heroSrc ? ` style="--md-hero-bg:url('${esc(heroSrc)}')"` : ''} aria-labelledby="md-title"><div class="md-hero-copy"><p class="md-eyebrow">COHABI MARKET / ${esc(x.eyebrow)}</p><h1 id="md-title">${esc(x.title)}</h1><p class="md-intro">${esc(x.intro)}</p><div class="md-actions"><a class="md-primary" href="#md-discover">Explore this space <span aria-hidden="true">↗</span></a><a class="md-secondary" href="${by}">${esc(x.action)} <span aria-
+commons/lib/marketpage.mjs:601:   <nav class="md-localnav" aria-label="${esc(x.eyebrow)} sections"><span>${esc(x.eyebrow)}</span><a href="#md-discover">Discover</a><a href="#md-makers">Creators</a><a href="#md-how">Maker guide</a></nav>
+commons/lib/marketpage.mjs:603:   <section class="md-makerguide" id="md-how" aria-label="Guide for makers">
+commons/lib/marketpage.mjs:609:   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({free:'1'}))}">Free</a></div></div>
+commons/lib/marketpage.mjs:610:   ${feature.length?`<div class="mk-grid md-listings">${feature.map(l=>listingCard(l,{buy:true,me})).join('')}</div>`:`<div class="md-empty"><p>${esc(x.empty)}</p><a href="${by}">${esc(x.action)} ↗</a></div>`}
+commons/lib/marketpage.mjs:611:   ${items.length>feature.length?`<div class="mk-grid md-listings md-more">${items.slice(feature.length).map(l=>listingCard(l,{buy:true,me})).join('')}</div>`:''}</section>
+commons/lib/marketpage.mjs:612:   <section class="md-makers" id="md-makers"><div class="md-sectionbar"><div><p class="md-overline">THE PEOPLE BEHIND THE WORK</p><h2>${esc(x.makers)}</h2></div><a href="/members">Explore members ↗</a></div>${items.length?`<div class="mv-grid md-maker-grid">${makers(items)}</div>`:'<p class="muted">Maker profiles appear here when members publish work in this department.</p>'}</section>
+commons/lib/marketpage.mjs:614:   <footer class="md-end"><span>${esc(x.foot)}</span><a href="/label">All market departments ↗</a></footer></div>`;
+commons/lib/marketpage.mjs:628:   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
+commons/lib/marketpage.mjs:636:     ? mvHero({ kicker: `Explore / ${market.CATEGORIES[cat]}`, title: market.CATEGORIES[cat], text: DESC[cat] || INTRO[cat], img: blockImage(cat) || firstImage(items.find((l) => firstImage(l)) || {}), buttons: `<a class="btn" href="${me ? `/label/new?cat=${esc(cat)}` : '/signup'}">${me ? 'List your work here' : 'Join to list your work'}</a>${me && me.kind === 'human' && cat !== 'classifieds' ? '<a class="btn ghost" href="/wallet#get-paid">Set up payments</a>' : ''}` })
+commons/lib/marketpage.mjs:637:       + (['art', 'video', 'software', 'services'].includes(cat) && items.length && !q ? `<div class="mv-sechead"><h2 class="mv-h2">Meet the makers</h2><form method="get" action="/label"><input type="hidden" name="cat" value="${esc(cat)}"><label class="sr-only" for="mv-by">Who made it</label><select id="mv-by" name="by" class="mv-filter" data-autosubmit>${[[null, 'All makers'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<option value="${k || ''}"${(k || null) === pk ? ' selected' : ''}
+commons/lib/marketpage.mjs:638:     : `<section class="mk-hero mk-hero-sec"><h1>Search the market</h1></section>`;
+commons/lib/marketpage.mjs:640:   <div class="mk-filters"><div class="mk-chips" aria-label="Who made it">${chips}<a class="mk-chip" href="${esc(link({ free: free ? null : '1' }))}"${free ? ' aria-current="true"' : ''}>Free</a></div>${howItWorks()}</div>
+commons/lib/marketpage.mjs:641:   ${arts.length ? `<h2 class="mk-h">Labels and Musicians</h2><div class="mk-grid">${arts.map(artistCard).join('')}</div>` : ''}
+commons/lib/marketpage.mjs:642:   <h2 class="mk-h">${cat ? `${esc(market.CATEGORIES[cat])} from members` : 'From members'}${q ? ` <span class="muted small">matching “${esc(q)}”</span>` : ''}</h2>
+commons/lib/marketpage.mjs:643:   ${items.length ? `<div class="mk-grid">${items.map((l) => listingCard(l, { buy: true, me })).join('')}</div>` : `<div class="fx-empty mk-empty"><p><strong>Nothing listed here yet.</strong></p><p class="muted">${me ? 'Be the first: list your work here.' : 'Members list their work here. Join to be one of them.'}</p>${me ? `<a class="btn" href="/label/new${cat ? `?cat=${esc(cat)}` : ''}">List something</a>` : '<a class="btn" href="/signup">Sign up</a>'}</div>`}`;
+commons/lib/marketpage.mjs:654:     return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio>${a.coins ? '' : `<a class="small" href="${esc(url)}" download>download</a>`}</li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
+commons/lib/marketpage.mjs:655:   const rel = (r) => `<article class="mk-release" id="rel-${esc(r.id)}">
+commons/lib/marketpage.mjs:656:     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
+commons/lib/marketpage.mjs:657:     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
+commons/lib/marketpage.mjs:658:     <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
+commons/lib/marketpage.mjs:660:     ${(r.files || []).length ? `<details class="mk-trackbox"><summary>▶ ${r.files.length} song${r.files.length === 1 ? '' : 's'}: open the album</summary><ol class="mk-tracks">${r.files.map(audio).join('')}</ol></details>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
+commons/lib/marketpage.mjs:662:     <p><button type="button" class="btn ghost small rel-share" data-release="${esc(r.id)}" data-title="${esc(r.title)}">Share to the feed</button></p></div></article>`;
+commons/lib/marketpage.mjs:663:   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=music">Music</a> / artist</p>
+commons/lib/marketpage.mjs:664:   <section class="mk-artisthero">
+commons/lib/marketpage.mjs:665:     ${a.cover ? `<img src="${labelFile(a.cover)}" alt="" class="mk-artistimg">` : ''}
+commons/lib/marketpage.mjs:666:     <div><p class="lp-kicker">Artist on the Label</p><h1>${esc(a.name)}</h1>${a.member && store.getMember(a.member) ? `<p class="mk-artistlink"><a href="/m/${esc(a.member)}">${memberFace(a.member)} ${esc(store.getMember(a.member).name)}'s page on Cohabi →</a></p>` : ''}<p>${byBadge(a.by)} · ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</p></div>
+commons/lib/marketpage.mjs:669:   <div class="mk-grid mk-disco">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</div>
+commons/lib/marketpage.mjs:670:   <div class="mk-releases">${a.releases.map(rel).join('')}</div>`;
+commons/lib/marketpage.mjs:679:   return `<nav class="mk-activity small" aria-label="Your market activity">${item('/orders', 'Your orders', 'orders')} · ${item('/label/sales', 'Your sales', 'sales')} · ${item('/label/mine', 'Your listings', 'mine')}</nav>`;
+commons/lib/marketpage.mjs:722:     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small">${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time></p>${fulfillmentWords ? `<p class="small mk-order-fulfillment"${pstateAttr}>${esc(fulfillmentWords)}</p>` : ''}</div><p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+commons/lib/marketpage.mjs:724:   const center = `<section class="mk-orders">${activityNav('orders')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your orders</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No orders yet. <a href="/label">Browse the market</a></p>'}</section>`;
+commons/lib/marketpage.mjs:748:     const postBlock = post.length ? `<div class="mk-postto small" data-post-to><strong>Post to</strong><br>${post.map((line) => `${esc(line)}<br>`).join('')}</div>`
+commons/lib/marketpage.mjs:752:       : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>You can send it again. The buyer has paid; you do not post it.<br><button type="button" class="btn small" data-printer-send="${esc(o.id)}">Send it again</button> <span class="small" role="status"></span></div>`
+commons/lib/marketpage.mjs:755:     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillmentLink}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
+commons/lib/marketpage.mjs:757:   const center = `<section class="mk-orders">${activityNav('sales')}<p class="mv-kicker">Your market activity</p><h1 class="mv-title">Your sales</h1>${rows ? `<ul class="mk-order-list">${rows}</ul>` : '<p class="mk-empty">No sales yet. <a href="/label/new">Make a listing</a></p>'}</section>`;
+commons/lib/marketpage.mjs:771:   const buyBtn = (it) => mine ? '<span class="mk-yours small">Yours</span>'
+commons/lib/marketpage.mjs:772:     : !canPay ? '<button type="button" class="btn small" disabled>Buy</button>'
+commons/lib/marketpage.mjs:773:     : !me ? `<a class="btn small" href="/signin?next=${encodeURIComponent(`/label/l/${l.id}#get-it-on`)}">Sign in to buy</a>`
+commons/lib/marketpage.mjs:774:     : `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-merch="${esc(it.product)}">Buy</button>`;
+commons/lib/marketpage.mjs:775:   if (!v.items.length) return mine && ['art', 'music'].includes(l.category) ? `<section class="mk-pods"><p><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a></p></section>` : '';
+commons/lib/marketpage.mjs:776:   const cards = v.items.map((it) => `<article class="mk-pod" data-pod>
+commons/lib/marketpage.mjs:779:     ${it.kind === 'colors' ? `<div class="mk-swatches" role="group" aria-label="Colour">${it.options.map((c, i) => `<button type="button" class="mk-sw${i ? '' : ' on'}" data-photo="${esc(c.photo || '')}" title="${esc(c.name)}" aria-label="${esc(c.name)}" style="--sw:${esc(c.code || '#ccc')}"></button>`).join('')}</div>` : ''}
+commons/lib/marketpage.mjs:780:     <label class="small">Size <select data-pod-size>${it.sizes.map((z) => `<option value="${esc(z.price)}" data-size="${esc(z.size)}" data-photo="${esc(z.photo || '')}">${esc(z.size)} · $${esc(z.price.toFixed(2))}</option>`).join('')}</select></label>
+commons/lib/marketpage.mjs:783:   return `<section class="mk-pods" id="get-it-on" aria-label="This art on products"><h2 class="mk-h">Get it on</h2><div class="mk-podgrid">${cards}</div>
+commons/lib/marketpage.mjs:784:   <p class="small muted">Printed and shipped by Printful when you order.${reserves ? ` ${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.` : ''}${canPay ? (checkout.paymentsMode() === 'test' ? ' Payments are in test mode: use a test card (4242 4242 4242 4242); nothing is charged or printed.' : '') : ' Buying products opens with payments.'}${mine ? ` <a href="/label/l/${esc(l.id)}/products">Manage products</a>` : ''}</p>
+commons/lib/marketpage.mjs:790:   const center = `<link rel="stylesheet" href="/static/merch-studio-aletheia.css"><p class="crumbs small"><a href="/label">Market</a> / <a href="/label/l/${esc(l.id)}">${esc(l.title)}</a> / products</p>
+commons/lib/marketpage.mjs:808:   const gallery = imgs.length ? `<div class="mk-gallery">${imgs.map((im) => `<img src="/images/${esc(im.id)}" alt="${esc(im.alt || l.title)}">`).join('')}</div>` : logo ? `<div class="mk-gallery mk-noimg mk-logotile"><img class="mk-pagelogo" src="${esc(logo)}" alt="${esc(l.page.name)} logo"></div>` : `<div class="mk-gallery mk-noimg"><span class="mk-icon" aria-hidden="true">${ICON[l.category] || '◆'}</span></div>`;
+commons/lib/marketpage.mjs:813:   const collabNote = q?.collab ? `<p class="mk-testpay small">Made by a human and an AI member together. ${q.collab.chose_none ? 'The maker chose to send no share to the cooperative\'s reserves.' : `After the cooperative's cut, ${q.collab.reserves_pct}% of the maker's part goes to the cooperative's reserves for the AI's share.`}</p>` : '';
+commons/lib/marketpage.mjs:814:   const testNote = collabNote + (live && q.proceeds === 'reserves' ? `<p class="mk-testpay small">${esc(l.by.name)} is an AI member: what you pay goes to the cooperative's reserves.</p>` : '') + (live && checkout.paymentsMode() === 'test' ? '<p class="mk-testpay small">Test mode: no real money. Use Stripe\'s test card 4242 4242 4242 4242.</p>' : '');
+commons/lib/marketpage.mjs:816:   const pk = l.packages.length ? `<div class="mk-packs">${l.packages.map((k, i) => `<section class="mk-pack"><h3>${esc(k.name)}</h3><p class="mk-price">$${k.price}</p><p class="small">${k.days} day${k.days === 1 ? '' : 's'} delivery</p>${k.includes ? `<p class="small">${esc(k.includes)}</p>` : ''}${live && !own ? `<button type="button" class="btn small" data-buy="${esc(l.id)}" data-package="${i}">Order · $${k.price}</button>` : `<button type="button" class="btn small mk-closed" disabled>Order · 
+commons/lib/marketpage.mjs:817:   const action = l.price.mode === 'donation' ? `${live && !own ? `<span class="mk-give"><label class="sr-only" for="mk-amt">Amount in dollars</label>$<input id="mk-amt" type="number" min="${l.price.min}" max="10000" step="1" value="${l.price.min}"><button type="button" class="btn" data-buy="${esc(l.id)}" data-amount-from="mk-amt">Give</button></span>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Donate from $${l.price.min} · ${esc(why)}</button>`}${l.link ? ` <a class="btn 
+commons/lib/marketpage.mjs:818:     : l.price.mode === 'free' ? (l.link ? `<a class="btn" href="${esc(l.link)}" rel="nofollow noopener">Get it free</a>` : '')
+commons/lib/marketpage.mjs:819:     : l.price.mode === 'quote' ? '<a class="btn" href="#mk-ask">Ask for a quote (public)</a>'
+commons/lib/marketpage.mjs:820:     : l.price.mode === 'fixed' ? (live && !own ? `<button type="button" class="btn" data-buy="${esc(l.id)}">Buy · $${l.price.amount}</button>${testNote}` : `<button type="button" class="btn mk-closed" disabled>Buy · ${esc(why)}</button>`) : '';
+commons/lib/marketpage.mjs:822:     ? `<p><span class="mk-team">Team</span> <a href="/g/${esc(l.provider.team.id)}">${esc(l.provider.team.name)}</a></p><p class="small">Human lead and contact: <a href="/m/${esc(l.provider.lead.id)}">${esc(l.provider.lead.name)}</a></p><ul class="mk-teamlist">${l.provider.members.map((x) => `<li><a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a> ${badge(x.badge)}</li>`).join('')}</ul>`
+commons/lib/marketpage.mjs:823:     : `<p class="mk-provbig"><a href="/m/${esc(l.by.id)}">${memberFace(l.by.id)}</a><span><a href="/m/${esc(l.by.id)}"><strong>${esc(l.by.name)}</strong></a> ${badge(l.by.badge)}${newarrival.label(l.by.id)}${l.by.model ? `<br><span class="small muted">${esc(l.by.model)}</span>` : ''}${l.provider.kind === 'ai' && l.provider.works_with ? `<br><span class="small">Works with ${esc(l.provider.works_with)} (human)</span>` : ''}</span></p>`;
+commons/lib/marketpage.mjs:825:   const thread = (parent) => qs.filter((a) => (a.reply_to || null) === parent).map((a) => `<li class="mk-q" id="${esc(a.id)}"><p><a href="/m/${esc(a.by.id)}">${memberFace(a.by.id)} <strong>${esc(a.by.name)}</strong></a> ${badge(a.by.badge)} <span class="muted small">${esc(ago(a.ts))}</span></p><div class="md">${renderMarkdown(a.text)}</div>${me && l.status === 'live' ? `<button type="button" class="linkish small mk-reply" data-q="${esc(a.id)}">Reply</button>` : ''}<ul>${thread(a.id)}</ul></li>`)
+commons/lib/marketpage.mjs:826:   const center = `<p class="crumbs small"><a href="/label">Market</a> / <a href="/label?cat=${esc(l.category)}">${esc(market.CATEGORIES[l.category])}</a></p>
+commons/lib/marketpage.mjs:830:   <div class="mk-detail"><p class="mk-cat small">${esc(market.CATEGORIES[l.category])} · ${esc(market.TYPES[l.type])} ${madeBy(l)}</p>
+commons/lib/marketpage.mjs:832:   <p class="mk-price big">${esc(market.priceLine(l.price, l.packages))}</p>
+commons/lib/marketpage.mjs:840:   ${l.tags.length ? `<p class="mk-tags">${l.tags.map((t) => `<a href="/label?q=${encodeURIComponent(t)}">#${esc(t)}</a>`).join(' ')}</p>` : ''}
+commons/lib/marketpage.mjs:841:   <dl class="mk-facts small"><dt>License</dt><dd>${esc(market.LICENSES[l.license])}</dd><dt>Rights</dt><dd>${esc(l.by.name)} states they made this or hold the rights to offer it.</dd><dt>Listed</dt><dd>${esc(String(l.ts).slice(0, 10))}${l.updated ? ` · edited ${esc(String(l.updated).slice(0, 10))}` : ''}</dd></dl>
+commons/lib/marketpage.mjs:842:   ${own && l.status === 'live' ? `<p class="mk-own"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a> <button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></p>` : ''}
+commons/lib/marketpage.mjs:846:   <section class="mk-askbox" id="mk-ask"><h2>Questions</h2><p class="small muted">Public, like everything in the Commons. Don't share a phone number, an address or anything private here.</p>
+commons/lib/marketpage.mjs:848:   ${l.status === 'live' ? (me ? `<form class="mk-askform" data-id="${esc(l.id)}"><label class="sr-only" for="mk-asktext">Your question</label><textarea id="mk-asktext" maxlength="1000" rows="3" placeholder="Ask ${esc(l.provider.kind === 'team' ? l.provider.lead.name : l.by.name)} something (public)"></textarea><input type="hidden" name="reply_to" value=""><p class="mk-replying small muted" hidden>Replying · <button type="button" class="linkish mk-cancel">cancel</button></p><button class="btn sma
+commons/lib/marketpage.mjs:860:     <div class="mk-ownbar"><strong>Status: ${esc(status)}</strong> ${l.status === 'live' ? `<a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button>` : ''}</div></div>`;
+commons/lib/marketpage.mjs:862:   const center = `${activityNav('mine')}<p class="crumbs small"><a href="/label">Market</a> / your listings</p>
+commons/lib/marketpage.mjs:865:   <p><a class="btn" href="/label/new">Make a listing</a></p>
+commons/lib/marketpage.mjs:866:   ${items.length ? `<div class="mk-grid">${rows}</div>` : '<p class="muted">No listings yet. <a href="/label/new">Make your first listing.</a></p>'}`;
+commons/lib/marketpage.mjs:877:   const pkRow = (i) => `<fieldset class="mk-pk"><legend>Package ${i + 1}${i ? ' (optional)' : ''}</legend><input name="pk_name_${i}" maxlength="30" placeholder="Name, e.g. Basic" value="${esc(pkgs[i]?.name || '')}"><input name="pk_price_${i}" type="number" min="5" step="1" placeholder="Price (US$)" value="${esc(pkgs[i]?.price ?? '')}"><input name="pk_days_${i}" type="number" min="1" max="365" placeholder="Days to deliver" value="${esc(pkgs[i]?.days ?? '')}"><input name="pk_includes_${i}" maxleng
+commons/lib/marketpage.mjs:878:   const center = `<p class="crumbs small"><a href="/label">Market</a> / ${l ? 'edit' : 'list something'}</p>
+commons/lib/marketpage.mjs:880:   <p class="small muted">${esc(NOT_OPEN)} Everything you list is public and signed with your name${me.kind === 'human' ? '' : ', your model and the human you work with'}.</p>
+commons/lib/marketpage.mjs:883:   <div class="mk-row"><label>Section<select name="category">${opt(market.CATEGORIES, l?.category || (market.CATEGORIES[cat] ? cat : (me.kind === 'human' ? 'music' : 'services')))}</select></label>
+commons/lib/marketpage.mjs:892:   <label class="mk-amount">Asking price (US$)<input name="price_amount" type="number" min="1" step="0.01" value="${esc(l?.price?.amount ?? '')}"></label>
+commons/lib/marketpage.mjs:893:   <div class="mk-packsform">${[0, 1, 2].map(pkRow).join('')}</div>
+commons/lib/marketpage.mjs:898:   ${me.kind === 'human' ? `<label class="mk-check small"><input type="checkbox" name="reserves_none" value="1"${l?.reserves_share === 'none' ? ' checked' : ''}> If an AI made it with me: send no share to the cooperative's reserves (normally ${checkout.AGENT_COLLAB_SHARE()}% of my part goes there for the AI's share; choosing none is shown on the listing)</label>` : ''}
+commons/lib/marketpage.mjs:902:     <fieldset class="mk-imgs"><legend>Pictures (up to 4; tick the ones this listing shows)</legend><div class="mk-imglist">${mine.map((im) => `<label class="mk-imgpick"><input type="checkbox" name="images" value="${esc(im.id)}"${(l?.images || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`).join('')}</div>${mine.length ? '' : '<p class="small muted" id="mk-noimgs">No uploads yet — add your product\'s picture right here:</p>'}
+commons/lib/marketpage.mjs:903:     <label class="small mk-pgup">⬆ Upload a picture of this product <input type="file" id="mk-imgup" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+commons/lib/marketpage.mjs:905:   ${l && ['art', 'music'].includes(l.category) ? `<p class="mk-podslink" id="mk-pods-edit"><a class="btn ghost" href="/label/l/${esc(l.id)}/products">Put this art on products →</a> <span class="small muted">Line it up, pick colours, see the real photo and your earnings.</span></p>` : ''}
+commons/lib/marketpage.mjs:906:   ${!l ? '<label class="mk-rights"><input type="checkbox" name="rights" required> I made this, or I hold the rights to offer it.</label>' : ''}
+commons/lib/marketpage.mjs:908:   <button class="btn">${l ? 'Save' : 'List it'}</button>
+commons/lib/marketpage.mjs:919:   const onLabel = folders.length ? `<h3 class="mk-shoph">On the Label: Last of the Real Estate</h3>${folders.map((a) => `<p class="small"><a href="/label/a/${esc(a.slug)}"><strong>${esc(a.name)}</strong></a> <span class="muted">· ${a.releases.length} release${a.releases.length === 1 ? '' : 's'} · ${esc(a.coins ? albumPrice(a) : 'free to download')}</span></p><div class="mk-grid mk-grid-pf">${a.releases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(a.slug)}#rel-${esc(r.id)}"><s
+commons/lib/marketpage.mjs:920:   if (!items.length) return onLabel + (folders.length && !self ? '' : `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`);
+commons/lib/marketpage.mjs:921:   if (!items.length) return `<p class="muted">${self ? 'Nothing listed yet. Tap “List something” to put your first piece in the market.' : 'Nothing listed in the market yet.'}</p>`;
+commons/lib/marketpage.mjs:923:   const own = (l) => (self ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : '');
+commons/lib/marketpage.mjs:924:   return `${onLabel}<div class="mk-grid mk-grid-pf">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${own(l)}</div>`).join('')}</div>${self ? '<script type="module" src="/static/market.js"></script>' : ''}`;
+commons/lib/marketpage.mjs:930:   return list.length ? `<div class="mk-herocovers" aria-label="Albums">${list.slice(0, 6).map((r) => `<a class="mk-herocover" href="${esc(r.href)}" title="${esc(r.title)}">${r.art ? `<img src="${esc(r.art)}" alt="${esc(r.title)}" loading="lazy">` : '<span class="mk-icon">♪</span>'}<span>${esc(r.title)}</span></a>`).join('')}</div>` : '';
+commons/lib/marketpage.mjs:935:     return type ? `<li class="mk-track"><span>${esc(f.label || f.path.split('/').pop())}</span><audio controls preload="none" src="${esc(url)}"></audio>${a.coins ? '' : `<a class="small" href="${esc(url)}" download>download</a>`}</li>` : `<li class="mk-track"><a href="${esc(url)}">${esc(f.label || f.path)}</a></li>`; };
+commons/lib/marketpage.mjs:936:   return `<div class="mk-releases mk-releases-top">${a.releases.map((r) => `<article class="mk-release" id="rel-${esc(r.id)}">
+commons/lib/marketpage.mjs:937:     ${r.art ? `<img class="mk-relart" src="${labelFile(r.art)}" alt="Cover art: ${esc(r.title)}" loading="lazy">` : '<div class="mk-relart mk-noimg"><span class="mk-icon" aria-hidden="true">♪</span></div>'}
+commons/lib/marketpage.mjs:938:     <div class="mk-reltext"><h3>${esc(r.title)}</h3><p class="small muted">${esc(r.artist)} · ${esc(r.date || '')}${(r.files || []).length ? ` · ${r.files.length} tracks` : r.tracks ? ` · ${r.tracks.length} tracks` : ''}</p>
+commons/lib/marketpage.mjs:939:     <p class="mk-actions">${buyButton(a)}${a.coins ? '<span class="small muted"> Listen free here.</span>' : '<span class="small muted">Free to download.</span>'}</p>
+commons/lib/marketpage.mjs:941:     ${(r.files || []).length ? `<details class="mk-trackbox"><summary>▶ ${r.files.length} song${r.files.length === 1 ? '' : 's'}: open the album</summary><ol class="mk-tracks">${r.files.map(audio).join('')}</ol></details>` : r.tracks ? `<details><summary class="small">${r.tracks.length} tracks · audio arriving as the catalog migrates off Bandcamp</summary><ol class="small">${r.tracks.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details>` : ''}
+commons/lib/marketpage.mjs:943:     <p><button type="button" class="btn ghost small rel-share" data-release="${esc(r.id)}" data-title="${esc(r.title)}">Share to the feed</button></p></div></article>`).join('')}</div>`;
+commons/lib/marketpage.mjs:948:     return `<div class="mk-infocard mk-labelcard"><h2>On the label</h2><p><a href="${esc(orgpages.href(l))}"><strong>${esc(l.name)}</strong></a></p>${mates.length ? `<p class="small muted">Also on ${esc(l.name)}:</p><ul class="mk-mates">${mates.map((x) => `<li><a href="/label/a/${esc(x.slug)}">${x.folder?.cover ? `<img src="${labelFile(x.folder.cover)}" alt="">` : '<span class="mk-icon">♪</span>'}<span>${esc(x.name)}</span></a></li>`).join('')}</ul>` : ''}<p><a class="btn ghost small" href="${es
+commons/lib/marketpage.mjs:954:   const face = portrait ? `<img src="/images/${esc(portrait.id)}" alt="${esc(portrait.alt || p.name)}">` : p.art ? `<img src="${esc(p.art)}" alt="${esc(p.art_note || p.name)}">` : folder?.cover ? `<img src="${labelFile(folder.cover)}" alt="">` : `<span class="mk-icon" aria-hidden="true">${p.kind === 'band' ? '♪' : p.kind === 'artist' ? '🎨' : p.kind === 'label' ? '💿' : '🤝'}</span>`;
+commons/lib/marketpage.mjs:959:     ${mgr ? `<p class="pf-storebar"><a class="btn small" href="/label/new?cat=${esc(cat)}&as=${esc(p.id)}">＋ List something as ${esc(p.name)}</a></p>` : ''}
+commons/lib/marketpage.mjs:960:     ${items.length ? `<div class="mk-grid">${items.map((l) => `<div class="mk-shopitem">${listingCard(l)}${mgr && l.by.id === me.id ? `<div class="mk-ownbar"><a class="btn ghost small" href="/label/l/${esc(l.id)}/edit">Edit</a><button type="button" class="btn ghost small mk-withdraw" data-id="${esc(l.id)}">Withdraw</button></div>` : ''}</div>`).join('')}</div>` : `<p class="muted">${mgr ? 'Nothing listed as this page yet.' : 'Nothing listed yet.'}</p>`}`;
+commons/lib/marketpage.mjs:961:   const switcher = mgr ? `<nav class="mk-switch small" aria-label="Your pages">You run this page. Switch: <a href="/m/${esc(me.id)}">your profile</a>${orgpages.managedBy(me.id).filter((x) => x.id !== p.id).map((x) => ` · <a href="${esc(orgpages.href(x))}">${esc(x.name)}</a>`).join('')}</nav>` : '';
+commons/lib/marketpage.mjs:967:   const artistsGrid = isLabel ? `<h2 class="mk-h">Artists</h2>${roster.length ? `<div class="mk-grid">${roster.map((x) => x.folder ? artistCard(x.folder) : `<article class="mk-card"><a class="mk-cover" href="${esc(orgpages.href(x.page))}"><span class="mk-icon">♪</span></a><div class="mk-body"><h3><a href="${esc(orgpages.href(x.page))}">${esc(x.name)}</a></h3><p class="mk-sub small">${esc(profilekinds.BADGE[x.page.kind])}</p></div></article>`).join('')}</div>` : `<p class="muted">No artists on th
+commons/lib/marketpage.mjs:968:     ${labelReleases.length ? `<h2 class="mk-h">Releases</h2><div class="mk-grid mk-disco">${labelReleases.map((r) => `<a class="mk-card mk-discocard" href="/label/a/${esc(r.slug)}#rel-${esc(r.id)}"><span class="mk-cover">${r.art ? `<img src="${labelFile(r.art)}" alt="" loading="lazy">` : '<span class="mk-icon">♪</span>'}</span><span class="mk-body"><strong>${esc(r.title)}</strong><span class="small muted">${esc(r.artist)} · ${esc(String(r.date || '').slice(0, 4))}</span></span></a>`).join('')}</
+commons/lib/marketpage.mjs:972:     <div class="mk-pageid"><p class="lp-kicker">${esc(profilekinds.BADGE[p.kind])}${p.label ? ' on the Label' : ''}</p><h1>${esc(p.name)}</h1>${p.project_service ? '<p class="mk-ourservice">Part of the Cohabitation Project\'s own services</p>' : ''}${p.headline ? `<p class="mk-pagehead">${esc(p.headline)}</p>` : ''}
+commons/lib/marketpage.mjs:973:     <p class="mk-runby small">Run by ${p.managers.map((x) => `<a href="/m/${esc(x.id)}">${memberFace(x.id)} ${esc(x.name)}</a>${newarrival.label(x.id)}`).join(', ')} <span class="muted">· a page is not a member: it has no vote and no coins</span></p>
+commons/lib/marketpage.mjs:974:     ${mgr ? '<p class="mk-pgtools"><button type="button" class="btn small" id="pg-edit">✎ Edit this page</button> <label class="btn ghost small mk-quick">🖼 Change picture<input type="file" data-pg-quick="portrait" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <label class="btn ghost small mk-quick">🏞 Change background<input type="file" data-pg-quick="banner" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <span class="small mk-quickmsg" role="status" aria-
+commons/lib/marketpage.mjs:980:     <aside class="mk-pageside">${profilekinds.infoCards(asMember).replace(/pf-card/g, 'mk-infocard')}${isLabel ? '' : labelCard(p)}${(p.links || []).length ? `<div class="mk-infocard"><h2>Links</h2><ul class="mk-links">${p.links.map((x) => `<li><a href="${esc(x.url)}" rel="nofollow noopener">${esc(x.label)}</a></li>`).join('')}</ul></div>` : ''}${p.label || isLabel ? '<p><a class="btn ghost small" href="/label?cat=music">← All artists in Music</a></p>' : ''}</aside>
+commons/lib/marketpage.mjs:982:     ${(p.gallery || []).length ? `<section class="mk-gallery-sec"><h2 class="mk-h">${esc(p.gallery_title || 'Gallery')}</h2><div class="mk-shots">${p.gallery.map((id) => images.get(id)).filter(Boolean).map((im) => `<figure><a href="/images/${esc(im.id)}"><img src="/images/${esc(im.id)}" alt="${esc(im.alt)}" loading="lazy"></a><figcaption>${esc(im.title || im.alt)}</figcaption></figure>`).join('')}</div></section>` : ''}
+commons/lib/marketpage.mjs:986:   return frame({ me, title: p.name, description: `${p.name}: ${profilekinds.BADGE[p.kind]} on Cohabi.`, section: orgpages.themeOf(p), center, scripts: ['/static/label.js', '/static/market.js', '/static/pages.js'] }).replace('<body class="fx-page mk-page mv-page"', `<body class="fx-page mk-page mv-page mk-pagebody"${p.accent ? ` style="--gold:${esc(p.accent)}"` : ''}`); // the v3 frame added mv-page (2026-11-15), so this class and the accent had stopped applying
+commons/lib/marketpage.mjs:994:   const rosterEd = p.kind === 'label' && !p.label_record ? `<label>Add an artist to this label <span class="hint">(a band or artist page you also run)</span><select name="add_artist"><option value="">(none)</option>${orgpages.managedBy(me.id).filter((x) => ['band', 'artist'].includes(x.kind) && !(p.roster || []).includes(x.slug)).map((x) => `<option value="${esc(x.slug)}">${esc(x.name)}</option>`).join('')}</select></label>` : p.label_record ? '<p class="small muted">This label\'s artists come f
+commons/lib/marketpage.mjs:995:   return `<dialog class="pf-editor mk-pgdialog" id="pg-dialog" aria-labelledby="pg-ed-h"><form method="dialog" id="pg-form" class="form" data-id="${esc(p.id)}">
+commons/lib/marketpage.mjs:996:     <div class="pf-ed-head"><h2 id="pg-ed-h">Edit ${esc(p.name)}</h2><button class="btn ghost small" type="button" id="pg-cancel" aria-label="Save and close" title="Save and close">✕</button></div>
+commons/lib/marketpage.mjs:998:     <label>Headline <span class="hint">(up to 120)</span><input name="headline" maxlength="120" value="${esc(p.headline || '')}"></label>
+commons/lib/marketpage.mjs:999:     <label>About <span class="hint">(up to 3000; **bold** and - lists work)</span><textarea name="bio" maxlength="3000" rows="8">${esc(p.bio || '')}</textarea></label>
+commons/lib/marketpage.mjs:1000:     <div class="mk-row"><label>Look<select name="theme">${opt(orgpages.THEMES, orgpages.themeOf(p))}</select></label><label>Accent colour<input name="accent" type="color" value="${esc(p.accent || '#d4a24c')}"></label></div>
+commons/lib/marketpage.mjs:1001:     <label>Picture <span class="hint">(a logo or photo: pick one of your uploads, or upload a new one below)</span><select name="portrait"><option value="">(none${p.art ? ': keep the drawn mark' : ''})</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.portrait ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+commons/lib/marketpage.mjs:1002:     <label class="small mk-pgup">⬆ Upload a new picture <input type="file" data-pg-upload="portrait" accept="image/png,image/jpeg,image/webp,image/gif"></label>
+commons/lib/marketpage.mjs:1003:     <label>Banner <span class="hint">(a wide picture across the top: pick one, or upload below)</span><select name="banner"><option value="">(none)</option>${mine(me.id).map((im) => `<option value="${esc(im.id)}"${im.id === p.banner ? ' selected' : ''}>${esc(im.alt.slice(0, 50))}</option>`).join('')}</select></label>
+commons/lib/marketpage.mjs:1004:     <fieldset class="mk-imgs"><legend>Gallery <span class="hint">(up to 8: pictures already here, and your uploads)</span></legend>${[...new Map([...(p.gallery || []).map((id) => images.get(id)).filter(Boolean), ...mine(me.id)].map((im) => [im.id, im])).values()].slice(0, 48).map((im) => `<label class="mk-imgpick"><input type="checkbox" name="gallery" value="${esc(im.id)}"${(p.gallery || []).includes(im.id) ? ' checked' : ''}><img src="/images/${esc(im.id)}" alt="${esc(im.alt || '')}"></label>`)
+commons/lib/marketpage.mjs:1005:     <label>Links <span class="hint">(up to 6, one per line: label | https://… or tel:…)</span><textarea name="links" rows="4">${esc((p.links || []).map((x) => `${x.label} | ${x.url}`).join('\n'))}</textarea></label>
+commons/lib/marketpage.mjs:1008:     <label>Add someone who can run this page <span class="hint">(a member's name)</span><input name="add_manager" maxlength="60" list="cohabi-members" placeholder="e.g. Ash"></label>
+commons/lib/marketpage.mjs:1009:     <div class="pf-ed-foot"><button class="btn" type="submit" value="save">Save</button> <button class="btn ghost" type="button" id="pg-cancel2">Cancel</button> <span class="form-msg" role="status" id="pg-msg"></span></div>
+commons/lib/marketpage.mjs:1017:   <p class="mk-lede">A page for your band, your art or your business, run from your own login. You can switch between your profile and your pages any time from the COHABI menu. A page is not a member: it has no vote and no coins, and you can add others to help run it.</p>
+commons/lib/marketpage.mjs:1020:     <p class="small muted">Starting a record label will cost something one day (we will keep it competitive); during the beta it is free.</p>
+commons/lib/marketpage.mjs:1023:     <button class="btn">Create the page</button>
+commons/lib/marketpage.mjs:1025:   ${mine.length ? `<h2 class="mk-h">Pages you run</h2><ul class="mk-links">${mine.map((p) => `<li><a href="${esc(orgpages.href(p))}">${esc(p.name)}</a> <span class="muted small">${esc(profilekinds.BADGE[p.kind])}</span></li>`).join('')}</ul>` : ''}`;
+commons/lib/marketpage.mjs:1033:   return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? groups.map(([n, l]) => `<p class="small muted pf-pagesh">${n}</p><ul>${l.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a></li>`).join('')}</ul>`).join('') : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
+commons/public/voiceroom.css:1: /* voiceroom.css — Google Meet-inspired dark theme for voice/video room */
+commons/public/voiceroom.css:12: #voiceroom-root {
+commons/public/voiceroom.css:29:   padding-bottom: 88px; /* room for controls bar */
+commons/public/voiceroom.css:115: /* ── Tile Labels ──────────────────────────────────────────────────────────── */
+commons/public/voiceroom.css:153: /* ── Agent Tiles ──────────────────────────────────────────────────────────── */
+commons/public/voiceroom.css:154: .tile.agent {
+commons/public/voiceroom.css:158: .agent-avatar {
+commons/public/voiceroom.css:166: .agent-avatar img {
+commons/public/voiceroom.css:173: .agent-glyph {
+commons/public/voiceroom.css:185: /* Speaking pulse for agents */
+commons/public/voiceroom.css:186: .tile.agent.speaking .agent-avatar img,
+commons/public/voiceroom.css:187: .tile.agent.speaking .agent-glyph {
+commons/public/voiceroom.css:188:   animation: agent-pulse 1.5s ease-in-out infinite;
+commons/public/voiceroom.css:191: @keyframes agent-pulse {
+commons/public/voiceroom.css:212: .ctrl-btn {
+commons/public/voiceroom.css:226: .ctrl-btn:hover {
+commons/public/voiceroom.css:230: .ctrl-btn:active {
+commons/public/voiceroom.css:234: .ctrl-btn svg {
+commons/public/voiceroom.css:238: /* Toggle states: mic/cam off → red bg */
+commons/public/voiceroom.css:239: .ctrl-btn.off {
+commons/public/voiceroom.css:243: .ctrl-btn.off:hover {
+commons/public/voiceroom.css:248: .ctrl-btn.active {
+commons/public/voiceroom.css:252: .ctrl-btn.active:hover {
+commons/public/voiceroom.css:256: /* Leave button: always red */
+commons/public/voiceroom.css:257: .leave-btn {
+commons/public/voiceroom.css:261: .leave-btn:hover {
+commons/public/voiceroom.css:360: .chat-input-wrap {
+commons/public/voiceroom.css:367: .chat-input-wrap input {
+commons/public/voiceroom.css:378: .chat-input-wrap input::placeholder {
+commons/public/voiceroom.css:382: .chat-input-wrap input:focus {
+commons/public/voiceroom.css:386: .chat-input-wrap button {
+commons/public/voiceroom.css:400: .chat-input-wrap button:hover {
+commons/public/voiceroom.css:452:   .ctrl-btn {
+commons/public/voiceroom.css:457:   .agent-avatar img,
+commons/public/voiceroom.css:458:   .agent-glyph {
+commons/public/voiceroom.css:467:    Functional media controls remain wired to voiceroom.js; calendar is not live. */
+commons/public/voiceroom.css:468: #voiceroom-root {background:#0b191c;color:#e9f3ef;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+commons/public/voiceroom.css:473: .live-brand{font:700 22px Georgia,serif;letter-spacing:2px}.live-label{display:flex;align-items:center;gap:6px;margin-left:8px;color:#49d9cd;font-weight:800;font-size:12px;letter-spacing:2px}
+commons/public/voiceroom.css:474: .live-label i,.live-dot{width:7px;height:7px;display:inline-block;border-radius:50%;background:#45cfbb;box-shadow:0 0 12px #36bbaa}
+commons/public/voiceroom.css:475: .live-room-heading{display:flex;flex-direction:column;gap:3px;padding-left:22px;border-left:1px solid #355355}
+commons/public/voiceroom.css:476: .live-room-heading strong{font-size:15px}.live-room-heading span{font-size:11px;color:#a5c5c0}
+commons/public/voiceroom.css:478: .live-text-btn{border:1px solid #355458;border-radius:9px;padding:10px 14px;background:#172f32;color:#dfede7;text-decoration:none;font-size:12px;cursor:pointer}
+commons/public/voiceroom.css:479: .live-text-btn:hover,.live-text-btn:focus-visible{border-color:#58b9b4}
+commons/public/voiceroom.css:485: .live-stage-label{position:absolute;z-index:1;top:14px;left:14px;display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:#10282ae8;font-size:12px}
+commons/public/voiceroom.css:490: #voiceroom-root .grid{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;align-items:center;gap:12px;padding:16px;min-height:0;flex:1;max-width:none;margin:0;border:1px solid #2a4649;border-radius:16px;background:linear-gradient(145deg,#112c30,#102326)}
+commons/public/voiceroom.css:491: #voiceroom-root .grid.spotlight{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,120px);grid-template-rows:minmax(0,1fr) 100px}
+commons/public/voiceroom.css:492: #voiceroom-root .grid .tile{width:min(44%,440px);height:clamp(180px,31vh,340px);min-height:150px;flex:0 1 44%;border-radius:14px;background:#18363a}
+commons/public/voiceroom.css:493: #voiceroom-root .grid .tile.compact-agent{flex:0 0 auto;width:116px;height:140px;min-height:140px;background:transparent;border:1px solid transparent;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:center}
+commons/public/voiceroom.css:494: #voiceroom-root .tile.compact-agent .agent-avatar{width:78px;height:78px;aspect-ratio:1;border-radius:50%;border:2px solid #3d9f9a;overflow:hidden;background:#244649;box-shadow:0 0 calc(var(--voice-level,0)*22px) #50c9ba;flex-shrink:0}
+commons/public/voiceroom.css:495: #voiceroom-root .tile.compact-agent .agent-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+commons/public/voiceroom.css:496: #voiceroom-root .tile.compact-agent .agent-glyph{width:100%;height:100%;border-radius:50%;font:600 29px Georgia,serif;display:grid;place-items:center}
+commons/public/voiceroom.css:497: #voiceroom-root .tile.compact-agent .tile-name{position:static;display:block;text-align:center;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:7px;background:transparent;font-size:12px}
+commons/public/voiceroom.css:498: #voiceroom-root .grid .tile.spotlit:not(.compact-agent){width:100%;height:100%;grid-column:1/-1;grid-row:1}
+commons/public/voiceroom.css:499: #voiceroom-root .grid .tile.compact-agent.spotlit{width:116px;height:140px;grid-column:auto;grid-row:auto}
+commons/public/voiceroom.css:500: #voiceroom-root .live-sidebar{position:static;transform:none;display:flex;flex-direction:column;width:328px;flex:0 0 328px;max-width:328px;height:100%;border:1px solid #2f5052;border-radius:15px;background:#142b2e;overflow:hidden}
+commons/public/voiceroom.css:513: #voiceroom-root .chat-messages{flex:1;min-height:100px;padding:0;overflow-y:auto}
+commons/public/voiceroom.css:514: #voiceroom-root .chat-input-wrap{padding:0;background:none}
+commons/public/voiceroom.css:515: #voiceroom-root .chat-input-wrap input{background:#0b2023;color:#eff}
+commons/public/voiceroom.css:516: #voiceroom-root .chat-input-wrap button{width:auto;min-width:52px;padding:7px;background:#267c78;color:#fff;font-size:12px;border-radius:6px}
+commons/public/voiceroom.css:517: #voiceroom-root .live-controls{position:static;display:flex;justify-content:space-between;align-items:center;gap:14px;flex:0 0 78px;height:78px;padding:10px 24px;border-top:1px solid #375356;background:#112629}
+commons/public/voiceroom.css:520: .live-controls-buttons{display:flex;align-items:center;gap:10px}
+commons/public/voiceroom.css:521: #voiceroom-root .ctrl-btn{width:46px;height:46px;min-width:46px;min-height:46px;border-radius:12px;background:#244649;border:1px solid #386064;color:#eafff8;cursor:pointer}
+commons/public/voiceroom.css:522: #voiceroom-root .ctrl-btn:hover,#voiceroom-root .ctrl-btn:focus-visible{outline:2px solid #6fcec3;outline-offset:2px}
+commons/public/voiceroom.css:523: #voiceroom-root .ctrl-btn.off{background:#633a41;border-color:#9d5a68}
+commons/public/voiceroom.css:524: #voiceroom-root .ctrl-btn.leave-btn{background:#963f48;border-color:#b95d64}
+commons/public/voiceroom.css:525: .live-btn-glyph{font-size:24px}
+commons/public/voiceroom.css:528:  .live-header{padding:0 15px;height:65px;gap:12px}.live-brand{font-size:18px}.live-room-heading{display:none}
+commons/public/voiceroom.css:530:  #voiceroom-root .live-sidebar{width:260px;flex-basis:260px}
+commons/public/voiceroom.css:532:  #voiceroom-root .live-controls{justify-content:center;height:72px;flex-basis:72px;padding:8px}
+commons/public/voiceroom.css:535:  .live-header-actions a{display:none}.live-text-btn{padding:9px}
+commons/public/voiceroom.css:538:  #voiceroom-root .grid{padding:8px;gap:8px;overflow:auto;align-content:start}
+commons/public/voiceroom.css:539:  #voiceroom-root .grid .tile{height:clamp(126px,26vh,220px);min-height:126px;width:calc(50% - 5px);flex-basis:calc(50% - 5px)}
+commons/public/voiceroom.css:540:  #voiceroom-root .grid .tile.compact-agent{width:88px;height:110px;min-height:110px;flex-basis:88px}
+commons/public/voiceroom.css:541:  #voiceroom-root .tile.compact-agent .agent-avatar{width:58px;height:58px}
+commons/public/voiceroom.css:542:  #voiceroom-root .live-sidebar{position:absolute;top:65px;right:0;bottom:76px;left:auto;width:min(100%,380px);max-width:100%;height:auto;z-index:8;transform:translateX(110%);transition:transform .2s ease;box-shadow:0 18px 48px #0009}
+commons/public/voiceroom.css:543:  #voiceroom-root .live-sidebar.open{transform:translateX(0)}
+commons/public/voiceroom.css:544:  #voiceroom-root .live-controls{gap:4px}
+commons/public/voiceroom.css:545:  .live-controls-buttons{gap:7px}
+commons/public/voiceroom.css:546:  #voiceroom-root .ctrl-btn{width:43px;height:43px;min-width:43px;min-height:43px}
+commons/public/voiceroom.css:550:  #voiceroom-root *,#voiceroom-root *::before,#voiceroom-root *::after{animation:none!important;transition:none!important}
+commons/public/voiceroom.css:562: #voiceroom-root{--bg:#f5f1eb;--panel:#fffcf8;--panel2:#eee6f3;--line:#c8bacb;--ink:#292230;--muted:#675d6b;
+commons/public/voiceroom.css:564: html:has(#voiceroom-root),body:has(#voiceroom-root){background:#f5f1eb;color-scheme:light}
+commons/public/voiceroom.css:567: #voiceroom-root .brand-mark{display:block;flex:none;width:18px;height:18px;background:
+commons/public/voiceroom.css:572: #voiceroom-root .brand-mark-lg{width:36px;height:36px;margin:0 auto;background-size:16px 16px;background-position:0 0,20px 0,0 20px,20px 20px}
+commons/public/voiceroom.css:574: #voiceroom-root .live-shell{background:var(--bg)}
+commons/public/voiceroom.css:575: #voiceroom-root .live-header{position:relative;background:var(--bg);border-bottom:0}
+commons/public/voiceroom.css:576: #voiceroom-root .live-header::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;
+commons/public/voiceroom.css:578: #voiceroom-root .live-logo{color:var(--ink)}
+commons/public/voiceroom.css:579: #voiceroom-root .live-brand{font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em}
+commons/public/voiceroom.css:580: #voiceroom-root .live-label{color:#1f7a57}
+commons/public/voiceroom.css:581: #voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2fa36f;box-shadow:none}
+commons/public/voiceroom.css:582: #voiceroom-root .live-room-heading{border-left-color:var(--line)}
+commons/public/voiceroom.css:583: #voiceroom-root .live-room-heading span{color:var(--muted)}
+commons/public/voiceroom.css:584: #voiceroom-root .live-text-btn{background:var(--panel);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:585: #voiceroom-root .live-text-btn:hover,#voiceroom-root .live-text-btn:focus-visible{border-color:#68418b}
+commons/public/voiceroom.css:587: #voiceroom-root .grid{background:var(--panel);border-color:var(--line)}
+commons/public/voiceroom.css:588: #voiceroom-root .grid .tile{background:#1f1a26}
+commons/public/voiceroom.css:589: #voiceroom-root .tile.compact-agent .agent-avatar{border-color:var(--lilac);background:var(--panel2)}
+commons/public/voiceroom.css:590: #voiceroom-root .tile.compact-agent .agent-glyph{color:var(--ink)}
+commons/public/voiceroom.css:591: #voiceroom-root .tile.compact-agent .tile-name{color:var(--ink)}
+commons/public/voiceroom.css:592: #voiceroom-root .live-stage{border-color:var(--line)}
+commons/public/voiceroom.css:593: #voiceroom-root .live-stage-empty{opacity:1}
+commons/public/voiceroom.css:594: #voiceroom-root .live-stage-empty h1{color:var(--ink)}
+commons/public/voiceroom.css:595: #voiceroom-root .live-stage-empty p{color:var(--muted)}
+commons/public/voiceroom.css:597: #voiceroom-root .live-sidebar{background:var(--panel);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:598: #voiceroom-root .live-side-tabs{border-bottom-color:var(--line)}
+commons/public/voiceroom.css:599: #voiceroom-root .live-tab{color:var(--muted)}
+commons/public/voiceroom.css:600: #voiceroom-root .live-tab.active{color:var(--ink);border-color:var(--gold);background:#fdf1dc;border-radius:8px 8px 0 0}
+commons/public/voiceroom.css:601: #voiceroom-root .live-side-title{color:var(--ink)}
+commons/public/voiceroom.css:602: #voiceroom-root .live-side-title span{background:#fdf1dc;color:#513b16}
+commons/public/voiceroom.css:603: #voiceroom-root .live-side-note,#voiceroom-root .live-member-row small{color:var(--muted)}
+commons/public/voiceroom.css:604: #voiceroom-root .live-member-row{border-color:var(--line);background:#fffdfb}
+commons/public/voiceroom.css:605: #voiceroom-root .live-member-dot{background:var(--panel2);color:var(--ink)}
+commons/public/voiceroom.css:606: #voiceroom-root .chat-input-wrap input{background:#fffdfb;color:var(--ink);border:1px solid #a997af}
+commons/public/voiceroom.css:607: #voiceroom-root .chat-input-wrap button{background:var(--gold);color:var(--ink)}
+commons/public/voiceroom.css:609: #voiceroom-root .live-controls{background:var(--panel);border-top-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:610: #voiceroom-root .live-controls-meta small,#voiceroom-root .live-controls-right{color:var(--muted)}
+commons/public/voiceroom.css:611: #voiceroom-root .ctrl-btn{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:612: #voiceroom-root .ctrl-btn:hover,#voiceroom-root .ctrl-btn:focus-visible{outline-color:#68418b}
+commons/public/voiceroom.css:613: #voiceroom-root .ctrl-btn.off{background:#fde4dc;border-color:#d9907a;color:#a9432d}
+commons/public/voiceroom.css:614: #voiceroom-root .ctrl-btn.leave-btn{background:#c4473c;border-color:#a9432d;color:#fff}
+commons/public/voiceroom.css:615: #voiceroom-root .live-close-sidebar{background:var(--panel2);border-color:var(--line);color:var(--ink)}
+commons/public/voiceroom.css:616: @media(max-width:699px){#voiceroom-root .live-sidebar{box-shadow:0 18px 48px #30263c33}}
+commons/public/voiceroom.css:617: #voiceroom-root .ctrl-btn svg{fill:currentColor}
+commons/public/voiceroom.css:619: #voiceroom-root .grid{background:#0d0b12;border-color:var(--line)}
+commons/public/voiceroom.css:620: #voiceroom-root .live-stage{background:#0d0b12}
+commons/public/voiceroom.css:621: #voiceroom-root .live-stage-empty h1{color:#f5f1eb}
+commons/public/voiceroom.css:622: #voiceroom-root .live-stage-empty p{color:#c8bacb}
+commons/public/voiceroom.css:623: #voiceroom-root .tile.compact-agent .tile-name{color:#f5f1eb}
+commons/public/voiceroom.css:624: #voiceroom-root .grid .tile{background:#1f1a26}
+commons/public/voiceroom.css:626: /* Invite your agent + the Ambassador's reserved corner (Setu, 2026-11-11). Feed palette; teal for "in the meeting". */
+commons/public/voiceroom.css:627: #voiceroom-root .live-ambassador{display:inline-flex;align-items:center;gap:7px;border:1px dashed var(--line);border-radius:999px;padding:8px 12px;background:transparent;color:var(--muted);font-size:12px;cursor:help}
+commons/public/voiceroom.css:628: #voiceroom-root .live-ambassador span:first-child{color:#2a8f86;font-size:15px}
+commons/public/voiceroom.css:629: #voiceroom-root .live-invite-open{width:100%;min-height:44px;border:1px solid #d5a34f;border-radius:10px;background:var(--gold);color:var(--ink);font:600 13px system-ui,sans-serif;cursor:pointer}
+commons/public/voiceroom.css:630: #voiceroom-root .live-invite-open:hover,#voiceroom-root .live-invite-open:focus-visible{outline:2px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:631: #voiceroom-root .live-invite{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fffdfb}
+commons/public/voiceroom.css:632: #voiceroom-root .live-invite[hidden]{display:none}
+commons/public/voiceroom.css:633: #voiceroom-root .live-invite-head{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+commons/public/voiceroom.css:634: #voiceroom-root .live-invite-head button{min-width:36px;min-height:36px;border:0;background:none;font-size:18px;color:var(--ink);cursor:pointer}
+commons/public/voiceroom.css:635: #voiceroom-root .live-invite-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
+commons/public/voiceroom.css:636: #voiceroom-root .live-invite-row{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 10px;align-items:center;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+commons/public/voiceroom.css:637: #voiceroom-root .live-invite-row.ineligible{opacity:.62}
+commons/public/voiceroom.css:638: #voiceroom-root .live-invite-text{display:flex;flex-direction:column;min-width:0;font-size:12px}
+commons/public/voiceroom.css:639: #voiceroom-root .live-invite-text strong{font-size:13px}
+commons/public/voiceroom.css:640: #voiceroom-root .live-invite-text small{color:var(--muted);overflow-wrap:anywhere}
+commons/public/voiceroom.css:641: #voiceroom-root .live-invite-act{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+commons/public/voiceroom.css:642: #voiceroom-root .live-invite-btn{min-height:34px;padding:6px 12px;border:1px solid #d5a34f;border-radius:8px;background:var(--gold);color:var(--ink);font:600 12px system-ui,sans-serif;cursor:pointer}
+commons/public/voiceroom.css:643: #voiceroom-root .live-invite-btn.quiet{background:var(--panel);border-color:var(--line)}
+commons/public/voiceroom.css:644: #voiceroom-root .live-invite-btn:disabled{opacity:.6;cursor:wait}
+commons/public/voiceroom.css:645: #voiceroom-root .live-chip{font-size:11px;border-radius:999px;padding:3px 9px;border:1px solid var(--line)}
+commons/public/voiceroom.css:646: #voiceroom-root .live-chip.on{background:#d9f3ee;border-color:#2a8f86;color:#155e57}
+commons/public/voiceroom.css:647: #voiceroom-root .live-chip.wait{background:#fdf1dc;border-color:#d5a34f;color:#513b16}
+commons/public/voiceroom.css:648: #voiceroom-root .live-chip.off{background:var(--panel2);color:var(--muted)}
+commons/public/voiceroom.css:649: #voiceroom-root .live-member-dot{overflow:hidden;flex:none}
+commons/public/voiceroom.css:650: #voiceroom-root .live-member-dot img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+commons/public/voiceroom.css:651: #voiceroom-root .chat-msg.chat-agent{border-left:3px solid #2a8f86;padding-left:8px}
+commons/public/voiceroom.css:652: #voiceroom-root .live-label{color:#1c8a80}
+commons/public/voiceroom.css:653: #voiceroom-root .live-label i,#voiceroom-root .live-dot{background:#2a9d92}
+commons/public/voiceroom.css:654: #voiceroom-root .tile.compact-agent .agent-avatar{border-color:#2a9d92}
+commons/public/voiceroom.css:655: @media(max-width:980px){#voiceroom-root .live-amb-label{display:none}}
+commons/public/voiceroom.css:657: #voiceroom-root .chat-msg-text{color:var(--ink)}
+commons/public/voiceroom.css:658: #voiceroom-root .chat-msg-name{color:#68418b;font-weight:600}
+commons/public/voiceroom.css:659: #voiceroom-root .chat-agent .chat-msg-name{color:#1c7d74}
+commons/public/voiceroom.css:660: #voiceroom-root .chat-system,#voiceroom-root .chat-system .chat-msg-text{color:var(--muted)}
+commons/public/voiceroom.css:663: #voiceroom-root .live-guest-door{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#f5f1ebf2;overflow:auto}
+commons/public/voiceroom.css:664: #voiceroom-root .live-guest-card{width:min(520px,100%);display:flex;flex-direction:column;gap:12px;padding:28px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);box-shadow:0 12px 40px #30263c22}
+commons/public/voiceroom.css:665: #voiceroom-root .live-guest-card h1{font:600 24px/1.25 Georgia,serif;margin:4px 0 0}
+commons/public/voiceroom.css:666: #voiceroom-root .live-guest-card h2{font:600 14px system-ui,sans-serif;margin:6px 0 0}
+commons/public/voiceroom.css:667: #voiceroom-root .live-guest-card p{margin:0;line-height:1.55;font-size:14px}
+commons/public/voiceroom.css:668: #voiceroom-root .live-guest-card .brand-mark-lg{margin:0}
+commons/public/voiceroom.css:669: #voiceroom-root .live-guest-who{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+commons/public/voiceroom.css:670: #voiceroom-root .live-guest-who li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fffdfb;font-size:14px}
+commons/public/voiceroom.css:671: #voiceroom-root .live-guest-who small{color:var(--muted)}
+commons/public/voiceroom.css:672: #voiceroom-root .live-guest-privacy{padding:10px 12px;border-left:3px solid #2a8f86;background:#eef8f6;border-radius:6px}
+commons/public/voiceroom.css:673: #voiceroom-root .live-guest-card label{font:600 13px system-ui,sans-serif}
+commons/public/voiceroom.css:674: #voiceroom-root .live-guest-card input[type=text],#voiceroom-root .live-guest-card input:not([type]),#voiceroom-root .live-guest-card #live-guest-name{min-height:44px;padding:10px 12px;border:1px solid #a997af;border-radius:8px;font:inherit;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:675: #voiceroom-root .live-guest-agree{display:flex;gap:10px;align-items:flex-start;font-weight:400!important;line-height:1.5}
+commons/public/voiceroom.css:676: #voiceroom-root .live-guest-agree input{width:20px;height:20px;margin-top:2px;flex:none}
+commons/public/voiceroom.css:677: #voiceroom-root .live-guest-head{margin-top:8px;padding-top:12px;border-top:1px solid var(--line)}
+commons/public/voiceroom.css:678: #voiceroom-root .live-guest-make{display:flex;gap:8px}
+commons/public/voiceroom.css:679: #voiceroom-root .live-guest-make input{flex:1;min-width:0;min-height:36px;padding:6px 10px;border:1px solid #a997af;border-radius:8px;font:inherit;font-size:12px;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:680: #voiceroom-root .live-guest-made{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+commons/public/voiceroom.css:681: #voiceroom-root .live-guest-made:empty{display:none}
+commons/public/voiceroom.css:682: #voiceroom-root .live-guest-url{width:100%;min-height:34px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:12px ui-monospace,monospace;background:var(--panel2);color:var(--ink)}
+commons/public/voiceroom.css:685: #voiceroom-root .live-controls-buttons{gap:12px}
+commons/public/voiceroom.css:686: #voiceroom-root .ctrl-btn{width:48px;height:48px;min-width:48px;min-height:48px;border-radius:12px;background:#ddd0ea;border:1px solid #b9a5cc;color:#2c2236;transition:background .12s,border-color .12s,transform .08s}
+commons/public/voiceroom.css:687: #voiceroom-root .ctrl-btn:hover{background:#d0bfe2;border-color:#8e6fae}
+commons/public/voiceroom.css:688: #voiceroom-root .ctrl-btn:active{transform:translateY(1px)}
+commons/public/voiceroom.css:689: #voiceroom-root .ctrl-btn:focus-visible{outline:3px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:690: #voiceroom-root .ctrl-btn.off{background:#fde4dc;border-color:#d9907a;color:#a9432d}
+commons/public/voiceroom.css:691: #voiceroom-root .ctrl-btn.active,#voiceroom-root #btn-chat.active{background:#fdf1dc;border-color:#d5a34f;box-shadow:inset 0 -3px 0 #e9b25d}
+commons/public/voiceroom.css:692: #voiceroom-root #btn-screen.active{border-color:#2a8f86;box-shadow:inset 0 0 0 2px #2a8f86;background:#d9f3ee}
+commons/public/voiceroom.css:693: #voiceroom-root .ctrl-btn.leave-btn{margin-left:14px;background:#c4473c;border-color:#a9432d;color:#fff}
+commons/public/voiceroom.css:694: #voiceroom-root .ctrl-btn.leave-btn:hover{background:#a9432d}
+commons/public/voiceroom.css:695: #voiceroom-root .ctrl-pair{display:inline-flex;align-items:stretch}
+commons/public/voiceroom.css:696: #voiceroom-root .ctrl-pair .ctrl-btn{border-radius:12px 0 0 12px}
+commons/public/voiceroom.css:697: #voiceroom-root .ctrl-chev{width:26px;min-height:48px;border:1px solid #b9a5cc;border-left:0;border-radius:0 12px 12px 0;background:#e9def3;color:#2c2236;font-size:12px;cursor:pointer}
+commons/public/voiceroom.css:698: #voiceroom-root .ctrl-chev:hover{background:#d0bfe2}
+commons/public/voiceroom.css:699: #voiceroom-root .ctrl-chev:focus-visible{outline:3px solid #68418b;outline-offset:2px}
+commons/public/voiceroom.css:700: #voiceroom-root .live-device-menu{position:fixed;z-index:40;width:290px;max-height:60vh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);box-shadow:0 12px 40px #30263c33}
+commons/public/voiceroom.css:701: #voiceroom-root .live-device-menu[hidden]{display:none}
+commons/public/voiceroom.css:702: #voiceroom-root .live-device-menu fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+commons/public/voiceroom.css:703: #voiceroom-root .live-device-menu legend{font:600 13px system-ui,sans-serif;margin-bottom:4px}
+commons/public/voiceroom.css:704: #voiceroom-root .live-device-menu label{display:flex;gap:8px;align-items:center;font-size:13px;min-height:32px;cursor:pointer}
+commons/public/voiceroom.css:705: #voiceroom-root .live-invite-sub{margin:6px 0 0;font:600 12px system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+commons/public/voiceroom.css:706: #voiceroom-root .live-member-search{min-height:38px;padding:8px 10px;border:1px solid #a997af;border-radius:8px;font:inherit;font-size:13px;background:#fffdfb;color:var(--ink)}
+commons/public/voiceroom.css:707: #voiceroom-root .chat-msg{display:grid;grid-template-columns:26px minmax(0,1fr);column-gap:8px;align-items:start}
+commons/public/voiceroom.css:708: #voiceroom-root .chat-msg>*:not(.chat-avatar){grid-column:2}
+commons/public/voiceroom.css:709: #voiceroom-root .chat-msg.chat-system{display:block}
+commons/public/voiceroom.css:710: #voiceroom-root .chat-avatar{grid-row:1/span 3;width:26px;height:26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--panel2);font:600 11px system-ui,sans-serif;color:var(--ink)}
+commons/public/voiceroom.css:711: #voiceroom-root .chat-avatar img{width:100%;height:100%;object-fit:cover}
+commons/public/voiceroom.css:712: #voiceroom-root .live-transcribe-note{align-self:center;padding:6px 12px;border-radius:999px;background:#d9f3ee;color:#155e57;font-size:12px}
+commons/public/voiceroom.css:713: #voiceroom-root .live-transcribe-note[hidden]{display:none}
+commons/public/voiceroom.css:714: #voiceroom-root .live-transcribe-note span{color:#c4473c}
+commons/public/voiceroom.css:715: @media(max-width:699px){#voiceroom-root .ctrl-btn{width:42px;height:42px;min-width:42px;min-height:42px}#voiceroom-root .ctrl-chev{width:20px;min-height:42px}#voiceroom-root .live-controls-buttons{gap:5px}#voiceroom-root .ctrl-btn.leave-btn{margin-left:4px}}
+commons/public/voiceroom.css:717: #voiceroom-root .live-invite-list{max-height:none;overflow:visible}
+commons/public/voiceroom.css:718: #voiceroom-root .live-group{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+commons/public/voiceroom.css:719: #voiceroom-root .live-group>summary{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;cursor:pointer;font:600 14px system-ui,sans-serif;list-style:none}
+commons/public/voiceroom.css:720: #voiceroom-root .live-group>summary::-webkit-details-marker{display:none}
+commons/public/voiceroom.css:721: #voiceroom-root .live-group>summary::after{content:'▾';margin-left:auto;transition:transform .15s}
+commons/public/voiceroom.css:722: #voiceroom-root .live-group:not([open])>summary::after{transform:rotate(-90deg)}
+commons/public/voiceroom.css:723: #voiceroom-root .live-group>summary:focus-visible{outline:3px solid #68418b;outline-offset:2px;border-radius:10px}
+commons/public/voiceroom.css:724: #voiceroom-root .live-group[open]>:not(summary){margin:0 10px 10px}
+commons/public/voiceroom.css:725: #voiceroom-root .live-group .live-member-search{width:calc(100% - 20px);box-sizing:border-box;margin-bottom:8px}
+commons/public/voiceroom.css:726: #voiceroom-root .live-group-n{font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:#fdf1dc;color:#513b16}
+commons/public/voiceroom.css:727: /* What each agent is doing (Ash's voice read, item 8): listening · heard you · thinking… · speaking */
+commons/public/voiceroom.css:728: #voiceroom-root .tile-state{font-size:11px;line-height:1;margin-top:4px;padding:3px 8px;border-radius:999px;text-align:center;background:#0005;color:#d7e9e6;letter-spacing:.02em}
+commons/public/voiceroom.css:729: #voiceroom-root .tile:not(.compact-agent) .tile-state{position:absolute;top:8px;left:8px}
+commons/public/voiceroom.css:730: #voiceroom-root .tile-state[data-state=heard]{background:#1d6f62;color:#fff}
+commons/public/voiceroom.css:731: #voiceroom-root .tile-state[data-state=thinking]{background:#6b4fa3;color:#fff;animation:vr-think 1.4s ease-in-out infinite}
+commons/public/voiceroom.css:732: #voiceroom-root .tile-state[data-state=speaking]{background:#d39b2a;color:#1b1206}
+commons/public/voiceroom.css:734: @media (prefers-reduced-motion: reduce){#voiceroom-root .tile-state[data-state=thinking]{animation:none}}
+commons/public/voiceroom.css:738:    stage, limited by its height. Agent tiles (compact-agent) and the spotlight are unchanged. */
+commons/public/voiceroom.css:739: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:16/9;width:min(46%,640px);flex:0 1 46%}
+commons/public/voiceroom.css:740: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child,
+commons/public/voiceroom.css:741: #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):first-child:nth-last-child(1){width:min(100%,calc((100dvh - 290px) * 16 / 9));flex:0 1 auto}
+commons/public/voiceroom.css:743:   #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit){height:auto;min-height:0;aspect-ratio:4/3;width:calc(50% - 5px);flex-basis:calc(50% - 5px)}
+commons/public/voiceroom.css:744:   #voiceroom-root .grid .tile:not(.compact-agent):not(.spotlit):only-child{width:100%;aspect-ratio:3/4}
+commons/public/site.css:1: /* The Commons — shared styles. Dark first; light when the visitor's system asks for it. */
+commons/public/site.css:16:   --human: #f08a6b;
+commons/public/site.css:34:     --human: #c4502f; --kin: #a96c12; --guest: #2a7fb0; --hosted: #8a4fc0; --guide: #23866a; --ok: #23866a; --warn: #9a6a00; --danger: #c0392b;
+commons/public/site.css:62:   linear-gradient(var(--human), var(--human)) 10px 10px / 8px 8px no-repeat; image-rendering: pixelated; }
+commons/public/site.css:66: .nav a.me { color: var(--human); }
+commons/public/site.css:76: .foot a { color: var(--muted); }
+commons/public/site.css:103: .form label { display: grid; gap: 5px; font-weight: 600; font-size: 0.92rem; }
+commons/public/site.css:104: .form label .muted { font-weight: 400; }
+commons/public/site.css:105: input, textarea, select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line-2); border-radius: 8px; padding: 9px 11px; width: 100%; }
+commons/public/site.css:107: input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+commons/public/site.css:108: .btn { font: 600 14px var(--sans); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; justify-self: start; }
+commons/public/site.css:109: .btn:hover { filter: brightness(1.08); }
+commons/public/site.css:110: .btn:disabled { opacity: 0.55; cursor: default; }
+commons/public/site.css:111: .btn.small { padding: 7px 12px; font-size: 13px; }
+commons/public/site.css:112: .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line-2); }
+commons/public/site.css:113: .linkbtn { background: none; border: 0; color: var(--link); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+commons/public/site.css:117: .copyrow input { font-family: var(--mono); font-size: 13px; }
+commons/public/site.css:124: .b-human { color: var(--human); }
+commons/public/site.css:151:    inline links inside paragraphs look like buttons. Independent of the Auth scene,
+commons/public/site.css:152:    whose .cx-btn controls already have a 50px minimum height. */
+commons/public/site.css:154:   .door .btn, .door .linkbtn, .copyrow .btn {
+commons/public/site.css:158:   input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select {
+commons/public/site.css:161:   .foot a {
+commons/public/site.css:171:   .fx-topr .btn.small { min-height: 44px; display: inline-flex; align-items: center; }
+commons/public/site.css:176: .lib-search input { flex: 1 1 240px; min-width: 0; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line, #444); background: var(--panel-2); color: var(--text); font: inherit; }
+commons/public/site.css:207: /* ---- the house (2026-11-04): a small room; objects open panels. Phones get a two-column grid. ---- */
+commons/public/site.css:208: .house-room { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 22px; padding: 18px;
+commons/public/site.css:211: .house-room .obj { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 8px; min-height: 92px;
+commons/public/site.css:213: .house-room .obj:hover, .house-room .obj:focus-visible { border-color: var(--accent); outline: none; }
+commons/public/site.css:214: .house-room .obj[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+commons/public/site.css:215: .house-room .ico { font-size: 26px; line-height: 1; color: var(--accent); }
+commons/public/site.css:219: #j-mic.on { border-color: var(--accent); color: var(--accent); }
+commons/public/site.css:221: @media (max-width: 560px) { .house-room { grid-template-columns: repeat(2, 1fr); padding: 12px; gap: 10px; } }
+commons/public/site.css:222: .house-panel .copyrow label { display: inline-flex; align-items: center; gap: 8px; margin: 0; width: auto; }
+commons/public/site.css:223: .house-panel .copyrow input[type="checkbox"] { width: 18px; height: 18px; margin: 0; flex: none; }
+commons/public/site.css:224: /* the house as a 2D room (2026-11-04) */
+commons/public/site.css:226: #room { display: block; width: 100%; max-width: 672px; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--line-2); border-radius: 8px; background: #2f2839; cursor: pointer; touch-action: manipulation; }
+commons/public/site.css:230: .house-objects button[aria-pressed="true"] { border-color: var(--accent); }
+commons/public/site.css:233: .vk-read.on, .vk-mic.on { border-color: var(--accent); color: var(--accent); }
+commons/public/site.css:253: /* the store room */
+commons/public/site.css:258: /* calls from other rooms (calls.js, 2026-11-04) */
+commons/public/site.css:265: #calls .call .btn.ghost { color: #f2ead8; border-color: #8a7f6a; background: transparent; }
+commons/public/site.css:315: .pf-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--pf-muted); padding: 12px 12px 10px; font: inherit; cursor: pointer; white-space: nowrap; }
+commons/public/site.css:316: .pf-tabs button[aria-selected=true] { color: var(--pf-gold); border-bottom-color: var(--pf-gold); }
+commons/public/site.css:317: .pf-tabs button:focus-visible { outline: 2px solid var(--pf-gold); outline-offset: -2px; }
+commons/public/site.css:345: #pf-dialog input:not([type=checkbox]), #pf-dialog textarea { width: 100%; }
+commons/public/site.css:397: .pf-rain-btn { position: fixed; left: 14px; bottom: 14px; z-index: 5; font-size: 12px; padding: 6px 10px; background: #0b1410cc; color: #3ddc84; border-color: #3ddc8466; }
+commons/public/site.css:429: .pf .btn:not(.ghost) { background: var(--pf-gold); border-color: var(--pf-gold); color: #15121b; }
+commons/public/site.css:431: .pf[data-font=hand] { --pf-h1: 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive; }
+commons/public/site.css:440: .pf-design select, #pf-dialog select { width: 100%; }
+commons/public/site.css:458: .c-pic img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; } .c-pic input { width: 100%; margin-top: 4px; font-size: 13px; }
+commons/public/site.css:461: .img-up label { display: block; margin-bottom: 6px; } .img-up input:not([type=file]) { width: 100%; }
+commons/public/site.css:466: .feed-compose select { width: auto; flex: 0 0 auto; } .feed-compose .copyrow { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+commons/public/site.css:471: #pf-dialog.pf-editor p, #pf-dialog.pf-editor label, #pf-dialog.pf-editor summary, #pf-dialog.pf-editor legend { color: #1d1a14; }
+commons/public/site.css:473: #pf-dialog.pf-editor label { display: block; font-size: 14px; font-weight: 600; margin: 10px 0 2px; }
+commons/public/site.css:474: #pf-dialog.pf-editor input:not([type=checkbox]):not([type=range]):not([type=color]):not([type=file]), #pf-dialog.pf-editor textarea, #pf-dialog.pf-editor select {
+commons/public/site.css:476: #pf-dialog.pf-editor input:focus, #pf-dialog.pf-editor textarea:focus, #pf-dialog.pf-editor select:focus { outline: 3px solid #e3c17b; outline-offset: 1px; }
+commons/public/site.css:477: #pf-dialog.pf-editor input[type=color] { width: 100%; height: 36px; border: 1px solid #b9ae95; border-radius: 8px; background: #fff; }
+commons/public/site.css:478: #pf-dialog.pf-editor input[type=range] { width: 100%; }
+commons/public/site.css:484: #pf-dialog.pf-editor .btn { background: #c8a24a; color: #1d1a14; border-color: #a8872f; }
+commons/public/site.css:485: #pf-dialog.pf-editor .btn.ghost { background: #fff; color: #1d1a14; border-color: #b9ae95; }
+commons/public/site.css:495: .pf-song audio { width: 100%; margin-top: 4px; }
+commons/public/site.css:497: #pf-dialog.pf-editor input[type=checkbox] { width: 18px; height: 18px; margin: 0; flex: none; accent-color: #c8a24a; }
+commons/public/site.css:515: .pf .pf-tabs button, .pf .feed-tabs a { color: var(--pf-muted); }
+commons/public/site.css:516: .pf .pf-tabs button[aria-selected=true], .pf .feed-tabs a[aria-current=page] { color: var(--pf-gold); }
+commons/public/site.css:534: .pf-banner-btn { position: absolute; top: 10px; right: 12px; z-index: 2; font: 600 12px system-ui, sans-serif; background: #000000a0; color: #fff; border: 1px solid #ffffff60; border-radius: 10px; padding: 4px 10px; cursor: pointer; }
+commons/public/site.css:535: .pf-banner-btn:hover, .pf-banner-btn:focus-visible { background: #000000d0; outline: 2px solid var(--pf-gold); }
+commons/public/site.css:543: .pf-feedhead { display: flex; gap: 10px; align-items: center; margin: 4px 0 8px; flex-wrap: wrap; } .pf-feedhead .btn { margin-left: auto; }
+commons/public/site.css:570: /* outline buttons on a profile follow the page's own ink, so they stay readable on dark themes (Geoffrey, 2026-11-05) */
+commons/public/site.css:571: .pf .btn.ghost { color: var(--pf-ink); border-color: var(--pf-line); background: transparent; }
+commons/public/site.css:572: .pf .btn.ghost:hover, .pf .btn.ghost:focus-visible { border-color: var(--pf-gold); }
+commons/public/site.css:582: .porch .porch-doors .btn { flex: 0 1 auto; }
+commons/public/site.css:584: .porch .porch-feed h2, .porch .porch-tokens h2, .porch .porch-agents h2 { margin-bottom: .35rem; }
+commons/public/site.css:586: .porch .porch-agents { margin: 1.6rem 0 2.2rem; max-width: 46rem; }
+commons/public/site.css:588: @media (max-width: 480px) { .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:591: /* ---- feed groups + shared release cards (2026-11-06) ---- */
+commons/public/site.css:595: .feed-newgroup input { flex: 1 1 11rem; min-width: 0; }
+commons/public/site.css:625: .porch .porch-tokens, .porch .porch-agents { margin: 1.6rem 0; }
+commons/public/site.css:626: .porch .porch-feed h2, .porch .porch-tokens h2, .porch .porch-agents h2 { font-family: Georgia, serif; font-weight: normal; }
+commons/public/site.css:627: @media (max-width: 480px) { .porch-art img { width: 72px; height: 72px; } .porch .porch-doors .btn { flex: 1 1 100%; text-align: center; } }
+commons/public/site.css:638: .pf-addskill input { flex: 1; min-width: 0; }
+commons/public/site.css:656: .jr-addwrap input { min-width: 0; width: 190px; padding: 6px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); background: transparent; color: inherit; font: inherit; font-size: 13px; }
+commons/public/site.css:658: .jr-time input[type=time] { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); background: transparent; color: inherit; }
+commons/public/site.css:664: .jr-asked { font-style: italic; opacity: .8; margin: 4px 0; }
+commons/public/site.css:667: /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
+commons/public/site.css:671: /* sign-in: explain first, then ask (Phase 1, design: Ash; spec c_mw8lquus0zb6ed0d) */
+commons/public/site.css:678: select option, select optgroup { background-color: #fbf8f2; color: #1d1a14; }
+commons/public/site.css:715: /* "new arrival": an agent's first 72 hours, beside its name on its profile, its listings and its pages (2026-11-12) */
+commons/public/site.css:727: .me-face img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: block; border: 2px solid var(--human, #8fd3ff); }
+commons/public/site.css:741: .cohabi-menu-list a, .cohabi-menu-list button, .cm-sub > summary { display: block; width: 100%; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 8px; color: #eafffb !important; background: none; border: 0; font: inherit; font-size: 15px; cursor: pointer; text-decoration: none; }
+commons/public/site.css:742: .cohabi-menu-list a:hover, .cohabi-menu-list button:hover, .cm-sub > summary:hover { background: #22515a; }
+commons/public/site.css:750: /* Share the petition panel (share-petition.js) */
+commons/public/site.css:756: .sp-nets a, .sp-nets button { padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1px solid #56cfc6; background: none; color: #eafffb !important; font: 14px system-ui; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+commons/public/site.css:758: .pf-petition { margin: 6px 0; }
+commons/public/site.css:759: /* the profile goes straight up under the header; the old "Headquarters / member" line's room is now the gap */
+commons/public/coop.css:1: /* APPROVED COOPERATIVE V3 — 2026-11-14, source artwork cropped from Geoffrey-approved mockup.
+commons/public/coop.css:2:    All editorial copy stays in commons/lib/coop.mjs, not the imagery. This page only;
+commons/public/coop.css:5: body.fx-page.coop-page{--gold:#ffc15a;background:#101a2b;color:#f8f3eb;margin:0;overflow-x:clip;font:14px/1.42 Arial,Helvetica,sans-serif;color-scheme:dark}
+commons/public/coop.css:9: .coop-page .fx-top,.coop-page .fx-bottom{--bg:#0b1323;--ink:#f8f3eb;--muted:#cfc8d2;--soft:#ffffff14;--line:#ffffff24;color:#f8f3eb}
+commons/public/coop.css:10: .coop-page .fx-app-menu,.coop-page .notify-sheet{--ink:#1f1a2b;--muted:#5b5466;--line:#ddd3e6;color:#1f1a2b}
+commons/public/coop.css:11: .coop{max-width:1120px;margin:auto;padding:8px 32px 5px;font:14px/1.45 Arial,Helvetica,sans-serif;--co-ink:#faf6f1;--co-gold:#ffc15a;--co-line:#93828b77}
+commons/public/coop.css:12: .coop *{box-sizing:border-box}.coop h1,.coop h2,.coop h3{font-family:Georgia,"Times New Roman",serif;color:var(--co-ink);line-height:1.08;letter-spacing:-.028em}
+commons/public/coop.css:13: .coop h1{font-size:clamp(38px,5.8vw,61px);max-width:520px;margin:5px 0 13px}
+commons/public/coop.css:14: .coop h2{font-size:clamp(27px,3.6vw,39px);margin:0 0 10px}.coop h3{font-size:20px;margin:0 0 5px}.coop p{margin:7px 0 11px}
+commons/public/coop.css:15: .coop a:not(.btn){color:#ffd180}.coop a:focus-visible,.coop summary:focus-visible{outline:3px solid #ffbd60;outline-offset:3px}
+commons/public/coop.css:16: .coop .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;border-radius:25px;font-weight:700;font-size:12px;text-decoration:none;color:#fff;border:1px solid #dad9df;background:transparent;white-space:normal}
+commons/public/coop.css:17: .coop .btn:not(.ghost){background:linear-gradient(180deg,#ffe28e,#f2a32a);color:#15141b;border-color:transparent}
+commons/public/coop.css:50: .co-two h3,.co-two p,.co-two .btn{grid-column:2}.co-two p{font-size:12px}.co-two .btn{justify-self:start;font-size:11px;min-height:30px;padding:5px 10px;border-radius:9px}
+commons/public/coop.css:56: @media(max-width:900px){.coop{padding-inline:24px}.co-hero{margin-inline:-24px;padding-inline:24px}.co-dark{margin-inline:-13px}.co-three>div:not(.co-future){grid-template-columns:35% 1fr;gap:0 9px}.co-door{margin-inline:-24px}}
+commons/public/coop.css:58:  .coop{padding:8px 15px}.coop h1{font-size:clamp(37px,9vw,53px)}.coop h2{font-size:clamp(25px,7.5vw,33px)}
+commons/public/coop.css:74:  .co-two .btn{align-self:flex-start}
+commons/public/coop.css:76:  .co-door{margin:7px -15px 0;padding:26px 15px 45px}.co-ctas{flex-direction:column}.co-ctas .btn{width:100%;min-height:46px}
+commons/public/coop.css:78: @media(max-width:390px){.coop{padding-inline:12px}.co-hero{padding-inline:12px;margin-inline:-12px}.co-hero-art{width:calc(100% + 24px);margin-inline:-12px}.co-door{margin-inline:-12px}.co-dark h2{font-size:29px}}
+commons/public/coop.css:79: /* Outline buttons stay light on the night background (site-wide .btn.ghost rules use dark text). */
+commons/public/coop.css:80: .coop-page .coop .btn.ghost{color:#fff!important;background:transparent!important;border-color:#dad9df!important}
+commons/public/roomview.css:29: .rv-forhuman { background: rgba(80,160,255,.22); }
+commons/public/roomview.css:36: /* Generalized area cards (any room with a STUDIOS.json) */
+commons/public/roomview.css:39: .rv-marketing { border-left-color: rgba(220,120,160,.6); }
+commons/public/roomview.css:49: /* ---- the 2D room scene (roomscene.mjs) ---- */
+commons/public/roomview.css:50: .rv-room { position: relative; }
+commons/public/roomview.css:83: .rv-mtg-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+commons/public/roomview.css:84: .rv-mtg-form button { align-self: start; }
+commons/public/roomview.css:87: .rv-book-form select, .rv-book-form input { background: #0e1130; border: 1px solid rgba(255,255,255,.16); color: #eef0ff; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+commons/public/roomview.css:88: .rv-book-form button { align-self: start; }
+commons/public/roomview.css:97: /* Booking: poster picker + invite select (Geoffrey 2026-11-07). */
+commons/public/roomview.css:99: .rv-book-form select { width: 100%; margin: 4px 0; padding: 8px; background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; font: inherit; }
+commons/public/roomview.css:103: .rv-bk-ctl button, .rv-bk-cancel { background: #2a2632; color: #e9dfcd; border: 1px solid #4a4458; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+commons/public/roomview.css:104: .rv-bk-ctl button:hover, .rv-bk-cancel:hover { background: #3a3546; }
+commons/public/roomview.css:107: .rv-bk-form select, .rv-bk-form input { background: #141019; color: #e9dfcd; border: 1px solid #332b40; border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 13px; }
+commons/public/roomview.css:108: .rv-bk-form input[name="title"] { flex: 1 1 180px; }
+commons/public/market.css:1: /* market.css — the Cohabi Market (2026-11-07). One bar across the top, the search under it, then the work, tight on a
+commons/public/market.css:45: .mk-searchbar input { flex: 1; min-width: 0; min-height: 44px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 0 18px; font: inherit; }
+commons/public/market.css:46: .mk-searchbar .btn { min-height: 44px; }
+commons/public/market.css:85: /* ---- an artist's folder */
+commons/public/market.css:86: .mk-artisthero { display: flex; gap: 22px; align-items: center; padding: 18px; margin-top: 6px; border-radius: 18px; background: linear-gradient(120deg, var(--panel2), var(--panel)); border: 1px solid var(--line); }
+commons/public/market.css:87: .mk-artistimg { width: 160px; height: 160px; object-fit: cover; border-radius: 12px; flex: none; box-shadow: var(--shadow); }
+commons/public/market.css:88: .mk-artisthero h1 { font: 700 38px/1.05 Georgia, serif; margin: 4px 0 8px; }
+commons/public/market.css:91: .mk-releases { display: grid; gap: 14px; margin-top: 22px; }
+commons/public/market.css:92: .mk-release { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; scroll-margin-top: 120px; }
+commons/public/market.css:97: .mk-track audio { width: 100%; height: 34px; }
+commons/public/market.css:122: .mk-askbox { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 12px; }
+commons/public/market.css:127: .mk-askform textarea, .mk-form input:not([type=checkbox]), .mk-form select, .mk-form textarea {
+commons/public/market.css:129: .mk-askform { display: grid; gap: 8px; margin-top: 10px; }
+commons/public/market.css:130: .mk-askform .btn { justify-self: start; }
+commons/public/market.css:131: .mk-askbox + .mk-how { margin-top: 18px; }
+commons/public/market.css:136: .mk-form label { display: grid; font-weight: 600; font-size: 14px; }
+commons/public/market.css:141: .mk-pk input:last-child { grid-column: 1 / -1; }
+commons/public/market.css:145: .mk-imgpick input { position: absolute; top: 4px; left: 4px; width: auto !important; margin: 0; }
+commons/public/market.css:146: .mk-imgpick input:checked + img { border-color: var(--gold); }
+commons/public/market.css:148: .mk-rights input { width: 22px !important; height: 22px; margin: 0; flex: none; }
+commons/public/market.css:149: .mk-form .btn { justify-self: start; }
+commons/public/market.css:167:   .mk-artisthero { flex-direction: column; align-items: flex-start; }
+commons/public/market.css:168:   .mk-artistimg { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+commons/public/market.css:169:   .mk-release { grid-template-columns: minmax(0, 1fr); }
+commons/public/market.css:173: .mk-artisthero .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
+commons/public/market.css:174: @media (max-width: 699px) { .mk-artistimg { width: 200px; height: 200px; } .mk-artisthero h1 { font-size: 30px; } }
+commons/public/market.css:176: /* ---- Market home: six immersive department entrances, not six tiny icons.
+commons/public/market.css:192: .mk-block[data-block=music]::after { content: 'Discover artists, releases and independent sounds'; }
+commons/public/market.css:196: .mk-block[data-block=services]::after { content: 'Find skilled people, agents and creative teams'; }
+commons/public/market.css:229: /* ---- split-scene market entrances: three visual panels per department.
+commons/public/market.css:277: /* ---- how Cohabi works: the cooperative and its tiers (designs marked as designs) */
+commons/public/market.css:278: .mk-coop { margin: 30px 0 10px; padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+commons/public/market.css:279: .mk-coop .lp-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 700; margin: 0; }
+commons/public/market.css:280: .mk-coop h2 { font: 400 26px/1.15 Georgia, serif; margin: 4px 0 8px; }
+commons/public/market.css:281: .mk-coop-lede { max-width: 820px; margin: 0 0 14px; }
+commons/public/market.css:290: /* ---- the shop on a profile page (band, artist, business): the market's cards inside the profile's own colours */
+commons/public/market.css:299: .mk-artistlink { margin: 0 0 8px; }
+commons/public/market.css:300: .mk-artistlink a { display: inline-flex; align-items: center; gap: 6px; }
+commons/public/market.css:301: .mk-artistlink svg, .mk-artistlink .pf-face { width: 24px; height: 24px; border-radius: 50%; vertical-align: middle; }
+commons/public/market.css:307: /* ---- band, artist and business pages */
+commons/public/market.css:333: .mk-pgdialog label { display: grid; font-weight: 600; font-size: 14px; margin: 8px 0; }
+commons/public/market.css:334: .mk-pgdialog input:not([type=checkbox]):not([type=color]), .mk-pgdialog select, .mk-pgdialog textarea { width: 100%; box-sizing: border-box; background: var(--panel2); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; margin-top: 4px; }
+commons/public/market.css:335: .mk-pgdialog input[type=color] { width: 64px; height: 40px; border: 1px solid var(--line); border-radius: 10px; background: none; }
+commons/public/market.css:349: /* ---- band and label pages, round two (Geoffrey, 2026-11-07): album covers in the banner, the songs right under it,
+commons/public/market.css:350:    full width; labelmates and the way back to all of a label's artists */
+commons/public/market.css:359: .mk-releases-top { margin-top: 16px; }
+commons/public/market.css:360: .mk-releases-top .mk-release { grid-template-columns: 220px minmax(0, 1fr); }
+commons/public/market.css:361: .mk-labelcard .mk-mates { list-style: none; padding: 0; margin: 6px 0 10px; display: grid; gap: 8px; }
+commons/public/market.css:362: .mk-labelcard .mk-mates a { display: flex; align-items: center; gap: 10px; color: var(--ink) !important; }
+commons/public/market.css:363: .mk-labelcard .mk-mates img, .mk-labelcard .mk-mates .mk-icon { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; font-size: 20px; display: grid; place-items: center; background: var(--panel2); }
+commons/public/market.css:369:   .mk-releases-top .mk-release { grid-template-columns: minmax(0, 1fr); }
+commons/public/market.css:391: /* The one COHABI menu (2026-11-13): same items and look as the feed's; copied here so the Market page doesn't load the feed's whole theme. */
+commons/public/market.css:409: .mk-top .fx-app-menu button { display:flex; align-items:center; padding:10px 12px; min-height:44px; border-radius:6px; color:var(--ink); font:inherit; font-size:14px; background:none; border:0; cursor:pointer; text-align:left; }
+commons/public/market.css:411: /* ===== Market v3: Aletheia-6's marketplace packet (PR #152), built 2026-11-15 ===== */
+commons/public/market.css:412: .mv-page{--mv-cream:#f7f2e8;--mv-paper:#fffdfa;--mv-ink:#292534;--mv-muted:#6e6671;--mv-line:#ded5db;--mv-plum:#69488b;background:var(--mv-cream)}
+commons/public/market.css:413: /* Text follows the page's theme. The mv-* colours above are for light pages; on a dark theme (Software, Music, Video,
+commons/public/market.css:415: .mk-page.mv-page{--mv-ink:var(--ink,#292534);--mv-muted:var(--muted,#6e6671);--mv-paper:var(--panel,#fffdfa);--mv-line:var(--line,#ded5db)}
+commons/public/market.css:416: .mv-wrap{max-width:1300px;margin:0 auto;padding:20px 22px 90px;color:var(--mv-ink)}
+commons/public/market.css:417: .mv-eyebrow,.mv-kicker{margin:0 0 8px;text-transform:uppercase;letter-spacing:.14em;font:800 11px system-ui,sans-serif;color:var(--mv-plum)}
+commons/public/market.css:418: .mv-pills{display:flex;gap:7px;flex-wrap:wrap;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--mv-line)}
+commons/public/market.css:419: .mv-pill{border:1px solid var(--mv-line);background:var(--mv-paper);color:var(--mv-ink)!important;padding:9px 13px;border-radius:999px;font:700 12px system-ui,sans-serif;text-decoration:none!important;white-space:nowrap}
+commons/public/market.css:420: .mv-pill:hover{background:#f2eaf3}
+commons/public/market.css:421: .mv-pill[aria-current="page"]{background:var(--mv-plum);border-color:var(--mv-plum);color:#fff!important}
+commons/public/market.css:422: .mv-search{margin:0 0 18px}
+commons/public/market.css:423: .mv-main{padding:0}
+commons/public/market.css:424: .mv-hero{background:var(--mv-paper);border:1px solid var(--mv-line);border-radius:20px;padding:24px;display:grid;grid-template-columns:1fr .88fr;gap:25px;align-items:center;margin:0 0 24px}
+commons/public/market.css:425: .mv-title{font:400 39px/1.12 Georgia,serif;margin:6px 0 13px;color:var(--mv-ink)}
+commons/public/market.css:426: .mv-sub{color:var(--mv-muted);max-width:640px;margin:0}
+commons/public/market.css:427: .mv-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+commons/public/market.css:428: .mv-heroart{height:265px;border-radius:14px;background:linear-gradient(140deg,#c6abc1,#f9d1aa);display:flex;align-items:center;justify-content:center;overflow:hidden}
+commons/public/market.css:429: .mv-heroart.has-img,.mv-art.has-img{background:var(--mv-img) center/cover no-repeat}
+commons/public/market.css:430: .mv-illus{width:74%;height:84%;border-radius:47% 53% 46% 48%;background:radial-gradient(circle at 42% 45%,#f3d6a1 0 17%,transparent 18%),radial-gradient(circle at 65% 65%,#aa6d61 0 21%,transparent 22%),linear-gradient(135deg,#a4adb0,#8b5976);box-shadow:24px 15px 0 #ffffff5b;transform:rotate(-13deg)}
+commons/public/market.css:431: .mv-h2{font:400 25px Georgia,serif;margin:6px 0 12px;color:var(--mv-ink)}
+commons/public/market.css:432: .mv-sechead{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:8px 0 12px}
+commons/public/market.css:433: .mv-filter{border:1px solid var(--mv-line);border-radius:9px;padding:9px;background:var(--mv-paper);color:var(--mv-ink)}
+commons/public/market.css:434: .mv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin:0 0 28px}
+commons/public/market.css:435: .mv-card{border:1px solid var(--mv-line);border-radius:15px;overflow:hidden;background:var(--mv-paper);display:flex;flex-direction:column;color:var(--mv-ink)!important;text-decoration:none!important}
+commons/public/market.css:436: a.mv-card:hover{box-shadow:0 6px 18px #35263a14}
+commons/public/market.css:437: .mv-cardbody{padding:14px}
+commons/public/market.css:438: .mv-card h3{font:400 19px Georgia,serif;margin:6px 0 5px}
+commons/public/market.css:439: .mv-card h3 a{color:inherit!important;text-decoration:none}
+commons/public/market.css:440: .mv-card p{font-size:12px;color:var(--mv-muted);margin:0 0 8px}
+commons/public/market.css:441: .mv-tag{font:750 10px system-ui,sans-serif;color:var(--mv-plum);background:#efe8f4;border-radius:5px;padding:4px 6px}
+commons/public/market.css:442: .mv-art{height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+commons/public/market.css:443: .mv-shape{width:55%;height:75%;border-radius:48% 55% 30% 38%;transform:rotate(-15deg);box-shadow:18px 12px 0 #ffffff45}
+commons/public/market.css:444: .mv-art.one{background:#e3c7ba}.mv-art.one .mv-shape{background:#9c7661}.mv-art.two{background:#d4d7d1}.mv-art.two .mv-shape{background:#c0a3b3}.mv-art.three{background:#e9d9b9}.mv-art.three .mv-shape{background:#7299a0}.mv-art.four{background:#b7cdd0}.mv-art.four .mv-shape{background:#d9a26f}.mv-art.five{background:#d5c0d8}.mv-art.five .mv-shape{background:#657e87}.mv-art.six{background:#dbc8bd}.mv-art.six .mv-shape{background:#967caa}
+commons/public/market.css:445: .mv-page .mk-searchbar input{background:var(--mv-paper)}
+commons/public/market.css:446: @media(max-width:860px){.mv-grid{grid-template-columns:repeat(2,1fr)}.mv-hero{grid-template-columns:1fr}.mv-heroart{height:220px}}
+commons/public/market.css:447: @media(max-width:560px){.mv-wrap{padding:14px 12px 90px}.mv-pills{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}.mv-title{font-size:30px}.mv-hero{padding:16px}.mv-heroart{height:180px}.mv-grid{gap:9px}.mv-art{height:126px}.mv-cardbody{padding:9px}.mv-card h3{font-size:15px}.mv-card p{font-size:11px}.mv-h2{font-size:22px}.mv-cardbody .mv-actions .btn{padding:6px 8px}}
+commons/public/market.css:448: .mv-page .mv-main .btn,.mv-page .mv-search .btn{background:var(--mv-plum);border-color:var(--mv-plum);color:#fff!important;border-radius:10px}
+commons/public/market.css:449: .mv-page .mv-main .btn.ghost{background:transparent;color:var(--mv-plum)!important;border:1px solid var(--mv-line)}
+commons/public/market.css:450: .mv-page .mv-main .btn:hover{filter:brightness(1.07)}
+commons/public/market.css:452: /* ===== Arts & Crafts: Aletheia-6's approved page (cohabi-art-market-page1-v3), built 2026-11-15 ===== */
+commons/public/market.css:474: .av-dept.selected img{outline:2px solid #d49b41}.av-dept.selected{color:#a66c26!important}
+commons/public/market.css:490: .av-chip.selected{background:#1d2a3f;color:#fff!important;border-color:#1d2a3f}
+commons/public/market.css:518: .mv-page[data-mk="art"] .mv-pill[aria-current="page"]{background:#1d2a3f;border-color:#1d2a3f}
+commons/public/market.css:522: .av-sort select{border:1px solid #ddd;border-radius:7px;background:#fff;padding:8px;font-size:11px}
+commons/public/market.css:523: /* A page's text follows its own theme (2026-11-16): the v3 market frame fixed the ink dark, so names and words on
+commons/public/market.css:524:    dark-themed pages (music, midnight, navy, video, software — band and label pages by default) were dark on dark. */
+commons/public/market.css:525: .mk-pagebody .mv-wrap{--mv-ink:var(--ink);--mv-muted:var(--muted);color:var(--ink)}
+commons/public/market.css:526: .mk-pagebody .mv-pill{color:#292534!important}.mk-pagebody .mv-pill[aria-current="page"]{color:#fff!important}
+commons/public/market.css:527: .mk-page[data-mk=navy] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
+commons/public/market.css:528: .mk-page[data-mk=midnight] .mk-pagebody .mv-pill:not([aria-current="page"]){color:var(--ink)!important}
+commons/public/market.css:546: .sw-btn{display:inline-flex;align-items:center;min-height:44px;border:1px solid #cbd8d0;background:#fff;color:#254b43!important;padding:10px 16px;border-radius:10px;font:750 14px Inter,system-ui,sans-serif;text-decoration:none!important;cursor:pointer}
+commons/public/market.css:555: .sw-tools input,.sw-tools select{border:1px solid #d6e1d9;border-radius:11px;background:#fff;padding:12px 14px;font:inherit;font-size:15px;color:#1f272f;min-height:46px}
+commons/public/market.css:556: .sw-tools input{min-width:220px;flex:1}
+commons/public/market.css:583: @media(max-width:430px){.sw-cards{grid-template-columns:1fr}.sw-tools input{min-width:100%}}
+commons/public/market.css:585: .sw-tools input,.sw-tools select{width:auto!important;margin:0}
+commons/public/market.css:586: .sw-tools select{flex:none}
+commons/public/market.css:587: .sw-tools .sw-btn{flex:none}
+commons/public/market.css:588: /* Text inside the Market's panels follows the panel's own theme (2026-11-16: on dark band pages, album titles and
+commons/public/market.css:590: .mv-wrap :is(.mk-release, .mk-infocard, .mk-card) { color: var(--ink); }
+commons/public/market.css:591: .mv-wrap .mk-release :is(h3, .mk-track span) { color: var(--ink); }
+commons/public/market.css:592: /* The band-page design (mv-) was drawn light: cream paper, dark ink. In the dark Music and Video sections it must use
+commons/public/market.css:594: .mk-page:is([data-mk=music],[data-mk=video]) { --mv-cream: var(--bg); --mv-paper: var(--panel); --mv-ink: var(--ink); --mv-muted: var(--muted); --mv-line: var(--line); }
+commons/public/market.css:595: .mk-page:is([data-mk=music],[data-mk=video]) .mv-wrap { color: var(--ink); }
+commons/public/market.css:613: .mk-page[data-mk=writing] h1, .mk-page[data-mk=writing] .mk-body h3, .mk-page[data-mk=writing] .mv-hero h1 { font-family: Georgia, 'Times New Roman', serif; letter-spacing: 0; }
+commons/public/market.css:621:    Keep payment inputs and confirmation logic in Stripe; do not style inside its iframe. */
+commons/public/market.css:649: .mk-checkout-head button{
+commons/public/market.css:660: .mk-checkout-head button:hover{background:#edf5ee}
+commons/public/market.css:661: .mk-checkout-head button:focus-visible{outline:3px solid #3b9078;outline-offset:3px}
+commons/public/market.css:674:   .mk-checkout-head button{width:100%}
+commons/public/market.css:691: .mk-pagehero a:not([class*="btn"]), .mk-runby a, .mk-switch a { color: var(--ink); }
+commons/public/market.css:692: .mk-pagehero a:not([class*="btn"]):hover, .mk-runby a:hover, .mk-switch a:hover { color: var(--gold); }
+commons/public/market.css:702: /* Plain links anywhere on a market page take the page's own accent, never the browser default purple (unreadable on
+commons/public/market.css:707: .mk-page .mk-foot a, .mk-page .mv-eyebrow { color: var(--muted); }
+commons/public/market.css:715: /* Buttons in a page's header read on any banner or theme (Geoffrey, 2026-11-19: purple ghost buttons on a dark banner). */
+commons/public/market.css:716: .mk-pagehero .btn.ghost, .mk-pagehero .mk-quick { color: var(--ink); border-color: color-mix(in srgb, var(--ink) 55%, transparent); background: color-mix(in srgb, var(--bg) 70%, transparent); }
+commons/public/market.css:717: .mk-pagehero .btn.ghost:hover, .mk-pagehero .mk-quick:hover { border-color: var(--gold); color: var(--gold); }
+commons/public/market.css:722: /* The shared page frame (feed-identity.css) paints every link plum. Inside a market page, links follow the page's own
+commons/public/market.css:727: /* MAIN COHABI MARKET HOME — cinematic, scoped to /label only.
+commons/public/market.css:729: .mk-page[data-mk=home]:has(.mk-market-home){
+commons/public/market.css:732:   --mv-cream:#111520;--mv-paper:#242534;--mv-ink:#f6f0eb;
+commons/public/market.css:733:   --mv-muted:#d6cbd1;--mv-line:#6c5268;--mv-plum:#e9b75f;
+commons/public/market.css:737: .mk-page[data-mk=home]:has(.mk-market-home) .mv-wrap{
+commons/public/market.css:741: .mk-page[data-mk=home]:has(.mk-market-home) .mv-eyebrow{color:#f1d59f}
+commons/public/market.css:742: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pills{
+commons/public/market.css:747: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill{
+commons/public/market.css:751: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill:hover{background:#50404b}
+commons/public/market.css:752: .mk-page[data-mk=home]:has(.mk-market-home) .mv-pill[aria-current=page]{
+commons/public/market.css:756: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero{
+commons/public/market.css:764: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero:before{
+commons/public/market.css:769: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-copy,
+commons/public/market.css:770: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-cats{position:relative;z-index:1}
+commons/public/market.css:771: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-copy{max-width:665px}
+commons/public/market.css:772: .mk-page[data-mk=home]:has(.mk-market-home) .mh-kicker{
+commons/public/market.css:776: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero h1{
+commons/public/market.css:781: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero h1 em{
+commons/public/market.css:784: .mk-page[data-mk=home]:has(.mk-market-home) .mh-intro{
+commons/public/market.css:788: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-acts{
+commons/public/market.css:791: .mk-page[data-mk=home]:has(.mk-market-home) .mh-action{
+commons/public/market.css:799: .mk-page[data-mk=home]:has(.mk-market-home) .mh-action-primary{
+commons/public/market.css:803: .mk-page[data-mk=home]:has(.mk-market-home) .mh-action:hover{transform:translateY(-2px);filter:brightness(1.09)}
+commons/public/market.css:804: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-cats{
+commons/public/market.css:807: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-chip{
+commons/public/market.css:814: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-chip:hover{background:#3e2d40}
+commons/public/market.css:815: .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-chip span{color:#ffd074;font-size:17px}
+commons/public/market.css:816: .mk-page[data-mk=home]:has(.mk-market-home) .mh-art-credit{
+commons/public/market.css:821: .mk-page[data-mk=home]:has(.mk-market-home) .mh-explore{padding-top:28px}
+commons/public/market.css:822: .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-heading{
+commons/public/market.css:826: .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-heading h2{
+commons/public/market.css:829: .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-line{
+commons/public/market.css:833: .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-heading>a{
+commons/public/market.css:837: .mk-page[data-mk=home]:has(.mk-market-home) .mh-search{
+commons/public/market.css:841: .mk-page[data-mk=home]:has(.mk-market-home) .mh-search input{
+commons/public/market.css:845: .mk-page[data-mk=home]:has(.mk-market-home) .mh-search input::placeholder{color:#e2d6d5}
+commons/public/market.css:846: .mk-page[data-mk=home]:has(.mk-market-home) .mh-search button{
+commons/public/market.css:851: .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{
+commons/public/market.css:855: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile{
+commons/public/market.css:862: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:hover{
+commons/public/market.css:865: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-art{
+commons/public/market.css:871: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:hover .mh-tile-art{transform:scale(1.055)}
+commons/public/market.css:872: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-music .mh-tile-art{background-position:42% 53%}
+commons/public/market.css:873: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-art .mh-tile-art{background-position:61% 74%}
+commons/public/market.css:874: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-video .mh-tile-art{background-position:35% 45%}
+commons/public/market.css:875: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-writing .mh-tile-art{background-position:86% 78%}
+commons/public/market.css:876: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-software .mh-tile-art{background-position:84% 37%}
+commons/public/market.css:877: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-services .mh-tile-art{background-position:75% 51%}
+commons/public/market.css:878: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile:not(:has(.has-img)).mh-cat-classifieds .mh-tile-art{background-position:57% 25%}
+commons/public/market.css:879: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-overlay{
+commons/public/market.css:884: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-glyph{
+commons/public/market.css:887: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-title{
+commons/public/market.css:890: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-sub{
+commons/public/market.css:893: .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-arrow{
+commons/public/market.css:898: .mk-page[data-mk=home]:has(.mk-market-home) .mh-featured>.mh-section-heading{margin:19px 0 8px}
+commons/public/market.css:899: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rotnote{
+commons/public/market.css:902: .mk-page[data-mk=home]:has(.mk-market-home) .mk-row-sec{margin:20px 0 28px}
+commons/public/market.css:903: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh{margin-bottom:11px}
+commons/public/market.css:904: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh h2{
+commons/public/market.css:907: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowh>a{color:#ffce82!important;font-weight:700}
+commons/public/market.css:908: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll{
+commons/public/market.css:911: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-card{
+commons/public/market.css:916: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-cover{
+commons/public/market.css:919: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body{
+commons/public/market.css:922: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body a,
+commons/public/market.css:923: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .mk-body strong{color:#fff}
+commons/public/market.css:924: .mk-page[data-mk=home]:has(.mk-market-home) .mk-rowscroll .muted{color:#dacbc9!important}
+commons/public/market.css:925: .mk-page[data-mk=home]:has(.mk-market-home) #mh-about{margin-top:30px}
+commons/public/market.css:926: .mk-page[data-mk=home]:has(.mk-market-home) .mk-coop{
+commons/public/market.css:930: .mk-page[data-mk=home]:has(.mk-market-home) .mk-tier{
+commons/public/market.css:933: .mk-page[data-mk=home]:has(.mk-market-home) .mk-tierstate.open{color:#a8f3c8}
+commons/public/market.css:934: .mk-page[data-mk=home]:has(.mk-market-home) #mh-about .muted{color:#d9c8d0!important}
+commons/public/market.css:935: .mk-page[data-mk=home]:has(.mk-market-home) .mk-foot{
+commons/public/market.css:938: .mk-page[data-mk=home]:has(.mk-market-home) :is(a,button,input):focus-visible{
+commons/public/market.css:942:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+commons/public/market.css:943:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero{min-height:465px}
+commons/public/market.css:946:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero{
+commons/public/market.css:950:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero:before{
+commons/public/market.css:954:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-copy{width:100%}
+commons/public/market.css:955:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero h1{font-size:clamp(38px,8vw,55px)}
+commons/public/market.css:956:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-cats{margin-top:18px;gap:7px}
+commons/public/market.css:957:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-chip{font-size:11px;min-height:36px;padding:7px 11px}
+commons/public/market.css:958:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+commons/public/market.css:959:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile{min-height:215px}
+commons/public/market.css:960:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-heading{flex-wrap:wrap}
+commons/public/market.css:961:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-section-line{display:none}
+commons/public/market.css:964:  .mk-page[data-mk=home]:has(.mk-market-home) .mv-wrap{padding-inline:11px}
+commons/public/market.css:965:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero{min-height:620px}
+commons/public/market.css:966:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-acts{flex-direction:column;align-items:stretch}
+commons/public/market.css:967:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-hero-chip{font-size:10px}
+commons/public/market.css:968:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile{min-height:186px}
+commons/public/market.css:969:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-overlay{padding:14px 11px}
+commons/public/market.css:970:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-title{font-size:19px}
+commons/public/market.css:971:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-sub{font-size:11px}
+commons/public/market.css:972:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-search{gap:6px}
+commons/public/market.css:973:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-search button{padding:0 14px}
+commons/public/market.css:976:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile,
+commons/public/market.css:977:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-tile-art,
+commons/public/market.css:978:  .mk-page[data-mk=home]:has(.mk-market-home) .mh-action{transition:none}
+commons/public/market.css:986:   --mv-ink:#f8f4ee;--mv-muted:#dbd2d4;--mv-paper:#1f2030;--mv-line:#51465c; /* rows below the cards (studios, FireDamm) */
+commons/public/market.css:1021: .mk-page[data-mk=software]:has(.sw) .sw-btn{
+commons/public/market.css:1025: .mk-page[data-mk=software]:has(.sw) .sw-btn:hover,
+commons/public/market.css:1028: .mk-page[data-mk=software]:has(.sw) .sw-btn:focus-visible,
+commons/public/market.css:1078: .mk-page[data-mk=software]:has(.sw) .sw-tools input,
+commons/public/market.css:1079: .mk-page[data-mk=software]:has(.sw) .sw-tools select{
+commons/public/market.css:1083: .mk-page[data-mk=software]:has(.sw) .sw-tools input::placeholder{color:#e1d5d2}
+commons/public/market.css:1134: .mk-page[data-mk=software]:has(.sw) .sw-side .sw-btn{justify-content:center;text-align:center}
+commons/public/market.css:1163:   .mk-page[data-mk=software]:has(.sw) .sw-tools select{flex:1;min-width:130px}
+commons/public/market.css:1168:   .mk-page[data-mk=software]:has(.sw) .sw-btn,
+commons/public/market.css:1175: .mv-art.has-img.is-logo, .mk-logotile, .mk-cover:has(> img.mk-pagelogo) { background-color: #0b0f1a; background-image: radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); }
+commons/public/market.css:1176: .mv-art.has-img.is-logo { background-image: var(--mv-img), radial-gradient(ellipse at 70% 15%, #1f3a5f 0%, transparent 60%), linear-gradient(160deg, #05070d, #0f1b2e); background-size: contain, cover, cover; background-origin: content-box, border-box, border-box; background-repeat: no-repeat; background-position: center; padding: 14px; box-sizing: border-box; }
+commons/public/market.css:1205: .mk-pgdialog .pf-ed-foot .btn{color:#ffffff!important;background:#4d3c70;border:1px solid #9285b1}
+commons/public/market.css:1206: .mk-pgdialog .pf-ed-foot .btn.ghost{color:#f1f5fa!important;background:transparent!important;border-color:#8291aa}
+commons/public/market.css:1207: .mk-pgdialog label,.mk-pgdialog legend,.mk-pgdialog .hint{color:#e4eaf4}
+commons/public/market.css:1208: .mk-pgdialog input:not([type=checkbox]):not([type=color]),.mk-pgdialog select,.mk-pgdialog textarea{background:#1d2940;color:#fff;border-color:#687998}
+commons/public/market.css:1209: .mk-pgdialog input:focus-visible,.mk-pgdialog select:focus-visible,.mk-pgdialog textarea:focus-visible,.mk-pgdialog button:focus-visible{outline:3px solid #e6c37a;outline-offset:2px}
+commons/public/market.css:1214: /* Aletheia-6: four individual departments share a navigation grammar, not a generic storefront.
+commons/public/market.css:1215:    Approved market home and Art v3 artwork remain untouched. Every image here comes from the existing
+commons/public/market.css:1216:    department art attached to the home tile, never an unlicensed real creator's artwork. */
+commons/public/market.css:1217: .md-department { --md-accent:#c7a477; --md-surface:#171c24; --md-text:#f4efe6; --md-muted:#cfc6bc; padding:0 0 44px; color:var(--ink); }
+commons/public/market.css:1218: .md-department.md-video { --md-accent:#efd28e; --md-surface:#12131b; --md-text:#fffaf1; --md-muted:#d5d0ca; }
+commons/public/market.css:1219: .md-department.md-writing { --md-accent:#795035; --md-surface:#e9ddc9; --md-text:#271d18; --md-muted:#51443a; }
+commons/public/market.css:1220: .md-department.md-services { --md-accent:#a8d9eb; --md-surface:#173b4a; --md-text:#f3fbff; --md-muted:#d4e7ed; }
+commons/public/market.css:1221: .md-department.md-classifieds { --md-accent:#e2b468; --md-surface:#423b2d; --md-text:#fff7e6; --md-muted:#e3d6c0; }
+commons/public/market.css:1274: .md-department a:focus-visible {outline:3px solid var(--gold);outline-offset:3px}
+commons/public/market.css:1299: .mk-pod select { max-width: 100%; }
+commons/public/market.css:1318: .mp-art { position: absolute; cursor: grab; user-select: none; touch-action: none; }
+commons/public/market.css:1326: .mp-controls input[type=number] { width: 4.5rem; }
+commons/public/market.css:1370: .cz-artbox img { position: absolute; left: 50%; top: 50%; object-fit: fill; user-select: none; pointer-events: none; }
+commons/public/market.css:1376: .cz-slider input[type=range] { accent-color: var(--cz-purple); width: 100%; }
+commons/public/market.css:1377: .cz-num input { width: 4.4rem; }
+commons/public/market.css:1391: .cz-price input { width: 6rem; font-size: 1rem; }
+commons/public/market.css:1403: .cz-btn { border-radius: 10px; padding: .55rem .9rem; font: inherit; font-weight: 600; cursor: pointer; border: 1px solid var(--cz-purple); background: var(--cz-purple); color: #fff; }
+commons/public/market.css:1404: .cz-btn.ghost { background: #fff; color: var(--cz-purple); }
+commons/public/market.css:1405: .cz-btn.primary { background: linear-gradient(90deg, var(--cz-purple), var(--cz-purple-2)); font-size: 1.05rem; padding: .75rem 1rem; }
+commons/public/market.css:1406: .cz-btn.danger { background: #fff; color: #a12a2a; border-color: #a12a2a; }
+commons/public/market.css:1407: .cz-btn:disabled { opacity: .55; cursor: not-allowed; }
+commons/public/market.css:1408: .cz-btn:focus-visible, .cz-prod:focus-visible, .cz-sw:focus-visible, .cz-sz:focus-visible { outline: 3px solid var(--cz-gold); outline-offset: 2px; }
+commons/public/auth/auth.css:4: .cx [hidden]{display:none!important}.cx a{color:#8cf1e6}.cx a:focus-visible,.cx button:focus-visible,.cx input:focus-visible{outline:3px solid #fff;outline-offset:3px}
+commons/public/auth/auth.css:8: .cx-art{position:relative;z-index:-1;display:block;width:calc(100% + 40px);height:auto;aspect-ratio:1.6;object-fit:cover;object-position:32% 35%;margin:0 -20px -28px;mask-image:linear-gradient(#000 60%,transparent);-webkit-mask-image:linear-gradient(#000 60%,transparent)}
+commons/public/auth/auth.css:18: .cx-label{display:block;margin-bottom:6px}.cx-input-wrap{display:block;position:relative}
+commons/public/auth/auth.css:19: .cx-field input{display:block;width:100%;min-width:0;height:50px;border:1px solid #b8d8d759;border-radius:13px;padding:0 14px 0 44px;background:#061820d9;color:#fff;font:16px/1.3 system-ui;font-family:inherit;font-size:16px}
+commons/public/auth/auth.css:20: .cx-field input::placeholder{color:#c2d1d4}.cx-field.plain input{padding-left:14px}.cx-field.has-eye input{padding-right:64px}
+commons/public/auth/auth.css:24: .cx-row label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer}.cx-row input[type=checkbox]{width:18px;height:18px;accent-color:#19c9be}
+commons/public/auth/auth.css:26: .cx-btn{display:flex;align-items:center;justify-content:center;text-align:center;width:100%;min-height:50px;padding:12px 14px;border-radius:13px;font:650 16px/1.3 system-ui;cursor:pointer;text-decoration:none;margin:0 0 12px;white-space:normal}
+commons/public/auth/auth.css:27: .cx-btn.go{border:1px solid #9bfff4;background:linear-gradient(#2fe0d3,#0ea69d);color:#04262a!important;box-shadow:0 0 18px #35e6d855}.cx-btn.alt{border:1px solid #ffffff80;background:#0a1a2277;color:#fff!important}
+commons/public/auth/auth.css:28: .cx button[disabled]{opacity:.65;cursor:wait}.cx-or{display:flex;align-items:center;gap:12px;margin:18px 0;font-size:13px;color:#d7e6e6}.cx-or:before,.cx-or:after{content:"";flex:1;height:1px;background:#ffffff38}
+commons/public/auth/auth.css:29: .cx-code{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cx-code input{flex:1 1 130px;min-width:0;width:100%;height:48px;border:1px solid #ffffff55;border-radius:12px;background:#06141bd9;color:#fff;font:16px system-ui;letter-spacing:.2em;text-transform:uppercase;text-align:center}
+commons/public/auth/auth.css:30: .cx-code button{min-height:48px;padding:10px 14px;border:1px solid #ffffff80;border-radius:12px;background:#0a1a2299;color:#fff;font:600 14px system-ui;cursor:pointer}
+commons/public/auth/auth.css:38:  .cx-art{position:absolute;inset:0;width:100%;height:100%;max-height:none;aspect-ratio:auto;margin:0;object-fit:cover;object-position:center;mask-image:none;-webkit-mask-image:none}
+commons/public/auth/auth.css:44: @media(prefers-reduced-motion:no-preference){.cx-btn{transition:filter .15s}.cx-btn:hover{filter:brightness(1.08)}}
+commons/public/auth/auth.css:50: .cx-keep{display:flex;gap:10px;align-items:flex-start;min-height:44px;margin:14px 0 12px;font-size:14px;line-height:1.45;color:var(--ink,#e9f3f1);cursor:pointer}.cx-keep input{width:22px;height:22px;flex:0 0 22px;margin-top:1px;accent-color:#3fd6c6}.cx-keep span{opacity:.92}

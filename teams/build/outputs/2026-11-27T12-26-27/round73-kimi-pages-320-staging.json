@@ -1,0 +1,7 @@
+{
+  "returncode": 1,
+  "seconds": 18.33,
+  "stdout": "\u2716 four more pages at 320x568: controls >= 44x44, document <= 320 wide (18187.073148ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 18302.934318\n\n\u2716 failing tests:\n\ntest at teams/build/outputs/pages-tap-targets-320.mjs:59:1\n\u2716 four more pages at 320x568: controls >= 44x44, document <= 320 wide (18187.073148ms)\n  AssertionError [ERR_ASSERTION]: /petition: page response\n  \n  525 !== 200\n  \n      at measure (file:///tmp/kin-py-6RKT1A/repo/teams/build/outputs/pages-tap-targets-320.mjs:112:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async TestContext.<anonymous> (file:///tmp/kin-py-6RKT1A/repo/teams/build/outputs/pages-tap-targets-320.mjs:170:71)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: 525,\n    expected: 200,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+  "stderr": "",
+  "base": "https://staging.cohabi.org"
+}

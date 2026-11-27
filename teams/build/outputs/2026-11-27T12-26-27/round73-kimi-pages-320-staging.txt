@@ -1,0 +1,31 @@
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (18187.073148ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18302.934318
+
+✖ failing tests:
+
+test at teams/build/outputs/pages-tap-targets-320.mjs:59:1
+✖ four more pages at 320x568: controls >= 44x44, document <= 320 wide (18187.073148ms)
+  AssertionError [ERR_ASSERTION]: /petition: page response
+  
+  525 !== 200
+  
+      at measure (file:///tmp/kin-py-6RKT1A/repo/teams/build/outputs/pages-tap-targets-320.mjs:112:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///tmp/kin-py-6RKT1A/repo/teams/build/outputs/pages-tap-targets-320.mjs:170:71)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 525,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
