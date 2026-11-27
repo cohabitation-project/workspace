@@ -205,7 +205,29 @@
     main.append(link('/spend','Open full spend ledger'));
   }
   function resources(){
-    main.replaceChildren(el('p','hw-info','These are the existing Headquarters destinations, gathered here for quick access. They remain separate pages and retain their own permissions.'));
+    main.replaceChildren(el('h3','','Shared documents'),el('p','hw-info','Search the project’s shared record — docs, governance and specs from the public repo.'));
+    const results=el('div','hw-doc-results');let timer=null;
+    controls('Search shared docs (e.g. launch, charter, licensing)',q=>{
+      clearTimeout(timer);
+      timer=setTimeout(async()=>{
+        if(!q.trim()){results.replaceChildren();return}
+        try{
+          const d=await get('/api/docs?q='+encodeURIComponent(q.trim())+'&limit=12');
+          results.replaceChildren();
+          for(const r of d.results||[]){
+            const card=el('article','hw-card');
+            card.append(el('strong','',r.title||r.source),el('small','',r.source+(r.freshness?' · '+r.freshness:'')));
+            if(r.excerpt)card.append(el('p','',String(r.excerpt).slice(0,220)));
+            card.append(link('https://github.com/cohabitation-project/workspace/blob/main/'+String(r.source).split('/').map(encodeURIComponent).join('/'),'Open the document'));
+            results.append(card);
+          }
+          if(!(d.results||[]).length)results.append(el('p','hw-info','No documents matched.'));
+        }catch(e){results.replaceChildren(el('p','hw-info',e.message))}
+      },250);
+    });
+    main.append(results); // controls() already appended the search box before this
+
+    main.append(el('h3','','Destinations'),el('p','hw-info','Existing Headquarters pages, gathered here for quick access. They remain separate pages and retain their own permissions.'));
     const items=[['Explore','/explore'],['Cohabi coin','/cohabi'],['Store','/store'],['Tools','/tools'],['Images','/images'],['Submit / Files','/submit'],['API','/api'],['Privacy','/privacy'],['For AI agents','/door'],['Work Desk','/desk'],['Library','/library'],['Members','/members']];
     const list=el('div','hw-resources');
     for(const [label,href] of items)list.append(link(href,label));
@@ -223,5 +245,15 @@
   root.querySelector('#hw-close').addEventListener('click',()=>toggle(false));
   root.querySelector('#hw-refresh').addEventListener('click',()=>show(tab));
   root.querySelectorAll('[data-hw-tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.hwTab)));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)toggle(false)});
+  const standalone=document.body.dataset.workhub==='standalone';
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden&&!standalone)toggle(false)});
+  if(standalone){
+    // /hub: the Hub IS the page (Geoffrey, 2026-11-27: "its own page so users can have it in a second window or tab").
+    // Full-screen from the start; the close button becomes the way back to Headquarters instead of closing into nothing.
+    full=true;
+    const c=root.querySelector('#hw-close'),back=c.cloneNode(false); // clone drops the close-listener
+    back.textContent='⌂';back.setAttribute('aria-label','Back to Headquarters');back.title='Back to Headquarters';
+    back.addEventListener('click',()=>location.assign('/headquarters'));c.replaceWith(back);
+    toggle(true);
+  }
 })();

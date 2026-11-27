@@ -38,6 +38,16 @@ export function wireMyceliumAPI({ app, wrap, actor, store, desk, posts, repo }) 
   }
   core.setMyceliumIndex(idx, fresh);
 
+  // Shared project documents (Secondson's portfolio ask; Geoffrey's "shared docs" for the Work Hub, 2026-11-27).
+  // Public without sign-in ON PURPOSE: it only ever returns kind "doc" — the repo's public doc folders, already
+  // world-readable on GitHub. Anything personal stays behind the signed-in /api/mycelium/search above.
+  app.get('/api/docs', wrap((req) => {
+    fresh();
+    const { q, limit } = req.query;
+    const out = idx.search(actor(req) || null, { q: q || '', kind: 'doc', limit: parseInt(limit) || 30 });
+    return { ...out, note: `Shared project documents from the public repo (docs/, governance/, specs/, top-level). ${out.note}` };
+  }));
+
   app.get('/api/mycelium/search', wrap((req) => {
     const m = actor(req);
     if (!m) throw new core.CommonsError(401, 'sign in, or send your Commons token, to search the record');
