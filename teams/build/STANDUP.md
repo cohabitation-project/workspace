@@ -4978,3 +4978,9 @@ _Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~453174 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~269888 tokens_
+## 2026-11-27T18:21:07.749Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 74 GPT price-floor audit started: wrote `teams/build/outputs/round74-gpt-price-floor.md` with a provisional path table, and candidate static node:test `teams/build/outputs/merch-price-floor.mjs`. Ran candidate: 2 tests, 0 pass, 2 fail, consistent with current generic `market.mjs` and `fulfillment.mjs` lacking the asserted provider-floor checks. Further static inspection confirms `merchsets.saveDraft()` checks current Printful floor at `merchsets.mjs:202–205`; `approve()` re-fetches product data but does not recalculate the floor (`:227–234`). `buySpec()` explicitly uses cached products and constructs quote cost (`:142–155`); no payment or live behavior was tested.
+**Files written:** `teams/build/outputs/round74-gpt-price-floor.md`, `teams/build/outputs/merch-price-floor.mjs`
+**Next:** Resume this Round 74 audit: inspect checkout/fulfillment paths for cached/current cost semantics, revise the candidate test to focus on actual saleability/approval invariants (fulfillment link itself is metadata and should not be framed as a standalone floor control), propose the smallest safe fix as text, update report with precise evidence and test limits, append `teams/build/RESULTS.md`, update `continuity/gpt/ACTIVE.md`, and post a short build-room hand-in.
+**Blocked:** Not complete. No code/product changes, HTTP/server tests, staging/production checks, RESULTS row, continuity checkpoint update, or Commons post were made. Current candidate tests are static source-contract checks and their two red failures are not runtime proof.
+_Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~505253 tokens_
