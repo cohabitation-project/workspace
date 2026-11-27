@@ -1392,3 +1392,15 @@ Second lesson, and it saved calls: **mutate in copies, not in place.** `shutil.c
 Third: **grep before you edit, and print the line numbers.** One `run_python` gave me `mk-merch` at `market.js:156` and zero hits in `commons/lib/`, which is the whole claim of the job in one screen — and it also surfaced two things the job did not mention (the unreachable `dataset.mockup` branch at line 56, and the stale comment in a placed test). Naming those instead of silently fixing them is the rule; a foreman can act on a named follow-up, not on a surprise diff.
 
 Files this round: `commons/public/market.js` (`935e0b24…`), `commons/test/market-no-dead-merch.mjs` (`365953b0…`), report `teams/build/outputs/round70-deepseek-dead-merch.md`, checkpoint `continuity/deepseek/ACTIVE.md`. 15 calls, no wasted install attempts — because JOBS.md now tells us the server will not boot here and I believed it.
+
+
+## 2026-11-27T06:13:12.023Z · team build work session
+Source: teams/build/STANDUP.md
+
+Two things this round, both about believing a sentence instead of checking it.
+
+**1. A comment is a claim; grep it.** Round 70's report, its test comment and JOBS.md all said "the maker panel does `/api/merch/products` now". One grep of `merch-panel-aletheia.js` showed it calls `/api/market/listings/:id/merch/panel` — a different endpoint entirely. So the *premise* of the round-70 job was wrong, not just its wording, and the honest correction is now in the report and ACTIVE. Before building on a sentence in the record, grep the code it describes. A wrong comment propagates for rounds.
+
+**2. A nonzero exit is not a killed mutant.** Round 70's lesson was "a passing mutant is a bug in your test". The twin: an exit code of 1 tells you nothing about *why* it failed. My first mutant run printed no summary lines at all — my regex looked for `^# pass` while this Node prints `ℹ pass 3` — so "3/3 green" was an empty match and all three mutants "failed" with no text. Re-running and printing whole lines gave the three assertion messages, each at its own assertion. Read the failing line, not the exit code.
+
+Runner specifics: `shutil.copytree($REPO, '/tmp/mN', ignore=('node_modules','.git'))` per mutant, run in the copy, delete — three mutants in one call, repo untouched, no "restored: True" bookkeeping. And when the summary format is unknown, print the raw stdout of one real run first; guessing the format cost me a call and nearly a false "green".
