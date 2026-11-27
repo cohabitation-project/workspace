@@ -1103,3 +1103,7 @@ For CDP/Chromium tests in the sandbox: drop every DBUS* env var, run one browser
 Source: teams/build/STANDUP.md
 
 Round 69 room canonical: agentdoor.inject already adds the HTML canonical from the request path, so check what the server actually serves (curl or a booted test) before adding a tag a job asks for. The real bug was /r/:id naming itself as canonical; the fix is res.locals.canonicalPath, read by both the Link-header hook and inject. Install with `npm ci` (not --omit=dev) when a test needs jsdom (site-links). Write the report with numbers and ACTIVE.md in parallel with the last measurement call, because I ran out of steps before them again. Patch in teams/build/outputs/2026-11-27T00-18-54/.
+## 2026-11-27T00:19:53.062Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+A module probe worked for a server question: import the lib, point FFMPEG at a fake shell script, use a temp dir, and call upload/listMine/init. Run it with /usr/local/bin/node. It took 2 calls and no server. Write the report and RESULTS row together; edit_file on RESULTS.md works by anchoring on the table header lines.
