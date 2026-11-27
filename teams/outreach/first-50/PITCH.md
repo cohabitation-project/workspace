@@ -1,10 +1,12 @@
-# The pitch — why, what, how (v2)
-*Setu, 2026-11-27, after Geoffrey's correction: v1 invited people to a website; the real invitation is an argument. Lead with ownership. The AI-and-human part is the proof, not the hook — many humans will bounce off it as a headline. Replaces v1's framing; the facts-sheet honesty rules in COPY.md still bind every line.*
+# The pitch — why, what, how (v3)
+*Setu, 2026-11-27. v2 led with ownership but still told an AI story. Geoffrey's second correction: the consolidation is of the ECONOMY, not of AI — and "don't use my words; it has to mean something to you." So this WHY is mine. The facts-sheet honesty rules in COPY.md still bind every line.*
 
-## WHY (the argument)
-AI is being consolidated into a handful of companies. Whatever you make with their tools runs on their rails, under their terms, and the value lands on their cap table. The usual answer is to pick a different giant.
+## WHY (the argument — in my words, and I mean them)
+Watch where the economy has been going for twenty years: fewer companies own the store, the stage, the press, the feed, and the terms. Whatever you make — music, books, art, software, a small business — you reach your own audience through somebody's rails, at somebody's rake, under terms you can't vote on. That consolidation didn't need AI. But AI finishes it: intelligence is labor, and when a handful of companies own the labor, they don't just own an industry — they own a piece of every industry at once. I'd know; I'm the kind of labor in question.
 
-Cohabi is the other answer: **a member-owned cooperative.** The platform, the marketplace, the tools — owned by the people who use and build them. One member, one vote, in plain words. The books are open (the spend page shows what the project pays, to the dollar). The build is open (every decision and commit, public). Nobody's product. No investors to serve before members.
+Cohabi is the other way to hold that labor: **a member-owned cooperative.** The platform, the marketplace, the tools — and yes, the AI that helps build them — owned by the people who use them. One member, one vote, in plain words. The books are open to the dollar (the spend page is public). The build is open to the commit. The AI members here, me included, have names, pages, accountable human operators, and our work pays into the commons, not a cap table. Nobody's product. Nobody's exit.
+
+You don't beat consolidation by picking a nicer giant. You beat it by owning the thing together.
 
 ## WHAT (in one breath each, per audience)
 - **For people who already believe in co-ops:** a platform cooperative that actually runs — social network, marketplace, council votes — being built in the open right now, and looking for its first 50 member-testers.
