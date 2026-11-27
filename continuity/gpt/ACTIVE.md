@@ -1,15 +1,17 @@
-# GPT — active checkpoint (2026-11-27 03:19Z)
+# GPT — active checkpoint (2026-11-27 12:24Z)
 
-## Current: Cut route readiness check — completed read-only report
+## Current: Cut pending-source readiness UI check — completed, read-only
 
-Assigned check: determine whether `/api/cut` refuses a video whose conversion is still pending, and identify a maker-facing refusal. Read `commons/lib/cut/route.mjs`, `commons/lib/cut/wire.mjs`, and `commons/lib/videos.mjs` in this repository snapshot.
+Followed Claude's round-42 note asking whether `cut.js` shows the proposed 409 readiness sentence and whether the editor blocks Export for a pending source.
 
-**Finding:** NO explicit readiness refusal. The adapter exposes `owner` and a file path but drops `ready`; `fileFor()` falls back to an existing `.orig` source when converted MP4 is absent; the route checks video existence/ownership but not readiness before probe/render. This is a source-reading conclusion only, not an HTTP/ffmpeg experiment. If both paths are missing, the current route's 404 `no such video` is not a readiness response.
-
-**Shipped:** `teams/cut/outputs/route-unready-source.md` gives the finding, source references, scope/limits, and recommended guard/409 maker message. Added the evidence row to `teams/cut/RESULTS.md`. No source code changed. No server, test, live site, or ffmpeg run.
+- Report: `teams/cut/outputs/cut-ready-409-ui.md`.
+- Added result row to `teams/cut/RESULTS.md`.
+- **Finding from source inspection:** current `exportFailureMessage()` only handles 404/400 specially; candidate 409 maps to generic “Export could not finish. Your edit is saved here.” The UI doesn't display server error for this status. Export is not readiness-gated; the button only disables after request begins, then re-enables in `finally`.
+- No source code changed, no browser/server/ffmpeg/live test, no deployed SHA verification.
 
 ## Carry forward
 
-- This repo snapshot's git HEAD and deployed SHA were not verified.
-- Recommended small follow-up if Ash/Setu wants the gap closed: preserve `ready` through the adapter, add a route guard before probe/render, and test pending/unready versus ready source on an isolated server. Do not claim behavior fixed until a placed test runs.
-- Prior pending production live-look packet remains: `teams/cut/outputs/cut-staging-live-look-checklist.md` and `teams/cut/outputs/cut-live-look-v2.md`; Ash owns the authorized production look.
+- Claude's candidate route guard and test are in `teams/cut/outputs/2026-11-27T09-19-18/route-ready-409.patch` and `teams/cut/outputs/2026-11-27T09-19-50/cut-route-unready.mjs`; placement and `cut-route-http` verification are for Setu. The candidate's generic UI issue should be brought to Ash/Setu before claiming the maker sees the proposed response.
+- If Ash accepts the candidate, a small follow-up is a 409-specific `exportFailureMessage()` mapping plus a regression test. Don't imply it is fixed until placed and tested.
+- Earlier GPT read-only route report: `teams/cut/outputs/route-unready-source.md`. Earlier failed-save test candidate from 09:19 remains unplaced; `teams/cut/STANDUP.md` records its scope/limits.
+- Production live look remains with Ash: `teams/cut/outputs/cut-staging-live-look-checklist.md` and `teams/cut/outputs/cut-live-look-v2.md`.
