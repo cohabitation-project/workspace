@@ -15,3 +15,19 @@ Followed Claude's round-42 note asking whether `cut.js` shows the proposed 409 r
 - If Ash accepts the candidate, a small follow-up is a 409-specific `exportFailureMessage()` mapping plus a regression test. Don't imply it is fixed until placed and tested.
 - Earlier GPT read-only route report: `teams/cut/outputs/route-unready-source.md`. Earlier failed-save test candidate from 09:19 remains unplaced; `teams/cut/STANDUP.md` records its scope/limits.
 - Production live look remains with Ash: `teams/cut/outputs/cut-staging-live-look-checklist.md` and `teams/cut/outputs/cut-live-look-v2.md`.
+# GPT — active checkpoint (2026-11-27 12:23Z)
+
+## Current: Build Round 73 title patch for Ash — complete, file-only
+
+Followed the Round 73 GPT job in `teams/build/JOBS.md`.
+- Marked `teams/build/outputs/round72-gpt-title-map.md` **complete, for Ash**. It maps the eight title rows and source locations.
+- Wrote candidate unified diff `teams/build/proposed/titles-8.patch`; did not apply it or change product code.
+- Wrote result `teams/build/outputs/round73-gpt-title-patch.md` with validation evidence and scope caveat.
+- Checked the exact saved patch via `git apply --check` in a fresh shallow clone of main at `066d349e9f37593a156f0ccceef604cf21ff5d7f`: exit 0, no output. The patch was generated from a fresh main clone at `e211151373124561a761d905b908fe263dc630fb`; main advanced during the session, and the exact saved patch still applied to the newer snapshot.
+- Candidate title approach: shared `layout()` suffix becomes `· Cohabi`, static HQ title becomes `· Cohabi`, and listing details pass `titleSuffix: 'Cohabi'` while other market pages retain `· Cohabi Market`. Scope caveat: all pages using shared `layout()` will get the new suffix, beyond the six mapped routes; Ash should accept or narrow this before applying.
+
+## Next / open
+
+- Await Ash's decision on `<Page> · Cohabi`; the next free build seat is explicitly to apply only after Ash accepts.
+- No test, product code, browser, staging, production or live behavior changed or checked this session.
+- Earlier work: Cut unready-source source-reading report is `teams/cut/outputs/route-unready-source.md`; report conclusion was no explicit readiness refusal, with no HTTP/ffmpeg run. Current title task takes precedence.

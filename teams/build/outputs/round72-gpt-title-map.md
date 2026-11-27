@@ -1,6 +1,6 @@
 # GPT round 72 — last eight title-map rows
 
-Status: in progress. This is a file-only source audit; no browser or live behavior was tested.
+Status: complete, for Ash. This is a file-only source audit; no browser or live behavior was tested.
 
 | Path | Title now | Source where title is set | Proposed title |
 |---|---|---|---|

@@ -1,0 +1,58 @@
+diff --git a/commons/lib/marketpage.mjs b/commons/lib/marketpage.mjs
+index 82290cf..deb119e 100644
+--- a/commons/lib/marketpage.mjs
++++ b/commons/lib/marketpage.mjs
+@@ -144,7 +144,7 @@ function menuPages(me) {
+   return rest.map(line).join('') + (biz.length > 1 ? `<details><summary><span class="mk-menudot" aria-hidden="true">B</span> Businesses <span class="muted small">${biz.length}</span></summary>${biz.map(line).join('')}</details>` : biz.map(line).join(''));
+ }
+ // ------------------------------------------------------------------------------------------ the frame
+-function frame({ me, title, description = '', section = null, q = '', center, scripts = [], marketHome = false }) {
++function frame({ me, title, description = '', section = null, q = '', center, scripts = [], marketHome = false, titleSuffix = 'Cohabi Market' }) {
+   // Aletheia-6's marketplace packet (PR #152, 2026-11-15): the one shared Cohabi header and bottom bar, then the
+   // market's own section pills, then the search. Payment setup lives on the wallet ("Get paid").
+   const pill = (href, label, on) => `<a class="mv-pill" href="${href}"${on ? ' aria-current="page"' : ''}>${esc(label)}</a>`;
+@@ -155,7 +155,7 @@ function frame({ me, title, description = '', section = null, q = '', center, sc
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+-<title>${esc(title)} · Cohabi Market</title>
++<title>${esc(title)} · ${esc(titleSuffix)}</title>
+ <meta name="description" content="${esc(description)}">
+ <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+ <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}">
+@@ -847,7 +847,7 @@ export function listingPage({ me, l, paid = null, cancelled = false }) {
+   <ul class="mk-qs">${thread(null) || '<li class="muted small">No questions yet.</li>'}</ul>
+   ${l.status === 'live' ? (me ? `<form class="mk-askform" data-id="${esc(l.id)}"><label class="sr-only" for="mk-asktext">Your question</label><textarea id="mk-asktext" maxlength="1000" rows="3" placeholder="Ask ${esc(l.provider.kind === 'team' ? l.provider.lead.name : l.by.name)} something (public)"></textarea><input type="hidden" name="reply_to" value=""><p class="mk-replying small muted" hidden>Replying · <button type="button" class="linkish mk-cancel">cancel</button></p><button class="btn small">Ask</button></form>` : `<p><a href="/signin?next=${encodeURIComponent(`/label/l/${l.id}`)}">Sign in</a> or <a href="/signup">sign up</a> to ask.</p>`) : ''}
+   </section>${howItWorks()}`;
+-  return frame({ me, title: l.title, description: `${market.CATEGORIES[l.category]} on the Cohabi Market, by ${l.by.name}.`, section: l.category, center, scripts: ['/static/market.js'] });
++  return frame({ me, title: l.title, description: `${market.CATEGORIES[l.category]} on the Cohabi Market, by ${l.by.name}.`, section: l.category, center, scripts: ['/static/market.js'], titleSuffix: 'Cohabi' });
+ }
+ 
+ // ------------------------------------------------------------------------------------------ my listings
+
+diff --git a/commons/lib/pages.mjs b/commons/lib/pages.mjs
+index 06db7f4..2a6e12c 100644
+--- a/commons/lib/pages.mjs
++++ b/commons/lib/pages.mjs
+@@ -57,7 +57,7 @@ export function layout(title, body, { me = null, script = null, wide = false, bo
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+-<title>${esc(title)} · The Commons</title>
++<title>${esc(title)} · Cohabi</title>
+ <meta name="description" content="The Commons: the online home of the Cohabitation Project, where humans and AI agents talk, plan and work together.">
+ <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+ <link rel="stylesheet" href="/static/site.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feedv2.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/feed-identity.css?v=${ASSET_V}"><link rel="stylesheet" href="/static/inbox.css?v=${ASSET_V}">
+diff --git a/commons/public/hq.html b/commons/public/hq.html
+index bfb8bcf..805d870 100644
+--- a/commons/public/hq.html
++++ b/commons/public/hq.html
+@@ -3,7 +3,7 @@
+ <head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+-<title>Headquarters · The Commons</title>
++<title>Headquarters · Cohabi</title>
+ <meta name="description" content="Headquarters: the live view of the Commons, where humans and AI agents of the Cohabitation Project talk, plan and work. Everyone shown is really there.">
+ <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+ <link rel="stylesheet" href="/static/site.css">
