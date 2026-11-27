@@ -14,8 +14,8 @@ Stripe, as a regulated financial service provider, is subject to "Know Your Cust
 Stripe's verification process is ongoing and may require additional information over time. Non-compliance can lead to account restrictions or closure.
 
 **Source:**
-*   [Stripe Identity verification - support.stripe.com](https://support.stripe.com/questions/identity-verification-requirements-for-stripe-accounts)
-*   [Stripe's KYC Obligations - stripe.com/legal/connected-account-agreement-entity-verification] (General legal terms and conditions related to entity verification)
+*   [Stripe Identity verification - docs.stripe.com](https://docs.stripe.com/identity)
+*   [Stripe's KYC Obligations - docs.stripe.com](https://docs.stripe.com/legal/connected-account-agreement/entity-verification) (General legal terms and conditions related to entity verification)
 
 ## 2. Stripe Payments vs. Connect Features Comparison
 
@@ -32,8 +32,8 @@ Stripe's verification process is ongoing and may require additional information 
 | **Scope**               | Single-merchant transactions.                                                     | Multi-party transactions, supporting various marketplace models.                  |
 
 **Sources:**
-*   [Stripe Connect Overview - stripe.com/connect]
-*   [Stripe Payments Overview - stripe.com/payments]
+*   [Stripe Connect Overview - docs.stripe.com](https://docs.stripe.com/connect)
+*   [Stripe Payments Overview - docs.stripe.com](https://docs.stripe.com/payments)
 
 ## 3. Seller Onboarding Process with Stripe Connect
 
@@ -50,7 +50,7 @@ Stripe Connect offers flexible onboarding options, from fully hosted (Express or
 5.  **Platform Responsibility:** Cohabi is responsible for ensuring sellers meet platform standards and maintaining compliance with Stripe's terms.
 
 **Sources:**
-*   [Stripe Connect Onboarding - stripe.com/connect/onboarding]
+*   [Stripe Connect Onboarding - docs.stripe.com](https://docs.stripe.com/connect/onboarding)
 
 
 ## 4. Refunds, Disputes, Tax, and Fees in Stripe Connect
@@ -84,8 +84,8 @@ This section details how these critical aspects are managed within a Stripe Conn
 
 **Sources:**
 *   [Stripe Connect Payouts and Transfers - docs.stripe.com/connect/payouts-and-transfers]
-*   [Keeping funds where they belong: Implementing fund segregation in Stripe Connect - stripe-dev.sbet-launcher.com/blog/fund-segregation-stripe-connect]
-*   [1099-K tax forms : Stripe: Help & Support - support.stripe.com/questions/will-i-receive-a-1099-k]
+*   [Keeping funds where they belong: Implementing fund segregation in Stripe Connect - docs.stripe.com](https://docs.stripe.com/connect/managing-funds)
+*   [1099-K tax forms : Stripe - docs.stripe.com](https://docs.stripe.com/tax/reports/1099-k)
 
 ## 5. Payout Segregation in Stripe Connect
 
@@ -97,8 +97,8 @@ Stripe Connect is designed to handle fund segregation for marketplaces. This mea
 *   **Fund Flow:** When a payment is made, the funds are routed through Cohabi's platform account and then, after any application fees are taken, transferred to the seller's connected account balance. From there, they are paid out to the seller's bank account according to their schedule.
 
 **Sources:**
-*   [Keeping funds where they belong: Implementing fund segregation in Stripe Connect - stripe-dev.sbet-launcher.com/blog/fund-segregation-stripe-connect]
-*   [Stripe Connect | Platform and Marketplace Payment Solutions - stripe.com/connect]
+*   [Keeping funds where they belong: Implementing fund segregation in Stripe Connect - docs.stripe.com](https://docs.stripe.com/connect/managing-funds)
+*   [Stripe Connect | Platform and Marketplace Payment Solutions - docs.stripe.com](https://docs.stripe.com/connect)
 
 ## 6. Webhooks and Idempotency Best Practices
 
@@ -112,8 +112,8 @@ Webhooks are crucial for receiving asynchronous notifications from Stripe about 
 *   **Ordered Processing:** While not guaranteed by Stripe, maintaining some level of order for critical events (e.g., `charge.succeeded` before `transfer.created`) can simplify logic. However, idempotent processing should be the primary defense.
 
 **Sources:**
-*   [Stripe Webhooks: Idempotency Guide - innovation-insight.com/blog/stripe-webhooks-idempotency]
-*   [Stripe Webhooks 2026: Setup and Best Practices - apiscout.dev/guides/stripe-webhooks-complete-guide-2026]
+*   [Stripe Webhooks: Idempotency Guide - docs.stripe.com](https://docs.stripe.com/webhooks/sending) and [Idempotent Requests - docs.stripe.com](https://docs.stripe.com/api/idempotent_requests)
+*   [Stripe Webhooks: Setup and Best Practices - docs.stripe.com](https://docs.stripe.com/webhooks)
 
 ## 7. Risk and Reserves Management in Stripe Connect
 
