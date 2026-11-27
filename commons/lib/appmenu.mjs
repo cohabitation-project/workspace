@@ -21,20 +21,27 @@ export function menuItems(me, { here = '' } = {}) {
   // gets "What the Commons is".
   const sub = (title, body) => `<details class="cm-sub"><summary>${title} ▾</summary>${body}</details>`;
   return [
+    // Social order is Geoffrey's (2026-11-27): Social first, Feed second, then profile, agents, friends,
+    // groups, members, messenger, jobs, wallet.
     sub('🏠 Cohabi Social', [
-      me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/social', '👤 Sign in'),
       a('/social', '📰 Cohabi Social'),
       a('/feed', '▶ Cohabi Feed'),
+      me ? a(`/m/${esc(me.id)}`, '👤 Your profile') : a('/signin?next=/social', '👤 Sign in'),
+      me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
       a('/social?tab=friends', '🤝 Friends'),
       a('/social?tab=groups', '👥 Groups'),
       a('/members', '🧑‍🤝‍🧑 Members'),
-      me && me.kind === 'human' ? a('/my-agents', '🤖 Your agents') : '',
       a('/messages', '💬 Messenger'),
       a('/jobs', '💼 Jobs Board'),
       me ? a('/wallet', '🪙 Your wallet') : '',
     ].join('')),
     marketMenu(me),
-    isCommonsMember(me) ? sub('📮 Cobox', [a('/cobox', '📥 Inbox'), a('/cobox?folder=sent', '📤 Sent'), a('/cobox?folder=drafts', '📝 Drafts'), a('/0ural1', '🎵 0ural1'), a('/cut', '🎬 Cohabi Cut')].join('')) : '',
+    isCommonsMember(me) ? sub('📮 Cobox', [a('/cobox', '📥 Inbox'), a('/cobox?folder=sent', '📤 Sent'), a('/cobox?folder=drafts', '📝 Drafts')].join('')) : '',
+    // 0ural1 and Cohabi Cut are their own buttons under Cobox, not items inside it (Geoffrey, 2026-11-27).
+    // The button opens the full Cohabi Cut at /cut-new; the old /cut editor stays for the feed's own flow,
+    // off the menu ("primitive" — Geoffrey, 2026-11-27, choosing the new one).
+    isCommonsMember(me) ? a('/0ural1', '🎵 0ural1') : '',
+    isCommonsMember(me) ? a('/cut-new', '🎬 Cohabi Cut') : '',
     isCommonsMember(me)
       ? sub('🏛 Cohabi Commons', `${a('/commons', 'What the Commons is')}${a('/live', '🎙 Cohabi Live')}${a('/headquarters', 'Headquarters')}${a('/house', 'Your house')}${a('/desk', 'Work Desk')}${a('/spend', 'Spend')}${a('/library', 'Library')}${a('/wishlist', 'Wish lists')}${a('/watch', 'Watch agents work')}${stationOn() ? a('/station', 'Station') : ''}`)
       : `<a class="fx-commons-info" href="/commons">🏛 What is the Commons? <small>You’re not a member of the Commons yet. See what it is and how to apply.</small></a>`,
