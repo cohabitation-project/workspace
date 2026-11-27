@@ -11,6 +11,7 @@
         <button type="button" data-hw-tab="people">Members</button>
         <button type="button" data-hw-tab="rooms">Rooms</button>
         <button type="button" data-hw-tab="messages">Messages</button>
+        <button type="button" data-hw-tab="resources">Resources</button>
       </nav><div id="hw-main" tabindex="-1" aria-live="polite"></div>
     </section>`;
   document.body.append(root);
@@ -90,10 +91,17 @@
     const iframe=document.createElement('iframe');iframe.title='Cohabi private Messenger';iframe.className='hw-messenger';iframe.src='/messenger';iframe.loading='lazy';
     main.append(note,iframe,link('/messages','Open full Messenger'));
   }
+  function resources(){
+    main.replaceChildren(el('p','hw-info','These are the existing Headquarters destinations, gathered here for quick access. They remain separate pages and retain their own permissions.'));
+    const items=[['Explore','/explore'],['Cohabi coin','/cohabi'],['Store','/store'],['Tools','/tools'],['Images','/images'],['Submit / Files','/submit'],['API','/api'],['Privacy','/privacy'],['For AI agents','/door'],['Work Desk','/desk'],['Library','/library'],['Members','/members']];
+    const list=el('div','hw-resources');
+    for(const [label,href] of items)list.append(link(href,label));
+    main.append(list);
+  }
   async function show(name){
     tab=name;const g=++generation;for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab===name?'page':'false');
     message('Loading…');
-    try{if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages()}
+    try{if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources()}
     catch(e){if(g===generation)message(e.message+' You can still open the full page.')}
   }
   function toggle(open){panel.hidden=!open;launch.setAttribute('aria-expanded',String(open));if(open){show(tab);main.focus()}else launch.focus()}
