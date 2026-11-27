@@ -1,0 +1,84 @@
+--- a/commons/lib/printful.mjs
++++ b/commons/lib/printful.mjs
+@@ -206,14 +206,6 @@
+   return { status: 'completed', image: img.id, url: `/images/${img.id}`, base_price: t.base };
+ }
+ 
+-/** The finished mockup a listing is about to use: the maker's own, completed, not yet used. */
+-export function takeTask(member, key) {
+-  const t = tasks.get(String(key || '')); if (!t || t.member !== member?.id) fail(404, 'No such mockup. Make the mockup first.');
+-  if (!t.image) fail(409, "The mockup isn't ready yet.");
+-  return t;
+-}
+-export const forgetTask = (key) => tasks.delete(String(key || ''));
+-
+ // ------------------------------------------------------------------ mockups for a merch set (merchsets.mjs)
+ // Geoffrey, 2026-11-23: one artwork, many products ("make the one image that's sitting there able to be applied to
+ // anything"). merchsets.mjs owns which products an artwork is on; these two calls are its only way to Printful. They use
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -1892,7 +1892,7 @@
+ // image library, because Printful's links expire. There is no publishing route here any more (round 72): a listing
+ // made from a mockup was only ever created by tests — round 71 measured that nothing under commons/public reaches
+ // any /api/merch/* endpoint — and /api/market/listings is how a listing is made. Orders reach Printful only once
+-// payments open. `printful.takeTask`/`forgetTask` are now unused and left in place for a later job.
++// payments open. `printful.takeTask`/`forgetTask` were removed in round 74: no code called them.
+ app.get('/api/merch/products', wrap(async () => (printful.configured() ? { connected: true, products: await printful.products() } : { connected: false, products: [] })));
+ app.post('/api/merch/mockups', wrap(async (req, res) => { const me = marketWriter(req); core.socialActsAllowed(me); res.status(202); return printful.startMockup(me, req.body || {}, { publicUrl: core.CFG.publicUrl || core.CFG.canonicalUrl }); }));
+ app.get('/api/merch/mockups/:key', wrap(async (req) => printful.mockupResult(marketWriter(req), req.params.key)));
+--- a/commons/test/market-no-dead-merch.mjs
++++ b/commons/test/market-no-dead-merch.mjs
+@@ -19,6 +19,9 @@
+ // that should not be in a file, so reading the file is the honest measurement. It reads the files from the checkout the
+ // test itself lives in, so it works in any copy.
+ //
++// Round 74: the "must not appear" checks read code, not comments (codeLines below). A comment naming a retired route
++// is a note, not a caller; matching raw source made this test red on its own documentation.
++//
+ // What it does NOT prove: that the maker panel is the only picker in the browser. That is Kimi's booted panel test
+ // (`merch-panel-cold-read.mjs`) and Aletheia-6's design, not this file.
+ import test from 'node:test';
+@@ -31,6 +34,16 @@
+ const root = resolve(here, '..', '..'); // .../commons/test -> repo root
+ const read = (rel) => readFileSync(join(root, rel), 'utf8');
+ const marketJs = () => read('commons/public/market.js');
++
++// Round 74: comments are not callers. Matching raw source made this file go red on a comment that merely NAMED the
++// retired route (mutant M5), which is a false positive that costs a deploy. Read code only: strip /* ... */ blocks and
++// whole-line `//` comments, keep every line that is code. Trailing `//` is left alone on purpose - stripping it
++// naively would cut the `//` inside a URL string.
++const codeLines = (src) => src
++  .replace(/\/\*[\s\S]*?\*\//g, '')
++  .split('\n')
++  .filter((line) => !/^\s*(\/\/|\*)/.test(line))
++  .join('\n');
+ 
+ // Every file under commons/lib, recursively: the pages that would have to render a `#mk-merch` box for the deleted
+ // script to do anything at all.
+@@ -48,7 +61,7 @@
+ };
+ 
+ test('market.js no longer drives the dead print-on-demand box', () => {
+-  const src = marketJs();
++  const src = codeLines(marketJs());
+   // The box, the element ids it wired, and the product-list call it made. Any one of these alone means the block is
+   // back and is again talking to nothing.
+   assert.ok(!src.includes('mk-merch'), 'commons/public/market.js still mentions mk-merch (the box no page renders)');
+@@ -60,14 +73,14 @@
+   const lib = libFiles();
+   // Guard against a silent sweep: if the walk found nothing, the test would pass for the wrong reason.
+   assert.ok(lib.length > 20, `expected to read many files under commons/lib, read ${lib.length}: ${lib.slice(0, 5).join(', ')}`);
+-  const hits = lib.filter((rel) => read(rel).includes('mk-merch'));
++  const hits = lib.filter((rel) => codeLines(read(rel)).includes('mk-merch'));
+   assert.deepEqual(hits, [], `these page files render mk-merch; if the box comes back, the panel logic must come back with it, not market.js: ${hits.join(', ')}`);
+-  const page = read('commons/lib/marketpage.mjs');
++  const page = codeLines(read('commons/lib/marketpage.mjs'));
+   assert.ok(!page.includes('mk-merch'), 'commons/lib/marketpage.mjs references mk-merch');
+ });
+ 
+ test('the rest of market.js is still there (the deletion took the block, not the file)', () => {
+-  const src = marketJs();
++  const src = codeLines(marketJs());
+   // Live work in this file, in the order a seller meets it: the listing form posts here, a section tile's Buy goes to
+   // the listing, checkout opens in place, and "Send it again" on /label/sales actually sends it.
+   for (const needed of ['/api/market/listings', 'data-buy', 'mk-checkout', "closest('[data-printer-send]')"]) {
