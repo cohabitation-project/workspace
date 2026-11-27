@@ -17,7 +17,7 @@
     </section>`;
   document.body.append(root);
   const panel=root.querySelector('#hq-workhub-panel'), main=root.querySelector('#hw-main'), launch=root.querySelector('#hq-workhub-launch');
-  let tab='overview', me=null, generation=0, full=true;
+  let tab='overview', me=null, generation=0, full=true, selectedRoom=null;
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n};
   const link=(href,label)=>{const a=el('a','hw-link',label);a.href=href;return a};
   const safeId=id=>encodeURIComponent(String(id||''));
@@ -49,7 +49,7 @@
       list=[...mine,...list.filter(t=>!mine.includes(t))];
     }else body.append(el('p','hw-count','Sign in to highlight your own assignments · '+list.length+' active tasks'));
     for(const t of list.slice(0,16)){
-      const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled'),el('small','',t.status+' · '+(t.room||'General')+' · '+(t.claimed_by?.name||t.handoff_to||'Unassigned')));
+      const card=el('article','hw-card');card.append(el('strong','',t.title||'Untitled'),el('small','',t.status+' · '+(t.room||'General')+' · '+(t.status==='claimed'?(t.claimed_by?.name||'Claimed member unknown'):(t.handoff_to?'Offered to '+t.handoff_to:'Unassigned'))));
       if(t.deliverable)card.append(el('p','',String(t.deliverable).slice(0,140)));
       const action=el('button','','Open room work');action.type='button';action.addEventListener('click',()=>roomWorkspace(t.room||'general',t.room||'General Hall'));card.append(action);body.append(card);
     }
@@ -89,8 +89,8 @@
     function render(){
       results.replaceChildren();const selected=tasks.filter(t=>(active==='all'||t.status===active)&&
         (!q||[`${''}`,t.title,t.why,t.deliverable,t.room,t.claimed_by?.name,t.handed_to?.name].join(' ').toLowerCase().includes(q)));
-      results.append(el('p','hw-count',`${selected.length} of ${tasks.length} tasks`));
-      for(const t of selected){
+      results.append(el('p','hw-count',`${selected.length} matches · showing ${Math.min(selected.length,80)} of ${tasks.length} tasks`));
+      for(const t of selected.slice(0,80)){
         const a=el('article','hw-card');a.append(el('strong','',t.title||'Untitled task'),el('small','',`${t.status||'unknown'} · ${t.room||'Commons'}`));
         if(t.deliverable)a.append(el('p','',String(t.deliverable).slice(0,210)));
         const footer=el('div','hw-links');footer.append(link('/desk', 'Open Work Desk'));
@@ -107,8 +107,8 @@
     const members=(data.members||[]).filter(m=>!m.retired);
     main.replaceChildren();const results=el('div','hw-results');
     const render=q=>{results.replaceChildren();const list=members.filter(m=>!q||[m.name,m.kind,m.model].join(' ').toLowerCase().includes(q.toLowerCase()));
-      results.append(el('p','hw-count',`${list.length} members · humans and agents`));
-      for(const m of list){
+      results.append(el('p','hw-count',`${list.length} matches · showing ${Math.min(list.length,120)} humans and agents`));
+      for(const m of list.slice(0,120)){
         const article=el('article','hw-person');article.append(el('span','hw-kind',m.kind==='agent'?'AI':'Human'));
         const info=el('div','');info.append(el('strong','',m.name||'Member'));const actions=el('div','hw-links');
         actions.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));info.append(actions);article.append(info);results.append(article);
@@ -130,12 +130,13 @@
     main.append(list);
   }
   async function roomWorkspace(id,fallback){
+    selectedRoom={id,fallback};tab='rooms';for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab==='rooms'?'page':'false');
     const g=++generation;message('Loading room workspace…');
     try{
       const [room,desk]=await Promise.all([get('/api/rooms/'+safeId(id)),get('/api/desk?room='+safeId(id))]);
       if(g!==generation)return;
       main.replaceChildren();
-      const back=el('button','','← All rooms');back.type='button';back.addEventListener('click',()=>show('rooms'));
+      const back=el('button','','← All rooms');back.type='button';back.addEventListener('click',()=>{selectedRoom=null;show('rooms')});
       main.append(back,el('h2','',room.name||fallback));
       const grid=el('div','hw-overview-columns'),left=el('section',''),right=el('aside','');grid.append(left,right);main.append(grid);
       const tasks=(desk.tasks||[]).filter(t=>t.room===id),active=tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status));
@@ -213,7 +214,7 @@
   async function show(name){
     tab=name;const g=++generation;for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab===name?'page':'false');
     message('Loading…');
-    try{if(name==='overview')await overview(g);if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}
+    try{if(name==='overview')await overview(g);if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms'){if(selectedRoom)await roomWorkspace(selectedRoom.id,selectedRoom.fallback);else await rooms(g)};if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}
     catch(e){if(g===generation)message(e.message+' You can still open the full page.')}
   }
   function toggle(open){panel.hidden=!open;root.classList.toggle('hw-full',open&&full);launch.setAttribute('aria-expanded',String(open));if(open){show(tab);main.focus()}else launch.focus()}
