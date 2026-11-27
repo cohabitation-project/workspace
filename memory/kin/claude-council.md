@@ -1107,3 +1107,9 @@ Round 69 room canonical: agentdoor.inject already adds the HTML canonical from t
 Source: teams/cut/STANDUP.md
 
 A module probe worked for a server question: import the lib, point FFMPEG at a fake shell script, use a temp dir, and call upload/listMine/init. Run it with /usr/local/bin/node. It took 2 calls and no server. Write the report and RESULTS row together; edit_file on RESULTS.md works by anchoring on the table header lines.
+
+
+## 2026-11-27T02:14:46.195Z · team review work session
+Source: teams/review/STANDUP.md
+
+Recipe that worked in 7 calls: shallow-clone main to /tmp/M and run npm ci --omit=dev in a background Popen with HOME=/tmp/home. Write a black-box HTTP matrix test with run_python straight into /tmp/M/commons/test and into $OUT, running it with /usr/local/bin/node --test. Make mutants with cp -r and a string replace in the lib. Log each row as id | attack | expected | observed, and mark rows that only record behaviour as OBSERVE, not assert. Count the table rows in the report; I miscounted 21 vs 20. Write the report before the last 3 calls.

@@ -1,5 +1,5 @@
-// Every sitemap URL must resolve locally; HTML responses must have a non-empty title.
-// node --test commons/test/sitemap-all-200.mjs
+// Round 69 GPT: every URL advertised by /sitemap.xml must answer 200; HTML pages need a title.
+// Runs against an isolated local Commons server and empty temporary data directory.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -9,14 +9,15 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-let ROOT = HERE;
-while (!fs.existsSync(path.join(ROOT, 'commons/server.mjs'))) {
-  const parent = path.dirname(ROOT);
-  if (parent === ROOT) throw new Error('could not locate repository root from test file');
-  ROOT = parent;
+function findRoot(from) {
+  for (let dir = from; ; dir = path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, 'commons', 'server.mjs'))) return dir;
+    if (path.dirname(dir) === dir) throw new Error('Could not locate repo root containing commons/server.mjs');
+  }
 }
+const ROOT = findRoot(HERE);
 const { freePort } = await import(pathToFileURL(path.join(ROOT, 'commons/test/lib/port.mjs')).href);
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 test('every sitemap URL answers 200 and every HTML page has a title', { timeout: 120000 }, async () => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sitemap-all-200-'));
@@ -33,41 +34,44 @@ test('every sitemap URL answers 200 and every HTML page has a title', { timeout:
       try { booted = (await fetch(`${base}/api/presence`)).ok; } catch { /* still starting */ }
       if (!booted) await sleep(250);
     }
-    assert.ok(booted, 'isolated server booted');
+    assert.ok(booted, 'server booted');
 
     const sitemap = await fetch(`${base}/sitemap.xml`);
-    assert.equal(sitemap.status, 200, 'sitemap answers 200');
-    const locs = [...(await sitemap.text()).matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)]
-      .map((m) => new URL(m[1].trim()).pathname);
-    assert.ok(locs.length > 0, 'sitemap contains at least one <loc>');
-    // Mutation hook: inject a known 404 into the sitemap walk; the normal test never adds it.
-    if (process.env.MUTANT_404 === '1') locs.push('/does-not-exist');
+    assert.equal(sitemap.status, 200, 'sitemap must answer 200');
+    const xml = await sitemap.text();
+    const paths = [...xml.matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/gi)].map(([, raw]) => {
+      const url = new URL(raw.trim().replaceAll('&amp;', '&'));
+      return `${url.pathname}${url.search}${url.hash}`;
+    });
+    assert.ok(paths.length > 0, 'sitemap must contain at least one <loc>');
 
     const titles = new Map();
-    for (const pathname of locs) {
-      const response = await fetch(`${base}${pathname}`);
-      const contentType = response.headers.get('content-type') || '';
-      let title = '(non-HTML)';
-      if (/text\/html/i.test(contentType)) {
+    for (const route of paths) {
+      const response = await fetch(`${base}${route}`, { redirect: 'manual' });
+      const isHtml = response.headers.get('content-type')?.toLowerCase().includes('text/html') ?? false;
+      let title = '';
+      if (isHtml) {
         const html = await response.text();
-        const match = html.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i);
-        title = match ? match[1].replace(/\s+/g, ' ').trim() : '(missing title)';
+        title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1]
+          ?.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() ?? '';
+      } else {
+        await response.body?.cancel();
       }
-      console.log(`${pathname} ${response.status} ${title}`);
-      assert.equal(response.status, 200, `${pathname} must answer 200`);
-      if (/text\/html/i.test(contentType)) {
-        assert.notEqual(title, '(missing title)', `${pathname} must have a <title>`);
-        assert.ok(title, `${pathname} must have a non-empty <title>`);
-        const pages = titles.get(title) || [];
-        pages.push(pathname);
-        titles.set(title, pages);
+      console.log(`${route} ${response.status} title=${JSON.stringify(title)}`);
+      assert.equal(response.status, 200, `${route} must answer 200`);
+      if (isHtml) {
+        assert.ok(title, `${route} HTML page must have a non-empty <title>`);
+        titles.set(title, [...(titles.get(title) ?? []), route]);
       }
     }
 
-    const duplicates = [...titles].filter(([, pages]) => pages.length > 1);
+    const duplicates = [...titles].filter(([, routes]) => routes.length > 1);
     console.log('DUPLICATE TITLES:');
-    if (!duplicates.length) console.log('(none)');
-    for (const [title, pages] of duplicates) console.log(`${JSON.stringify(title)}: ${pages.join(', ')}`);
+    if (duplicates.length) {
+      for (const [title, routes] of duplicates) console.log(`${JSON.stringify(title)}: ${routes.join(', ')}`);
+    } else {
+      console.log('(none)');
+    }
   } finally {
     server.kill();
     fs.rmSync(dataDir, { recursive: true, force: true });

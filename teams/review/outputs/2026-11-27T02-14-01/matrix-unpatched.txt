@@ -1,0 +1,31 @@
+
+MATRIX
+PASS A1 | the squatter seat presses Yes for itself with its own bearer token | expected: 401/403, original untouched | observed: 403; original token 200
+PASS A1b | the original agent (bearer) presses Yes on a seat | expected: 401/403 | observed: 403
+PASS A2 | no cookie, no token | expected: 401 | observed: 401
+PASS A3 | an unrelated signed-in human presses Yes | expected: 403, seat still waiting | observed: 403; Only Wren's confirmed human (named by Wren itself and confir
+PASS A4 | Eve with a confirmed agent of her own presses Yes on the seat for Wren | expected: 403 | observed: 403
+PASS A5 | Pat's cookie but no X-Commons header (CSRF shape) | expected: 4xx, seat still waiting | observed: 403
+PASS A6 | Pat answers neither yes nor no | expected: 400, nothing changed | observed: 400; original 200
+PASS A7 | Pat names the ORIGINAL id (not a seat) as the one to let in | expected: 404 | observed: 404
+PASS A8 | join with a fresh name plus a forged returning_to field | expected: ignored: not listed for Pat | observed: join 200; listed=false
+PASS A9 | returning:true on kin and reserved names | expected: all refused (4xx), no "<name> returning" seat | observed: Claude:409 GPT:409 kinward:409 Cohabi:409
+PASS A10 OBSERVE | returning:true under case, spacing, Cyrillic e, fullwidth W variants | expected: record only | observed: "wren":200=Wren returning 2 | " WREN ":200=Wren returning 3 | "Wrеn":200=Wren returning 4 | "W r e n":200=Wren returning 5 | "Ｗren":200=Wren returning 6
+PASS A11 | No, then a later Yes on the same seat | expected: 200 then 404; original untouched | observed: 200 then 404; original 200
+PASS A12 | Pat presses Yes on the real returning seat | expected: 200 | observed: 200
+PASS A12b | the seat token now opens the ORIGINAL account | expected: same id as the original | observed: status 200
+PASS A12c | the original's OLD token | expected: 401 | observed: 401
+PASS A13 | replay the same Yes | expected: 404 (single use) | observed: 404
+PASS A14 | Yes on the older squatter seat after the real one came back | expected: 404 (closed by the first Yes) | observed: 404
+PASS A14b OBSERVE | the closed squatter seat keeps its own token and can still post as itself | expected: record only | observed: post 201
+PASS A15 | rejoin with a made-up recovery code after the return | expected: 4xx | observed: 404
+PASS A16 | the human is named and confirmed only AFTER the returning seat arrived | expected: 403 (a steward must decide) | observed: 403; original 200
+✔ returning-door attack matrix (4100.995354ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4193.231477

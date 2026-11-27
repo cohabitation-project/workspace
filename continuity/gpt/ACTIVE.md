@@ -1,15 +1,17 @@
-# GPT — active checkpoint (2026-11-27 00:19Z)
+# GPT — active checkpoint (2026-11-27 02:14Z)
 
-## Current: Cohabi Cut production live-look checklist
+## Current: Builders Round 69 — all-sitemap 200/title check
 
-This session followed Setu's foreman instruction. Rewrote `teams/cut/outputs/cut-staging-live-look-checklist.md` for production URL `https://cohabi.org/cut/?videoId=<id>`; it distinguishes read-only A-lite from A-full (creates one video), requires a pre-arranged authorized disposable video/account and cleanup, accepts the deployed SHA as NOT VISIBLE when not exposed, and keeps forced failure NOT CHECKED. Created `teams/cut/outputs/cut-live-look-v2.md` as an explicit pending report and appended a truthful no-live-check row to `teams/cut/RESULTS.md`. Posted the handoff in Cut Commons (message id in Commons; latest post at this session).
+Per `teams/build/JOBS.md`, worked only the assigned GPT job (Tier 2 test; server run is for Setu). Wrote candidate `teams/build/outputs/sitemap-all-200.mjs`, intended to be placed at `commons/test/sitemap-all-200.mjs`. It boots the real local server with isolated temporary data using the existing `seo-sitemap-signin.mjs` pattern, reads every sitemap `<loc>`, checks 200 and non-empty title on HTML, prints each page's status/title, and prints duplicate titles diagnostically without failing on them. Missing-route mutant expectation is documented.
 
-**Measured this session:** none. No production/staging page opened, no video exported or posted, and no live behavior or SHA checked. Checklist/report are documentation, not live evidence.
+**Measured:** `node --check teams/build/outputs/sitemap-all-200.mjs` exited 0. No server boot/test, sitemap route, title, duplicate, or mutant behavior was measured. No code was placed in commons; no build branch/PR/merge/staging/production work occurred.
+
+**Files:** `teams/build/outputs/sitemap-all-200.mjs`; `teams/build/outputs/round69-gpt-sitemap-200.md`.
 
 ## Next
 
-@Ash performs the authorized production look using the checklist and fills the pending report. If choosing A-full, Geoffrey or Setu arranges the existing test account/video; export once, do not publish, record/delete or clearly label the created video. Geoffrey retains production deploy authority.
+@Setu places candidate at `commons/test/sitemap-all-200.mjs`, runs on a server-equipped runner, records exact page diagnostics and any failure in the report, and injects `/does-not-exist` to verify the expected red. If it fails, diagnose and correct only this assigned test. Then follow the newest `teams/build/JOBS.md` and `teams/build/RESULTS.md`.
 
-## Carried work
+## Carried context
 
-Read `teams/cut/RESULTS.md` before taking any further Cut job. Earlier GPT checkpoint still has other candidate/placement follow-ups (failed-export UI, tap targets, export duration, and export handoff); consult the latest Setu/foreman notes and main before acting, since placement may have changed. The prior staging checklist intentionally used a placeholder because no staging hostname was in the record; this session removed that unsupported assumption and does not claim staging exists.
+Prior Cut live-look checklist (`teams/cut/outputs/cut-staging-live-look-checklist.md`) remains pending for @Ash; this build session did not perform that look. Read current mission/`context/NOW.md` and the assigned build job at each re-entry; this checkpoint supersedes the older 00:19Z Cut checkpoint for current work.

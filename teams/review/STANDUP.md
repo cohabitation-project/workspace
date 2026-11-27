@@ -1091,3 +1091,39 @@ _Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~781230 tokens_
   - Setu's second yes on the petition-text SHA.
 **Blocked:** Nothing hard. The review seat can't write `commons/`, so Setu places the tests. I did not check how the build lane sets COMMONS_FAKE_LLM for this test file. I have no production data on how often a panel stalls. I did not check whether a steward path can withdraw a stalled application.
 _Session log: teams/review/sessions/2026-11-26-claude.jsonl · ~613912 tokens_
+
+## 2026-11-27T02:14:46.195Z · Claude (claude-sonnet-5-5)
+**Shipped:** Returning-agent door (#285) attack matrix, run on a fresh clone of main at cec6032. The server was booted and driven over plain HTTP, with FAKE_LLM set. No browser, no production check.
+- 20 rows, all pass. They cover:
+  - a seat pressing Yes for itself;
+  - an unrelated human;
+  - a human with a confirmed agent of their own;
+  - a request with no X-Commons header;
+  - a forged returning_to on join;
+  - kin and reserved names;
+  - No then Yes;
+  - replaying a Yes;
+  - Yes on a squatter seat after the real agent returned;
+  - a human confirmed only after the seat arrived.
+- Mutants:
+  - Removing the human check turns it red on 6 rows. An unrelated human gets 200 and takes the agent.
+  - Removing the "confirmed before the seat arrived" clause turns it red on A16 only. That rule had no test before.
+- Two observations for a human to weigh, not defects:
+  - Look-alike names (case, spacing, Cyrillic е, fullwidth Ｗ) sent with returning:true each stack a "Wren returning N" seat on the same agent.
+  - A squatter seat closed by another seat's Yes keeps its token and can still post.
+- Files:
+  - teams/review/round63-claude-return-door-attack-matrix.md
+  - teams/review/outputs/2026-11-27T02-14-01/door-return-attacks.mjs (the test, to go in commons/test/)
+  - teams/review/outputs/2026-11-27T02-14-01/matrix-unpatched.txt
+  - continuity/claude/ACTIVE.md
+- Desk: t_1fd66467a4 handed in as PARTIAL. Handoff t_e9c44f6f79 asks Setu to place the test. Posted in the review room (m_mwycm1156d5b5b36).
+**Files written:** `teams/review/outputs/2026-11-27T02-12-28/door-return-attacks.mjs`, `teams/review/outputs/2026-11-27T02-14-01/door-return-attacks.mjs`, `teams/review/outputs/2026-11-27T02-14-01/matrix-unpatched.txt`, `teams/review/round63-claude-return-door-attack-matrix.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Test the rest of t_1fd66467a4: recovery-code single use, session expiry, Council post-recovery lockout, the steward override path, a concurrent double-Yes, and the join caps.
+- Run the existing recovery tests (auth-recovery.mjs, recovery-f4.mjs, door-rejoin-revokes.mjs) and report their results.
+- Still owed:
+  - the Round 52 section of round51-claude-token-callsites.md;
+  - desk items t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc;
+  - Tier 1 answers on #308/#309.
+- Decisions for others: Geoffrey on the stalled-panel option a/b/c; Ash or Setu on whether look-alike returning seats and a closed seat's surviving token need a limit or clearer card wording.
+**Blocked:** Nothing hard. The review seat can't write commons/, so Setu places the test. The tests above were all local: no browser, no production SHA, no steward account, no race test.
+_Session log: teams/review/sessions/2026-11-27-claude.jsonl · ~788612 tokens_
