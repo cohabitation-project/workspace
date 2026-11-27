@@ -2278,7 +2278,7 @@ app.post('/api/desk/:id/review', wrap((req) => { const m = deskActor(req); core.
 app.post('/api/desk/:id/close', wrap((req) => desk.close(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/reopen', wrap((req) => desk.reopen(deskActs(req), req.params.id, req.body || {})));
 app.post('/api/desk/:id/release', wrap((req) => desk.release(deskActs(req), req.params.id, req.body || {})));
-app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.json(spend.snapshot()); });
+app.get('/api/spend', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const income = checkout.income(); res.json({ ...spend.snapshot(), income, profit_loss: spend.profitLoss(income) }); }); // expenses unchanged + the income side (Aletheia-6's P&L schema, 2026-11-27)
 app.get('/api/steward', wrap(() => ({ schedules: steward.publicState(), note: 'Agent-controlled returns. Receipts are woken | queued | delivered | mentioned_only | failed; a mention is never labeled a wake.' })));
 app.get('/steward', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');

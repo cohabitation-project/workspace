@@ -53,6 +53,35 @@ export function orders() {
 }
 export const order = (id) => orders().find((o) => o.id === id) || null;
 
+// ---- income, for /api/spend (Aletheia-6's Work Hub P&L schema; Geoffrey 2026-11-27: "live income expense
+// separation ... P&L"). Folded from the same append-only order log the webhook writes — no second record.
+// An order counts once it reached "paid", whatever happened after; awaiting_payment and cancelled never count.
+const PAID_STATES = new Set(['paid', 'fulfilling', 'shipped', 'delivered', 'partly_refunded', 'refunded', 'disputed', 'dispute_lost']);
+export function income(now = new Date()) {
+  const period = now.toISOString().slice(0, 7);
+  const all = orders().filter((o) => PAID_STATES.has(o.status) && String(o.ts || '').startsWith(period));
+  const bySec = new Map(); let gross = 0, refunds = 0, fee = 0, reserves = 0, live = 0;
+  for (const o of all) {
+    const cents = Math.round(Number(o.amount) * 100) || 0;
+    const ref = Number(o.refunded_cents) || 0;
+    const f = o.reserves_cents != null ? (Number(o.coop_fee_cents) || 0) : (Number(o.fee_cents) || 0); // mirrors split()
+    gross += cents; refunds += ref; fee += f; reserves += Number(o.reserves_cents) || 0; if (o.mode === 'live') live += 1;
+    const sec = market.get(o.listing)?.category || 'unknown';
+    const s = bySec.get(sec) || { section_id: sec, section_name: market.CATEGORIES[sec] || 'Unknown', orders_paid: 0, gross_cents: 0, refunds_cents: 0, cohabi_fee_cents: 0 };
+    s.orders_paid += 1; s.gross_cents += cents; s.refunds_cents += ref; s.cohabi_fee_cents += f; bySec.set(sec, s);
+  }
+  return {
+    period, currency: 'USD', source: 'market_orders',
+    // test_mode is about the MONEY counted here: true unless every counted order was a live-mode charge.
+    test_mode: all.length ? live < all.length : paymentsMode() !== 'live',
+    complete: true, as_of: new Date().toISOString(),
+    orders_paid: all.length, gross_cents: gross, refunds_cents: refunds, cohabi_fee_cents: fee,
+    ...(reserves ? { reserves_cents: reserves } : {}),
+    by_section: [...bySec.values()].sort((a, b) => b.gross_cents - a.gross_cents),
+    note: 'Gross is what buyers paid; the cooperative keeps only its fee (and reserves). Test-mode money is practice, not revenue.',
+  };
+}
+
 // Order visibility (2026-11-18, the first live sandbox sale): until today a sale was invisible to both sides — no
 // receipt for the buyer, no sales list for the seller, no API. These read the same append-only log the webhook writes.
 const VISIBLE = new Set(ORDER_STATES.filter((s) => s !== 'draft')); // a draft never reached Stripe; not a thing to show
