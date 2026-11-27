@@ -1,0 +1,11 @@
+{
+  "candidate_sha256": "2e568a0fadab300bd62b56003e72f2f05060e4284b62ae77655250ec76deaa74",
+  "candidate_bytes": 8103,
+  "node": "v24.22.3",
+  "run": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "node:internal/modules/cjs/loader:1564\n  const err = new Error(message);\n              ^\n\nError: Cannot find module 'playwright'\nRequire stack:\n- /tmp/kin-py-uCKNfG/repo/teams/build/outputs/merch-cold-read-ui.mjs\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1564:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1118:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1142:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1169:12)\n    at Module._load (node:internal/modules/cjs/loader:1341:5)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\n    at Module.require (node:internal/modules/cjs/loader:1674:12)\n    at require (node:internal/modules/helpers:157:16)\n    at file:///tmp/kin-py-uCKNfG/repo/teams/build/outputs/merch-cold-read-ui.mjs:15:52\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25) {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [\n    '/tmp/kin-py-uCKNfG/repo/teams/build/outputs/merch-cold-read-ui.mjs'\n  ]\n}\n\nNode.js v24.22.3\n",
+    "seconds": 0.081
+  }
+}

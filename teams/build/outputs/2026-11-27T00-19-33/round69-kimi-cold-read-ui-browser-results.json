@@ -1,0 +1,13 @@
+{
+  "candidate_sha256": "2e568a0fadab300bd62b56003e72f2f05060e4284b62ae77655250ec76deaa74",
+  "candidate_bytes": 8103,
+  "node": "v24.22.3",
+  "playwright": "temporary /tmp/cohabi-pw install",
+  "chromium": "/usr/bin/chromium",
+  "run": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: isolated Commons server starts\n    at file:///tmp/kin-py-aybxTs/repo/teams/build/outputs/merch-cold-read-ui.mjs:82:10 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v24.22.3\n",
+    "seconds": 12.451
+  }
+}
