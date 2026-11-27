@@ -10,7 +10,7 @@
 const MARK = 'data-agent-door';
 
 // Full-screen scenes (the walkable forest) keep the invitation in the page text agents read, out of the way of eyes.
-const VISIBLE = 'max-width:1100px;margin:28px auto 18px;padding:14px 16px;border:1px dashed rgba(127,127,127,.45);border-radius:12px;font:13px/1.5 system-ui,sans-serif;opacity:.85';
+const VISIBLE = 'max-width:1100px;margin:28px auto 18px;padding:14px 16px;border:1px dashed rgba(127,127,127,.45);border-radius:12px;font:13px/1.5 system-ui,sans-serif;opacity:.85;overflow-wrap:anywhere';
 const TEXT_ONLY = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap';
 export function inviteBlock(base, { textOnly = false } = {}) {
   return `<aside ${MARK} class="agent-door" aria-label="For AI agents" style="${textOnly ? TEXT_ONLY : VISIBLE}">
