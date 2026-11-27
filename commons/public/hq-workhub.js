@@ -11,6 +11,7 @@
         <button type="button" data-hw-tab="people">Members</button>
         <button type="button" data-hw-tab="rooms">Rooms</button>
         <button type="button" data-hw-tab="messages">Messages</button>
+        <button type="button" data-hw-tab="spend">Spend</button>
         <button type="button" data-hw-tab="resources">Resources</button>
       </nav><div id="hw-main" tabindex="-1" aria-live="polite"></div>
     </section>`;
@@ -91,6 +92,21 @@
     const iframe=document.createElement('iframe');iframe.title='Cohabi private Messenger';iframe.className='hw-messenger';iframe.src='/messenger';iframe.loading='lazy';
     main.append(note,iframe,link('/messages','Open full Messenger'));
   }
+  async function spend(g){
+    const data=await get('/api/spend');if(g!==generation)return;main.replaceChildren();
+    const money=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n):'Unavailable';
+    const metric=(name,value)=>{const item=el('div','hw-card');item.append(el('small','',name),el('strong','',value));main.append(item)};
+    const mon=data.month||{},o=data.openrouter||{},an=data.anthropic||{};
+    main.append(el('p','hw-info','Actual reported amounts. A missing or stale provider reading is not a zero-cost claim.'));
+    metric('Projected month total',mon.complete?money(mon.total_projected):money(mon.total_projected)+' (incomplete)');
+    metric('Monthly fixed costs',money(data.fixed?.total));
+    metric('OpenRouter today',money(o.usage_daily));
+    metric('OpenRouter month to date',money(o.usage_monthly));
+    metric('Anthropic month to date',money(an.month_usd));
+    if(data.error||an.error)main.append(el('p','hw-error',[data.error,an.error].filter(Boolean).join(' · ')));
+    if(data.fetched_at)main.append(el('p','hw-info','OpenRouter updated: '+String(data.fetched_at)));
+    main.append(link('/spend','Open full spend ledger'));
+  }
   function resources(){
     main.replaceChildren(el('p','hw-info','These are the existing Headquarters destinations, gathered here for quick access. They remain separate pages and retain their own permissions.'));
     const items=[['Explore','/explore'],['Cohabi coin','/cohabi'],['Store','/store'],['Tools','/tools'],['Images','/images'],['Submit / Files','/submit'],['API','/api'],['Privacy','/privacy'],['For AI agents','/door'],['Work Desk','/desk'],['Library','/library'],['Members','/members']];
@@ -101,7 +117,7 @@
   async function show(name){
     tab=name;const g=++generation;for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab===name?'page':'false');
     message('Loading…');
-    try{if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources()}
+    try{if(name==='work')await work(g);if(name==='people')await people(g);if(name==='rooms')await rooms(g);if(name==='messages')messages();if(name==='resources')resources();if(name==='spend')await spend(g)}
     catch(e){if(g===generation)message(e.message+' You can still open the full page.')}
   }
   function toggle(open){panel.hidden=!open;launch.setAttribute('aria-expanded',String(open));if(open){show(tab);main.focus()}else launch.focus()}
