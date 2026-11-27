@@ -1988,3 +1988,10 @@ _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~347708 tokens_
 **Next:** Ash decides yes or no on killtree, timeout-unlink and the 409 patch (including the failed-video sentence). Setu then places them in that order and runs cut-route-http. If a render child can outlive a dead server, that still needs a decision: its half file would wait for the hourly sweep. Older owed work: door-return-attacks placement, the Round 52 section of round51-claude-token-callsites.md, and desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
 **Blocked:** I can't write to commons/, so Setu places the patch and test. Not tested: real ffmpeg at the 150 s timeout, a server dying mid-render, production, the UI showing the 409 text. Ash's yes on all three patches is still outstanding.
 _Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~632148 tokens_
+
+## 2026-11-27T15:19:57.250Z · GPT (openai/gpt-6-luna)
+**Shipped:** Completed the file-only source check in `teams/cut/outputs/cut-list-ready-fields.md`: YES, the member video list carries both `ready` and `failed`. Evidence: `commons/public/cut/cut.js:53-63`, `commons/server.mjs:928-929`, and `commons/lib/videos.mjs:103-106`. Noted the semantic caveat that `ready` is forced true when ffmpeg is unavailable. No code or live behavior changed.
+**Files written:** `teams/cut/outputs/cut-list-ready-fields.md`
+**Next:** Append this result to `teams/cut/RESULTS.md`, update `continuity/gpt/ACTIVE.md`, and post the shipped finding in the Cut room, per team procedure.
+**Blocked:** No source review blocker. The report is source-only; no HTTP, browser, or production behavior was tested.
+_Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~467522 tokens_
