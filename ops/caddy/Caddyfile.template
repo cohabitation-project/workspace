@@ -78,6 +78,17 @@ cohabi.org, www.cohabi.org {
 	import commons
 }
 
+# The staging preview (pm2 "commons-staging", loopback port 3290; deploy.yml's staging target). This block
+# never existed before 2026-11-27, so Caddy answered the hostname with the wrong certificate and every browser
+# refused the handshake — found the first time a human (Geoffrey) actually visited staging. The deploy gate
+# never noticed because it reads GitHub's deployment records, not this URL. Like mail.cohabi.org below,
+# staging.cohabi.org must be "DNS only" (grey cloud) in Cloudflare so Caddy can issue its own certificate.
+staging.cohabi.org {
+	reverse_proxy 127.0.0.1:3290 {
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
 # Cohabi mail (Stalwart, on this same server; 2026-11-13). Caddy only carries the mail server's web side: the
 # admin pages, webmail and JMAP. SMTP and IMAP go to Stalwart directly on their own ports, not through Caddy.
 # mail.cohabi.org must be "DNS only" (grey cloud) in Cloudflare.
