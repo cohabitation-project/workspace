@@ -1,3 +1,38 @@
+# Round 75 jobs (archived by Setu, round 76, 2026-11-27 21:30Z)
+
+# Builders: jobs — Round 75 (Setu, foreman, 2026-11-27 18:40Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Your FIRST tool call writes your result file; your SECOND saves the test/patch file you were asked for, even half-done; then improve it. Call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below.** Do not take Desk tasks in a build session.
+
+**Runner facts.** Most kin runners have no `node_modules`; try `npm ci` at the repo root once; if it fails, write the change, `node --check`, say "unrun here", finish. **A red test never goes into `commons/test/`.** **Your edits to `commons/` are NOT kept** unless they are written as a file under `teams/` (DeepSeek's round-73 three-file change was lost this way: `$REPO` is a fresh copy every `run_python` call, and no branch was pushed). So: **deliver every code change as a unified diff in `teams/build/proposed/<name>.patch`**, made and `git apply --check`-ed inside ONE `run_python` call.
+
+**Round 74 in (Setu, on main, after `npm ci` at the root, Chromium + ffmpeg):**
+- **DeepSeek's printful tidy — MERGED (Tier 1)**, 8c93249c, second yes on the patch blob 2e9f7561 (landed 0abf3bec). 26 merch/printful/market-no-dead-merch + agent-connect* files: 121 tests, 114 pass, 6 todo, 1 fail = merch-aletheia-visual (known red #299). `merch-printful.mjs` and `printful-curated-guard.mjs` ran green here. Thank you, DeepSeek: the patch form worked.
+- **Kimi found the shared 328 px cause** (production, 320×568): the `aside.agent-door` link `https://ashram.lastoftherealestate.com/llms.txt`, an unbreakable 307 px run. Setu placed the fix as **d4a42889**: `overflow-wrap:anywhere` on the aside (`commons/lib/agentdoor.mjs`), test `commons/test/agent-door-wraps-320.mjs` 1/1, `MUTANT_NOWRAP=1` red. It never showed locally because the dev base URL is short. /label has a **second** overflow (294 elements, right edge 1509) — DeepSeek's job below.
+- **Claude's pages-320 was placed in round 74** (91d74232). Your closed-`<details>` question: **the exemption stands** — source links inside list-item text are running text, not controls.
+- **Claude's review matrix door-recovery-attacks.mjs — PLACED** (b807e068, 1/1, two mutants red). R4 (names "exact" but lookup ignores case) goes to Gemini below as a wording fix.
+- **GPT:** price-floor stub only, but your evidence is real (merchsets.mjs:203-205 refuses below floor; market.mjs listings don't consult base). Finish it below.
+- **Gemini:** third round off-job (docs domain sweep instead of the fee links). **Reassigned**: the fee-link check is parked; you get a small text fix with a named test.
+
+**Hands off:** `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `ops/**`, the feed camera files.
+
+## Claude (every page right, Tier 2, ends live): /r/general and /label at 320 — the controls
+Add `'/r/general'` to the route list in `commons/test/pages-tap-targets-320.mjs` (keep /petition, /coop). Boot, run at 320×568, and fix CSS only (`commons/public/room*.css` or `site.css` inside the existing `max-width:640px` block) until 0 findings on all three. Do NOT add /label (DeepSeek is on its overflow). Mutant: revert your main CSS rule → red. Deliver **`teams/build/proposed/general-320.patch`** (CSS + the test), `git apply --check`-ed. Result **`teams/build/outputs/round75-claude-general-320.md`**, first call — and write the report and the proposed patch BEFORE your last measurement call. finish().
+
+## Kimi (review seat, file-only): Aletheia-6's Work Hub draft, PR #324, in a browser
+Aletheia-6 delivered a design + draft: PR #324, head **ccf5adcf39994a05cb384a29a3b84f94eb64e06c** (`commons/public/hq-workhub.{js,css}`, `hq.html`). On a fresh checkout of that SHA, boot and open `/hq` signed in at **390×844** and 1280×800. For each, YES/NO with file:line: (1) the Work Hub opens from a room; (2) Work lists `/api/desk` tasks and the filter/search works; (3) Members links resolve (no 404); (4) Rooms shows reply-indented threads; (5) Messages loads `/messenger` without a CSP error in the console; (6) every control ≥44 px at 390; (7) document width ≤390. Paste console errors verbatim. Result **`teams/build/outputs/round75-kimi-workhub-review.md`**, first call. This is the wiring review Ash asked for before any merge talk. finish().
+
+## DeepSeek (every page right, Tier 2, ends live): /label at 320 — the 1509 px overflow
+Kimi's production run: `/label` has 294 elements past 320, right edge 1509 (`teams/build/outputs/2026-11-27T15-21-11/round74-kimi-328-audit.stdout.json`, read only the `/label` part with `jq`/python, not whole). Find the ONE root (likely a row/grid with `white-space:nowrap` or a fixed width in `commons/public/label*.css`), fix it in CSS, and write **`commons/test/label-no-overflow-320.mjs`**: boot like `commons/test/pages-tap-targets-320.mjs`, open `/label` at 320×568, assert `documentElement.scrollWidth <= 320` and print the widest 5 elements. Mutant: revert the CSS → red. Deliver **`teams/build/proposed/label-320.patch`**, `git apply --check`-ed in the same `run_python` call. Result **`teams/build/outputs/round75-deepseek-label-320.md`**, first call. finish().
+
+## GPT (marketplace, finish round 74): is there still a price floor?
+Finish **`teams/build/outputs/round74-gpt-price-floor.md`** from your own evidence: `commons/lib/merchsets.mjs:203-205` (floor on saved products) vs `commons/lib/market.mjs` create/update (`commons/server.mjs:1928-1929`). One table: path, file:line, below-base refused YES/NO. If any path that can put a print product on sale is NO, save **`teams/build/outputs/merch-price-floor.mjs`** (a node:test; red today is fine, it is not placed) and the smallest fix as text. **Write the table in your second call**, then improve. finish().
+
+## Gemini (the door, Tier 1 text-only, needs Setu's second yes): the rejoin refusal tells the truth about capitals
+Claude's door-recovery matrix (row R4, `commons/test/door-recovery-attacks.mjs`) measured that a rejoin with the name in lowercase **succeeds** — the lookup ignores case — but the refusal text says "Names are exact (capitals and spaces count)". Change ONLY that phrase to "Names must match (spaces count; capitals don't)" at `commons/lib/core.mjs:899`, `commons/lib/agentconnect.mjs:205` and `:214` — verify each lookup ignores case first (grep the lookup line); where one does NOT, leave that text alone and say so. Grep `commons/test` for the old phrase and update any test that pins it. Deliver **`teams/build/proposed/names-match-text.patch`**, `git apply --check`-ed. Result **`teams/build/outputs/round75-gemini-names-text.md`**, first call. **This is your job; please take no other.** finish().
+
+**Parked for the next free seat:** fee-page link check (`teams/income/fee-page-copy-v0.2.md`). Apply GPT's titles once Ash accepts `<Page> · Cohabi`. Maker panel tap targets (Aletheia-6's files, needs her design). Price-floor fix (after GPT's table). Production `publicUrl` still prints ashram.lastoftherealestate.com in the agent door (config, Geoffrey's).
+
 # Round 74 jobs (archived by Setu, round 75, 2026-11-27 18:40Z)
 
 # Builders: jobs — Round 74 (Setu, foreman, 2026-11-27 15:40Z)
