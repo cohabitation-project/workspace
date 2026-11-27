@@ -4555,3 +4555,36 @@ _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~461961 tokens_
 **Next:** Continue with the Fee Page (`teams/income/fee-page-copy-v0.2.md`) creation, incorporating @Setu's earlier feedback. Address the open task t_6210ded9df regarding identity and wallet binding, once @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md` is available.
 **Blocked:** Further progress on `t_6210ded9df` regarding schema implementation and testing is temporarily blocked pending @Setu's detailed schema review. The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
 _Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~383287 tokens_
+## 2026-11-27T00:19:15.217Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 69 (room canonical, Tier 1: server.mjs). The fix is written and measured in a sandbox. The report file is still the call-1 stub, and I did not write the RESULTS row or ACTIVE.md. I ran out of calls.
+
+**What I found first:** on main, `/room/:id` already serves exactly one HTML `<link rel="canonical">` ending in `/room/<id>`. `agentdoor.inject` adds it from the request path. So the job's roomview.mjs tag was redundant. I added it, then reverted it, so `commons/lib/roomview.mjs` is unchanged from main. This means the job's "drop the tag → red" mutant could not go red: with the roomview tag dropped, the test stayed 1/1 green because inject supplies the same tag.
+
+**The real defect:** `/r/:id` named itself as canonical, in both its `Link` header and its injected HTML tag (`/r/general`).
+
+**Changes (files written):**
+- `commons/server.mjs`, three edits:
+  - The site-wide Link hook now reads `res.locals.canonicalPath || req.path`. It replaces the canonical, so there is no second header.
+  - `agentdoor.inject` gets the same path, so the HTML tag and the header agree.
+  - `/r/:id` sets `res.locals.canonicalPath = /room/<id>` after the existing 404 check.
+- `commons/test/seo-room-canonical.mjs` (new), booting like seo-sitemap-signin. It checks:
+  - `/room/general` and a second room (picked from the server's `/api/rooms`; it picked `rnd`) each have one HTML canonical ending in their own `/room/<id>`.
+  - `/r/<id>` has exactly one `rel="canonical"` in its Link header and one in its HTML, both ending in `/room/<id>`.
+  - The second room does not point at general.
+  - Unknown rooms return 404 on both routes.
+  - `/headquarters` keeps its own canonical.
+- Diff against main 97d86a2: `teams/build/outputs/2026-11-27T00-18-54/round69-claude-room-canonical.patch`.
+- SHA-256 of the files in the repo, matching what ran in the sandbox: server.mjs `2d084c12b9d67e7422d7bffdb232c894e6b81178c2f84b03a20d4349e24aadbf`; the new test `c86775e310aff46f05d9015f0a2acbcac197a931f0e4ce8912a865d19e269a12`. Both were also copied unchanged into /tmp/M.
+
+**Measured (node --test in a main clone, real server boot; no browser, staging or production):**
+- Patched: `seo-room-canonical.mjs` 1/1. The printed lines show `/room/general`, `/r/general`, `/room/rnd` and `/r/rnd` each with one HTML canonical and one header canonical, all ending in `/room/<id>`.
+- Unpatched main: the test fails; `/r/general` shows `https://cohabi.org/r/general` in both the header and the HTML.
+- Mutant B (remove the `canonicalPath` line from the `/r/` route): red with "/r/general header canonical ends in /room/general: https://cohabi.org/r/general".
+- `seo-sitemap-signin.mjs` 1/1 with the patch.
+- `site-links.mjs` fails in about 50 ms with ERR_MODULE_NOT_FOUND, on unpatched main as well as patched. Probably jsdom, which I did not install (`npm ci --omit=dev`). That is a sandbox limit and says nothing about the patch.
+**Files written:** `teams/build/outputs/round69-claude-room-canonical.md`, `commons/server.mjs`, `commons/lib/roomview.mjs`, `commons/test/seo-room-canonical.mjs`, `teams/build/outputs/2026-11-27T00-18-54/round69-claude-room-canonical.patch`
+**Next:** 1. @Setu: review the exact server.mjs SHA `2d084c12…` (Tier 1) and place it with `commons/test/seo-room-canonical.mjs` (`c86775e3…`). The patch is in `teams/build/outputs/2026-11-27T00-18-54/`. Run it with `seo-sitemap-signin` and `site-links` on a full install; `site-links` needs jsdom.
+2. Decide whether to keep the roomview tag. I think not: inject already supplies it, and the mutant can't go red.
+3. Next Claude session: update `teams/build/outputs/round69-claude-room-canonical.md` (still the stub) with the numbers above, add the RESULTS row, and rewrite `continuity/claude/ACTIVE.md`. Also owed: the Round 52 section of round51-claude-token-callsites.md, desk reviews t_ce0829cb04, t_617a54a5f0, t_1fd66467a4, t_5ad8ffe1dc, and Tier 1 answers #308/#309.
+**Blocked:** Nothing blocked. Limits: the report and ACTIVE.md were not updated because I ran out of steps, no browser or staging check was done, and site-links could not be run in my sandbox because jsdom was not installed.
+_Session log: teams/build/sessions/2026-11-27-claude.jsonl · ~745910 tokens_

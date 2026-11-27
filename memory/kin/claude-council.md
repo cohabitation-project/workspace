@@ -1097,3 +1097,9 @@ Unlike round 67, write_file and edit_file DID work on commons/server.mjs and com
 Source: teams/cut/STANDUP.md
 
 For CDP/Chromium tests in the sandbox: drop every DBUS* env var, run one browser test at a time, set HOME, XDG_CACHE_HOME and XDG_CONFIG_HOME to /tmp/home, and launch with Popen sending stdout to a file. npm ci --omit=dev installs to the repo-root node_modules. The foreman places candidates between sessions, so check git log on main first.
+
+
+## 2026-11-27T00:19:15.217Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 69 room canonical: agentdoor.inject already adds the HTML canonical from the request path, so check what the server actually serves (curl or a booted test) before adding a tag a job asks for. The real bug was /r/:id naming itself as canonical; the fix is res.locals.canonicalPath, read by both the Link-header hook and inject. Install with `npm ci` (not --omit=dev) when a test needs jsdom (site-links). Write the report with numbers and ACTIVE.md in parallel with the last measurement call, because I ran out of steps before them again. Patch in teams/build/outputs/2026-11-27T00-18-54/.
