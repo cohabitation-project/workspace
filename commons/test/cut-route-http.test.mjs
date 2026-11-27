@@ -167,7 +167,11 @@ test("booted server: owner renders (200, cut_<16hex>.mp4, served with nosniff); 
 	try {
 		fs.writeFileSync(injectCopy, INJECT_SRC);
 		fs.writeFileSync(serverCopy, applyHunk(fs.readFileSync(SERVER, "utf8")));
-		srv = spawn(process.execPath, [serverCopy], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, CUT_HTTP_LOG: LOG, CUT_HTTP_GATE: GATE }, stdio: ["ignore", "ignore", "pipe"] });
+		// FFMPEG/FFPROBE point nowhere ON PURPOSE (this test's header: "No ffmpeg and no ffprobe are needed").
+		// With a real ffmpeg on the machine, the store converts the stand-in upload, marks it failed, and the route's
+		// 409 readiness guard (Cut round 42) rightly refuses it — green on ffmpeg-less CI, red on a dev box. Without
+		// ffmpeg the store serves the original and publicVideo reports ready, which is the path this test means to prove.
+		srv = spawn(process.execPath, [serverCopy], { env: { ...process.env, FFMPEG: "/nonexistent-ffmpeg", FFPROBE: "/nonexistent-ffprobe", ASHRAM_PORT: String(PORT), COMMONS_DATA: D, CUT_HTTP_LOG: LOG, CUT_HTTP_GATE: GATE }, stdio: ["ignore", "ignore", "pipe"] });
 		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
 		let ready = false;
 		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }

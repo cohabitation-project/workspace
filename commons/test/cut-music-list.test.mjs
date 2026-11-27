@@ -42,7 +42,10 @@ test("GET /api/cut/music: 401 signed out; own uploads only, newest first, no pat
 	};
 	const mp3 = (n) => Buffer.concat([Buffer.from("ID3"), Buffer.alloc(40, n)]).toString("base64");
 	try {
-		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1" }, stdio: ["ignore", "ignore", "pipe"] });
+		// FFMPEG/FFPROBE point nowhere ON PURPOSE: with a real ffmpeg present the store converts this test's stand-in
+		// upload, marks it failed, and the render route's 409 readiness guard (Cut round 42) refuses it before the
+		// music rule this test is about. Without ffmpeg, publicVideo reports ready and the music rule is reached.
+		srv = spawn(process.execPath, [path.join(COMMONS, "server.mjs")], { env: { ...process.env, FFMPEG: "/nonexistent-ffmpeg", FFPROBE: "/nonexistent-ffprobe", ASHRAM_PORT: String(PORT), COMMONS_DATA: D, COMMONS_FAKE_LLM: "1", COMMONS_NO_SPEND_POLL: "1" }, stdio: ["ignore", "ignore", "pipe"] });
 		srv.stderr.on("data", (d) => { stderr = (stderr + d).slice(-4000); });
 		let ready = false;
 		for (let i = 0; i < 80 && !ready; i++) { try { ready = (await fetch(`${B}/skill.md`)).ok; } catch { /* starting */ } if (!ready) await sleep(250); }

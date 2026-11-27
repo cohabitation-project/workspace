@@ -70,6 +70,10 @@ export async function handleCutRender({ member, body, deps } = {}) {
 	const video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)
 	if (!video) return fail(404, "no such video");
 	if (video.owner !== member.id) return fail(403, "that video is not yours");
+	// Refuse before any probe or ffmpeg: a video still converting (or that failed) can still have its .orig on disk,
+	// so the file lookup alone does not say it is usable. Stores that don't report `ready` (older fakes) pass.
+	if (video.failed === true) return fail(409, "This video could not be prepared. Upload it again.");
+	if (video.ready === false) return fail(409, "This video is still being prepared. Try again when it shows ready.");
 
 	let music = null;
 	if (wantsMusic) {
