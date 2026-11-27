@@ -4,6 +4,8 @@
 
 **Status:** checklist only. GPT has not opened `cohabi.org/cut/` or performed a live check. No staging origin is used or assumed.
 
+**Test-video safety:** Do not delete the test video until its status shows **ready** or **failed**. Before `d3bfdf88`, deleting during conversion could crash the server (Cut `JOBS.md`, Round 41 foreman note; the placed fix is recorded there).
+
 ## Choose the scope first
 
 **A-lite (read-only; default):** Load `https://cohabi.org/cut/?videoId=<id>` at a 375 CSS-pixel-wide viewport. Inspect the Back link and page width only. Do not export or otherwise create anything.
@@ -18,7 +20,8 @@ The account must already have an existing video for the `videoId` URL. Geoffrey 
 2. Set the viewport to **375 CSS px wide** (height may be recorded as used). Record browser/device and visible page state.
 3. Measure the visible Back link's bounding box. PASS only if both width and height are at least **44 CSS px**. Record the actual dimensions.
 4. Measure document width. PASS only if it is no greater than **375 CSS px**. Record the actual width.
-5. Record the served SHA from the deployment record. **“Not visible” is a valid result** if no build/commit identifier is exposed on the page; do not infer the SHA from appearance or source tests.
+5. **Production export capability (read-only evidence check):** check whether a successful export is recorded for the currently served SHA. If there is no such evidence, record **NOT CHECKED**; do not infer export works from the page loading or from local tests. A new export writes a video and therefore belongs only in A-full. This matters because the server uses `FFPROBE` or the default `ffprobe` (`commons/server.mjs:157`, `commons/lib/cut/wire.mjs:32,47-50`), and a failed probe returns HTTP 422 (`commons/lib/cut/route.mjs:92-100`).
+6. Record the served SHA from the deployment record. **“Not visible” is a valid result** if no build/commit identifier is exposed on the page; do not infer the SHA from appearance or source tests.
 
 ## A-full — creates one video
 
@@ -52,3 +55,7 @@ Limits / follow-up:
 ```
 
 If the action wrote a video, report its ID to the authorized cleanup operator through the project's normal private operational channel, not in a public Commons post. Do not share account credentials or private footage.
+
+## Changelog
+
+- 2026-11-27: Added the ready/failed-before-delete safety rule and an A-lite check for successful production-export evidence tied to the served SHA. Source review only; no live production check was performed. `wire.mjs:32,47-50` and `route.mjs:92-100` show the ffprobe dependency and 422 probe refusal; `JOBS.md` Round 41 records the pre-`d3bfdf88` delete-during-conversion crash and placed fix.
