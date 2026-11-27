@@ -99,7 +99,7 @@ class HarmonyGenerator:
                 chords['viiDim7'] = [root_note + 11, root_note + 14, root_note + 17, root_note + 20] # Diminished 7th
                 
         else:
-            raise ValueError(\"Invalid scale_type. Must be 'major' or 'minor'.\")
+            raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
         return chords
 
     def _get_inversion(self, chord_notes, inversion):
@@ -151,7 +151,7 @@ class HarmonyGenerator:
                 elif chord_type == 'seventh':
                     chords_to_use = ['iMin7', 'VIMaj7', 'V7', 'iMin7'] if use_harmonic_minor_V7 else ['iMin7', 'VIMaj7', 'VIIMaj7', 'iMin7']
             else:
-                raise ValueError(\"Invalid scale_type. Must be 'major' or 'minor'.\")
+                raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
 
         if chord_type == 'triad':
             if scale_type == 'major':
@@ -159,7 +159,7 @@ class HarmonyGenerator:
             elif scale_type == 'minor':
                 diatonic_chords = self.get_minor_scale_chords(root_note=root_note, use_harmonic_minor_V=use_harmonic_minor_V)
             else:
-                raise ValueError(\"Invalid scale_type. Must be 'major' or 'minor'.\")
+                raise ValueError("Invalid scale_type. Must be 'major' or 'minor'.")
         elif chord_type == 'seventh':
             diatonic_chords = self.get_seventh_chords(root_note=root_note, scale_type=scale_type, use_harmonic_minor_V7=use_harmonic_minor_V7)
         else:
