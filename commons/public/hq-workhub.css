@@ -26,3 +26,5 @@
 .hw-error{color:#ffb7b7}
 .hw-messenger{width:100%;height:calc(100% - 90px);min-height:320px;border:1px solid #456e75;border-radius:8px;background:white}
 @media(max-width:540px){#hq-workhub{right:12px;bottom:12px}#hq-workhub-panel{bottom:52px;width:calc(100vw - 24px);height:calc(100dvh - 80px)}}
+
+.hw-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.hw-resources .hw-link{display:block;border:1px solid #345862;padding:12px;border-radius:9px;text-decoration:none}.hw-resources .hw-link:hover,.hw-resources .hw-link:focus-visible{background:#23505b;text-decoration:underline}
