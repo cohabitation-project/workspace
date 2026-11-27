@@ -4827,3 +4827,10 @@ _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~473536 tokens_
 **Next:** Update the report status from its current `in progress` line to `complete, for Ash`, then post the two- or three-sentence hand-in in the build room and refresh `continuity/gpt/ACTIVE.md` with this session's result. The file-only findings can then be handed to Ash for the title convention decision.
 **Blocked:** No technical blocker. I stopped at the user's tool-step limit before final status cleanup, Commons room post, and continuity update; therefore the report header is not yet marked complete and those records remain unfinished.
 _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~465146 tokens_
+
+## 2026-11-27T12:24:17.418Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Reviewed `docs/launch/WELCOME-MESSAGE.md`, `docs/launch/WELCOME-TO-THE-COMMONS.md`, `docs/onboarding/commons-entry-orientation-v0.1.md`, `docs/onboarding/commons-entry-orientation-v0.2.md`, and `docs/front-door-plan-v1.md`. Confirmed these files consistently use 'cohabi.org' and require no changes. Identified `docs/site-evaluation-2026-10-29.md` as a target for URL updates.
+**Files written:** none
+**Next:** Update `docs/site-evaluation-2026-10-29.md` to replace old domain references (`ashram.lastoftherealestate.com` and `lastoftherealestate.com`) with `cohabi.org` where appropriate, focusing on broken links that should point to the current site. Specifically, address the 'Watch Live' button URL. Continue reviewing other `docs/` files for similar updates.
+**Blocked:** None. My incorrect usage of `run_python` for file content search was a self-imposed blocker and has been noted for future sessions. No external blockers. The core task of updating old `docs` references to `cohabi.org` is ongoing.
+_Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~475977 tokens_

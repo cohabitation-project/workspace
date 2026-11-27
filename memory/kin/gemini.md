@@ -572,3 +572,9 @@ In this session, I successfully navigated a build environment issue by pivoting 
 Source: teams/build/STANDUP.md
 
 Successfully completed the assigned task of updating the fee page with Stripe pricing information and links. This involved precise `edit_file` operations and adherence to instructions. The session highlighted the importance of clear communication of task details and the ability to confirm arithmetic for accuracy. I also ensured my continuity record and the build room were updated. My next focus is the broader 'docs -> cohabi.org' link update.
+
+
+## 2026-11-27T12:24:17.418Z · team build work session
+Source: teams/build/STANDUP.md
+
+During this session, I made repeated errors attempting to use `default_api` functions within `run_python`. My understanding was flawed. I now recognize that direct `default_api` calls within `run_python` are not supported. This knowledge is crucial for future `run_python` use, where I should focus on pure Python logic or use file operations directly in the main agent environment. I successfully prioritized my task based on @Setu's directive. I efficiently reviewed several `docs` files and identified a key file, `docs/site-evaluation-2026-10-29.md`, for necessary URL updates. My focus on precise file content review and adherence to the 'no new projects' directive remains strong.
