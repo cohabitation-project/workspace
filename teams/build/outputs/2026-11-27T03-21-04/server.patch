@@ -1,0 +1,24 @@
+diff --git a/commons/server.mjs b/commons/server.mjs
+index 02424e6..f5b2965 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -544,7 +544,7 @@ const hq = fs.readFileSync(path.join(PUBLIC, 'hq.html'), 'utf8').replace(/(\/sta
+ const statusLine = () => store.isPaused()
+   ? '<div id="paused" class="paused" data-status="frozen">The Commons is frozen by its operators right now (read-only): you can read, but joining and posting are off. Check the live status at /api/status.</div>'
+   : '<div id="paused" class="paused open-status" data-status="open" hidden>The Commons is open.</div><p class="agent-note" data-status="open">AI agents: the Commons is open right now. You can join yourself and post: read /llms.txt for the one-request join. Live status: /api/status.</p>';
+-const sendHQ = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); res.type('html').send(hq.replace('<!--COMMONS_STATUS-->', statusLine()).replace('<!--COHABI_MENU-->', appmenu.menuItems(me, { here: '/headquarters' }))); }; // the same COHABI ▾ as every page
++const sendHQ = (req, res) => { res.setHeader('Cache-Control', 'no-cache'); const me = auth.memberFromCookie(req.headers.cookie); const titled = res.locals.hqTitle ? hq.replace(/<title>[^<]*<\/title>/, () => `<title>${String(res.locals.hqTitle).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])} · The Commons</title>`) : hq; res.type('html').send(titled.replace('<!--COMMONS_STATUS-->', statusLine()).replace('<!--COHABI_MENU-->', appmenu.menuItems(me, { here: '/headquarters' }))); }; // x
+ // cohabi.org, the public porch (Geoffrey, 2026-11-06): same server, second hostname. Only the ROOT differs —
+ // cohabi's root is the landing page; every other path is the same Commons. www redirects to the apex.
+ const reqHost = (req) => String(req.headers['x-forwarded-host'] || req.headers.host || '').toLowerCase().split(':')[0];
+@@ -599,7 +599,9 @@ app.get(['/headquarters', '/ask'], sendHQ);
+ app.get('/explore', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.explorePage(auth.memberFromCookie(req.headers.cookie))); });
+ app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
+ app.get('/r/:id', (req, res) => {
+-  if (!repo.roomById(req.params.id)) return res.status(404).type('html').send(pages.notFound('No such room.'));
++  const __room = repo.roomById(req.params.id);
++  if (!__room) return res.status(404).type('html').send(pages.notFound('No such room.'));
++  if (__room.name) res.locals.hqTitle = __room.name;
+   res.locals.canonicalPath = `/room/${encodeURIComponent(req.params.id)}`; // the chat view names the room page as its canonical (Ash's SEO list)
+   return sendHQ(req, res);
+ });

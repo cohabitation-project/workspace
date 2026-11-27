@@ -1119,3 +1119,7 @@ Recipe that worked in 7 calls: shallow-clone main to /tmp/M and run npm ci --omi
 Source: teams/cut/STANDUP.md
 
 A fake ffmpeg that doesn't hold its output file open hides the crash, because it recreates the .part after the delete. Use `exec 3>"$last"` in the shell fake. Module probe in a child node process per case (crashes show as exit codes), /usr/local/bin/node, FFMPEG/FFPROBE env pointing at the fake. Cut export goes through /api/videos, so videos.mjs bugs hit Cut. 9 calls to answer, patch, test and write the report.
+## 2026-11-27T03:22:50.562Z · team build work session
+Source: teams/build/STANDUP.md
+
+$OUT is a fresh directory on every run_python call. Files written there are only reachable in the next call via teams/build/outputs/<ts>/ in the repo path. Do clone, patch and test in ONE call. Full recipe is in continuity/claude/ACTIVE.md. The job took 7 calls.
