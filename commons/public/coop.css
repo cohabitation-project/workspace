@@ -15,7 +15,7 @@ body.fx-page.coop-page{--gold:#ffc15a;background:#101a2b;color:#f8f3eb;margin:0;
 .coop a:not(.btn){color:#ffd180}.coop a:focus-visible,.coop summary:focus-visible{outline:3px solid #ffbd60;outline-offset:3px}
 .coop .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 18px;border-radius:25px;font-weight:700;font-size:12px;text-decoration:none;color:#fff;border:1px solid #dad9df;background:transparent;white-space:normal}
 .coop .btn:not(.ghost){background:linear-gradient(180deg,#ffe28e,#f2a32a);color:#15141b;border-color:transparent}
-.co-draft{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;background:#191c31ed;border:1px solid #8e798970;border-radius:10px;padding:10px 13px;font-size:11px;max-width:max-content;margin:10px auto 0!important}
+.co-draft a{display:inline-flex;align-items:center;min-height:44px}.co-draft{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;background:#191c31ed;border:1px solid #8e798970;border-radius:10px;padding:10px 13px;font-size:11px;max-width:max-content;margin:10px auto 0!important}
 .co-kicker{color:#ffc15a;text-transform:uppercase;font-weight:bold;letter-spacing:.09em;font-size:13px}
 .co-hero{display:grid;grid-template-columns:1.07fr 1fr;position:relative;min-height:340px;align-items:center;margin:0 -32px;overflow:hidden;padding:25px 32px 25px;isolation:isolate}
 .co-hero-copy{grid-column:1;grid-row:1;position:relative;z-index:1}

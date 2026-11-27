@@ -169,6 +169,9 @@ table.api td:nth-child(2) { white-space: nowrap; }
   /* The header's Sign up / Sign in and the sign-in page's footer links are in auth/auth.css (Setu's measurement on #305, 2026-11-25:
      29-31px tall and 34-42px wide were the six left). */
   .fx-topr .btn.small { min-height: 44px; display: inline-flex; align-items: center; }
+  /* /petition (round 74, measured at 320x568): the read-aloud and speak buttons were 36-42 x 31, the choice labels 43.81 tall. */
+  .vk-read, .vk-mic { min-width: 44px; min-height: 44px; }
+  .petition-sign label:has(> input[type=radio]) { min-height: 44px; align-content: center; }
 }
 
 /* Library */
