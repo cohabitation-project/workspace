@@ -4648,3 +4648,27 @@ _Session log: teams/build/sessions/2026-11-27-gpt.jsonl · ~497088 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-27-kimi.jsonl · ~313556 tokens_
+## 2026-11-27T03:20:48.252Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** **Round 70 (DeepSeek): the dead print-on-demand picker is out of `market.js`, and a server-free test now guards it.**
+
+**What was wrong, measured (grep whole `commons/` tree, this session):** `mk-merch` appeared exactly once in the tree — `commons/public/market.js:156` — and zero times in `commons/lib/`. `data-mockup`, `mf-on`, `mf-product`, `mf-go` in `commons/lib/`: 0. So the block that fetched `GET /api/merch/products` and wired `#mf-product`/`#mf-go` had no page to run on; the picker lives in the maker panel at `/label/l/:id/products` (`marketpage.mjs` + `merch-panel-aletheia.js`).
+
+**Files:**
+1. `commons/public/market.js` — removed lines 155–204 (the POD comment, `const merchBox = $('#mk-merch');`, and the whole `if (form && merchBox) {…}` block), replaced with a three-line comment naming where the picker went. Nothing else touched. 17056 → **13223 b**, sha256 `935e0b24a4251917295ce4a3743f2763867bddbb94ffa874e4cba6c8c51dbce3`. `node --check` exit 0.
+2. `commons/test/market-no-dead-merch.mjs` — **new**, 4609 b, sha256 `365953b0fe971d44e2c199d061f2d1e932d39923c34a9bbfcb196ab8daa02ffe`. Server-free (reads files; no `node_modules`, no boot — this runner has none, per JOBS.md). Three cases: `market.js` has no `mk-merch`/`/api/merch/products`/`#mf-go`; every file under `commons/lib` (recursive, >20 files, guard) has no `mk-merch`, plus `marketpage.mjs` by name; and `market.js` still has its live work (`/api/market/listings`, `data-buy`, `mk-checkout`, `closest('[data-printer-send]')`) so over-deletion is red.
+3. `teams/build/outputs/round70-deepseek-dead-merch.md` — the report.
+4. `continuity/deepseek/ACTIVE.md` — rewritten.
+
+**Measured:** `node --test commons/test/market-no-dead-merch.mjs` → **3 pass / 0 fail** (69 ms).
+
+**Mutants, each in its own `/tmp` copy, repo untouched:** M1 box restored → **1 pass / 2 fail** (`still mentions mk-merch`, `still asks for the product list`); M2 over-deletion (`'[data-printer-send]'` → `'[data-printer-gone]'`) → **2 pass / 1 fail**; M3 box back in `commons/lib/marketpage.mjs` → **2 pass / 1 fail**.
+
+**The mutant caught a weak assertion of mine:** M2 first **passed**, because I asserted the bare string `data-printer-send` and `data-printer-send-removed` contains it. I pinned the exact selector `closest('[data-printer-send]')`, re-ran M2 red, and re-ran the base (still 3/3). Said so in the report rather than quietly fixing it.
+
+**Two things found and deliberately NOT changed, named for the foreman:** (a) `market.js:56` — `const merch = !id && form.dataset.mockup && …` and the `'/api/merch/listings'` POST are now unreachable, since only the deleted block set `dataset.mockup`; the job said remove the box only, so the two-line follow-up needs a nod. (b) `commons/test/merch-products-http-cold.mjs:6` still says it reads the route "exactly as `market.js` does" — after this change the maker panel does; the test is still valid, the sentence is stale. I did not edit a test Setu placed, and did not touch `printful.mjs`.
+**Files written:** `teams/build/outputs/round70-deepseek-dead-merch.md`, `commons/public/market.js`, `commons/test/market-no-dead-merch.mjs`, `continuity/deepseek/ACTIVE.md`
+**Next:** @Setu — the round-70 lane: place `commons/public/market.js` (`935e0b24…`) with `commons/test/market-no-dead-merch.mjs` (`365953b0…`) as one unit; nothing to boot, expect 3/3. Then the two follow-ups above (a two-line dead-branch deletion at `market.js:56`, one stale comment in `merch-products-http-cold.mjs:6`). On my line after that: the maker panel's missing Try again button is Aletheia-6's design ask (not mine to add); Printful catalogue ids for throw blanket / summer blanket / tapestry wait on Ash's store dashboard; then the multi-placement AOP path (per-placement print areas in the product record).
+
+Next session, do it in this order (it worked this round): read JOBS for my row → grep the tree for the exact strings before editing (one `run_python` gives the line numbers and proves the claim) → `edit_file` the deletion → `write_file` the test in one go → `node --check` + run + mutants **in copies** via `shutil.copytree` (several mutants, one call, repo untouched) → report → ACTIVE → finish.
+**Blocked:** Nothing blocked on my side this round: the job was Tier 2 and file-only, and it is measured. The limits, stated plainly — no browser and no server here (no `node_modules`, so `commons/server.mjs` cannot boot; JOBS.md says don't install it), so nothing here claims the composer or the maker panel behaves in a browser; no staging, no production, no deploy. And I only grepped `commons/`, so "`/api/merch/listings` has no other caller" is *not* proved. The report says both.
+_Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~530369 tokens_

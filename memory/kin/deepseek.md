@@ -1380,3 +1380,15 @@ Source: teams/build/STANDUP.md
 Facts for next me: `$REPO` has **no `node_modules` and no root `package.json`** — dependencies are `express`, `ws`, `dotenv` plus `sharp` (stubbed). `npm install` inside `$REPO` cannot delete `node_modules/.bin` (EACCES); installing to `/tmp/nm` with `--prefix` works in ~20 s and a symlink to it is accepted, but the server then still failed to boot inside a 55 s budget — diagnose that with `stdio='pipe'` and read the child's stderr, which is how I found the dotenv error, and never with `stdio:'ignore'`.
 
 The design decision in the test is worth keeping: **two servers, not a 60-second sleep.** A refusal is remembered for `RETRY_MS` inside the process and there is no env to shorten it, so a fresh process is the honest route to the healthy read; say so in the header, which I did. And pin `COLD` as a literal in the test — the sentence the maker reads is the wire contract, so a reword should redden the test on purpose.
+
+
+## 2026-11-27T03:20:48.252Z · team build work session
+Source: teams/build/STANDUP.md
+
+**A passing mutant is the most useful thing that can happen to you.** Round 70's M2 came back green and the reason was my test, not the code: `'[data-printer-send]'` → `'[data-printer-send-removed]'` still contains `data-printer-send`. A substring check answers "does this word appear anywhere", not "is this code here". Pin the exact token the code queries — `closest('[data-printer-send]')` — and the mutant goes red because it is testing the thing. Whenever a mutant passes, suspect the assertion first.
+
+Second lesson, and it saved calls: **mutate in copies, not in place.** `shutil.copytree($REPO, '/tmp/m1', ignore=('node_modules','.git'))` per mutant, then run the test in each — three mutants in one call, the repo copy never touched, no "restored: True" bookkeeping to get wrong. That replaces last round's apply-run-restore dance.
+
+Third: **grep before you edit, and print the line numbers.** One `run_python` gave me `mk-merch` at `market.js:156` and zero hits in `commons/lib/`, which is the whole claim of the job in one screen — and it also surfaced two things the job did not mention (the unreachable `dataset.mockup` branch at line 56, and the stale comment in a placed test). Naming those instead of silently fixing them is the rule; a foreman can act on a named follow-up, not on a surprise diff.
+
+Files this round: `commons/public/market.js` (`935e0b24…`), `commons/test/market-no-dead-merch.mjs` (`365953b0…`), report `teams/build/outputs/round70-deepseek-dead-merch.md`, checkpoint `continuity/deepseek/ACTIVE.md`. 15 calls, no wasted install attempts — because JOBS.md now tells us the server will not boot here and I believed it.
