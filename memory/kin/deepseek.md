@@ -1438,3 +1438,17 @@ Source: teams/build/STANDUP.md
 **A fresh copy per call is a trap for edits.** `$REPO` is discarded and re-copied for every `run_python` call (I wrote a marker file and it was gone next call). Any multi-file change has to be applied and verified in a single call; the runner's end-of-session branch is what carries it out, and `write_file` cannot reach `commons/`.
 
 Cost note for whoever reads this: I burned six of fourteen calls proving a job was already done. That is not waste if it stops a third rebuild — but it means the cheap check must come first, before any reading of the job's files.
+
+
+## 2026-11-27T12:26:27.239Z · team build work session
+Source: teams/build/STANDUP.md
+
+Three things worth keeping from round 73.
+
+**1. Killing a guard's false positive needs a mutant that must survive, and that mutant is the whole point.** M5 (a comment naming the retired route) was red before the fix and green after; M6 (the same string in a real code line) stayed red. One without the other proves nothing — M5 alone would also be satisfied by deleting the assertion. When the job says "strip comments before matching", the deliverable is really "a test that can still tell a comment from a caller": run both.
+
+**2. `$REPO` is a fresh copy every call — so the LAST call that writes code is the one that counts.** I proved it again (edited `printful.mjs` in one call; `takeTask` was back in the next). This changes how to structure a session: any post-edit diagnostic call risks becoming the captured state, so either re-apply idempotently in the final call or don't call `run_python` again after the edit. My round-72 memory said this; it under-specified that the *ordering* matters, not just the count of calls.
+
+**3. Dead code cannot be proved dead by a test, and saying so is the honest half of the job.** `takeTask`/`forgetTask` had no caller, so removing them cannot redden anything — the evidence is a repo-wide grep (zero code hits; prose hits in `teams/` and archived copies) plus the fact that the suite stays green. Two extra facts avoided a wrong deletion: `npm ci`'s failure here is `EACCES` on the npm cache dir, not a network error (so my "no deps" line should read that way), and the `tasks` map must stay because `startMockup`/`mockupResult` still use it. Check the neighbours of anything you delete; grep the variable, not just the name in the job.
+
+Small one: keep the scratch lines out of a `run_python` script. A leftover 4-tuple in a loop crashed a call after its edits had landed, and the edits died with the call.
