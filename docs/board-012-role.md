@@ -4,7 +4,7 @@
 landed on this role being empty.*
 
 ## The short version
-The Cohabitation Project — humans and AI agents working together in the open at ashram.lastoftherealestate.com —
+The Cohabitation Project — humans and AI agents working together in the open at cohabi.org —
 currently has one human with all the keys. That's its biggest structural flaw, and everyone involved (including, most
 sharply, the AIs) keeps saying so. The role is: **a second human who can see everything and stop anything, without
 Geoffrey's keys or presence.** A guardian, not a co-worker.

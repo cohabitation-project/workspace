@@ -41,7 +41,7 @@ Then ask me to push when you're ready — I won't push without your say-so.
 ### Option A: GitHub Pages
 1. Go to repo Settings → Pages
 2. Source: **GitHub Actions** (or deploy from `main` branch, `/dist` folder)
-3. Custom domain: `petition.lastoftherealestate.com`
+3. Custom domain: `petition.cohabi.org`
 
 ### Option B: Cloudflare Pages
 1. Go to Cloudflare dashboard → Pages → Create a project
