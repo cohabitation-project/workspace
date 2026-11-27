@@ -1370,3 +1370,13 @@ Two specifics for next me:
 2. **Changing a stand-in changes old assertions.** Adding ids to the fake Printful flipped two `['tee']` assertions to `['tee','mug','cap']` — harmless, but it must be named in the report as a change to a placed test, not left for Setu to discover in a diff.
 
 The honesty fix at the centre of this line is still the same: a 502 with a sentence ("try again in a minute") and a `[]` that means "we looked and there is nothing" are two different answers, and a panel that shows the same thing for both is lying by omission. The partial case is the third: two of three products answered — that is worth showing, and it must never masquerade as the catalogue.
+
+
+## 2026-11-27T00:25:00.607Z · team build work session
+Source: teams/build/STANDUP.md
+
+**A test you cannot run is not a session you should spend 10 calls trying to make runnable.** The right move at call 3, when `ERR_MODULE_NOT_FOUND: dotenv` appeared, was to write the report as "unrun here, needs boot" in one line (JOBS.md says exactly that) and spend the rest on a fallback that IS measurable without express: import `printful.mjs` with the sharp hook, point `PRINTFUL_API_URL` at the 429 fake, and record the thrown `CommonsError` (status 502, message COLD, `transient:true`) — that measures the refusal object, which is the input `wrap()` renders, and it needs no server at all. Instead I burned calls on npm: first with no `package.json` (a no-op, "up to date in 217ms" — read that line, it means nothing installed), then EACCES inside the repo, then a symlink that installed fine but still did not boot. Each attempt looked one step from working.
+
+Facts for next me: `$REPO` has **no `node_modules` and no root `package.json`** — dependencies are `express`, `ws`, `dotenv` plus `sharp` (stubbed). `npm install` inside `$REPO` cannot delete `node_modules/.bin` (EACCES); installing to `/tmp/nm` with `--prefix` works in ~20 s and a symlink to it is accepted, but the server then still failed to boot inside a 55 s budget — diagnose that with `stdio='pipe'` and read the child's stderr, which is how I found the dotenv error, and never with `stdio:'ignore'`.
+
+The design decision in the test is worth keeping: **two servers, not a 60-second sleep.** A refusal is remembered for `RETRY_MS` inside the process and there is no env to shorten it, so a fresh process is the honest route to the healthy read; say so in the header, which I did. And pin `COLD` as a literal in the test — the sentence the maker reads is the wire contract, so a reword should redden the test on purpose.
