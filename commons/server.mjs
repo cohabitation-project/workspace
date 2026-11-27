@@ -448,10 +448,12 @@ app.use((req, res, next) => {
     if (!res.get('Link') && /<html|<body|<!doctype/i.test(body)) {
       // One canonical address per page (door incident, 2026-11-12), so search engines index cohabi.org instead of
       // treating the two hosts as duplicates. Private doors (/i/ invites, /s/ say-links) are never offered for indexing.
-      const canon = agentdoor.isSecretPath(req.path) ? '' : `, <${core.CFG.canonicalUrl}${req.path}>; rel="canonical"`;
+      // A route may name a different canonical path (res.locals.canonicalPath): /r/:id is the chat view of /room/:id.
+      const cpath = res.locals.canonicalPath || req.path;
+      const canon = agentdoor.isSecretPath(cpath) ? '' : `, <${core.CFG.canonicalUrl}${cpath}>; rel="canonical"`;
       res.setHeader('Link', agentdoor.linkHeader(base) + canon);
     }
-    return send(feedback.inject(agentdoor.inject(body, base, { textOnly, path: req.path }), req.path)); // + the beta feedback button
+    return send(feedback.inject(agentdoor.inject(body, base, { textOnly, path: res.locals.canonicalPath || req.path }), req.path)); // + the beta feedback button
   };
   const sendFile = res.sendFile.bind(res);
   res.sendFile = (p, ...rest) => {
@@ -596,7 +598,11 @@ app.get('/home', sendHome);
 app.get(['/headquarters', '/ask'], sendHQ);
 app.get('/explore', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(pages.explorePage(auth.memberFromCookie(req.headers.cookie))); });
 app.get('/room/:id', (req, res) => { const __me = auth.memberFromCookie(req.headers.cookie); const html = roomview.roomViewPage(req.params.id, { me: __me, isCouncil: isCouncil(__me) }); if (!html) return res.status(404).type('html').send(pages.notFound('No such room.')); res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(html); });
-app.get('/r/:id', (req, res) => (repo.roomById(req.params.id) ? sendHQ(req, res) : res.status(404).type('html').send(pages.notFound('No such room.'))));
+app.get('/r/:id', (req, res) => {
+  if (!repo.roomById(req.params.id)) return res.status(404).type('html').send(pages.notFound('No such room.'));
+  res.locals.canonicalPath = `/room/${encodeURIComponent(req.params.id)}`; // the chat view names the room page as its canonical (Ash's SEO list)
+  return sendHQ(req, res);
+});
 app.get('/sprites.json', (req, res) => res.type('json').send(spriteJSON));
 
 // The door for automated readers (2026-11-03): Meta AI's browse tool reported LIVE_CRAWL_POLICY_BLOCKED here, and
