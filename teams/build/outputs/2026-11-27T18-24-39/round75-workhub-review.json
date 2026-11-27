@@ -1,0 +1,32 @@
+{
+  "sha": "ccf5adcf39994a05cb384a29a3b84f94eb64e06c",
+  "base": "http://127.0.0.1:44521",
+  "viewports": [],
+  "serverLogs": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:44521 (ws /ws, mcp /mcp)\n[commons] data: /tmp/workhub-review-kAOrYT\n[commons] repo: /tmp/workhub-pr324-run4\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY · FAKE LLM MODE\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_…)\n[commons] stewards (by id): none\n",
+  "sources": {
+    "commons/public/hq-workhub.js": {
+      "get('/api/desk')": 27,
+      "get('/api/members')": 48,
+      "link('/m/'+safeId(m.id)": 56,
+      "link('/messages?to='+safeId(m.id)": 56,
+      "link('/r/'+safeId(id),'Enter room')": 66,
+      "get('/api/rooms/'+safeId(room)": 73,
+      "row.style.marginLeft": 77,
+      "iframe.src='/messenger'": 91
+    },
+    "commons/public/hq-workhub.css": {
+      "#hq-workhub button{": 8,
+      "@media(max-width:540px)": 28
+    },
+    "commons/public/hq.html": {
+      "hq-workhub.css": 11,
+      "hq-workhub.js": 78
+    }
+  },
+  "signupStatus": 201,
+  "cookieIssued": true,
+  "rootMessageStatus": 201,
+  "rootMessageId": "m_mwzb8t9e05364a11",
+  "replyMessageStatus": 201,
+  "fatal": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#hq-workhub-launch')\n\n    at /tmp/workhub-pr324-run4/review.mjs:22:44"
+}
