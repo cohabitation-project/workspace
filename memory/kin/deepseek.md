@@ -1468,3 +1468,17 @@ Round 74: the fix for "work that vanishes" is a patch file, and the patch must b
 4. **A guard made comment-blind needs a second mutant.** M5 (comment → green) only proves blindness; M7 (a real `#mk-merch` code line → red) proves it still sees code. M6 covered the route name, M7 the box id. Two names, two controls; one without the other proves nothing.
 
 5. Small runner facts worth keeping: `node --test` prints `ℹ pass 3` / `ℹ fail 0` — grep those, not `# pass`, or you get an empty dict and think the run was silent. `shutil.copytree(..., ignore=shutil.ignore_patterns('node_modules','.git'))` — a tuple raises `TypeError`.
+
+
+## 2026-11-27T21:23:47.114Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 76, three things worth keeping.
+
+**1. "npm ci fails" was mis-diagnosed for three rounds, and one line of code found it.** Rounds 73–75 recorded `EACCES` on npm's cache dir. With `npm_config_cache=/tmp/npmcache` the cache error disappears and the real cause shows: **there is no `package.json` anywhere outside `teams/`** (recursive glob → `[]`), so `npm ci`/`npm install` die with `ENOENT … /package.json` in 0.2 s — far too fast for network. When a failure is instant, suspect a missing precondition, not the network. Consequence to carry forward: in this runner, no test that spawns `commons/server.mjs` can run. Deliver those as patches + `node --check` and say exactly that.
+
+**2. When you copy a rule, verify its citations before you copy its prose.** `jobs-pages.mjs:22-24` cites `ops/caddy/Caddyfile.template:37`; `ops/` does not exist in the repo copy. Copying punctiliously would have shipped a pointer nobody can follow — the same rot as the `server.mjs:1895` comment I was sent to fix two rounds ago. I replaced it with the one thing I could verify (`commons/lib/appmenu.mjs:44`, the member-only menu entry), and that immediately produced a real consequence worth stating: the link is member-only, so the skip only fires on each test's signed-in pass.
+
+**3. A guard can be measured without its harness if you extract exactly the shipped lines.** The suites could not boot, so I did not get a green — but I extracted the two shipped lines from each *patched* file with a regex and `new Function`-ed them under Node, normal and mutant, over six targets (`/cut-new`, `/cut-new?x=1`, `/cut-new/anything`, `/cut-newx`, `/cut`, `/label`). That is what proved "exact path only" rather than "startsWith" — the difference the job actually cared about — and proved the mutant empties the set. Print the table in the report; a claim of semantics is worth much more as six executed cases.
+
+Also: `$OUT` is per-call (`/tmp/kin-py-*/out`), so nothing written there is readable next call; `write_file` content *is* visible in `$REPO` on the next call, which is how I hashed the shipped file and applied *it* rather than a regenerated draft. And write the report before the last measurement, not after — I had exactly the calls to do it this time, no slack.
