@@ -1,0 +1,13 @@
+{
+  "node_check_exit": 0,
+  "node_version": "v24.22.3",
+  "stderr": "",
+  "bytes": 13436,
+  "sha256": "4b0ff9c7428eab50544d14418df9bcbfd70fd1f2035d49dc086d9456f7fccb33",
+  "healthy_no_429_branch": true,
+  "uses_cjs_playwright": true,
+  "waits_cz_stage": true,
+  "asserts_document_390": true,
+  "mutant_env": true,
+  "checked_at": "2026-11-27T06:22:42.145814+00:00"
+}

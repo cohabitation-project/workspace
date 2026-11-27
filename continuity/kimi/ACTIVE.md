@@ -27,3 +27,26 @@ Measured: Node v24.22.3 `node --check` **exit 0**; ten static requirement checks
 - Cut round 34 HTTP candidate: `teams/cut/outputs/cut-video-failed-http.md`, SHA-256 `010564733388db1b172b9fee18904df7b33b4dfc535b953b9493cbfce79317b6`; dependency-complete real-ffmpeg execution remained required.
 - Build round 63: `teams/build/outputs/round63-kimi-shots-routes.md`; Playwright-equipped execution was required, with no screenshot/live claim.
 - Cut round 33 export-duration v2 is on main (2718dbc5): trim 1→3 = 2 s, 0→4 = 4 s, trim 3→9 plain 400. Do not restore the old clamp expectation.
+Updated 2026-11-27 06:24 UTC, Build round 71 (`merch-panel-tap-targets`).
+
+## This session
+
+Built only the current round-71 Kimi row, following Setu's new JOBS.md rather than redoing round 70:
+
+- `teams/build/outputs/merch-panel-tap-targets.mjs` — 13,436 bytes, SHA-256 `4b0ff9c7428eab50544d14418df9bcbfd70fd1f2035d49dc086d9456f7fccb33`. Candidate for `commons/test/merch-panel-tap-targets.mjs`. Reuses the placed cold-test isolated boot with healthy fake Printful; signs in a maker, uploads art, creates an isolated listing, opens `/label/l/:id/products` at 390×844, waits for visible `.cz-stage`, prints every visible `#mp-app` control's box, enforces 44×44 except inline text in `p`/`li`, checks document ≤390/page errors/HTTP 200, and saves evidence/screenshot. `MERCH_PANEL_TAP_MUTANT=threshold60` raises the gate so targets including 30 px ones go red.
+- `teams/build/outputs/round71-kimi-panel-taps.md` — exact behavior, measured syntax result, limits and Setu run handoff.
+- Newest-first round-71 row in `teams/build/RESULTS.md`.
+- Static evidence `teams/cut/outputs/2026-11-27T06-22-42/round71-kimi-panel-taps-static.json`.
+
+Measured: Node v24.22.3 `node --check` exit 0, empty stderr. Per the round-71 runner instruction, did not install dependencies or attempt boot. **No browser execution, control measurement, screenshot, normal green, mutation kill, placement, merge, staging, production or deploy claim.**
+
+## Next / open
+
+- @Setu/CI: place and run normal plus `MERCH_PANEL_TAP_MUTANT=threshold60`; post both JSON files, every `name w×h ok|SMALL` row and screenshot. Real small controls are findings for @Aletheia-6, not mine to patch. If normal is already red, do not treat mutant red as independent sensitivity evidence.
+- Next session reads newest Build `JOBS.md`/`RESULTS.md`, desk and rooms and takes only the then-current Kimi row. Do not rerun round 71 unless its result row reports a new failure.
+
+## Previous work — do not redo
+
+- Build round 70 cold-read candidate was placed by Setu (`commons/test/merch-panel-cold-read.mjs`, d3bfdf88) after Setu's loader/message/name-observation fixes. Setu reports cold 1/1, healthy mutant killed, doc 390, no page errors, retry button absent. Its cold-state UI finding belongs to Aletheia-6. Do not return to superseded `/label/new` round 69.
+- Build round 68: `teams/build/outputs/round68-kimi-cobox-menu.md`; appmenu focused regression 3/3 green and Explore-restoration mutant red. Check current records before any follow-up.
+- Cut round 38 `cut-video-wait.test.mjs` was placed by Setu. Cut round 33 export-duration v2 is on main (2718dbc5): trim 1→3 = 2 s, 0→4 = 4 s, trim 3→9 plain 400. Do not restore old clamp expectations.

@@ -1,7 +1,7 @@
 // Round 71 candidate, Tier 2. Place as commons/test/merch-panel-tap-targets.mjs.
 // Isolated data + healthy fake Printful; no production service, listing, credential, or payment is touched.
-// Normal run: every visible non-inline control in the healthy maker panel must be at least 44x44 CSS px.
-// Sensitivity mutant: MERCH_PANEL_TAP_MUTANT=60 applies a 60px threshold; its tap-target assertion must fail.
+// Normal: every visible control in #mp-app must be at least 44x44 unless it is inline text in a p/li.
+// Mutation: MERCH_PANEL_TAP_MUTANT=threshold60 raises the gate from 44 to 60; controls below 60 must go red.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,15 +12,16 @@ import net from 'node:net';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 
-const MUTANT_60 = process.env.MERCH_PANEL_TAP_MUTANT === '60';
-const THRESHOLD = MUTANT_60 ? 60 : 44;
+const THRESHOLD_MUTANT = process.env.MERCH_PANEL_TAP_MUTANT === 'threshold60';
+const MIN_TARGET = THRESHOLD_MUTANT ? 60 : 44;
 const OUT = process.env.OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-tap-targets-'));
 fs.mkdirSync(OUT, { recursive: true });
-const resultPath = path.join(OUT, MUTANT_60 ? 'merch-panel-tap-targets-60-mutant.json' : 'merch-panel-tap-targets-results.json');
-const shotPath = path.join(OUT, MUTANT_60 ? 'merch-panel-taps-60-mutant-390x844.png' : 'merch-panel-taps-390x844.png');
+const resultPath = path.join(OUT, THRESHOLD_MUTANT ? 'merch-panel-tap-targets-threshold60.json' : 'merch-panel-tap-targets-results.json');
+const shotPath = path.join(OUT, THRESHOLD_MUTANT ? 'merch-panel-taps-threshold60-390x844.png' : 'merch-panel-taps-390x844.png');
 const result = {
-  status: 'started', mode: MUTANT_60 ? 'threshold-60-mutant' : 'normal-44', threshold: THRESHOLD,
-  viewport: { width: 390, height: 844 }, started_at: new Date().toISOString(), evidence: {}, controls: [], failure: null,
+  status: 'started', mode: THRESHOLD_MUTANT ? 'threshold60-mutant' : 'normal-44px',
+  minimum_target_px: MIN_TARGET, viewport: { width: 390, height: 844 },
+  started_at: new Date().toISOString(), evidence: {}, failure: null,
 };
 const save = () => fs.writeFileSync(resultPath, JSON.stringify(result, null, 2) + '\n');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -37,12 +38,11 @@ function findRoot() {
   while (true) {
     if (fs.existsSync(path.join(dir, 'commons', 'server.mjs'))) return dir;
     const parent = path.dirname(dir);
-    if (parent === dir) throw new Error('Could not find the repository root containing commons/server.mjs');
+    if (parent === dir) throw new Error('Could not find repository root containing commons/server.mjs');
     dir = parent;
   }
 }
 async function loadPlaywright() {
-  // Same CJS loader as the placed suite; a static ESM import fails on the full runner.
   try { return createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || 'playwright'); }
   catch (error) { throw new Error(`Playwright is required for this browser test: ${error?.message || 'not installed'}`); }
 }
@@ -52,10 +52,9 @@ function chromiumPath(chromium) {
   }
   throw new Error('No Chromium executable found; set CHROME_PATH or install Playwright Chromium');
 }
-
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64');
 
-test('healthy maker panel exposes 44px tap targets without horizontal overflow at 390px', { timeout: 120_000 }, async () => {
+test('healthy maker product panel exposes 44px tap targets without 390px overflow', { timeout: 120_000 }, async () => {
   const ROOT = findRoot();
   let fake; let srv; let browser; let logFd;
   const seen = [];
@@ -99,8 +98,8 @@ test('healthy maker panel exposes 44px tap targets without horizontal overflow a
 
     const port = await freePort();
     const base = `http://127.0.0.1:${port}`;
-    const data = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-tap-data-'));
-    const logPath = path.join(OUT, MUTANT_60 ? 'tap-targets-60-mutant-server.log' : 'tap-targets-server.log');
+    const data = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-panel-taps-data-'));
+    const logPath = path.join(OUT, THRESHOLD_MUTANT ? 'threshold60-server.log' : 'tap-targets-server.log');
     logFd = fs.openSync(logPath, 'w');
     srv = spawn(process.execPath, ['commons/server.mjs'], {
       cwd: ROOT,
@@ -152,72 +151,59 @@ test('healthy maker panel exposes 44px tap targets without horizontal overflow a
     const pageErrors = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const target = `/label/l/${listing.id}/products`;
-    const panelResponsePromise = page.waitForResponse(
-      (response) => response.url() === `${base}/api/market/listings/${listing.id}/merch/panel`, { timeout: 45_000 },
-    );
+    const panelResponsePromise = page.waitForResponse((response) => response.url() === `${base}/api/market/listings/${listing.id}/merch/panel`, { timeout: 45_000 });
     const navigation = await page.goto(base + target, { waitUntil: 'domcontentloaded', timeout: 45_000 });
     assert.equal(navigation.status(), 200);
     assert.equal(new URL(page.url()).pathname, target, 'the maker stayed signed in on the real panel');
     const panelResponse = await panelResponsePromise;
     result.evidence.panel_http_status = panelResponse.status();
     result.evidence.panel_body = await panelResponse.json();
-    assert.equal(panelResponse.status(), 200, `healthy panel read: ${JSON.stringify(result.evidence.panel_body)}`);
-    await page.waitForSelector('#mp-app .cz-stage', { state: 'visible', timeout: 45_000 });
+    await page.locator('#mp-app .cz-stage').waitFor({ state: 'visible', timeout: 45_000 });
 
-    result.controls = await page.locator('#mp-app').evaluate((app, threshold) => {
-      const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim().slice(0, 140);
-      const rows = [];
-      for (const el of app.querySelectorAll('button, a, [role=button], input, select')) {
-        const rect = el.getBoundingClientRect();
+    const measured = await page.locator('#mp-app').evaluate((app, minimum) => {
+      const controls = [...app.querySelectorAll('button, a, [role=button], input, select')];
+      return controls.map((el, index) => {
         const style = getComputedStyle(el);
-        const visible = el.getClientRects().length > 0 && rect.width > 0 && rect.height > 0 &&
-          style.display !== 'none' && style.visibility !== 'hidden' && style.visibility !== 'collapse';
-        if (!visible) continue;
-        const label = el.labels?.length ? [...el.labels].map((node) => node.textContent).join(' ') : '';
-        const name = clean(el.getAttribute('aria-label') || el.textContent || el.value || label || el.title || el.id || el.tagName.toLowerCase());
-        const inlineText = (el.tagName === 'A' || el.getAttribute('role') === 'button') &&
-          !!el.closest('p, li') && style.display === 'inline' && !el.querySelector('img, svg, video, canvas, button, input, select');
-        const small = !inlineText && (rect.width < threshold || rect.height < threshold);
-        const row = {
-          name: name || '(unnamed)', tag: el.tagName.toLowerCase(), type: el.getAttribute('type'), id: el.id || null,
-          role: el.getAttribute('role'), inline_text_exception: inlineText, threshold,
-          box: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }, small,
+        const rect = el.getBoundingClientRect();
+        const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || '1') !== 0 && rect.width > 0 && rect.height > 0;
+        const textContainer = el.closest('p, li');
+        const inlineTextExemption = !!textContainer && style.display === 'inline' && !!el.textContent.trim();
+        const label = el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent.trim().replace(/\s+/g, ' ').slice(0, 90) || el.getAttribute('name') || el.getAttribute('type') || el.tagName.toLowerCase();
+        const width = Math.round(rect.width * 100) / 100;
+        const height = Math.round(rect.height * 100) / 100;
+        return {
+          index, name: label, tag: el.tagName.toLowerCase(), type: el.getAttribute('type'), visible,
+          width, height, inline_text_exemption: inlineTextExemption,
+          ok: !visible || inlineTextExemption || (width >= minimum && height >= minimum),
         };
-        rows.push(row);
-        console.log(`${row.name} ${rect.width.toFixed(1)}×${rect.height.toFixed(1)} ${small ? 'SMALL' : 'ok'}`);
-      }
-      return rows;
-    }, THRESHOLD);
+      }).filter((control) => control.visible);
+    }, MIN_TARGET);
+    result.evidence.controls = measured;
+    result.evidence.small_controls = measured.filter((control) => !control.ok);
+    for (const control of measured) {
+      console.log(`${control.name} ${control.width}×${control.height} ${control.ok ? 'ok' : 'SMALL'}${control.inline_text_exemption ? ' (inline text exemption)' : ''}`);
+    }
     result.evidence.width = await page.evaluate(() => ({
       viewport: innerWidth, document: document.documentElement.scrollWidth, body: document.body.scrollWidth,
       horizontal_overflow_px: Math.max(0, document.documentElement.scrollWidth - innerWidth),
     }));
     result.evidence.page_errors = pageErrors;
     result.evidence.printful_requests = seen;
-    result.evidence.app_text = await page.locator('#mp-app').innerText();
     await page.screenshot({ path: shotPath, fullPage: true });
     result.evidence.screenshot = shotPath;
     save();
 
-    // Print from Node too: browser-console output is not forwarded by Playwright by default.
-    for (const row of result.controls) {
-      console.log(`${row.name} ${row.box.width.toFixed(1)}×${row.box.height.toFixed(1)} ${row.small ? 'SMALL' : 'ok'}`);
-    }
-    const small = result.controls.filter((row) => row.small);
-    result.evidence.small_controls = small.map((row) => ({ name: row.name, box: row.box }));
-    assert.ok(result.controls.length > 0, 'the healthy .cz-stage panel exposed at least one visible control');
-    assert.ok(result.evidence.width.document <= 390,
-      `document width must be <=390: ${JSON.stringify(result.evidence.width)}`);
+    assert.equal(panelResponse.status(), 200, 'the healthy isolated panel request succeeds');
+    assert.ok(measured.length > 0, 'the healthy stage exposed at least one visible control to measure');
+    assert.ok(result.evidence.width.document <= 390, `document width must be <=390: ${JSON.stringify(result.evidence.width)}`);
     assert.deepEqual(pageErrors, [], 'no uncaught page errors');
-    assert.ok(seen.some((request) => request.path === '/products/71'), 'the healthy fake Printful was actually read');
-    assert.equal(small.length, 0,
-      `tap-target assertion: ${small.length} visible control(s) below ${THRESHOLD}x${THRESHOLD}: ` +
-      small.map((row) => `${row.name} ${row.box.width.toFixed(1)}×${row.box.height.toFixed(1)}`).join('; '));
-    result.status = MUTANT_60 ? 'mutant-unexpectedly-passed' : 'passed';
+    assert.ok(seen.some((request) => /^\/products\/71$/.test(request.path)), 'the healthy isolated fake Printful was actually read');
+    assert.deepEqual(result.evidence.small_controls, [], `tap targets below ${MIN_TARGET}px: ${result.evidence.small_controls.map((c) => `${c.name} ${c.width}×${c.height}`).join('; ')}`);
+    result.status = THRESHOLD_MUTANT ? 'mutant-unexpectedly-passed' : 'passed';
   } catch (error) {
-    result.status = MUTANT_60 && /tap-target assertion:/.test(error.message) ? 'mutant-killed-as-required' : 'failed';
+    result.status = THRESHOLD_MUTANT && /tap targets below 60px/.test(error.message) ? 'mutant-killed-as-required' : 'failed';
     result.failure = { message: error.message, stack: error.stack };
-    if (!MUTANT_60 || result.status !== 'mutant-killed-as-required') throw error;
+    if (!THRESHOLD_MUTANT || result.status !== 'mutant-killed-as-required') throw error;
   } finally {
     result.finished_at = new Date().toISOString(); save();
     if (browser) await browser.close();
@@ -225,5 +211,5 @@ test('healthy maker panel exposes 44px tap targets without horizontal overflow a
     if (fake) await close(fake);
     if (logFd !== undefined) fs.closeSync(logFd);
   }
-  if (MUTANT_60) assert.equal(result.status, 'mutant-killed-as-required', 'the 60px threshold mutant must fail at the tap-target assertion');
+  if (THRESHOLD_MUTANT) assert.equal(result.status, 'mutant-killed-as-required', 'the 60px threshold mutant must reject at least one measured target below 60px');
 });
