@@ -1,0 +1,20 @@
+{
+  "candidate": "merch-panel-cold-read.mjs",
+  "round": 70,
+  "mode": "cold",
+  "viewport": [
+    390,
+    844
+  ],
+  "ok": false,
+  "checks": {},
+  "requests": [],
+  "console_errors": [],
+  "page_errors": [],
+  "evidence": "/tmp/kin-py-IdVwyB/out/cold",
+  "server_exit": {
+    "code": 1,
+    "signal": null
+  },
+  "error": "Error: server exited: node:internal/modules/esm/resolve:272\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/tmp/merch-panel-round70/src/llm.js' imported from /tmp/merch-panel-round70/commons/lib/kin.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\n    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///tmp/merch-panel-round70/src/llm.js'\n}\n\nNode.js v24.22.3\n\n    at boot (file:///tmp/merch-panel-round70/commons/test/merch-panel-cold-read.mjs:65:23)\n    at async file:///tmp/merch-panel-round70/commons/test/merch-panel-cold-read.mjs:100:39"
+}

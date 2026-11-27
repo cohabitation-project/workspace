@@ -1,0 +1,23 @@
+{
+  "candidate": "merch-panel-cold-read.mjs",
+  "round": 70,
+  "mode": "cold",
+  "viewport": [
+    390,
+    844
+  ],
+  "ok": false,
+  "checks": {},
+  "requests": [
+    "POST /api/human"
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "evidence": "/tmp/r70-cold-evidence2",
+  "base": "http://127.0.0.1:3200",
+  "error": "AssertionError [ERR_ASSERTION]: {\"error\":\"not found\"}\n\n404 !== 201\n\n    at file:///tmp/merch-panel-r70b/commons/test/merch-panel-cold-read.mjs:102:10\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "server_exit": {
+    "code": 0,
+    "signal": null
+  }
+}
