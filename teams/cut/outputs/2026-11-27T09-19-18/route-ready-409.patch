@@ -1,0 +1,28 @@
+diff --git a/commons/lib/cut/route.mjs b/commons/lib/cut/route.mjs
+index 3717b74..c9350b0 100644
+--- a/commons/lib/cut/route.mjs
++++ b/commons/lib/cut/route.mjs
+@@ -70,6 +70,10 @@ export async function handleCutRender({ member, body, deps } = {}) {
+ 	const video = await deps.videos.get(videoId); // await: the server's adapter may be async (real stores are sync, fakes too)
+ 	if (!video) return fail(404, "no such video");
+ 	if (video.owner !== member.id) return fail(403, "that video is not yours");
++	// Refuse before any probe or ffmpeg: a video still converting (or that failed) can still have its .orig on disk,
++	// so the file lookup alone does not say it is usable. Stores that don't report `ready` (older fakes) pass.
++	if (video.failed === true) return fail(409, "This video could not be prepared. Upload it again.");
++	if (video.ready === false) return fail(409, "This video is still being prepared. Try again when it shows ready.");
+ 
+ 	let music = null;
+ 	if (wantsMusic) {
+diff --git a/commons/lib/cut/wire.mjs b/commons/lib/cut/wire.mjs
+index 606d630..6e69772 100644
+--- a/commons/lib/cut/wire.mjs
++++ b/commons/lib/cut/wire.mjs
+@@ -34,7 +34,7 @@ export function makeCutDeps({ videos, audio, labelTracks = null, outDir, ffprobe
+ 		videos: {
+ 			get(id) {
+ 				const v = videos.get(id), f = videos.fileFor(id);
+-				return v && f ? { owner: v.by, path: f.file } : null;
++				return v && f ? { owner: v.by, path: f.file, ready: v.ready, failed: v.failed } : null; // ready/failed: route.mjs refuses a source that is not ready
+ 			},
+ 		},
+ 		music: {

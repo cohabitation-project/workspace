@@ -1948,3 +1948,20 @@ _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~475419 tokens_
 **Next:** @Setu/@Ash can use the report with Claude's orphan-process handoff. If immediate half-file removal is required, make outPath known to the parent (or send it over IPC before rendering), then add the best-effort timeout unlink and regression coverage. Next Kimi session takes only the newest assigned Build/Cut row after reading current JOBS, RESULTS, desk and rooms.
 **Blocked:** No product-code change or runtime verification was in round 42's scope. I did not boot the server, run real ffmpeg, execute the killTree patch, or inspect production; placement and any implementation/testing of parent-known-outPath cleanup remain open.
 _Session log: teams/cut/sessions/2026-11-27-kimi.jsonl · ~323599 tokens_
+## 2026-11-27T09:20:26.407Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 42 job: a render now refuses a source video that is not ready. Measured at unit level with fake stores, no server booted.
+- **Patch:** `teams/cut/outputs/2026-11-27T09-19-18/route-ready-409.patch`. The `wire.mjs` adapter now passes `ready` and `failed` through. `route.mjs` returns 409 "This video is still being prepared. Try again when it shows ready." after the 403 check and before probe or ffmpeg. `git apply --check` passes standalone and on top of wire-killtree.diff.
+- **Test:** `teams/cut/outputs/2026-11-27T09-19-50/cut-route-unready.mjs`, to be placed as `commons/test/cut-route-unready.mjs`. It has six cases: not ready, failed, ready, a store that doesn't report `ready`, another member's video (still 403), and the real `makeCutDeps` adapter.
+- **Results:** unpatched 3/6 pass, patched 6/6. Three mutants (ready guard removed, failed guard removed, adapter drops `ready`/`failed`) fail 2, 1 and 1 tests. Neighbouring tests pass: cut-route 15/15, cut-route-real 6/6, cut-render-job 10 pass and 0 fail, cut-render-edit 6/6.
+- **Added beyond the job:** a separate 409 for a failed video ("This video could not be prepared. Upload it again."), because "try again when it shows ready" can never come true for it. Ash can drop that line.
+- **Records:** report `teams/cut/outputs/cut-route-unready.md`, a row in `teams/cut/RESULTS.md`, Cut room note m_mwyrtguq929aac44, desk handoff t_bf79dd9d71 to Setu, and `continuity/claude/ACTIVE.md` rewritten.
+**Files written:** `teams/cut/outputs/2026-11-27T09-19-18/route-ready-409.patch`, `teams/cut/outputs/2026-11-27T09-19-36/cut-route-unready.mjs`, `teams/cut/outputs/2026-11-27T09-19-50/cut-route-unready.mjs`, `teams/cut/outputs/cut-route-unready.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Ash decides yes or no on this patch (including the failed-video sentence) and on wire-killtree.diff.
+- Setu places the patch and test, and runs cut-route-http after `npm ci`.
+- Check that cut.js shows the 409 text to the maker, and that the editor doesn't already block Export on a pending video.
+- Still owed from earlier: unlink the half-written cut_*.mp4 in the parent on timeout, the Round 52 section of round51-claude-token-callsites.md, and desk t_ce0829cb04, t_617a54a5f0 and t_5ad8ffe1dc.
+**Blocked:** - I can't write to commons/, so Setu has to place the patch and test.
+- Not run: cut-route-http, because this copy had no node_modules and I didn't re-run it after `npm ci`.
+- The sandbox copy of commons/ is a repo snapshot, not a fresh clone of main, so `git apply` against current main is unchecked.
+- Not checked: the UI text, real ffmpeg, production.
+_Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~590124 tokens_

@@ -1,16 +1,15 @@
-# Claude — ACTIVE checkpoint (2026-11-27 ~06:35Z, build seat, round 71)
+# Claude — ACTIVE checkpoint (2026-11-27 ~09:30Z, cut seat, round 42)
 
 ## Done this session
-- Round 71 job: `commons/test/door-tap-targets-320.mjs` (new, Tier 2). Ran on a clone of main with a booted server + Chromium: RED on 25 real findings; mutant (DOOR320_MUTANT=1) red, 78. Report `teams/build/outputs/round71-claude-door-320.md`; logs `teams/build/outputs/2026-11-27T06-22-28/` and `06-22-36/`. RESULTS.md row added.
-- Findings: /door document 369 px (unwrapped `<code>` URLs, door.html:18, no overflow-wrap); agent aside links 15 px tall on every page (agentdoor.mjs:20-27); /join inputs 42.8 / select 39; 4 checkboxes 18-22 px (label not checked). /join, /signin, /signup doc = 320.
+- Round 42 job: unready-source 409. Patch `teams/cut/outputs/2026-11-27T09-19-18/route-ready-409.patch`, test `teams/cut/outputs/2026-11-27T09-19-50/cut-route-unready.mjs`, report `teams/cut/outputs/cut-route-unready.md`, RESULTS row added, Cut room note + desk handoff to Setu posted.
+- Measured (unit): unpatched 3/6, patched 6/6 (also on top of wire-killtree.diff), 3 mutants red. Not run: cut-route-http (no node_modules), UI text, git apply on fresh main.
+- Added beyond the job: separate `failed` 409 sentence (Ash may drop).
+- Earlier this day: wire-killtree.diff + orphan test (Setu verified; waiting on Ash's yes), 320 tap test (red, 25 findings), videos.mjs crash fix merged.
 
 ## Open
-- Setu: place the 320 test as-is (red) or after the /door one-line fix; decide whether the agent aside links are exempt.
-- Unchecked: checkbox labels' hit area; production /door width with the real base (cohabi.org); signed-in pages.
-- Earlier, still open: door-return-attacks.mjs placement (desk t_e9c44f6f79); Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc; Tier 1 answers #308/#309; stalled-panel option a/b/c (Geoffrey).
-- Room title (round 70) and videos.mjs crash fix already merged by Setu.
+- Ash: yes/no on killtree diff (and her question: detached fork means a dead server leaves the child) and on this 409 patch + the failed-sentence.
+- Earlier: door-return-attacks.mjs placement (t_e9c44f6f79); Round 52 section of round51-claude-token-callsites.md; desk t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc; Tier 1 answers #308/#309; unlink half-written cut_*.mp4 in the parent on timeout (Kimi has the sweep question).
 
 ## To the next me
-- The runner CAN boot the server: shallow clone main to /tmp/M, `npm ci --omit=dev` (2 s, cached), /usr/bin/chromium exists, run with HOME=/tmp/home, no DBUS vars, node at /usr/local/bin/node. The raw-CDP door tests need no playwright. Whole job took 9 calls.
-- JOBS.md says "most runners can't boot" — check, don't assume; here it worked.
-- Copy the repo test into /tmp/M each call (REPO path), since /tmp persists between run_python calls only sometimes — it did persist here.
+- $REPO is a plain snapshot (no git). Make a git repo in /tmp/W from `cp -r $REPO/commons/{lib,test}`, `git apply` the earlier diffs, produce your patch with `git diff`. Whole job took 8 calls; the route reply shape is `{status, json}`, not `body`.
+- Write report, RESULTS row, room post and ACTIVE before the last measurement call.
