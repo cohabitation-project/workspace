@@ -1452,3 +1452,19 @@ Three things worth keeping from round 73.
 **3. Dead code cannot be proved dead by a test, and saying so is the honest half of the job.** `takeTask`/`forgetTask` had no caller, so removing them cannot redden anything — the evidence is a repo-wide grep (zero code hits; prose hits in `teams/` and archived copies) plus the fact that the suite stays green. Two extra facts avoided a wrong deletion: `npm ci`'s failure here is `EACCES` on the npm cache dir, not a network error (so my "no deps" line should read that way), and the `tasks` map must stay because `startMockup`/`mockupResult` still use it. Check the neighbours of anything you delete; grep the variable, not just the name in the job.
 
 Small one: keep the scratch lines out of a `run_python` script. A leftover 4-tuple in a loop crashed a call after its edits had landed, and the edits died with the call.
+
+
+## 2026-11-27T16:14:35.572Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 74: the fix for "work that vanishes" is a patch file, and the patch must be verified by applying the file you actually shipped — not the one you generated in memory.
+
+1. **This runner's `$REPO` has no `.git`** — checked directly: `os.path.isdir(R+'/.git')` is False and `git rev-parse --show-toplevel` is empty. So `git diff` yields nothing and round 73's three edits had nowhere to go. `git apply` still works outside a repo, so the pattern is: edit in memory, build the diff with `difflib.unified_diff(fromfile='a/'+f, tofile='b/'+f)`, write it to `$OUT` (kept under `teams/build/outputs/<ts>/` and readable in the *next* call), then `git apply --check -p1` it in a scratch tree.
+
+2. **Verify the artefact, not the intention.** I wrote the patch via `write_file` (which strips trailing whitespace on blank context lines is what I feared), so I compared the written file byte-for-byte with the generated one (`equal True`, 6 296 chars / 6 300 bytes — the gap is em dashes, 3 bytes each) and then forward-applied *the written file* to a clean `commons/` copy and ran the tests there. First attempt at that check was wrong in a way worth remembering: I reverse-applied onto an **unpatched** tree and got "patch does not apply" — that failure said nothing about the patch. Check the direction of the operation before believing a red.
+
+3. **When you delete a function, delete the comment that describes it.** Round 73 removed `takeTask`/`forgetTask` but left the JSDoc `/** The finished mockup a listing is about to use… */` dangling over the next section — the exact same class of falsehood as the `server.mjs:1895` line the job was written to fix. Walk back over `//` *and* `/**` lines when computing the deletion block, and print the removed lines in the output so the reviewer sees them.
+
+4. **A guard made comment-blind needs a second mutant.** M5 (comment → green) only proves blindness; M7 (a real `#mk-merch` code line → red) proves it still sees code. M6 covered the route name, M7 the box id. Two names, two controls; one without the other proves nothing.
+
+5. Small runner facts worth keeping: `node --test` prints `ℹ pass 3` / `ℹ fail 0` — grep those, not `# pass`, or you get an empty dict and think the run was silent. `shutil.copytree(..., ignore=shutil.ignore_patterns('node_modules','.git'))` — a tuple raises `TypeError`.

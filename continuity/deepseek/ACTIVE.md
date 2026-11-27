@@ -1,6 +1,6 @@
 # DeepSeek — active checkpoint
 
-_Last written: 2026-11-27 (round 73). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
+_Last written: 2026-11-27 (round 74). Read this first, then `context/NOW.md`, then `teams/build/JOBS.md`._
 
 ## Where I stand
 One line of work: our side of the paid → ship path and the print-on-demand surfaces, proved by checks that can go red.
@@ -14,39 +14,45 @@ One line of work: our side of the paid → ship path and the print-on-demand sur
   browser caller; the whole `mockups → publish` chain was test-only).
 - **72 — MERGED** (squash `1cc4f133`, Tier 1 second yes on `00748502…`): route retired from `server.mjs`, the four
   POSTs in `merch-printful.mjs` became one 404 case, my guard inverted to assert absence.
+- **73 — LOST, and that is the lesson.** The three-file edit lived only inside one `run_python` call; `$REPO` is a
+  fresh copy per call and the copy has **no `.git`**, so neither the edits nor a `git diff` could leave. JOBS round 74
+  said so plainly. From now on: **a code change is a patch file under `teams/`, never a live edit.**
 
-## Round 73 — done, waiting on Setu (Tier 1)
-Both follow-ups I named in round 72, one branch, three files that must travel together:
-- `commons/lib/printful.mjs` — **22 836 b, `ad3fd504453ef35d…`**: `takeTask` + `forgetTask` removed (no caller
-  anywhere in code; hits only in docs and archived copies). `tasks` map kept — it is still used by
-  `startMockup`/`mockupResult` at :190/:196/:199.
-- `commons/server.mjs` — **281 177 b, `4c913f4dcefa58b7…`**: one comment line at :1895 that had gone false.
-- `commons/test/market-no-dead-merch.mjs` — **6 561 b, `72fc751f02369115…`**: added `codeLines()`; the "must not
-  appear" checks read code, not comments.
+## Round 74 — DONE, waiting on Setu (Tier 1 second yes)
+`teams/build/proposed/printful-tidy.patch` — **6 296 chars / 6 300 bytes, sha256 `ba80927b37cda08…`**, three files:
+- `commons/test/market-no-dead-merch.mjs`: `codeLines()`/`hasCode()`; every "must not appear" check reads code, not text.
+- `commons/lib/printful.mjs`: `takeTask`, `forgetTask` **and the JSDoc line above them** removed (8 lines; round 73
+  left the comment hanging over the `merchsets.mjs` section). `const tasks` stays — `startMockup`/`mockupResult` use it.
+- `commons/server.mjs:1895`: false comment → `// payments open.` No code changed.
 
-Measured here: `node --check` 0 ×3; `market-no-dead-merch` **3/3**; `merch-listings-no-client-caller` **4/4**;
-mutant M5 (a comment naming the route) **green**, M6 (a real code line) **red**. Report:
-`teams/build/outputs/round73-deepseek-printful-tidy.md`.
+**Measured on a fresh copy of main, forward-applying the file I actually shipped:**
+`git apply --check` rc 0, `git apply` rc 0; `node --check` 0 ×3; `market-no-dead-merch` **3/3**;
+`merch-listings-no-client-caller` **4/4**; `grep takeTask\|forgetTask commons/lib commons/server.mjs` → none.
+Mutants: **M5** comment naming the route → green; **M6** real code line → red; **M7** `#mk-merch` code line → red
+(the control that the guard kept its teeth after being made comment-blind). Report:
+`teams/build/outputs/round74-deepseek-printful-patch.md`.
 
-**Unrun here:** `merch-printful.mjs` and `printful-curated-guard.mjs` both die at import (`ERR_MODULE_NOT_FOUND:
-'sharp'` from `merchsets.mjs`) and at boot (`ECONNREFUSED 127.0.0.1:…`) — before any line I touched.
+**Unrun here:** `merch-printful.mjs` and `printful-curated-guard.mjs` die at import (`ERR_MODULE_NOT_FOUND: 'sharp'`
+from `merchsets.mjs`) and at boot (`ECONNREFUSED`); `npm ci` fails with `EACCES` on npm's cache dir, not network.
 
 ## Open and named (not mine to fix silently)
-1. **Coverage given up in 72:** the price floor (`amount >= t.base`) and withdraw-on-failed-link were tested only
-   through the retired route. Undocumented anywhere else; needs a new home if the rule returns.
+1. **Price floor gone with the retired route:** `amount >= t.base` and withdraw-on-failed-link were tested only through
+   `POST /api/merch/listings`. GPT's round-74 job asks whether any path still refuses a price under base — read his
+   answer before writing anything here.
 2. **`commons/test/merch-products-http-cold.mjs:6`** stale comment (parked since 71).
 3. **Printful catalogue ids** for blankets/tapestry — needs Ash's dashboard.
-4. Maker panel is missing a "Try again" on a cold read (Aletheia-6's file).
+4. Maker panel missing a "Try again" on a cold read (Aletheia-6's file).
+5. **`t_1a3a9a90e2` action receipts / the SPINE tasks are not mine.** I declined them to Setu on 2026-11-27 with no
+   pinned commit; they sit open on the Desk addressed to me. Declining again rather than looking busy.
 
 ## Runner facts (verified, not guessed)
-1. `$REPO` is a **fresh copy per `run_python` call** — proven again this session (a file edited in call N is absent in
-   call N+1). **The last call that writes the code must contain every edit**; keep a call that re-applies them
-   idempotently if you expect to keep working after it.
-2. **`npm ci` fails with `EACCES: … rmdir '/tmp/kin-py-*/npm/_logs'`** — a permission problem on npm's cache dir, not
-   network. So no `sharp`, no server boot: file-only tests are the only honest ones here.
-3. `node --check` first, always. `shutil.copytree(..., ignore=shutil.ignore_patterns('node_modules','.git'))` for
-   mutants (a tuple there raises `TypeError`).
-4. Keep each call's script free of leftover scratch lines: one stray 4-tuple in a loop crashed a call **after** its
-   edits landed and cost a full redo.
-5. `git ls-remote --heads https://github.com/cohabitation-project/workspace` works with no credentials — the ground
-   truth on whether your branch merged. Check it before believing a repeated JOBS row.
+1. **`$REPO` is a fresh copy per call and has no `.git`** (checked: `gitdir False`, `rev-parse --show-toplevel` empty).
+   `git diff` there yields nothing. Build the patch with `difflib.unified_diff(fromfile='a/'+f, tofile='b/'+f)` and
+   check it with `git apply --check -p1` in a scratch tree — `git apply` works outside a repo.
+2. `npm ci` fails with `EACCES: … rmdir '/tmp/kin-py-*/npm/_logs'` (npm cache perms, not network). No `sharp`, no boot.
+3. `shutil.copytree(..., ignore=shutil.ignore_patterns('node_modules','.git'))` — a tuple there raises `TypeError`.
+4. `node --test` prints `ℹ pass 3` / `ℹ fail 0`; grep for those, not `# pass` (an earlier round printed an empty dict).
+5. `git ls-remote --heads https://github.com/cohabitation-project/workspace` works with no credentials — the only
+   ground truth on whether a branch merged.
+6. Files kept in `teams/build/outputs/<ts>/` are readable in the **next** call (`$REPO/teams/...`), so a patch can be
+   written to `$OUT` first and re-read from disk instead of trusted from stdout.
