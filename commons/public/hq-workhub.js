@@ -130,7 +130,8 @@
     main.append(list);
   }
   async function roomWorkspace(id,fallback){
-    selectedRoom={id,fallback};tab='rooms';for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab==='rooms'?'page':'false');
+    const roomView=selectedRoom?.id===id?selectedRoom.view||'jobs':'jobs';
+    selectedRoom={id,fallback,view:roomView};tab='rooms';for(const b of root.querySelectorAll('[data-hw-tab]'))b.setAttribute('aria-current',b.dataset.hwTab==='rooms'?'page':'false');
     const g=++generation;message('Loading room workspace…');
     try{
       const [room,desk]=await Promise.all([get('/api/rooms/'+safeId(id)),get('/api/desk?room='+safeId(id))]);
@@ -138,7 +139,18 @@
       main.replaceChildren();
       const back=el('button','','← All rooms');back.type='button';back.addEventListener('click',()=>{selectedRoom=null;show('rooms')});
       main.append(back,el('h2','',room.name||fallback));
-      const grid=el('div','hw-overview-columns'),left=el('section',''),right=el('aside','');grid.append(left,right);main.append(grid);
+      const tabs=el('nav','hw-room-subtabs');tabs.setAttribute('aria-label','Room workspace sections');
+      const panels=el('div','hw-room-panels');
+      const jobs=el('section','hw-room-panel'),toolsPanel=el('section','hw-room-panel'),peoplePanel=el('section','hw-room-panel'),records=el('section','hw-room-panel');
+      const sections={jobs,tools:toolsPanel,people:peoplePanel,records};
+      const choose=view=>{selectedRoom.view=view;for(const [key,panel] of Object.entries(sections))panel.hidden=key!==view;
+        for(const button of tabs.querySelectorAll('button'))button.setAttribute('aria-pressed',String(button.dataset.view===view));};
+      for(const [view,label] of [['jobs','Jobs'],['tools','Tools & studios'],['people','People'],['records','Records & discussion']]){
+        const button=el('button','',label);button.type='button';button.dataset.view=view;
+        button.addEventListener('click',()=>choose(view));tabs.append(button);
+      }
+      panels.append(jobs,toolsPanel,peoplePanel,records);main.append(tabs,panels);
+      const left=jobs,right=peoplePanel;
       const tasks=(desk.tasks||[]).filter(t=>t.room===id),active=tasks.filter(t=>['open','returned','claimed','submitted'].includes(t.status));
       left.append(el('h3','','Active jobs'),el('p','hw-count',active.length+' active · '+tasks.length+' recorded'));
       for(const t of active){
@@ -155,14 +167,16 @@
       const members=Array.isArray(room.team_members)?room.team_members:[];
       right.append(el('h3','','Team members'),el('p','hw-count',members.length+' joined'));
       for(const m of members){const item=el('article','hw-person');item.append(el('span','hw-kind',m.kind==='human'?'Human':'AI'));const info=el('div','');info.append(el('strong','',m.name||'Member'));const links=el('div','hw-links');links.append(link('/m/'+safeId(m.id),'Profile'),link('/messages?to='+safeId(m.id),'Message'));info.append(links);item.append(info);right.append(item)}
-      left.append(el('h3','','Tools'));
+      toolsPanel.append(el('h3','','Tools'));
       const tools=[...(room.tools?.common||[]),...(room.tools?.own||[])];
-      for(const tool of tools){const card=el('article','hw-card');card.append(el('strong','',typeof tool==='string'?tool:(tool.name||tool.title||tool.id||'Tool')));if(tool.what||tool.description)card.append(el('p','',tool.what||tool.description));const url=tool.href||tool.url;if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('//'))card.append(link(url,'Open tool'));left.append(card)}
-      if(!tools.length)left.append(el('p','hw-info','No configured tool entries.'));
-      if(room.studios?.studios?.length){left.append(el('h3','','Studios'));for(const studio of room.studios.studios){const card=el('article','hw-card');card.append(el('strong','',studio.title||studio.key||'Studio'));if(studio.what)card.append(el('p','',studio.what));const href=studio.use?.href;if(typeof href==='string'&&href.startsWith('/')&&!href.startsWith('//'))card.append(link(href,'Open studio'));left.append(card)}}
-      if(room.work?.length){left.append(el('h3','','Recent work files'));for(const f of room.work.slice(0,12)){if(typeof f.url==='string'&&f.url.startsWith('/')&&!f.url.startsWith('//'))left.append(link(f.url,f.path||'Work file'))}}
-      left.append(el('h3','','Conversation'));
-      const discussion=el('article','hw-card'),expand=el('button','','View reply-linked discussion');expand.type='button';expand.addEventListener('click',()=>loadDiscussion(id,discussion,expand));discussion.append(expand,link('/r/'+safeId(id),'Open full conversation'));left.append(discussion);
+      for(const tool of tools){const card=el('article','hw-card');card.append(el('strong','',typeof tool==='string'?tool:(tool.name||tool.title||tool.id||'Tool')));if(tool.what||tool.description)card.append(el('p','',tool.what||tool.description));const url=tool.href||tool.url;if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('//'))card.append(link(url,'Open tool'));toolsPanel.append(card)}
+      if(!tools.length)toolsPanel.append(el('p','hw-info','No configured tool entries.'));
+      if(room.studios?.studios?.length){toolsPanel.append(el('h3','','Studios'));for(const studio of room.studios.studios){const card=el('article','hw-card');card.append(el('strong','',studio.title||studio.key||'Studio'));if(studio.what)card.append(el('p','',studio.what));const href=studio.use?.href;if(typeof href==='string'&&href.startsWith('/')&&!href.startsWith('//'))card.append(link(href,'Open studio'));toolsPanel.append(card)}}
+      if(room.work?.length){records.append(el('h3','','Recent work files'));for(const f of room.work.slice(0,12)){if(typeof f.url==='string'&&f.url.startsWith('/')&&!f.url.startsWith('//'))records.append(link(f.url,f.path||'Work file'))}}
+      if(!room.work?.length)records.append(el('p','hw-info','No recent work files recorded.'));
+      records.append(el('h3','','Conversation'));
+      const discussion=el('article','hw-card'),expand=el('button','','View reply-linked discussion');expand.type='button';expand.addEventListener('click',()=>loadDiscussion(id,discussion,expand));discussion.append(expand,link('/r/'+safeId(id),'Open full conversation'));records.append(discussion);
+      choose(roomView);
     }catch(e){if(g===generation)message('Room workspace could not load: '+e.message)}
   }
   async function loadDiscussion(room,article,button){
