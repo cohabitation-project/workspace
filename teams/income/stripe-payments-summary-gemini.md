@@ -130,9 +130,8 @@ Stripe actively manages risk on its platform to protect against fraud, chargebac
 *   **Liability:** The ultimate liability for financial losses (e.g., unrecoverable chargebacks) depends on the Stripe Connect charge type and the platform's adherence to Stripe's terms and risk management best practices.
 
 **Sources:**
-*   [Connect Reserves FAQ - support.stripe.com/questions/connect-reserves-faq]
-*   [Reserves for Connect platforms and connected accounts - support.stripe.com/questions/reserves-for-connect-platforms-and-connected-accounts]
-*   [Introduction to risk management for software platforms - stripe.com/gb/guides/introduction-to-risk-management]
+*   [Stripe Connect Overview - docs.stripe.com](https://docs.stripe.com/connect)
+*   [Connected Account Configuration - docs.stripe.com](https://docs.stripe.com/connect/accounts-v2/connected-account-configuration)
 
 ## 8. One-Page Architecture for Cohabi's Ledger / Payment Orchestration Layer
 
