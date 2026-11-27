@@ -19,6 +19,9 @@ const KNOWN_BROKEN = {
     + 'The header link and the /live route both live outside the Jobs board (commons/lib/feedv2.mjs, commons/server.mjs, '
     + 'Tier 1), so this is a report here and for Setu, not a fix in jobspage.mjs.',
 };
+// Served by another process, not by this server: Caddy sends /cut-new* to the full Cohabi Cut (pm2 cohabi-cut, :3330;
+// ops/caddy/Caddyfile.template:37). The app menu links it since fad59cbb, so a booted Commons alone answers 404.
+const SERVED_ELSEWHERE = new Set(['/cut-new']);
 
 const PAGE = /^(?!\/api\/)(?!.*\.(css|js|png|jpg|jpeg|svg|ico|json|xml|txt|mp3|webp|avif|woff2?)$)\//;
 
@@ -69,7 +72,7 @@ test('the Jobs Board pages answer, and nothing on them links to a dead page', as
     for (const page of ['/jobs', '/jobs/people']) {
       const html = await (await fetch(`${B}${page}`, { headers: { cookie } })).text();
       for (const href of internalLinks(html)) {
-        if (seen.has(href) || href in KNOWN_BROKEN) continue;
+        if (seen.has(href) || href in KNOWN_BROKEN || SERVED_ELSEWHERE.has(href)) continue;
         seen.add(href);
         const response = await fetch(`${B}${href}`, { headers: { cookie }, redirect: 'manual' });
         let status = response.status;

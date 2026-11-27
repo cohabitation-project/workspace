@@ -11,7 +11,8 @@ import { JSDOM } from 'jsdom';
 
 // /live is routed by Caddy in production, not by the isolated Commons test server.
 const KNOWN_BROKEN = [
-  { href: '/live', why: 'Caddy route, not in the test server' }
+  { href: '/live', why: 'Caddy route, not in the test server' },
+  { href: '/cut-new', why: 'Caddy route to the full Cohabi Cut (pm2 cohabi-cut :3330, ops/caddy/Caddyfile.template:37), not in the test server' }
 ];
 
 const skipLink = (href) => href.startsWith('/api/') ||
