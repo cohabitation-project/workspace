@@ -1,0 +1,29 @@
+{
+  "file": "teams/build/outputs/market-listing-tap-targets.mjs",
+  "bytes": 12365,
+  "sha256": "942c0f0c10755f46f756658a11bd015e80137927cc65318e274c0847d6254931",
+  "node_version": "v24.22.3",
+  "node_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "static_checks": {
+    "test_is_not_skipped": true,
+    "signed_out_and_non_maker_states": true,
+    "real_listing_route": true,
+    "all_requested_control_selectors": true,
+    "inline_p_li_link_exemption": true,
+    "44px_both_dimensions": true,
+    "390px_width_assertion": true,
+    "600px_viewport_mutant": true,
+    "mutant_must_die_at_width": true,
+    "screenshots_and_json_evidence": true,
+    "one_console_line_per_control": true,
+    "buyer_state_proven": true,
+    "both_states_measured_before_assertions": true
+  },
+  "all_static_checks": true,
+  "behavioral_execution": "not attempted on this dependency-incomplete runner; no browser/server verdict claimed",
+  "placed_file_exists": false
+}
