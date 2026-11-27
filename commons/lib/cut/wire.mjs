@@ -8,7 +8,9 @@
 //   audio.fileOf(item) -> absolute path
 // route.mjs wants { owner, path } from videos.get / music.get and { hasAudio, width, height, durationSec } from probe.
 import { execFile, fork } from "node:child_process";
-import { basename, isAbsolute } from "node:path";
+import { randomBytes } from "node:crypto";
+import { rmSync } from "node:fs";
+import { basename, isAbsolute, join } from "node:path";
 
 const run = (impl, file, args) => new Promise((res, rej) => {
 	impl(file, args, { timeout: 20000, maxBuffer: 1 << 20 }, (e, so) => (e ? rej(e) : res(String(so))));
@@ -34,7 +36,7 @@ export function makeCutDeps({ videos, audio, labelTracks = null, outDir, ffprobe
 		videos: {
 			get(id) {
 				const v = videos.get(id), f = videos.fileFor(id);
-				return v && f ? { owner: v.by, path: f.file } : null;
+				return v && f ? { owner: v.by, path: f.file, ready: v.ready, failed: v.failed } : null; // ready/failed: route.mjs refuses a source that is not ready
 			},
 		},
 		music: {
@@ -53,12 +55,27 @@ export function makeCutDeps({ videos, audio, labelTracks = null, outDir, ffprobe
 	};
 }
 
+/** Kill the render child AND its ffmpeg. The child runs ffmpeg through spawnSync, so ffmpeg is the child's own child:
+ *  p.kill() alone leaves it running (ppid 1) with no timeout and a half-written file in the output folder.
+ *  The child is started detached, so it leads its own process group and -pid reaches ffmpeg too. */
+function killTree(p) {
+	try { process.kill(-p.pid, "SIGKILL"); return; } catch { /* group already gone, or no groups on this OS */ }
+	try { p.kill("SIGKILL"); } catch { /* already gone */ }
+}
+
 /** Run renderEditJob in a child process so ffmpeg's spawnSync never blocks the server; refusals keep their type. */
 export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./render-child.mjs", import.meta.url) } = {}) {
 	return new Promise((resolve, reject) => {
-		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [] });
+		// The parent picks the output name, so it still knows it after a timeout kills the child (which can't clean up
+		// after itself). Always chosen here: a name arriving in `job` is ignored, so the parent never deletes a path a client chose.
+		const outPath = job && typeof job.outDir === "string" ? join(job.outDir, `cut_${randomBytes(8).toString("hex")}.mp4`) : null;
+		const p = fork(child, [], { stdio: ["ignore", "ignore", "ignore", "ipc"], execArgv: [], detached: true });
 		let done = false;
-		const end = (fn, v) => { if (done) return; done = true; clearTimeout(t); try { p.kill(); } catch { /* already gone */ } fn(v); };
+		const end = (fn, v) => {
+			if (done) return; done = true; clearTimeout(t); killTree(p);
+			if (fn === reject && outPath) { try { rmSync(outPath, { force: true }); } catch { /* best effort; the hourly sweep is the backstop */ } }
+			fn(v);
+		};
 		const t = setTimeout(() => end(reject, new Error("render timed out")), timeoutMs);
 		p.once("message", (m) => {
 			if (m?.ok) return end(resolve, m.result);
@@ -67,6 +84,6 @@ export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./rend
 		});
 		p.once("error", (e) => end(reject, e));
 		p.once("exit", () => end(reject, new Error("render process exited")));
-		p.send(job);
+		p.send(outPath ? { ...job, outPath } : job);
 	});
 }

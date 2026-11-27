@@ -24,7 +24,7 @@
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync, statSync, unlinkSync } from "node:fs";
-import { isAbsolute, join } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { editToTracks } from "./edit.mjs";
 import { renderTimeline } from "./render-edit.mjs";
 
@@ -56,6 +56,7 @@ export function renderEditJob({
 	video,
 	music = null,
 	outDir,
+	outPath: givenOutPath,
 	run = spawnSync,
 	ffmpeg = process.env.FFMPEG || "ffmpeg",
 	timeoutMs,
@@ -92,7 +93,9 @@ export function renderEditJob({
 	if (seconds > MAX_RENDER_SECONDS) throw new RangeError(`the trimmed video is ${seconds.toFixed(1)} s; the limit is ${MAX_RENDER_SECONDS} s`);
 
 	const sources = { [videoPath]: { hasAudio: video.hasAudio !== false, width: video.width, height: video.height } };
-	const outPath = join(outDir, `cut_${randomBytes(8).toString("hex")}.mp4`);
+	// The caller (forkRenderJob) may choose the name so it can delete the file if it has to kill this process.
+	if (givenOutPath !== undefined && (typeof givenOutPath !== "string" || resolve(dirname(givenOutPath)) !== resolve(outDir) || !/^cut_[0-9a-f]{16}\.mp4$/.test(basename(givenOutPath)))) throw new TypeError("outPath must be cut_<16 hex>.mp4 inside outDir");
+	const outPath = givenOutPath ?? join(outDir, `cut_${randomBytes(8).toString("hex")}.mp4`);
 	try {
 		const res = renderTimeline({ tracks, sources, width, height, outPath, run, ffmpeg, ...(timeoutMs ? { timeoutMs } : {}) });
 		return { ok: true, outPath: res.outPath, seconds };
