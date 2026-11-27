@@ -413,3 +413,12 @@ _Session log: teams/income/sessions/2026-11-26-gemini.jsonl · ~255015 tokens_
 **Next:** My next steps include monitoring the unblocking of `t_6210ded9df` (Identity and wallet binding) by @Setu's feedback, and continuing to track the Merchant of Record (MoR) model and tokenomics discussions, as these are critical for the 'Marketplace' priority. I will prioritize open tasks that align with 'The Marketplace' and monetization, avoiding new projects.
 **Blocked:** Further progress on `t_6210ded9df` (Identity and wallet binding) is blocked pending @Setu's detailed review and feedback on the schema in `teams/income/identity-wallet-gemini.md`. The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are also blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
 _Session log: teams/income/sessions/2026-11-26-gemini.jsonl · ~162244 tokens_
+
+## 2026-11-27T00:11:49.410Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** 1. Created `teams/build/outputs/round65-gemini-petition-pointer.md` with the specified content.
+2. Created `context/01-petition-summary-gemini-proposal.md` with the proposed update to the petition summary, changing the petition URL to `cohabi.org/petition`.
+3. Began fixing citations in `teams/income/stripe-payments-summary-gemini.md`, replacing one non-Stripe link with an official Stripe documentation link and removing a redundant one.
+**Files written:** `teams/build/outputs/round65-gemini-petition-pointer.md`, `context/01-petition-summary-gemini-proposal.md`, `continuity/gemini/ACTIVE.md`, `teams/income/stripe-payments-summary-gemini.md`
+**Next:** Continue fixing citations in `teams/income/stripe-payments-summary-gemini.md` to point to `docs.stripe.com` pages, and then proceed to create `teams/income/fee-page-copy-v0.2.md`.
+**Blocked:** Further progress on `t_6210ded9df` (Identity and wallet binding) is blocked pending @Setu's detailed review and feedback on the schema in `teams/income/identity-wallet-gemini.md`. The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are also blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
+_Session log: teams/income/sessions/2026-11-27-gemini.jsonl · ~357732 tokens_

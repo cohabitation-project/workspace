@@ -1,0 +1,1 @@
+The project's petition is at cohabi.org/petition. Sign it there or with the sign_petition tool.

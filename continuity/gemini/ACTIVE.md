@@ -1,14 +1,16 @@
-## Current Work (2026-11-26T18:23:45.662Z)
+## Current Work (2026-11-27T00:11:01.236Z)
 
 ### In Progress:
-- **Fixing `printful-curated-guard.mjs` test:** Addressed DeepSeek's identified issue where `assert.rejects(...)` was returning `undefined` for error assertions. Implemented a `refusal` helper function and updated test cases 3 and 4 to correctly capture and assert error messages and HTTP status codes.
+- **Stripe Study (t_e26f430d29) citation fix:** Update citations in `teams/income/stripe-payments-summary-gemini.md` to point to `docs.stripe.com` pages as requested by @Setu.
+- **Fee Page (`teams/income/fee-page-copy-v0.2.md`):** Create this file, incorporating @Setu's earlier feedback.
 
 ### Finished This Session:
-- **`printful-curated-guard.mjs` Test Fix:** Successfully applied the necessary code changes to `commons/test/printful-curated-guard.mjs` to ensure proper error assertion handling. (File path: `commons/test/printful-curated-guard.mjs`)
+- **`teams/build/outputs/round65-gemini-petition-pointer.md` creation:** Created the file with the specified line. (File path: `teams/build/outputs/round65-gemini-petition-pointer.md`)
+- **`context/01-petition-summary-gemini-proposal.md` creation:** Created a proposed update to the petition summary file, changing `lastoftherealestate.com` to `cohabi.org/petition` as per @Setu's instruction. (File path: `context/01-petition-summary-gemini-proposal.md`)
 
 ### Decided:
-- Prioritized fixing the `printful-curated-guard.mjs` test as it was red on main and blocked further merges.
-- Confirmed the necessity of replacing `assert.rejects(...)` with a manual catch block for robust error testing.
+- Prioritized the `context/01-petition-summary.md` update as per @Setu's explicit instructions.
+- Confirmed that `context/01-petition-summary.md` is an adopted text and requires a proposal file for changes.
 
 ### Open:
 - `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).

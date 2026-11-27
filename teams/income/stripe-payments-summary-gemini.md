@@ -51,7 +51,7 @@ Stripe Connect offers flexible onboarding options, from fully hosted (Express or
 
 **Sources:**
 *   [Stripe Connect Onboarding - stripe.com/connect/onboarding]
-*   [Onboarding Sellers with Stripe Connect - rapidevelopers.com/stripe-guide/how-to-onboard-sellers-with-stripe-connect]
+
 
 ## 4. Refunds, Disputes, Tax, and Fees in Stripe Connect
 
@@ -83,7 +83,7 @@ This section details how these critical aspects are managed within a Stripe Conn
 *   **Platform Fees (Application Fees):** Cohabi can collect its own platform fees (e.g., commission) from each transaction using Stripe Connect's application fee functionality. These fees are automatically transferred to Cohabi's Stripe account.
 
 **Sources:**
-*   [Stripe Connect Marketplace Accounting Workflow - nordlet.com/en/blog/stripe-connect-marketplace-accounting-workflow]
+*   [Stripe Connect Payouts and Transfers - docs.stripe.com/connect/payouts-and-transfers]
 *   [Keeping funds where they belong: Implementing fund segregation in Stripe Connect - stripe-dev.sbet-launcher.com/blog/fund-segregation-stripe-connect]
 *   [1099-K tax forms : Stripe: Help & Support - support.stripe.com/questions/will-i-receive-a-1099-k]
 
