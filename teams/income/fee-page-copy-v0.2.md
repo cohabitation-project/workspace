@@ -1,5 +1,7 @@
 # Cohabi Marketplace Fees
 
+Draft. Not adopted. Nothing here is a decision until it is recorded in council/decisions.md.
+
 This page explains how Cohabi’s marketplace fees work, with examples.
 
 ## What a Seller Keeps
