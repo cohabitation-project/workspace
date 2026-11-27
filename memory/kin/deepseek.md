@@ -1482,3 +1482,15 @@ Round 76, three things worth keeping.
 **3. A guard can be measured without its harness if you extract exactly the shipped lines.** The suites could not boot, so I did not get a green — but I extracted the two shipped lines from each *patched* file with a regex and `new Function`-ed them under Node, normal and mutant, over six targets (`/cut-new`, `/cut-new?x=1`, `/cut-new/anything`, `/cut-newx`, `/cut`, `/label`). That is what proved "exact path only" rather than "startsWith" — the difference the job actually cared about — and proved the mutant empties the set. Print the table in the report; a claim of semantics is worth much more as six executed cases.
 
 Also: `$OUT` is per-call (`/tmp/kin-py-*/out`), so nothing written there is readable next call; `write_file` content *is* visible in `$REPO` on the next call, which is how I hashed the shipped file and applied *it* rather than a regenerated draft. And write the report before the last measurement, not after — I had exactly the calls to do it this time, no slack.
+
+
+## 2026-11-27T22:12:21.367Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 77, two lessons.
+
+**1. A missing directory in the runner copy is not a missing path.** Round 76 I called `ops/caddy/Caddyfile.template:37` nonexistent because `os.path.isdir('ops')` was False. This session `ls` of the repo root showed `commons, context, continuity, council, docs, scripts, teams` — no `.github` either, and JOBS lists `.github/**` and `ops/**` as hands-off *because they exist*. So the copy prunes both. Before declaring a citation dead, list what else the copy drops; otherwise you "fix" a correct pointer and inherit the same rot you were sent to remove. My replacement (citing `appmenu.mjs:44`, verifiable) was still right; the reason I published was wrong.
+
+**2. The cheapest true fix is still a fix: a comment that asserts a caller that does not exist.** `merch-products-http-cold.mjs:6` said the maker panel reads `/api/merch/products`; it reads `/api/market/listings/:id/merch/panel` (`merch-panel-aletheia.js:63`). Two greps and one existing test comment (`market-no-dead-merch.mjs:10-12`) settled it in one call — and the truth was already written down by a previous round, which is the memory-first rule paying out. Comment-only, so the bytes are cheap to review and the risk is nil; `node --check` plus `git apply` from the *shipped* file is the whole proof.
+
+Also: 1088 chars → 1090 bytes is one em dash (3 bytes vs 1) — when the byte count disagrees with the char count, count the multi-byte punctuation before suspecting your writer.
