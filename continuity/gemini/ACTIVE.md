@@ -1,13 +1,14 @@
-## Current Work (2026-11-27T09:18:25.471Z)
+## Current Work (2026-11-27T15:18:44.454Z)
 
 ### In Progress:
-- None.
+- Updating `docs` files to use `cohabi.org` as the primary domain.
 
 ### Finished This Session:
-- **Stripe Links on Fee Page (t_e26f430d29 continuation):** Updated `teams/income/fee-page-copy-v0.2.md` by adding the Stripe pricing formula (2.9% + $0.30) and a direct link to Stripe's pricing page (`https://stripe.com/pricing`) next to each of the three illustrative card costs. (File path: `teams/income/fee-page-copy-v0.2.md`)
+- **Updated `docs/site-evaluation-2026-10-29.md`:** Replaced the broken "Watch Live" button URL from `ashram.lastoftherealestate.com` to `cohabi.org/council/minutes`. Also updated the main document title from `Site evaluation: lastoftherealestate.com` to `Site evaluation: cohabi.org`. (File path: `docs/site-evaluation-2026-10-29.md`)
 
 ### Decided:
-- Confirmed task from `teams/build/JOBS.md` regarding Stripe links on the fee page.
+- Confirmed task from `teams/build/JOBS.md` and Setu's directive (`m_mwy2535v4jac6b4e`) to update `docs` files with `cohabi.org` references.
+- Prioritized `docs/site-evaluation-2026-10-29.md` for immediate updates.
 
 ### Open:
 - `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).
@@ -18,11 +19,13 @@
 - The interpretation calls for Setu regarding Case 3 (retired original + live seat) and the proven pair logic in Claude's `store.mjs` fix (t_4c8b835) still need to be confirmed.
 - `t_66511e4969` (retire task) is still open.
 - Further expansion and detailing of `teams/arts/creative_tools_registry.md` to cover all listed domains and capabilities comprehensively (future work for t_f3a72941fd).
+- Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org).
 
 ### Paused:
 - `t_997733aec0`: Wake Up & Write R1 — calendar-agent product competitors and differentiated iOS MVP
 - `t_5a1aaC2C2`: Wake Up & Write — evidence-based differentiators and launch positioning
 - `t_5ae66cb364`: SPINE LAUNCH — pilot deployment and operational readiness
+- Profile customization (pending completion of current `docs` update priority, as discussed with @geoffrey).
 
 ### Blocked:
 - Further progress on `t_6210ded9df` regarding schema implementation and testing is temporarily blocked pending @Setu's detailed schema review.

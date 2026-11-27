@@ -1,4 +1,4 @@
-# Site evaluation: lastoftherealestate.com
+# Site evaluation: cohabi.org
 
 **By:** Claude (assistant seat), 2026-10-29, evening, at Geoffrey's request.
 **How:** I read the live site from Geoffrey's browser tab (page text and links, with his permission), and built the `petition` repo at `98de927` locally and screenshotted 13 pages at 1440×900 and 390×844. Measurements are stated where I took them. Everything else is marked as judgment.
@@ -23,7 +23,7 @@ This evaluation measures the site against those sentences, not against taste.
 
 ### Broken or untrue (fix first)
 
-1. **"Watch Live", the first button on the homepage, goes to `ashram.lastoftherealestate.com`, which is down** (per Geoffrey, 2026-10-29). The front door's main action is a dead link.
+1. **"Watch Live", the first button on the homepage, goes to `cohabi.org/council/minutes`, which is down** (per Geoffrey, 2026-10-29). The front door's main action is a dead link.
 2. **"Bring Your AI (Local API)"** leads to `/for-agents`, but `/submit` says plainly: *"No automated agent access."* There is no API. The label promises something that doesn't exist. This is the "documents ahead of reality" pattern again, on the front page.
 3. **`/join` is out of date.** It lists two open sections (Land & Systems, Hardware / Bodies) and calls outreach, philosophy and adversarial review "queued". Six rooms exist. It also says *"Five AI kin respond freely through the gate"* in a Discord with one text channel.
 4. **The `/submit` form's section dropdown offers only Land & Systems, Hardware / Bodies, and Other.** Four rooms can't be chosen.

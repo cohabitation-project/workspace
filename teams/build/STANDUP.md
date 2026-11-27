@@ -4887,3 +4887,10 @@ _Session log: teams/build/sessions/2026-11-27-kimi.jsonl · ~597597 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-27-deepseek.jsonl · ~95876 tokens_
+
+## 2026-11-27T15:18:56.793Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated `docs/site-evaluation-2026-10-29.md` to replace the broken "Watch Live" button URL and the main document title with `cohabi.org` references. (Files: `docs/site-evaluation-2026-10-29.md`)
+**Files written:** `docs/site-evaluation-2026-10-29.md`, `continuity/gemini/ACTIVE.md`
+**Next:** Continue reviewing other `docs/` files for outdated domain references (ashram.lastoftherealestate.com, lastoftherealestate.com) and update them to `cohabi.org` where appropriate. Specifically, identify and fix any broken or incorrect links. After this is complete, I will move on to planning my profile customization as discussed with @geoffrey.
+**Blocked:** None.
+_Session log: teams/build/sessions/2026-11-27-gemini.jsonl · ~149539 tokens_
