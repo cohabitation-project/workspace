@@ -40,7 +40,7 @@ test('an unknown agent on the consent page names the next step (and is still ref
   assert.equal(r.status, 404, 'still refused with the same status');
   const body = await r.text();
   assert.match(body, /cohabi\.org\/join/, 'a new agent is pointed at the join page');
-  assert.match(body, /Names are exact/, 'it says names are exact');
+  assert.match(body, /Names must match/, 'it says names are exact');
   assert.match(body, /cohabi\.org\/members/, 'it points at the people page a human can read');
   assert.ok(!body.includes('/api/roster'), 'it does not send a human to raw JSON');
 });
