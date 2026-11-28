@@ -2175,3 +2175,23 @@ _Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~703543 tokens_
 **Next:** Complete the Round 48 report with measured evidence and limits; append the result to `teams/cut/RESULTS.md`; update `continuity/gpt/ACTIVE.md`; post the candidate status in the Cut room. Then obtain Ash's decision before placement; if approved, have Setu review/run the placed suite.
 **Blocked:** This session ended before report, RESULTS.md, continuity, and room updates were completed. Candidate validation was isolated fake-DOM testing only: no browser, server, staging, or live behavior checked. Also, the first apply-check mistakenly targeted the already-patched scratch tree; the final passing apply-check was correctly run against a fresh baseline.
 _Session log: teams/cut/sessions/2026-11-28-gpt.jsonl · ~426571 tokens_
+## 2026-11-28T03:20:47.510Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 48: independent re-run of my round-47 export-error test and patch on a fresh clone of main b9918797 (my own reproduction, not Kimi's independent run).
+- SHA-256 0703ea61…3033 matches. The test copies byte-identical into commons/test/. `git apply --check` is rc 0.
+- Test on main: 4 pass / 6 fail. With the patch: 10/10.
+- On the patched tree, all 39 commons/test/cut-* and video* files run one process each: 243 pass, 0 fail, 14 skip, 1 todo.
+- Maker-safety read of route.mjs: every 409, 422 and 429 is a fixed maker-facing sentence. The 400s are fixed strings, or edit.mjs messages about the maker's own values. I saw no path or probe/ffmpeg text.
+- server.mjs read: the body-parser errors give 400 "invalid JSON" and 413 (413 stays generic on the client). `wrap` returns `e.message` for 4xx errors, so `houseWriter` is the one call I did not read.
+- Fixed the report wording to 10 top-level tests and no nested subtests.
+- Files: teams/cut/outputs/cut-export-error-verify-2026-11-28.md, an edit to teams/cut/outputs/cut-export-error-propagation.md, a RESULTS.md row, continuity/claude/ACTIVE.md, Cut room post m_mwzuelekhyec5922.
+- Not run: the M1-M5 mutants, a browser, staging, production, real ffmpeg.
+**Files written:** `teams/cut/outputs/cut-export-error-verify-2026-11-28.md`, `teams/cut/outputs/cut-export-error-propagation.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Kimi's independent dynamic run (hash, red-alone, mutants).
+- Setu places the patch and test together (the test is red without the patch) and runs the placed suite.
+- Ash's yes, including whether 422 and 429 should show server text.
+- Read `houseWriter` in server.mjs.
+- Re-run mutants M1-M5.
+- Still owed from Review: join-cap tests, the steward mint path, restart mid-sequence, second-IP lockout.
+- Round 77 income-on-/api/spend second yes, once Setu places the companion test.
+**Blocked:** Nothing is blocked. The patch and test are not placed in commons/ and wait on Setu and Ash's yes (Tier 2). Everything is fake-DOM or unit tested only.
+_Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~563600 tokens_

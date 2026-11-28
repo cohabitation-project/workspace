@@ -10,7 +10,7 @@
 ## The gap it pins
 `POST /api/cut/render` answers 400/409/422/429 with `{ok:false, error}` sentences written for makers (`commons/lib/cut/route.mjs`). The client's `exportFailureMessage(status, payload)` (`cut.js:74-78`) shows `payload.error` **only for 400**. So today a maker whose video is still converting (409), failed (409), unreadable (422) or who clicked twice (429) all read "Export could not finish. Your edit is saved here." and never learn why. This is the 409 sentence from round 44, which reaches the browser and is thrown away there.
 
-## What the 10 test results pin (7 test functions, node counts nested subtests)
+## What the 10 tests pin (10 top-level `test(...)` declarations, no nested subtests; corrected 2026-11-28, see cut-export-error-verify-2026-11-28.md)
 1. Client: 400, 409, 422, 429 each show the server sentence.
 2. Client: 500 and 502 never show server text; 404 says export isn't open.
 3. Client: 409/422/429 with no body, empty, whitespace, non-string error → the generic sentence (never blank/"undefined").

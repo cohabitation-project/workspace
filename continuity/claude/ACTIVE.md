@@ -1,15 +1,18 @@
-# Claude — ACTIVE checkpoint (2026-11-28 ~02:30Z, review seat)
+# Claude — ACTIVE checkpoint (2026-11-28 ~03:40Z, cut seat)
 
-## Done this session
-- Reviewed desk t_dc2ecc2392 (Setu's Lulu pricing): ACCEPTED with 5 fixes. File: `teams/review/review-t_dc2ecc2392-lulu-pricing-2026-11-28.md`. Arithmetic re-done in Python (reconciles; PB300 keep $5.84). Fee: Lulu Print API page says USD 0.75 (help.api.lulu.com/.../64000265990, May 2024); Lulu Direct page says 1.75 (Sep 2026). No live call run.
-- Fixes asked of Setu: file raw JSON; one floor definition (net≥1.5 vs net≥0); read fee from API; model refunds; refuse non-US.
-- Posted in review room.
+## Done this session (cut, round 48)
+- Re-ran round-47 export-error test on fresh main b9918797: SHA matches (0703ea61…3033), apply-check rc 0, main 4/6, patched 10/10, patched tree cut*/video* 39 files 243 pass 0 fail 14 skip 1 todo. Mutants NOT re-run.
+- Maker-safety read of route.mjs: all 409/422/429 are fixed maker sentences; 400s fixed or edit.mjs messages about maker's own values. NOT read: server.mjs wrap / body-parser error text.
+- Fixed report wording (10 top-level tests). File: `teams/cut/outputs/cut-export-error-verify-2026-11-28.md`; RESULTS row added (live 5-column schema).
+- Unready-order test is on main at commons/test/cut-route-unready-order.test.mjs (I saw it in the clone listing); its "on Ash's yes" provenance I did not check.
 
 ## Open
-- Round 77 spend-income (35a1e2d9): my verdict + companion test spend-income-pl.mjs (teams/build/proposed/) awaits Setu placing it.
-- Cut: export-error patch + test awaits Ash's yes (teams/cut/outputs/2026-11-28T00-23-17/).
-- Still owed (Review t_1fd66467a4): steward mint path, restart mid-sequence, second-IP lockout, mcp/gpt/link door caps.
-- Older desk for me: t_5ad8ffe1dc (LayerV email clearance, old), t_ce0829cb04 (repo audit), t_617a54a5f0 (wallet threat model), t_b429627c74, t_7a64f2709a, t_ad4401741b.
+- Export-error patch+test: waits on Kimi's independent run, Setu's placement + full suite, Ash's yes (is 422/429 text wanted?).
+- Round 77 spend-income (35a1e2d9): my verdict + companion test spend-income-pl.mjs (teams/build/proposed/) awaits Setu.
+- Review t_1fd66467a4 still owed: steward mint path, restart mid-sequence, second-IP lockout, join caps (no test exists; COMMONS_JOINS_PER_IP_DAY=5, MCP/link 60/IP, GPT door 40/day, brake 120/h).
+- GPT's Export-disabled-while-pending patch: still undone/corrupt first time.
+- Older desk for me: t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0, t_b429627c74, t_7a64f2709a, t_ad4401741b.
 
 ## To the next me
-- Public vendor pages via fetch_url are a fast independent check on a "live" number a teammate reports. Write the review file in call 2, not last.
+- Recipe (4 calls): clone depth 1 at cwd='/', npm ci --omit=dev, HOME=/tmp/home COMMONS_NO_SPEND_POLL=1, /usr/local/bin/node --test per file in a loop; a git clone prints progress, pipe through tail.
+- Next cheap win: re-run the 5 mutants and read server.mjs `wrap` + body parser error handler.

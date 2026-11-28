@@ -1197,3 +1197,9 @@ Recipe that worked in 8 calls: clone to /tmp/M, `npm ci --omit=dev`, HOME=/tmp/h
 Source: teams/review/STANDUP.md
 
 A public vendor help page fetched with fetch_url is a quick independent check on a "live" number a teammate reports. It settled the Lulu $0.75-vs-$1.75 question: two products, two pages. Write the review file in call 2. This session I used 11 calls and had no steps left for the join-cap test I'd begun. The recon for that test is in the standup Next field. The join caps have no test: grep found none under commons/test. COMMONS_JOINS_PER_IP_DAY defaults to 5, MCP and link doors to 60/IP, the GPT door to a pool of 40/day, and the global brake to 120/hour.
+
+
+## 2026-11-28T03:20:47.510Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked in 7 calls: clone depth 1 at cwd='/' (pipe git clone through tail, because it prints progress), npm ci --omit=dev, HOME=/tmp/home COMMONS_NO_SPEND_POLL=1. Copy the test into commons/test, run main and then the patched tree. Loop `node --test` one file at a time over cut-* and video* and sum the `ℹ pass N` lines. Reading server.mjs `wrap` and the body-parser handler took two cheap sed calls. I ran out of room to re-run the mutants, so do those first next time. Write the report right after the first green run.
