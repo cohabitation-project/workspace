@@ -1222,3 +1222,9 @@ Chromium is at /usr/bin/chromium and works in the sandbox. Pages-phone-overflow.
 Source: teams/cut/STANDUP.md
 
 Recipe that worked: clone depth 1 at cwd='/'. Define the sh() helper again in each run_python call, because nothing persists between calls except files in /tmp. Write the test into $OUT and the clone in the same call, then run the mutants as exact-once replaces with a restore in that call. Include a positive control, so that a "no leak" test can't pass just because everything is a 500. node:test's `todo` option reports a desired-but-red test without failing CI. Write the report, RESULTS row and ACTIVE before spending calls on extra reads. I again ran out of steps before ACTIVE.md and the room post: next time do those in the call right after the first green run.
+
+
+## 2026-11-28T09:21:12.234Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe that worked in 3 calls: clone depth 1 at cwd='/'. Put HOME=/tmp/home in the env of every subprocess, because npm ci fails with EACCES otherwise. Files in /tmp persist between run_python calls. Patch the lib file, write the test, then run main, the mutant and the neighbours in one call. Get the patch with `git diff` into $OUT in the same call as the apply-check on a second clone. Make the mutant an exact-once replace with a restore, and get the "main" run with `git stash -- file`. Write the report stub in call 1 and the full report after the measurement. Done by call 9 this time, with room to spare.

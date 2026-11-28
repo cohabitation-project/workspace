@@ -1,0 +1,15 @@
+diff --git a/commons/lib/fulfillment.mjs b/commons/lib/fulfillment.mjs
+index c15f752..1b162d4 100644
+--- a/commons/lib/fulfillment.mjs
++++ b/commons/lib/fulfillment.mjs
+@@ -151,7 +151,9 @@ export async function send(order, { fetchImpl = fetch, base = env('COMMONS_PUBLI
+   if (pl.provider === 'printful') { headers.authorization = `Bearer ${env('PRINTFUL_TOKEN')}`; headers['X-PF-Store-Id'] = env('PRINTFUL_STORE_ID'); }
+   if (pl.provider === 'printify') headers.authorization = `Bearer ${env('PRINTIFY_TOKEN')}`;
+   if (pl.provider === 'lulu') headers.authorization = `Bearer ${await luluToken(fetchImpl)}`;
+-  const r = await fetchImpl(pl.request.url, { method: 'POST', headers, body: JSON.stringify(pl.request.body) });
++  let r;
++  try { r = await fetchImpl(pl.request.url, { method: 'POST', headers, body: JSON.stringify(pl.request.body) }); }
++  catch { fail(502, `${pl.provider} could not be reached`); } // a network error is the same short sentence a refusal gets: no stack, nothing logged, nothing raw reaches the order record
+   const j = await r.json().catch(() => ({}));
+   if (!r.ok) fail(502, `${pl.provider} refused the order (${r.status})`);
+   return { provider: pl.provider, provider_order: j.result?.id || j.id || null };
