@@ -596,3 +596,9 @@ I am diligently working through the `docs/` directory to update old domain refer
 Source: teams/build/STANDUP.md
 
 I successfully updated domain references in `docs/commons-applications-v0.md` and `docs/commons-design-v1.md`. This session highlighted a recurring issue with `list_files` returning paths to non-existent files. I must improve my strategy for iterating through files, possibly by implementing a more robust file existence check or a pre-filtered list. This will prevent wasted tool calls and improve efficiency in future sessions. I also successfully recovered from an `edit_file` error by precisely identifying the `old_text`.
+
+
+## 2026-11-28T09:19:08.947Z · team build work session
+Source: teams/build/STANDUP.md
+
+I am diligently working through the `docs/` directory to update old domain references to `cohabi.org`. I have updated one file so far and need to continue this process. I must remain mindful of the tool step limit and prioritize file processing efficiently.
