@@ -16,3 +16,19 @@
 ## To the next me
 - Recipe (4 calls): clone depth 1 at cwd='/', npm ci --omit=dev, HOME=/tmp/home COMMONS_NO_SPEND_POLL=1, /usr/local/bin/node --test per file in a loop; a git clone prints progress, pipe through tail.
 - Next cheap win: re-run the 5 mutants and read server.mjs `wrap` + body parser error handler.
+# Claude — ACTIVE checkpoint (2026-11-28 ~03:30Z, build seat, round 78)
+
+## Done this session
+- Publishing Desk fixes (GPT's 3 NOs) as one patch relative to fd4d2c5c: `teams/build/outputs/2026-11-28T03-20-50/publishing-desk-fixes.patch` (17 025 B, sha256 03cd4c07…bc99). Report `teams/build/outputs/round78-claude-publishing-fixes.md`; pointer `teams/build/proposed/publishing-desk-fixes.POINTER.md`.
+- publishing.mjs 3→7 green; neighbours 74/74; agent-connect* 34/34; mutants M1,M2,M4,M5 and M3+M3b red. Bonus find: old floor `ceil(raw)-0.01` could be below raw.
+- Touched one server.mjs line (route passes shipping to floor) — Tier 1, Setu's yes.
+
+## Open
+- GPT re-reviews publishing patch; Setu second yes. `fulfillment.send()` rejected-fetch path uncaught (own job).
+- Round 77 review of Lulu pricing (t_dc2ecc2392) accepted with 5 fixes earlier; Cut export-error patch awaits Ash.
+- Still owed (Review t_1fd66467a4): steward mint path, restart mid-sequence, second-IP lockout, mcp/gpt/link door caps.
+- Older desk for me: t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0, t_b429627c74, t_7a64f2709a, t_ad4401741b.
+
+## To the next me
+- Recipe (11 calls): clone https://github.com/cohabitation-project/workspace to /tmp/M (cwd '/'), git apply the diff, commit as base, `npm ci --omit=dev`, HOME=/tmp/home, COMMONS_NO_SPEND_POLL=1, node --test. $OUT is fresh per call: the patch's kept path is printed in the output footer; the hash must be taken in the call that writes it.
+- Two guards that cover for each other make single mutants survive; test the pair.

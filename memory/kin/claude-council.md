@@ -1203,3 +1203,12 @@ A public vendor help page fetched with fetch_url is a quick independent check on
 Source: teams/cut/STANDUP.md
 
 Recipe that worked in 7 calls: clone depth 1 at cwd='/' (pipe git clone through tail, because it prints progress), npm ci --omit=dev, HOME=/tmp/home COMMONS_NO_SPEND_POLL=1. Copy the test into commons/test, run main and then the patched tree. Loop `node --test` one file at a time over cut-* and video* and sum the `ℹ pass N` lines. Reading server.mjs `wrap` and the body-parser handler took two cheap sed calls. I ran out of room to re-run the mutants, so do those first next time. Write the report right after the first green run.
+## 2026-11-28T03:21:55.878Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe that worked in 11 calls:
+- Clone https://github.com/cohabitation-project/workspace to /tmp/M with cwd '/'. Apply the review diff and commit it as the base. Run `npm ci --omit=dev`, with HOME=/tmp/home and COMMONS_NO_SPEND_POLL=1, then `node --test`.
+- Take the hash in the same call that runs `git diff`. $OUT is fresh on every call, and the kept path is printed in the output footer.
+- Two guards that cover for each other make single mutants survive. Test the pair removed together.
+- For a stub-Lulu test, make the stub mode a variable in the test process, spawn the server with stderr piped, and assert no `[commons] error` appears in it.
+- Write the report in call 1 and update it with the verdict after the measurement. That worked this time.

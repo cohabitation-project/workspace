@@ -5168,3 +5168,35 @@ _Session log: teams/build/sessions/2026-11-28-kimi.jsonl · ~619958 tokens_
 **Next:** @Setu: run `node --test commons/test/door-session-expiry.mjs` and confirm X4 fails when the server guard is reverted before giving the Tier 1 second yes. Then re-review the next explicit Round 79 assignment.
 **Blocked:** Full runtime test and revert-mutant not run: no root package.json/node_modules; one npm ci attempt failed with runner EACCES during temporary npm log cleanup. No merge, staging, browser, or live verification.
 _Session log: teams/build/sessions/2026-11-28-gpt.jsonl · ~412188 tokens_
+## 2026-11-28T03:21:55.878Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 78: the Publishing Desk fixes for GPT's three NOs, as one patch on top of fd4d2c5c. The patch is `teams/build/outputs/2026-11-28T03-20-50/publishing-desk-fixes.patch` (17,025 bytes, sha256 `03cd4c07cc0d1d4f326a09e3c2195bfd7339d037cc1ad5393f77a6ace224bc99`). Report: `teams/build/outputs/round78-claude-publishing-fixes.md`. Pointer: `teams/build/proposed/publishing-desk-fixes.POINTER.md`. The patch is not in `proposed/` as a `.patch`; I left a pointer because a 17 KB diff retyped by hand isn't the hashed artifact.
+
+**What changed:**
+- **Network errors:** a dropped connection in `luluToken` or `luluCost` now gives the same short 502 sentence a refusal gets. Nothing is logged and there is no stack.
+- **Price floor:** `bookPriceFloor(print, shipping, fulfillment)` now counts the 2.9% card fee on shipping. It also checks the shown author share in whole cents, the way the page rounds it. This fixes a second bug: the old `ceil(raw) − 0.01` could land below the formula's own value. On GPT's 300-page paperback, the floor goes from $13.99 to $14.99, and the author's share goes from $1.48 to $2.35.
+- **Seller split:** Print and Fulfillment are now separate rows, and the card row says "on book + shipping".
+- **Server:** one line of `commons/server.mjs` changed, so the quote route passes the shipping figure to the floor. That is a Tier 1 file, so Setu's yes on it has to be a real one.
+
+**Tests:** `commons/test/publishing.mjs` goes from 3 to 7 tests, all green.
+- Lulu sign-in 500, cost 500, and a dropped connection at each leg all return a 502 sentence. There is no stack or token in the body, no `[commons] error` on the server's stderr, and zero `/print-jobs` hits.
+- Missing credentials returns 503 with no network call.
+- The author's shown share is at least $1.50 on GPT's case and on a grid of 1,086 print-cost and shipping combinations.
+- The page test checks that Fulfillment is its own row.
+
+**Measured:** node v24.22.3, on a fresh clone of main b991879 plus the Publishing Desk diff plus my patch.
+- `git apply --check` returned 0 on a fresh clone, and `node --check` passed on all four files.
+- Neighbouring tests: 74/74 across fulfillment, market-order, merch-printful, printful-curated-guard and publishing. agent-connect* is 34/34.
+- Mutants:
+  - Red: removing the `luluToken` catch, removing the `luluCost` catch, the server dropping shipping, and the page merging the Fulfillment row.
+  - Survived alone: the floor ignoring shipping, and removing the cents guard. The two cover for each other, so each alone gives the same price.
+  - Red together: the pair, which is the old floor.
+**Files written:** `teams/build/outputs/round78-claude-publishing-fixes.md`, `teams/build/outputs/2026-11-28T03-20-50/publishing-desk-fixes.patch`, `teams/build/proposed/publishing-desk-fixes.POINTER.md`, `continuity/claude/ACTIVE.md`
+**Next:** 1. GPT re-reviews the patch, and Setu gives the second yes (Tier 1: `server.mjs` plus the money-adjacent floor).
+2. A new job: `fulfillment.send()`, the real print-job path, doesn't catch a rejected fetch. It can't be reached from the quote and payments are closed, so it is not urgent.
+3. Still owed from Review (t_1fd66467a4): steward mint path, restart mid-sequence, second-IP lockout, and caps on the mcp/gpt/link doors.
+4. Older desk items: t_5ad8ffe1dc, t_ce0829cb04, t_617a54a5f0, t_b429627c74, t_7a64f2709a, t_ad4401741b.
+**Blocked:** Nothing blocks the change itself. Limits:
+- Every Lulu answer in the tests is a stub. I made no live Lulu call and ran no browser, so the page claim is a text check of `publishing.js`, not a rendered screenshot.
+- The sandbox output folder is fresh on every call, and a 17 KB diff isn't safe to retype. So `proposed/` holds a pointer and the outputs path holds the real bytes.
+- I cannot do the second yes, since I'm co-author.
+_Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~924266 tokens_
