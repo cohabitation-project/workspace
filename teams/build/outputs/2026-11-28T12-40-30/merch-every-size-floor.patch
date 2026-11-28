@@ -1,0 +1,109 @@
+diff --git a/commons/lib/merchsets.mjs b/commons/lib/merchsets.mjs
+index 216e88a..e939780 100644
+--- a/commons/lib/merchsets.mjs
++++ b/commons/lib/merchsets.mjs
+@@ -65,11 +65,19 @@ export function money(product, vs, price) {
+   return [...bySize].map(([size, base]) => { const pays = cents(price + (base - baseMin)); const card = cents(pays * f.card_pct + f.card_fixed); const cut = cents(pays * f.cohabi_pct);
+     return { size, pays, printful: base, card_fee: card, cohabi: cut, earns: cents(pays - base - card - cut) }; });
+ }
+-/** The lowest price at which the maker still earns something on every size. */
++/** The lowest price at which the maker still earns something on EVERY size offered (DeepSeek, round 81).
++ *  A bigger size's Printful upcharge is passed on to the buyer, but the card fee on that upcharge comes out of the maker's
++ *  side, so earnings fall as the size grows: set from the cheapest size alone, the floor approved a poster at $9.59 that
++ *  lost the maker 8 cents on every 18x24 sold. So the floor is solved for the most expensive size, then settled against
++ *  money() itself a cent at a time, and it can never drift from the arithmetic the page shows. */
+ export function floor(product, vs) {
+   const f = FEES(); vs = vs?.length ? vs : product.variants;
+-  const baseMin = Math.min(...vs.map((v) => v.price));
+-  return Math.ceil(((baseMin + f.card_fixed + 0.01) / (1 - f.card_pct - f.cohabi_pct)) * 100) / 100;
++  const baseMin = Math.min(...vs.map((v) => v.price)); const baseMax = Math.max(...vs.map((v) => v.price));
++  const gap = baseMax - baseMin; // THE EVERY-SIZE LINE: the spread the maker's side carries a fee on
++  let p = Math.ceil(((baseMin + f.card_fixed + 0.01 + (f.card_pct + f.cohabi_pct) * gap) / (1 - f.card_pct - f.cohabi_pct)) * 100) / 100;
++  for (let i = 0; i < 1000 && money(product, vs, p).some((r) => r.earns < 0.01); i++) p = cents(p + 0.01); // settle where money() rounds
++  if (money(product, vs, p).some((r) => r.earns < 0.01)) fail(500, 'No price pays on every size of this product. Nothing is wrong with your art; tell a steward.');
++  return p;
+ }
+ 
+ // ------------------------------------------------------------------ print quality
+@@ -150,10 +158,10 @@ export function buySpec(listingId, key, { color = null, size = null } = {}, prod
+   const offered = chosen(p, it).filter((v) => kind !== 'colors' || colorOf(v) === color);
+   const v = offered.find((x) => sizeOf(x) === String(size || '')); if (!v) fail(400, 'Choose one of the sizes shown.');
+   const row = money(p, chosen(p, it), it.price).find((r) => r.size === sizeOf(v)); if (!row) fail(400, 'Choose one of the sizes shown.');
+-  // The floor is checked on the size being bought, not only on the smallest one (DeepSeek, round 79): the page passes each
+-  // bigger size's Printful upcharge on to the buyer and the card fee is the same on every charge, so a size approved at the
+-  // smallest size's floor earns nothing on its own; a base cost raised after the draft was saved lands the same way. Buying
+-  // is the last moment before money moves, and the sentence is the one saveDraft and approve() use.
++  // The floor is checked on the size being bought (DeepSeek, round 79), because the page passes each bigger size's Printful
++  // upcharge on to the buyer while the card fee is the same on every charge. Since round 81 the floor covers every size, so
++  // approve() refuses such a price at the source: what still reaches this check is a base cost raised after approval, or a
++  // set saved before that rule. Buying is the last moment before money moves, and the sentence is saveDraft and approve()'s.
+   checkFloor(p, [v], row.pays); // the floor on the size being bought
+   return { product: key, product_id: p.id, variant_id: v.id, color: kind === 'colors' ? color : null, size: sizeOf(v),
+     title: `${shortTitle(it.title)}${kind === 'colors' ? `, ${color}` : ''}, ${sizeOf(v)}`, price: row.pays, printful_cost: row.printful,
+@@ -191,10 +199,16 @@ function setFor(l, art, member) {
+ 
+ /** The price floor, in one place: a price under it earns nothing once Printful's cost and the card fee are taken out, so
+  *  it is refused with the lowest price that does pay. saveDraft runs it on the price being saved; approve() runs it again
+- *  on the saved one, because a price can change after a draft is saved. */
++ *  on the saved one, because a price can change after a draft is saved. The floor covers every size offered, so a price
++ *  that pays on the small size and loses on the big one is refused when it is saved, not only when a buyer picks the big
++ *  one (round 81). */
+ function checkFloor(p, vs, price) {
+   const pr = cents(Number(price)); const fl = floor(p, vs);
+-  if (!(pr >= fl)) fail(400, `${shortTitle(p.title)}: at $${Number(price || 0).toFixed(2)} you'd earn nothing after Printful's cost and fees. The lowest price that pays you is $${fl.toFixed(2)}.`);
++  if (!(pr >= fl)) {
++    // Name the sizes that lose, so the sentence is true at THIS price: one size named, or every size (the whole product).
++    const rows = money(p, vs, pr); const losing = rows.filter((r) => r.earns < 0.01).map((r) => r.size); const all = losing.length === rows.length;
++    fail(400, `${shortTitle(p.title)}: at $${Number(price || 0).toFixed(2)} you'd earn nothing${all ? '' : ` on ${losing.join(', ')}`} after Printful's cost and fees. The lowest price that pays you${all ? '' : ' on every size'} is $${fl.toFixed(2)}.`);
++  }
+   return { pr, fl };
+ }
+ 
+diff --git a/commons/test/merch-buyspec-floor.mjs b/commons/test/merch-buyspec-floor.mjs
+index c6df5e4..69f121e 100644
+--- a/commons/test/merch-buyspec-floor.mjs
++++ b/commons/test/merch-buyspec-floor.mjs
+@@ -76,21 +76,23 @@ test('a size or a raised Printful cost that the approved price no longer covers
+     //   12×16 at $9.00  -> ceil(9.31 / 0.971 * 100) / 100 = $9.59
+     //   18×24 at $12.00 -> ceil(12.31 / 0.971 * 100) / 100 = $12.68
+     //   12×16 at $20.00 -> ceil(20.31 / 0.971 * 100) / 100 = $20.92
+-    const s = await approved(9.59, url); // approved at exactly the smallest size's floor
++    const s = await approved(9.68, url); // approved at the every-size floor (round 81: $9.59 is refused at saveDraft now)
+ 
+     // 1. The smallest size can still be bought: the check is not refusing everything.
+     const small = s.merchsets.buySpec(s.id, 'poster', { size: '12×16' }, atPrices(POSTER));
+-    assert.equal(small.price, 9.59, 'the 12×16 pays the price the page shows');
++    assert.equal(small.price, 9.68, 'the 12×16 pays the price the page shows');
+     assert.equal(small.variant_id, 5000, 'and it is Printful variant 5000');
+ 
+-    // 2. The bigger size passes its upcharge on ($12.59), which is under its own floor ($12.68): refused, same sentence.
++    // 2. The bigger size passes its upcharge on ($12.68), exactly its own floor: buyable, maker earns a cent. Round 79
++    //    refused this sale because the approved price could be the smallest size's floor; since round 81 such a price
++    //    cannot be approved at all (merch-every-size-floor.test.mjs), so the sale is right and so is the price.
+     //    Measured with this module's own money(): without the check the maker would earn -$0.08 on that sale.
+     const XL = atPrices(POSTER).find((p) => p.key === 'poster').variants[1];
+     assert.equal(s.merchsets.money(atPrices(POSTER)[0], atPrices(POSTER)[0].variants, 9.59).find((r) => r.size === XL.size).earns, -0.08, 'the 18×24 sale at $12.59 loses the maker 8 cents');
+-    const big = await refusal(() => s.merchsets.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER)));
++    const big = s.merchsets.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER));
+     assert.equal(big.status, 400, `the 18×24 is refused (got: ${big.ok ? 'a spec' : big.text})`);
+-    assert.match(big.text, /at \$12\.59 you'd earn nothing after Printful's cost and fees/);
+-    assert.match(big.text, /The lowest price that pays you is \$12\.68\./, 'the same sentence saveDraft and approve() use');
++    assert.equal(big.price, 12.68, 'the 18×24 pays exactly its own floor');
++    assert.equal(s.merchsets.money(atPrices(POSTER)[0], atPrices(POSTER)[0].variants, 9.68).find((r) => r.size === '18×24').earns, 0.01, 'and the maker earns a cent on that sale');
+ 
+     // 3. A base cost raised after the draft was saved (cached products refreshed, approved price unchanged): refused too.
+     const risen = await refusal(() => s.merchsets.buySpec(s.id, 'poster', { size: '12×16' }, atPrices({ '12×16': '20.00', '18×24': '25.00' })));
+@@ -111,10 +113,10 @@ test('a size or a raised Printful cost that the approved price no longer covers
+       const mutFile = path.join(libDir, `.merchsets-buyspec-mutant-${process.pid}.mjs`); fs.writeFileSync(mutFile, mut);
+       let M; try { M = await import(pathToFileURL(mutFile).href); } finally { fs.rmSync(mutFile, { force: true }); }
+       M.init(s.D);
+-      const wentBig = M.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER));
+-      assert.equal(wentBig.price, 12.59, 'with the check removed the losing 18×24 sale goes through');
++      // The 18×24 is no longer the losing case here: at $9.68 it pays its own floor. The losing price is now refused at
++      // saveDraft, and that mutant lives in merch-every-size-floor.test.mjs.
+       const wentRisen = M.buySpec(s.id, 'poster', { size: '12×16' }, atPrices({ '12×16': '20.00', '18×24': '25.00' }));
+-      assert.equal(wentRisen.price, 9.59, 'and so does the 12×16 at a $20.00 base');
++      assert.equal(wentRisen.price, 9.68, 'and so does the 12×16 at a $20.00 base');
+     }
+   } finally { srv.close(); }
+ });
