@@ -1,0 +1,88 @@
+// The maker's own screen shows the every-size floor (DeepSeek, round 82).
+// Round 81 moved floor() to cover every size and made saveDraft/approve refuse the old price. This proves the number
+// reaches the maker's screen: panel() — the payload the maker's page reads — hands the poster floor 9.68, and the size
+// rows the maker sees at that price each earn at least a cent. Server-free: a stand-in Printful on a free port and the
+// modules' own inits, no server.mjs (the same pattern as merch-every-size-floor.test.mjs).
+//
+// ONE CORRECTION TO THE JOB'S PREMISE, checked in the source: view() does NOT expose `floor`. panel() does, as
+// `floor: floor(p, [])` per product (commons/lib/merchsets.mjs), and panel() is what the maker's page reads —
+// merch-panel-aletheia.js:63 asks for /api/market/listings/:id/merch/panel. view() carries the price and the per-size
+// money rows; the floor lives one level up, in panel(). So this test asserts panel().floor and the view() rows it
+// hands down, and it asserts them together, because a panel that shows a floor its rows contradict is the bug.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import http from 'node:http';
+import { freePort } from './lib/port.mjs';
+
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC', 'base64');
+// The same poster as merch-every-size-floor.test.mjs: $3.00 of spread between the two sizes, 2.9% of which the maker's
+// side pays as card fee. Its every-size floor is 9.68; the cheapest size's floor alone was 9.59.
+const POSTER = { '12×16': '9.00', '18×24': '12.00' };
+
+/** A stand-in Printful: one poster, priced as POSTER says. No mockup work: this test never asks for a photo. */
+async function standin() {
+  const port = await freePort();
+  const srv = http.createServer((req, res) => {
+    const u = new URL(req.url, 'http://x'); const json = (code, o) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
+    const variants = Object.entries(POSTER).map(([size, price], i) => ({ id: 5000 + i, name: size, size, price, in_stock: true }));
+    if (u.pathname === '/products/71') return json(200, { code: 200, result: { product: { id: 71, title: 'Enhanced Matte Paper Poster | 12×16', currency: 'USD', is_discontinued: false }, variants } });
+    if (u.pathname === '/mockup-generator/printfiles/71') return json(200, { code: 200, result: { available_placements: { front: 'Front print' }, printfiles: [{ printfile_id: 1, width: 3000, height: 4000, dpi: 300 }], variant_printfiles: variants.map((v) => ({ variant_id: v.id, placements: { front: 1 } })) } });
+    if (u.pathname.startsWith('/mockup-generator/templates/')) return json(200, { code: 200, result: { version: 1, min_dpi: 300, variant_mapping: [], templates: [] } });
+    return json(404, { code: 404 });
+  });
+  await new Promise((r) => srv.listen(port, '127.0.0.1', r));
+  return { srv, url: `http://127.0.0.1:${port}` };
+}
+
+/** The product list view() and panel() take: the same poster, at the prices Printful charges right now. */
+const atPrices = (prices) => [{ key: 'poster', id: 71, title: 'Enhanced Matte Paper Poster | 12×16', placement: 'front',
+  area: { width: 3000, height: 4000 },
+  variants: Object.entries(prices).map(([size, price], i) => ({ id: 5000 + i, name: size, size, price, area: { width: 3000, height: 4000 }, dpi: 300 })) }];
+
+/** A maker with one live listing and the poster saved as a draft at the every-size floor. */
+async function makerWithDraft(price, apiUrl) {
+  const D = fs.mkdtempSync(path.join(os.tmpdir(), 'merch-view-floor-'));
+  Object.assign(process.env, { PRINTFUL_TOKEN: 'test-token', PRINTFUL_API_URL: apiUrl, PRINTFUL_MOCKUPS_PER_MINUTE: '10', COMMONS_FEE_PERCENT: '0',
+    PRINTFUL_PRODUCTS: JSON.stringify([{ key: 'poster', id: 71 }]) });
+  const store = await import('../lib/store.mjs'); const images = await import('../lib/images.mjs');
+  const market = await import('../lib/market.mjs'); const merchsets = await import('../lib/merchsets.mjs'); const printful = await import('../lib/printful.mjs');
+  fs.writeFileSync(path.join(D, 'members.json'), JSON.stringify({ members: [{ id: 'm_painter', name: 'Painter One', kind: 'human', joined: '2026-11-01T00:00:00.000Z' }] }));
+  store.init(D); images.init(D); market.init(D); merchsets.init(D); printful.resetCache();
+  market.setHooks({ member: (id) => store.getMember(id), imageOwned: (m, id) => images.ownedBy(m, id) }); // as server.mjs:240 wires it
+  const maker = store.getMember('m_painter'); assert.ok(maker, 'the maker is seeded');
+  const art = images.upload(maker, { data: PNG, alt: 'a spiral sun over a city' });
+  const l = market.create(maker, { title: 'Spiral Sun', text: 'A painting.', category: 'art', type: 'product', price: { mode: 'quote' }, license: 'all-rights', rights: true, images: [art.id] });
+  const saved = await merchsets.saveDraft(maker, l.id, 'poster', { sizes: Object.keys(POSTER), scale: 0.6, x: 0.5, y: 0.3, price });
+  return { D, store, images, market, merchsets, printful, maker, id: l.id, art, saved };
+}
+
+test('the maker\'s panel shows the every-size floor, and the size rows under it all earn a cent', async () => {
+  const { srv, url } = await standin();
+  try {
+    const s = await makerWithDraft(9.68, url);
+    assert.equal(s.saved.price, 9.68, 'the draft is saved at the every-size floor');
+    const panel = await s.merchsets.panel(s.maker, s.id);
+    const poster = panel.products.find((p) => p.product === 'poster');
+    assert.ok(poster, 'the panel offers the poster');
+    assert.equal(poster.floor, 9.68, 'the panel hands the maker the every-size floor, not the cheapest size\'s 9.59');
+    // The price the maker saved is what the panel shows as current, and its rows are the maker's own money breakdown.
+    assert.equal(poster.current.price, 9.68, 'the panel shows the saved price');
+    const rows = poster.current.sizes;
+    assert.deepEqual(rows.map((r) => [r.size, r.pays, r.earns + 0]), // + 0: money() can round to -0
+      [['12×16', 9.68, 0.10], ['18×24', 12.68, 0.01]], 'at the floor the 18×24 sells for 12.68 and still earns a cent');
+    assert.ok(rows.every((r) => r.earns >= 0.01), 'no size row under the panel floor loses the maker money');
+    // The same rows reach the maker's view() call, so the page and the panel cannot disagree about the money.
+    const view = s.merchsets.view(s.id, { owner: true, products: atPrices(POSTER) });
+    const item = view.items.find((i) => i.product === 'poster');
+    assert.ok(item, 'the maker\'s view carries the poster');
+    assert.equal(item.price, 9.68, 'view() carries the same price');
+    assert.deepEqual(item.sizes.map((r) => [r.size, r.pays, r.earns + 0]),
+      [['12×16', 9.68, 0.10], ['18×24', 12.68, 0.01]], 'and the same per-size rows');
+    // What the old floor would have shown the maker: a floor the 18×24 cannot pay, which is why the panel must not show 9.59.
+    const old = s.merchsets.money(atPrices(POSTER)[0], atPrices(POSTER)[0].variants, 9.59);
+    assert.deepEqual(old.map((r) => [r.size, r.earns + 0]), [['12×16', 0.01], ['18×24', -0.08]], 'at 9.59 the panel would show -0.08 on the big size');
+  } finally { srv.close(); }
+});

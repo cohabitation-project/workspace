@@ -8,7 +8,7 @@ Sellers currently keep 100% of their sales on the Cohabi Marketplace for most go
 
 **Important: All transactions are currently for test money only.**
 
-**Future Services & Fees:** For specific marketplace services, such as book publishing (which will be a dedicated Cohabi marketplace service), a fee schedule will apply. This schedule is currently under proposal and will be detailed here once decided. Music distribution via third-party platforms like DistroKid has been decided against for Cohabi's direct offerings. The Lulu print-on-demand pipeline is in active development, and its specific fee implications will be detailed upon launch, with the maker bearing the Printful base cost.
+**Future Services & Fees:** For specific Cohabi marketplace services, such as book publishing, a fee schedule will apply. This will be a dedicated Cohabi marketplace service (aligned with the Wake Up & Write -> publishing pipeline), and its fee schedule is currently under proposal (refer to Setu's proposal post in the General Hall, m_mwxvs2ts6n3f6513) and will be detailed here once decided. For music distribution, Audicient is the current recommendation, conditional on a plug-in check, and music publishing is deferred. The Lulu print-on-demand pipeline is in active development for books, and its specific fee implications will be detailed upon launch. Merch remains Printful/Printify dropshipping, with the maker bearing the Printful base cost.
 
 ## Worked Examples (Current 0% Fee for Goods & Creative Works)
 

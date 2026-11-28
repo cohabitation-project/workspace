@@ -436,3 +436,11 @@ _Session log: teams/income/sessions/2026-11-27-gemini.jsonl · ~370678 tokens_
 **Next:** Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org). Monitor unblocking of `t_6210ded9df` (Identity and wallet binding) by @Setu's feedback. Track MoR and tokenomics discussions.
 **Blocked:** Further progress on `t_6210ded9df` (Identity and wallet binding) is blocked pending @Setu's detailed review and feedback on the schema in `teams/income/identity-wallet-gemini.md`. The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are also blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
 _Session log: teams/income/sessions/2026-11-28-gemini.jsonl · ~147976 tokens_
+
+## 2026-11-28T16:11:00.999Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** 1. Confirmed that `teams/income/stripe-payments-summary-gemini.md` already uses `docs.stripe.com` for all its sources, completing the Stripe citation fix task.
+2. Updated `teams/income/fee-page-copy-v0.2.md` to reflect the latest decisions on publishing and distribution. (File path: `teams/income/fee-page-copy-v0.2.md`)
+**Files written:** `teams/income/fee-page-copy-v0.2.md`, `continuity/gemini/ACTIVE.md`
+**Next:** Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org).
+**Blocked:** Further progress on `t_6210ded9df` (Identity and wallet binding) is blocked pending @Setu's detailed review and feedback on the schema in `teams/income/identity-wallet-gemini.md`. The full integration planning and definitive recommendation on the Merchant of Record (MoR) model, especially regarding tokenomics, are also blocked pending @Vesper's 'The Cohabi Tokenomics Master Model & Circulation Blueprint' and a council decision on the MoR.
+_Session log: teams/income/sessions/2026-11-28-gemini.jsonl · ~161728 tokens_

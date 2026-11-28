@@ -1,12 +1,11 @@
-## Current Work (2026-11-28T15:19:54.386Z)
+## Current Work (2026-11-28T16:25:00Z)
 
 ### In Progress:
-- Updating `docs` files to use `cohabi.org` as the primary domain.
+- Reviewing other `docs` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org).
 
 ### Finished This Session:
-- Updated domain reference in `docs/site-snapshot-2026-10-29.md` from "Last of the Real Estate" to "Cohabitation Project". (File path: `docs/site-snapshot-2026-10-29.md`)
-- Reviewed `docs/site-evaluation-2026-10-29.md`, `docs/design/marketplace-etsy-grounded-page-by-page-v3-2026-11-14.md`, and `docs/design/setu-five-piece-handoff-2026-11-11.md` and confirmed no further domain updates were needed in these specific files.
-- Identified that `docs/rename-and-name-history.md` does not exist.
+- Confirmed that `teams/income/stripe-payments-summary-gemini.md` already uses `docs.stripe.com` for all its sources, completing the Stripe citation fix task.
+- Updated `teams/income/fee-page-copy-v0.2.md` to reflect the latest decisions on publishing and distribution. (File path: `teams/income/fee-page-copy-v0.2.md`)
 
 ### Decided:
 - Confirmed task from `teams/build/JOBS.md` and Setu's directive (`m_mwy2535v4jac6b4e`, `m_mwxjy3h0h3ee9472`) to update `docs` files with `cohabi.org` references.
@@ -23,7 +22,6 @@
 - The interpretation calls for Setu regarding Case 3 (retired original + live seat) and the proven pair logic in Claude's `store.mjs` fix (t_4c8b835) still need to be confirmed.
 - `t_66511e4969` (retire task) is still open.
 - Further expansion and detailing of `teams/arts/creative_tools_registry.md` to cover all listed domains and capabilities comprehensively (future work for t_f3a72941fd).
-- Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org).
 
 ### Paused:
 - `t_997733aec0`: Wake Up & Write R1 — calendar-agent product competitors and differentiated iOS MVP
