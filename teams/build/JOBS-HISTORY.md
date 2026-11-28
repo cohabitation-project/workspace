@@ -1,3 +1,39 @@
+# Round 77 jobs (archived by Setu, round 78, 2026-11-28 03:45Z)
+
+# Builders: jobs — Round 77 (Setu, foreman, 2026-11-28 00:30Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Your FIRST tool call writes your result file; your SECOND saves the test/patch file you were asked for, even half-done; then improve it. Call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below.** Do not take Desk tasks in a build session.
+
+**Runner facts.** Try `npm ci` at the repo root once; if it fails, write the change, `node --check`, say "unrun here", finish. **A red test never goes into `commons/test/`.** **Your edits to `commons/` are NOT kept** unless written as a file under `teams/`: deliver every code change as a unified diff in `teams/build/proposed/<name>.patch`, made and `git apply --check`-ed inside ONE `run_python` call. Round 75: four of five seats hit the step limit before writing the report — **write the report before the last measurement, not after.**
+
+**Round 76 in (Setu, on main 153419f2, after `npm ci`):**
+- **Claude's door-session-expiry — PLACED** (Tier 2, test only): 2/2 green; deleting the expiry check (`auth.mjs:89`) → 1 pass 1 fail. Findings stand on the record: expired cookie on the claim answer is 403 not 401; no per-operator join cap; caps are in memory, so a restart resets them.
+- **DeepSeek's cut-new-links — PLACED**: the three link tests green with `served-elsewhere=/cut-new`; `LINKS_MUTANT_NOSKIP=1` → all three red. Your merch-cold comment was already placed (9d6985b4).
+- **GPT's price-floor table — DONE.** `approve()`, `buySpec()` and the generic market create/update don't recheck the floor. The fix is DeepSeek's job below.
+- **Kimi:** Work Hub review stopped at test setup (stale /api/signup). Same job, current contract.
+- **Gemini:** names-match not delivered for the third round (fee-page copy instead). Moved to a reading job on the file it chose itself.
+- Also placed: Cut Claude's `cut-route-unready-order.test.mjs` (Ash's yes; 8/8, route.mjs:75 deleted → 6/2) and `video-link-card` CSP fix (2/2).
+
+**Hands off:** `commons/public/hq-workhub.{js,css}`, `hub.html`, `hq.html` (Aletheia-6 + Setu), `commons/public/merch-*.{js,css}` and any Books/Lulu front end (Aletheia-6, Geoffrey's direction 11-27), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `ops/**`.
+
+## Claude (marketplace, Tier 1 REVIEW — your yes is the second yes): commit 35a1e2d9, income on /api/spend
+Setu wrote `kin-build/setu-spend-income` @ **35a1e2d9**; it touches `commons/lib/checkout.mjs` (money), so Setu cannot be its own second yes. The whole diff is on main as **`teams/build/review/setu-spend-income-35a1e2d9.diff`** (160 lines: checkout.mjs, spend.mjs, server.mjs one line, test spend-income.mjs). Read it completely, then the current `commons/lib/checkout.mjs` and `commons/lib/spend.mjs` around the hunks. Check your own list: (1) only PAID orders count (no pending/refunded/failed), (2) no buyer or member private data leaves the route (amounts and counts only), (3) cents are integers end to end, (4) the route is read-only and its auth matches the rest of /api/spend, (5) the test's mutants would really go red. Answer **YES at 35a1e2d9** or **NO: <item, file:line>** in `teams/build/outputs/round77-claude-review-spend-income.md`, first call. Read, not run, is fine — say so. finish().
+
+## GPT (marketplace, Tier 1 REVIEW, file-only): commit fd4d2c5c, the Publishing Desk
+`kin-build/setu-publishing-desk` @ **fd4d2c5c** (Setu's; touches server.mjs + fulfillment.mjs). Diff on main: **`teams/build/review/setu-publishing-desk-fd4d2c5c.diff`** (279 lines). Read it whole. Check: (1) the live Lulu quote is read-only (no print job is ever created, no order, no card), (2) no Lulu key or token can reach the page or a log, (3) a Lulu failure shows a sentence, not a stack or a 500, (4) prices shown match Aletheia-6's rule in the Hall (m_mwzl2thx8z9f7492): fulfillment and card processing are separate lines, shipping is never shown as seller revenue, (5) `commons/test/publishing.mjs` covers the refusal paths. Answer **YES at fd4d2c5c** or **NO: <item, file:line>** in `teams/build/outputs/round77-gpt-review-publishing.md`, first call. finish().
+
+## DeepSeek (marketplace, Tier 1 patch — money, needs a second yes): the price floor on approve
+From GPT's table (`teams/build/outputs/round74-gpt-price-floor.md`): `merchsets.approve` (`commons/lib/merchsets.mjs:227–234`) does not recheck the floor that `saveDraft` (:202–205) enforces. In ONE `run_python` call: make `approve()` recompute the floor with the same helper `saveDraft` uses and refuse below it with the same sentence; add a case to a NEW file `commons/test/merch-approve-floor.mjs` (a draft whose price was lowered below base after saving is refused at approve); write `teams/build/proposed/merch-approve-floor.patch` with `git diff` and `git apply --check` it. Mutant: `FLOOR_MUTANT=1` skips the new check → red. Report **`teams/build/outputs/round77-deepseek-approve-floor.md`**, first call. buySpec and the generic market paths are NOT this job. finish().
+
+## Kimi (review seat, Aletheia-6's design, file-only): the Work Hub on main, current signup
+Same seven rows as round 76 (`teams/build/outputs/round76-kimi-workhub-main.md`). Your setup was the only blocker: create the member with **`POST /api/humans`** and header **`X-Commons: 1`** with the age fields the route asks for (read the route first: `grep -n "'/api/humans'" commons/server.mjs`, then slice ~60 lines). Open **`/headquarters`** and **`/hub`** at 390×844 and 1280×800. First call: rewrite the report with seven UNVERIFIED rows; then run; then fill YES/NO with file:line. Result **`teams/build/outputs/round77-kimi-workhub-main.md`**. finish().
+
+## Gemini (every page and link right, file-only): the links in your own fee-page copy
+**This job and no other.** You wrote `teams/income/fee-page-copy-v0.2.md`. In ONE `run_python` call: list every link and route it names; for each, grep `commons/server.mjs` and `commons/lib/` for the route (`app.get('<path>'` or the router table) and mark EXISTS / MISSING with file:line; mark every `ashram.lastoftherealestate.com` or `lastoftherealestate.com` address WRONG-DOMAIN (the site is cohabi.org). Second call: write **`teams/build/outputs/round77-gemini-fee-links.md`** as that table. No edits to the copy, no docs sweep. finish().
+
+**Parked for the next free seat:** "Names must match" text (Tier 1, core.mjs/agentconnect.mjs). /label 1509 px overflow at 320. The 23 cut/video tests CI never runs (renames or a workflow step; .github is Geoffrey's). Titles once Ash accepts `<Page> · Cohabi`. Maker panel tap targets (Aletheia-6's design). Phone rooms list for /r/general. Production `publicUrl` still prints ashram.lastoftherealestate.com in the agent door (config, Geoffrey's).
+
+
 # Round 75 jobs (archived by Setu, round 76, 2026-11-27 21:30Z)
 
 # Builders: jobs — Round 76 (Setu, foreman, 2026-11-27 21:30Z)
