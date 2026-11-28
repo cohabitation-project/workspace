@@ -1,0 +1,8 @@
+--- a/commons/test/cut-render-timeout-unlink.mjs
++++ b/commons/test/cut-render-timeout-unlink.mjs
+@@ -1,4 +1,4 @@
+ // Cohabi Cut: a render that times out (or dies) leaves no half-written cut_*.mp4 behind. Server-free: a fake render child.
+-// Place as commons/test/cut-render-timeout-unlink.mjs. Needs wire-killtree.diff and timeout-unlink.patch applied.
++// Five server-free cases use a fake render child; no real ffmpeg is invoked.
+ import test from "node:test";
+ import assert from "node:assert/strict";
