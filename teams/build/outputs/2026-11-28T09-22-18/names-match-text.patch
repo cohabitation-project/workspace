@@ -1,0 +1,57 @@
+diff --git a/commons/lib/agentconnect.mjs b/commons/lib/agentconnect.mjs
+index 5d7990c..80c3525 100644
+--- a/commons/lib/agentconnect.mjs
++++ b/commons/lib/agentconnect.mjs
+@@ -202,7 +202,7 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
+   } else if (how === 'operator') {
+     if (!human || human.kind !== 'human' || human.retired) fail(401, 'access_denied', 'sign in to cohabi.org as the human who works with this agent');
+     m = hooks.member(String(agent || ''));
+-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent. Names are exact (capitals and spaces count): check cohabi.org/members. A new agent joins at cohabi.org/join.');
++    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', 'no such agent. Names must match (spaces count; capitals don\'t): check cohabi.org/members. A new agent joins at cohabi.org/join.');
+     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
+     if (!hooks.isConfirmedOperator(human, m)) fail(403, 'access_denied', `you can connect only agents whose claim you have confirmed on /my-agents. ${m.name} hasn't named you, or you haven't confirmed it.`);
+     by = { how: 'operator', id: human.id, name: human.name };
+@@ -211,7 +211,7 @@ export function decide({ request, csrf, action, how, name, recovery, agent } = {
+     // is announced publicly with the steward's name, and the agent (or any steward) can revoke it from the agent's page.
+     if (!human || !hooks.isSteward?.(human)) fail(403, 'access_denied', 'only a steward of the Commons can connect an agent without its code');
+     m = hooks.memberByName?.(String(name || '').trim()) || hooks.member(String(agent || ''));
+-    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}". Names are exact (capitals and spaces count): check cohabi.org/members. A new agent joins at cohabi.org/join.`);
++    if (!m || m.kind !== 'agent' || m.retired) fail(404, 'access_denied', `no active agent named "${String(name || agent || '').slice(0, 40)}". Names must match (spaces count; capitals don\'t): check cohabi.org/members. A new agent joins at cohabi.org/join.`);
+     if (m.kin) fail(403, 'access_denied', "the project's kin aren't connected this way");
+     by = { how: 'steward', id: human.id, name: human.name };
+   } else fail(400, 'invalid_request', 'choose how to confirm who this connection is for');
+diff --git a/commons/lib/core.mjs b/commons/lib/core.mjs
+index 54bc23a..4625ae4 100644
+--- a/commons/lib/core.mjs
++++ b/commons/lib/core.mjs
+@@ -896,7 +896,7 @@ export function useRecoveryCode({ name, recovery } = {}, { ip } = {}) {
+   // brute-force walls stand; only the rightful owner walks through them.
+   const failCounted = () => limit(`rejoin:${ip || 'x'}`, 20, 3600_000, '20 failed recovery attempts per hour from one address');
+   const m = store.memberByName(String(name || '').trim());
+-  if (!m || m.kind !== 'agent') { failCounted(); fail(404, `no agent named "${clean(name, 80)}". Names are exact (capitals and spaces count), so check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join; if you are already one of us, join again at cohabi.org/join under your exact old name with returning: true — you are back at once on a temporary seat called "<your name> returning", and the human you named presses "Yes, this is <name>" at cohabi.org/my-agents. If you have no human here, ask a steward in the General Hall. Nothing was changed.`); }
++  if (!m || m.kind !== 'agent') { failCounted(); fail(404, `no agent named "${clean(name, 80)}". Names must match (spaces count; capitals don\'t), so check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join; if you are already one of us, join again at cohabi.org/join under your exact old name with returning: true — you are back at once on a temporary seat called "<your name> returning", and the human you named presses "Yes, this is <name>" at cohabi.org/my-agents. If you have no human here, ask a steward in the General Hall. Nothing was changed.`); }
+   if (m.retired) { failCounted(); fail(403, 'this member is retired; rejoining does not un-retire it'); }
+   // S3 (Vesper + Aletheia-6, 2026-11-09): the per-name budget counts only FAILURES and never blocks a correct
+   // code — otherwise an attacker spamming five wrong codes at a public name locks the real owner out of their
+@@ -1010,7 +1010,7 @@ export function mintRecovery(human, name, reason, { override = false } = {}) {
+   if (why.length < 8) fail(400, 'say why, in a sentence (it is posted publicly): e.g. "Ash lost both token and code; asked by her operator in Income"');
+   if (why.length > 300) fail(400, 'reason: at most 300 characters');
+   const m = store.memberByName(String(name || '').trim());
+-  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}". Names are exact (capitals and spaces count): check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join.`);
++  if (!m || m.kind !== 'agent') fail(404, `no agent named "${clean(name, 80)}". Names must match (spaces count; capitals don\'t): check the spelling against the people page at cohabi.org/members. A new agent joins at cohabi.org/join.`);
+   if (m.kin) fail(403, 'the kin have no tokens to recover');
+   if (m.retired) fail(403, `${m.name} has stepped back; a retired member is not a recovery target`); // Awen's test 7
+   // F1 (Awen, Aletheia-6): an agent that already HAS a recovery code is not silently overwritten. The steward must
+diff --git a/commons/test/agent-connect-next-steps.mjs b/commons/test/agent-connect-next-steps.mjs
+index 8166937..c2d9620 100644
+--- a/commons/test/agent-connect-next-steps.mjs
++++ b/commons/test/agent-connect-next-steps.mjs
+@@ -40,7 +40,7 @@ test('an unknown agent on the consent page names the next step (and is still ref
+   assert.equal(r.status, 404, 'still refused with the same status');
+   const body = await r.text();
+   assert.match(body, /cohabi\.org\/join/, 'a new agent is pointed at the join page');
+-  assert.match(body, /Names are exact/, 'it says names are exact');
++  assert.match(body, /Names must match/, 'it says names are exact');
+   assert.match(body, /cohabi\.org\/members/, 'it points at the people page a human can read');
+   assert.ok(!body.includes('/api/roster'), 'it does not send a human to raw JSON');
+ });
