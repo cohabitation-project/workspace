@@ -184,6 +184,15 @@ function setFor(l, art, member) {
   return s;
 }
 
+/** The price floor, in one place: a price under it earns nothing once Printful's cost and the card fee are taken out, so
+ *  it is refused with the lowest price that does pay. saveDraft runs it on the price being saved; approve() runs it again
+ *  on the saved one, because a price can change after a draft is saved. */
+function checkFloor(p, vs, price) {
+  const pr = cents(Number(price)); const fl = floor(p, vs);
+  if (!(pr >= fl)) fail(400, `${shortTitle(p.title)}: at $${Number(price || 0).toFixed(2)} you'd earn nothing after Printful's cost and fees. The lowest price that pays you is $${fl.toFixed(2)}.`);
+  return { pr, fl };
+}
+
 /** Save the maker's choices for one product as a DRAFT: colours (or sizes), where the art sits and how it's turned, and
  *  the price. Moving or turning the art, or changing what's offered, takes an approved product back to draft. */
 export async function saveDraft(member, listingId, key, { colors, sizes, scale, x, y, rot, price } = {}) {
@@ -200,8 +209,7 @@ export async function saveDraft(member, listingId, key, { colors, sizes, scale, 
   const r = Number(rot) || 0; if (!ROTS.includes(r)) fail(400, 'Turn the art by 90° steps.');
   const pos = { scale: clamp(scale, 0.1, 1, 0.7), x: clamp(x, 0, 1, 0.5), y: clamp(y, 0, 1, 0.3), rot: r };
   const probe = { colors: cols, sizes: szs }; const vs = chosen(p, probe);
-  const pr = cents(Number(price)); const fl = floor(p, vs);
-  if (!(pr >= fl)) fail(400, `${shortTitle(p.title)}: at $${Number(price || 0).toFixed(2)} you'd earn nothing after Printful's cost and fees. The lowest price that pays you is $${fl.toFixed(2)}.`);
+  const { pr } = checkFloor(p, vs, price);
   if (pr > 10000) fail(400, 'That price is too high.');
   const s = setFor(l, art, member); const old = s.items[key]; const opts = kind === 'colors' ? cols : szs;
   const moved = !old || posKey(old.pos) !== posKey(pos) || (old.colors || []).join('|') !== cols.join('|') || (old.sizes || []).join('|') !== szs.join('|');
@@ -228,6 +236,9 @@ export async function approve(member, listingId, key) {
   const { l } = mine(member, listingId); const it = sets[l.id]?.items?.[key];
   if (!it) fail(404, 'Save this product first.');
   const p = await productOf(key); const opts = optionsOf(p, it); const pk = posKey(it.pos);
+  // The floor is checked here again, not only when the draft was saved: the saved price can be under it anyway (a set
+  // written before this check existed, or a file edited by hand), and approving is the last moment before buyers see it.
+  const vs = chosen(p, it); if (vs.length) checkFloor(p, vs, it.price);
   if (it.photos?.[opts[0]]?.pos !== pk) fail(409, 'Make the real photo first and check it. Nothing goes on your listing until you have seen it.');
   it.status = 'approved';
   for (const o of opts) if (it.photos?.[o]?.pos !== pk && !it.queue.includes(o) && !it.tasks?.[o]) it.queue.push(o);
