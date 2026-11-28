@@ -91,3 +91,30 @@
 @media(max-width:720px){#hq-workhub .hw-dashboard-grid{grid-template-columns:1fr}#hq-workhub .hw-dashboard-contacts{grid-column:auto}}
 /* Foreman round 76: the launcher is a tap target on phones (pages-tap-targets-320.mjs, /r/general). */
 @media(max-width:699px){#hq-workhub-launch{min-height:44px}}
+/* P&L pane (2026-11-27), modeled on the Mustang Corner P&L in RollinHost: stat cards, banded sections, drillable
+   lines, bold totals, an honesty footer. Dark Hub palette; Aletheia-6 may restyle freely. */
+.hw-pnl{display:flex;flex-direction:column;gap:0;border:1px solid #2f5d63;border-radius:12px;overflow:hidden;margin-bottom:10px}
+.hw-pnl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:10px;background:#0c1f26}
+.hw-pnl-stat{background:#163640;border:1px solid #2f5d63;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.hw-pnl-stat small{color:#9fc7c2;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.hw-pnl-stat strong{font-size:20px;color:#fff}
+.hw-pnl-stat span{font-size:11px;color:#9fc7c2}
+.hw-pnl-stat.in strong{color:#8fe3a8}.hw-pnl-stat.out strong{color:#f3c38a}.hw-pnl-stat.neg strong{color:#f29a9a}.hw-pnl-stat.pos strong{color:#8fe3a8}
+.hw-pnl-hdr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.hw-pnl-hdr small{font-weight:500;letter-spacing:.02em;text-transform:none;opacity:.85}
+.hw-pnl-hdr.income{background:#173a2a;color:#9be3b1}.hw-pnl-hdr.expenses{background:#3d2a17;color:#f1c48e}.hw-pnl-hdr.net{background:#2a2540;color:#c9bdf3}
+.hw-pnl-line{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:0;border-bottom:1px solid #1f4047;color:#eaf6f4;font:inherit;text-align:left;cursor:pointer;min-height:44px}
+.hw-pnl-line:hover,.hw-pnl-line:focus-visible{background:#163640}
+.hw-pnl-line.muted{color:#9fc7c2}
+.hw-pnl-left{display:flex;gap:8px;align-items:center}
+.hw-pnl-chev{display:inline-block;width:1em;transition:transform 150ms;color:#58cabd}
+.hw-pnl-line[aria-expanded="true"] .hw-pnl-chev{transform:rotate(90deg)}
+.hw-pnl-amt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.hw-pnl-drill{background:#0c1f26;padding:6px 14px 10px 36px;border-bottom:1px solid #1f4047}
+.hw-pnl-drill ul{list-style:none;margin:0;padding:0}
+.hw-pnl-drill li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:13px;color:#cfe6e3}
+.hw-pnl-total{display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-top:2px solid #58cabd;background:#132f38;font-weight:700}
+.hw-pnl-total strong{font-variant-numeric:tabular-nums}
+.hw-pnl-foot{padding:10px 14px;font-size:12px;background:#33291a;color:#f1d7a8}
+.hw-pnl-foot.clean{background:#173a2a;color:#9be3b1}
+.hw-pnl .hw-info{padding:6px 14px;margin:0}

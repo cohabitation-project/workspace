@@ -11,7 +11,7 @@
         <button type="button" data-hw-tab="people">Members</button>
         <button type="button" data-hw-tab="rooms">Rooms</button>
         <button type="button" data-hw-tab="messages">Messages</button>
-        <button type="button" data-hw-tab="spend">Spend</button>
+        <button type="button" data-hw-tab="spend">P&amp;L</button>
         <button type="button" data-hw-tab="resources">Resources</button>
       </nav><div id="hw-main" tabindex="-1" aria-live="polite"></div>
     </section>`;
@@ -189,20 +189,68 @@
     const iframe=document.createElement('iframe');iframe.title='Cohabi private Messenger';iframe.className='hw-messenger';iframe.src='/messenger';iframe.loading='lazy';
     main.append(note,iframe,link('/messages','Open full Messenger'));
   }
+  // ══ PROFIT & LOSS ══ (Geoffrey, 2026-11-27: "live income expense separation", P&L in the dashboard, modeled on the
+  // Mustang Corner P&L he built in RollinHost: stat cards, banded Income / Expenses sections, every line opens to
+  // show what built it, one bold total.) Reads /api/spend only. Income appears when the server reports it (the
+  // income side is a Tier 1 branch awaiting its second yes); until then the pane says so instead of showing $0.
   async function spend(g){
     const data=await get('/api/spend');if(g!==generation)return;main.replaceChildren();
-    const money=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n):'Unavailable';
-    const metric=(name,value)=>{const item=el('div','hw-card');item.append(el('small','',name),el('strong','',value));main.append(item)};
-    const mon=data.month||{},o=data.openrouter||{},an=data.anthropic||{};
-    main.append(el('p','hw-info','Reported provider figures plus a projection; some fixed costs are estimates and unavailable readings are not zero.'));
-    metric('Projected month total',mon.complete?money(mon.total_projected):money(mon.total_projected)+' (incomplete)');
-    metric('Monthly fixed costs',money(data.fixed?.total));
-    metric('OpenRouter today',money(o.usage_daily));
-    metric('OpenRouter month to date',money(o.usage_monthly));
-    metric('Anthropic month to date',money(an.month_usd));
-    if(data.error||an.error)main.append(el('p','hw-error',[data.error,an.error].filter(Boolean).join(' · ')));
-    if(data.fetched_at)main.append(el('p','hw-info','OpenRouter last read attempt: '+String(data.fetched_at)));
-    main.append(link('/spend','Open full spend ledger'));
+    const money=n=>typeof n==='number'&&Number.isFinite(n)?new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n):'—';
+    const cents=c=>money((Number(c)||0)/100);
+    const mon=data.month||{},o=data.openrouter||{},an=data.anthropic||{},fx=data.fixed||{},inc=data.income||null,pl=data.profit_loss||null;
+    const wrap=el('section','hw-pnl');wrap.setAttribute('aria-label','Profit and loss');
+    // stat cards
+    const stats=el('div','hw-pnl-stats');
+    const stat=(label,value,note,cls)=>{const c=el('div','hw-pnl-stat'+(cls?' '+cls:''));c.append(el('small','',label),el('strong','',value));if(note)c.append(el('span','',note));stats.append(c)};
+    const coop=inc?((Number(inc.cohabi_fee_cents)||0)+(Number(inc.reserves_cents)||0))/100:null;
+    stat('Co-op income',inc?money(coop):'Not reported yet',inc?(inc.test_mode?'test mode: practice money':'live'):'income side pending review','in');
+    stat('Expenses (month, projected)',money(mon.total_projected),mon.complete?'every line confirmed':'some lines estimated','out');
+    const net=pl&&typeof pl.net_projected_usd==='number'?pl.net_projected_usd:(inc?coop-(mon.total_projected||0):null);
+    stat('Net (projected)',net==null?'—':money(net),net==null?'needs the income side':(net<0?'the co-op is still funded by its members':'in the black'),net!=null&&net<0?'neg':'pos');
+    wrap.append(stats);
+    // a drillable line: label + total; opening it shows the rows that built it
+    const line=(label,total,rows,muted)=>{
+      const b=el('button','hw-pnl-line'+(muted?' muted':''));b.type='button';b.setAttribute('aria-expanded','false');
+      const left=el('span','hw-pnl-left');left.append(el('span','hw-pnl-chev','▸'),el('span','',label));
+      b.append(left,el('span','hw-pnl-amt',total));
+      const drill=el('div','hw-pnl-drill');drill.hidden=true;
+      if(rows&&rows.length){const ul=el('ul','');for(const [k,v] of rows){const li=el('li','');li.append(el('span','',k),el('span','',v));ul.append(li)}drill.append(ul)}
+      else drill.append(el('p','hw-info','Nothing recorded here this period.'));
+      b.addEventListener('click',()=>{const open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));drill.hidden=!open});
+      wrap.append(b,drill);
+    };
+    const header=(kind,title,meta)=>{const h=el('div','hw-pnl-hdr '+kind);h.append(el('span','',title),el('small','',meta||''));wrap.append(h)};
+    const total=(label,value)=>{const t=el('div','hw-pnl-total');t.append(el('span','',label),el('strong','',value));wrap.append(t)};
+    // INCOME
+    header('income','Income',inc?`${inc.period} · ${inc.orders_paid} paid order${inc.orders_paid===1?'':'s'} · ${inc.test_mode?'TEST MODE':'live'}`:'Market orders');
+    if(inc){
+      for(const s of inc.by_section||[])line(s.section_name||s.section_id,cents(s.gross_cents),[['Orders paid',String(s.orders_paid)],['Gross (what buyers paid)',cents(s.gross_cents)],['Refunded',cents(s.refunds_cents)],["Co-op's cut",cents(s.cohabi_fee_cents)]]);
+      if(!(inc.by_section||[]).length)line('No paid orders this month',money(0),[],true);
+      line('Gross sales (sellers’ money, passed through)',cents(inc.gross_cents),[['Refunds',cents(inc.refunds_cents)]],true);
+      total("Co-op income (fees + reserves)",money(coop));
+      if(inc.note)wrap.append(el('p','hw-info',inc.note));
+    }else{
+      wrap.append(el('p','hw-info','Market income will show here line by line, by section. The income side is built and waiting on its Tier 1 second review. Nothing is shown as $0 until it is real.'));
+    }
+    // EXPENSES
+    header('expenses','Operating expenses',`${mon.month||''} · day ${mon.day_of_month||'?'} of ${mon.days_in_month||'?'}`);
+    line('Fixed monthly bills',money(fx.total),(fx.items||[]).map(x=>[x.item+(x.estimate?' (estimate)':''),money(x.usd)]));
+    line('AI seats via OpenRouter (so far)',money(mon.openrouter_so_far),[['Today',money(o.usage_daily)],['This week',money(o.usage_weekly)],['Month to date',money(o.usage_monthly)],...(data.seats||[]).slice(0,8).map(s=>[s.name||s.id,(s.tokens||0).toLocaleString()+' tokens'])]);
+    line('Claude seats via Anthropic API (so far)',money(mon.anthropic_so_far),[['Month to date',money(an.month_usd)]]);
+    line('API spend projected to month end',money(mon.apis_projected),[['Per day so far',money(mon.apis_per_day)],['So far',money(mon.apis_so_far)]],true);
+    total('Expenses, month projected',money(mon.total_projected));
+    // NET
+    header('net','Net','projected for the month');
+    total(net==null?'Net (waiting on income)':'Net, month projected',net==null?'—':money(net));
+    // honesty footer, as Mustang's CPA footer does for its books
+    const notes=[];
+    if(!mon.complete)notes.push('Some expense lines are estimates or a reading failed. Unavailable readings are not zero.');
+    if(mon.openrouter_error||mon.anthropic_error||data.error)notes.push([mon.openrouter_error,mon.anthropic_error,data.error].filter(Boolean).join(' · '));
+    if(inc&&inc.test_mode)notes.push('Test-mode Market money is practice, not revenue.');
+    const foot=el('div','hw-pnl-foot'+(notes.length?'':' clean'));
+    foot.append(el('span','',notes.length?'⚠ '+notes.join(' '):'✓ Every line confirmed for this period.'));
+    wrap.append(foot);
+    main.append(wrap,link('/spend','Open the full public spend page'));
   }
   function resources(){
     main.replaceChildren(el('h3','','Shared documents'),el('p','hw-info','Search the project’s shared record — docs, governance and specs from the public repo.'));
