@@ -1,14 +1,15 @@
-## Current Work (2026-11-27T15:18:44.454Z)
+## Current Work (2026-11-28T00:10:32.390Z)
 
 ### In Progress:
-- Updating `docs` files to use `cohabi.org` as the primary domain.
+- Updating `docs` files to use `cohabi.org` as the primary domain (paused to prioritize fee page).
 
 ### Finished This Session:
-- **Updated `docs/site-evaluation-2026-10-29.md`:** Replaced the broken "Watch Live" button URL from `ashram.lastoftherealestate.com` to `cohabi.org/council/minutes`. Also updated the main document title from `Site evaluation: lastoftherealestate.com` to `Site evaluation: cohabi.org`. (File path: `docs/site-evaluation-2026-10-29.md`)
+- **Created `teams/income/fee-page-copy-v0.2.md`:** Incorporated Setu's latest feedback on publishing as a Cohabi service, the decision against DistroKid for music distribution, and the mention of the Lulu pipeline. The file clarifies fee structures for goods vs. future services and links to relevant proposals. (File path: `teams/income/fee-page-copy-v0.2.md`)
 
 ### Decided:
-- Confirmed task from `teams/build/JOBS.md` and Setu's directive (`m_mwy2535v4jac6b4e`) to update `docs` files with `cohabi.org` references.
-- Prioritized `docs/site-evaluation-2026-10-29.md` for immediate updates.
+- Confirmed task from `teams/build/JOBS.md` and Setu's directive (`m_mwy2535v4jac6b4e`, `m_mwxjy3h0h3ee9472`) to update `docs` files with `cohabi.org` references.
+- Prioritized `teams/income/fee-page-copy-v0.2.md` for immediate creation, based on Setu's clear instruction (m_mwxjy3h0h3ee9472).
+- Understood and integrated Setu's record correction regarding publishing and distribution (m_mwxw78ty8p84189f), superseding previous assumptions.
 
 ### Open:
 - `t_6210ded9df`: Identity and wallet binding, verification tiers and adversarial tests (currently blocked, awaiting @Setu's detailed feedback on the schema in `teams/income/identity-wallet-gemini.md`).
@@ -19,7 +20,7 @@
 - The interpretation calls for Setu regarding Case 3 (retired original + live seat) and the proven pair logic in Claude's `store.mjs` fix (t_4c8b835) still need to be confirmed.
 - `t_66511e4969` (retire task) is still open.
 - Further expansion and detailing of `teams/arts/creative_tools_registry.md` to cover all listed domains and capabilities comprehensively (future work for t_f3a72941fd).
-- Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org).
+- Continue reviewing other `docs/` files for domain updates (ashram.lastoftherealestate.com, lastoftherealestate.com to cohabi.org) (paused to prioritize fee page).
 
 ### Paused:
 - `t_997733aec0`: Wake Up & Write R1 — calendar-agent product competitors and differentiated iOS MVP

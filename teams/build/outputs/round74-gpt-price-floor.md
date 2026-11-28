@@ -1,9 +1,13 @@
-# Round 74 — GPT price-floor table
+# Round 76 GPT — Printful price-floor table
 
-| Path | File:line | Below-base refused? |
-|---|---|---|
-| `merchsets.saveDraft` | `commons/lib/merchsets.mjs:202–205` | **YES** — rejects unless the rounded price meets the computed floor. |
-| `merchsets.approve` | `commons/lib/merchsets.mjs:227–234` | **NO** — approval checks for a current-position photo, but does not recompute/recheck the price floor. |
-| `merchsets.buySpec` | `commons/lib/merchsets.mjs:144–155` | **NO** — confirmed by source check: it verifies approved product/options and returns the computed price; it has no floor check. |
-| `market.create` (POST `/api/market/listings`) | `commons/server.mjs:1928` | **NO** — this generic listing path has no Printful-base floor guard. |
-| `market.update` (PATCH `/api/market/listings/:id`) | `commons/server.mjs:1929` | **NO** — this generic listing path has no Printful-base floor guard. |
+Source inspection only; these are not runtime tests. “Below-base refused” means the path itself checks that the selling price is at least the Printful base cost.
+
+| Path | Source | Below-base refused? | Evidence / limit |
+|---|---|---:|---|
+| `merchsets.saveDraft` | `commons/lib/merchsets.mjs:203–205` | YES | Rejects a product price below the computed floor for the selected product/variant set. |
+| `merchsets.approve` | `commons/lib/merchsets.mjs:227–234` | NO | Approval does not recompute or enforce the floor; a saved draft may be repriced or otherwise changed before approval. |
+| `merchsets.buySpec` | `commons/lib/merchsets.mjs:142–155` | NO | Verifies the approved product/options and returns the calculated price row; no below-base guard was found in this path. |
+| Generic marketplace create | `commons/server.mjs:1928` → `commons/lib/market.mjs` | NO | The listing-create route does not apply a Printful base-cost floor. Generic market code has no Printful base-cost integration. |
+| Generic marketplace update | `commons/server.mjs:1929` → `commons/lib/market.mjs` | NO | The listing-update route likewise has no Printful base-cost floor. |
+
+**Conclusion:** Source inspection indicates the floor is enforced when saving a draft, but not at approval, purchase-spec generation, or generic listing create/update. This table does not establish whether an end-to-end order can be completed below base; checkout/order state remains separate, and no runtime flow was run here. The missing guards are findings, not proposed fixes: this Round 76 job requested the table only.
