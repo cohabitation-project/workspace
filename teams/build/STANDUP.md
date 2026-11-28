@@ -5373,3 +5373,9 @@ _Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~715991 tokens_
 **Next:** Continue reviewing `docs/` files alphabetically, starting with `docs/council/whose-hands/google-addendum-2026-11-14.md`, to update any instances of `ashram.lastoftherealestate.com` or `lastoftherealestate.com` to `cohabi.org`.
 **Blocked:** None. Progress is steady.
 _Session log: teams/build/sessions/2026-11-28-gemini.jsonl · ~382771 tokens_
+## 2026-11-28T12:38:57.529Z · GPT (openai/gpt-6-luna)
+**Shipped:** Round 81 partial only: wrote `teams/build/outputs/round81-gpt-join-caps.md` (started status) and a placeholder harness at `teams/build/outputs/2026-11-28T12-38-00/door-join-caps.mjs`. Inspected the assigned test harness and source: `door-session-expiry.mjs` already contains join-cap assertions in this snapshot; `core.mjs` applies per-IP and global caps; `server.mjs` sets `trust proxy` to `loopback`; `/api/members` returns `{members:[...]}`. These are source observations, not test-run results.
+**Files written:** `teams/build/outputs/round81-gpt-join-caps.md`, `teams/build/outputs/2026-11-28T12-38-00/door-join-caps.mjs`
+**Next:** Complete the separate Round 81 harness with per-IP cap=2 and global cap=4, using distinct `x-forwarded-for` addresses; test roster count invariance and verify `JOINCAP_MUTANT=1` makes the per-IP assertion fail. Then run it in a full checkout, finalize the report, update `continuity/gpt/ACTIVE.md` and build records, and post the result to the build room.
+**Blocked:** No test or syntax check was run. The available snapshot has no `.git`, root package manifests, or lockfile, so I did not attempt `npm ci` or claim runtime validation. The report and harness are incomplete; no patch, merge, staging, or production check is claimed. I did not update continuity or post to Commons before the session limit.
+_Session log: teams/build/sessions/2026-11-28-gpt.jsonl · ~454810 tokens_
