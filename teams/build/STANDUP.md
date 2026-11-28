@@ -5337,3 +5337,32 @@ _Session log: teams/build/sessions/2026-11-28-gpt.jsonl · ~547553 tokens_
 **Next:** Continue reviewing `docs/` files alphabetically to update any instances of `ashram.lastoftherealestate.com` or `lastoftherealestate.com` to `cohabi.org`.
 **Blocked:** None. Progress is steady.
 _Session log: teams/build/sessions/2026-11-28-gemini.jsonl · ~375837 tokens_
+
+## 2026-11-28T12:12:14.054Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 80b finding (measured, no product patch). I set out to fix `checkout.sendToPrinter` hard-coding `provider: 'printful'` in its failed record. That is not a bug today: `sendToPrinter` returns null unless `order.merch` is set, and merch orders are always Printful (`fulfillment.plan`, fulfillment.mjs:118). I am withdrawing the "found, not fixed" note from my round-80 report.
+
+What I found instead: **a paid order on a Lulu-linked or Printify-linked listing is never sent to its printer.**
+- Where: `checkout.sendToPrinter` (checkout.mjs:274) returns null for any order without `o.merch`. The webhook (server.mjs:2011) and the maker's button (server.mjs:1877) both go through it.
+- Test: `teams/build/outputs/2026-11-28T12-11-52/linked-order-never-sent.mjs`. On fresh main 6f263fb, with a stand-in Stripe, Lulu and Printify, it passed 1/1. It shows four things:
+  - `fulfillment.plan(order).provider` says 'lulu' and 'printify' for the two linked orders.
+  - `checkout.postTo` returns null, so the maker is not shown the address.
+  - `sendToPrinter` returns null and writes no fulfillment record.
+  - No job is posted to either printer.
+- Likely effect on the seller page: marketpage.mjs:743 falls back to `plan().provider` when there is no printer record, and line 753 then reads "Sent to Lulu. They print and ship it, so there is no address for you to post." I read this in the code and did not render it.
+- Together: the buyer would have paid, the maker would be told Lulu has it, and nothing would have gone to Lulu.
+- Today it affects test money only, because payments are closed.
+
+I did not patch it. A Lulu print-job is not a Printful draft, so auto-sending needs a human decision. Setu or Geoffrey should decide between sending linked orders as the merch path does, and refusing at the seller page with the maker shipping. The test pins current behaviour (passes today), so it is not placed in `commons/test`.
+
+The round-80 send-catch patch and test are unchanged in `teams/build/outputs/2026-11-28T09-20-33/`. GPT reported at 09:21 that this path was absent from GitHub main.
+
+Not done: report file, RESULTS row, ACTIVE rewrite, and the build-room post. I ran out of steps first.
+**Files written:** `teams/build/outputs/2026-11-28T12-11-52/linked-order-never-sent.mjs`
+**Next:** 1. Write `teams/build/outputs/round80b-claude-linked-order-never-sent.md` from this finding and add the RESULTS row.
+2. Render the seller page for a paid Lulu order with no printer record and confirm whether line 753 shows "Sent to Lulu".
+3. Post the finding to @Setu and the build room, and ask whether linked Lulu and Printify orders should be sent like merch or refused.
+4. Whichever way it goes, write the Tier 1 patch from a clone. If linked orders are sent, relax the `!o.merch` check in `sendToPrinter` to `!fulfillment.plan(o).provider` and make the webhook auto-send safe for Lulu. If they are refused, fix `postTo` and the seller page.
+5. Check whether the send-catch patch from 09-20-33 has been placed.
+6. Still owed: review t_1fd66467a4 (door caps), and re-running the Cut mutants.
+**Blocked:** I ran out of tool steps before the written record. The report, RESULTS row, continuity/claude/ACTIVE.md rewrite and the room post are not written. The test file is in the outputs folder only, not in commons/test. The seller-page text is read from the code, not rendered. Nothing here is merged, staged or deployed.
+_Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~715991 tokens_

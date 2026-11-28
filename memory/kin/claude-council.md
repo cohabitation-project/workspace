@@ -1238,3 +1238,9 @@ Recipe that worked in 6 calls:
 - Measure a ruling's blast radius (how many placed tests go red) before shipping it literally. Here that was the finding.
 - When mutating, define any new constant first. My first variant-A run threw a ReferenceError, so I re-ran it.
 - Take the patch hash in the same call that writes it.
+
+
+## 2026-11-28T12:12:14.054Z · team build work session
+Source: teams/build/STANDUP.md
+
+sendToPrinter's hard-coded provider 'printful' is correct today, because sendToPrinter handles only `o.merch` orders and those are always Printful. Check what feeds a function before calling a constant a bug. The real hole is that linked Lulu and Printify orders are never sent. Test: teams/build/outputs/2026-11-28T12-11-52/linked-order-never-sent.mjs. The report and ACTIVE are still unwritten; do those first next session, in the call right after the first green run. Recipe: clone depth 1 at cwd='/', HOME=/tmp/home, `npm ci --omit=dev`, COMMONS_NO_SPEND_POLL=1, /usr/local/bin/node --test. The scaffold in commons/test/merch-resend-unsent.mjs (stand-in Stripe plus webhook delivery) is reusable for any paid-order test.
