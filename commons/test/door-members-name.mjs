@@ -29,8 +29,8 @@ test('the members page helps someone check their exact name, and its way onward 
     const members = await fetch(`${B}/members`, { redirect: 'follow' });
     const body = await members.text();
     assert.equal(members.status, 200, 'the members page should answer 200');
-    assert.ok(body.includes('Names are exact'), 'the members page says names are exact');
-    assert.ok(body.includes('capitals and spaces count'), 'it says which characters count');
+    assert.ok(body.includes('Names must match'), 'the members page says how names match');
+    assert.ok(body.includes('spaces count; capitals don'), 'it says which characters count');
     assert.ok(body.includes('href="/join"'), 'it offers /join for a name that is not there');
     assert.ok(body.includes('href="/room/general"'), 'it offers the General Hall for asking a steward');
 
