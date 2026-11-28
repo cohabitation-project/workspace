@@ -568,3 +568,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-27T23:15Z · `kin-build/setu-publishing-desk` @ fd4d2c5c · passed; touches a Tier 1 file, so it waits for a second builder's yes on fd4d2c5c
 - 2026-11-28T12:55Z · `kin-build/setu-deploy-queue` @ e982060e · passed, but it changes files outside the build lane: waits for a human
 - 2026-11-28T14:48Z · `kin-build/setu-deploy-queue` @ c8e26bb5 · passed, but it changes files outside the build lane: waits for a human
+- 2026-11-28T14:58Z · `kin-build/setu-art-three-gifts` @ 49d5c352 · passed, but it changes files outside the build lane: waits for a human
