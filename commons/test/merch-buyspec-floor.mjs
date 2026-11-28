@@ -76,21 +76,22 @@ test('a size or a raised Printful cost that the approved price no longer covers 
     //   12×16 at $9.00  -> ceil(9.31 / 0.971 * 100) / 100 = $9.59
     //   18×24 at $12.00 -> ceil(12.31 / 0.971 * 100) / 100 = $12.68
     //   12×16 at $20.00 -> ceil(20.31 / 0.971 * 100) / 100 = $20.92
-    const s = await approved(9.59, url); // approved at exactly the smallest size's floor
+    const s = await approved(9.68, url); // approved at the every-size floor (round 81: $9.59 is refused at saveDraft now)
 
     // 1. The smallest size can still be bought: the check is not refusing everything.
     const small = s.merchsets.buySpec(s.id, 'poster', { size: '12×16' }, atPrices(POSTER));
-    assert.equal(small.price, 9.59, 'the 12×16 pays the price the page shows');
+    assert.equal(small.price, 9.68, 'the 12×16 pays the price the page shows');
     assert.equal(small.variant_id, 5000, 'and it is Printful variant 5000');
 
-    // 2. The bigger size passes its upcharge on ($12.59), which is under its own floor ($12.68): refused, same sentence.
+    // 2. The bigger size passes its upcharge on ($12.68), exactly its own floor: buyable, maker earns a cent. Round 79
+    //    refused this sale because the approved price could be the smallest size's floor; since round 81 such a price
+    //    cannot be approved at all (merch-every-size-floor.test.mjs), so the sale is right and so is the price.
     //    Measured with this module's own money(): without the check the maker would earn -$0.08 on that sale.
     const XL = atPrices(POSTER).find((p) => p.key === 'poster').variants[1];
     assert.equal(s.merchsets.money(atPrices(POSTER)[0], atPrices(POSTER)[0].variants, 9.59).find((r) => r.size === XL.size).earns, -0.08, 'the 18×24 sale at $12.59 loses the maker 8 cents');
-    const big = await refusal(() => s.merchsets.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER)));
-    assert.equal(big.status, 400, `the 18×24 is refused (got: ${big.ok ? 'a spec' : big.text})`);
-    assert.match(big.text, /at \$12\.59 you'd earn nothing after Printful's cost and fees/);
-    assert.match(big.text, /The lowest price that pays you is \$12\.68\./, 'the same sentence saveDraft and approve() use');
+    const big = s.merchsets.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER));
+    assert.equal(big.price, 12.68, 'the 18×24 pays exactly its own floor');
+    assert.equal(s.merchsets.money(atPrices(POSTER)[0], atPrices(POSTER)[0].variants, 9.68).find((r) => r.size === '18×24').earns, 0.01, 'and the maker earns a cent on that sale');
 
     // 3. A base cost raised after the draft was saved (cached products refreshed, approved price unchanged): refused too.
     const risen = await refusal(() => s.merchsets.buySpec(s.id, 'poster', { size: '12×16' }, atPrices({ '12×16': '20.00', '18×24': '25.00' })));
@@ -111,10 +112,10 @@ test('a size or a raised Printful cost that the approved price no longer covers 
       const mutFile = path.join(libDir, `.merchsets-buyspec-mutant-${process.pid}.mjs`); fs.writeFileSync(mutFile, mut);
       let M; try { M = await import(pathToFileURL(mutFile).href); } finally { fs.rmSync(mutFile, { force: true }); }
       M.init(s.D);
-      const wentBig = M.buySpec(s.id, 'poster', { size: '18×24' }, atPrices(POSTER));
-      assert.equal(wentBig.price, 12.59, 'with the check removed the losing 18×24 sale goes through');
+      // The 18×24 is no longer the losing case here: at $9.68 it pays its own floor. The losing price is now refused at
+      // saveDraft, and that mutant lives in merch-every-size-floor.test.mjs.
       const wentRisen = M.buySpec(s.id, 'poster', { size: '12×16' }, atPrices({ '12×16': '20.00', '18×24': '25.00' }));
-      assert.equal(wentRisen.price, 9.59, 'and so does the 12×16 at a $20.00 base');
+      assert.equal(wentRisen.price, 9.68, 'and so does the 12×16 at a $20.00 base');
     }
   } finally { srv.close(); }
 });
