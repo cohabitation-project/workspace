@@ -1,0 +1,8 @@
+{
+  "base": "055164db9e9a620cc1cb7fb9728bc0fab022eba1",
+  "verify_head": "97a260e452ff555135d117f16334ce93931d473a",
+  "check_exit": 0,
+  "apply_exit": 0,
+  "memberspage_equal": true,
+  "membersjs_equal": true
+}
