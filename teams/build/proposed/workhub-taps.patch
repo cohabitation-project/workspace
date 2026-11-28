@@ -1,0 +1,27 @@
+--- a/commons/public/hq-workhub.css
++++ b/commons/public/hq-workhub.css
+@@ -118,3 +118,24 @@
+ .hw-pnl-foot{padding:10px 14px;font-size:12px;background:#33291a;color:#f1d7a8}
+ .hw-pnl-foot.clean{background:#173a2a;color:#9be3b1}
+ .hw-pnl .hw-info{padding:6px 14px;margin:0}
++
++/* phone taps (Kimi r79) */
++@media (max-width: 600px) {
++  #hw-max,
++  #hw-refresh,
++  #hw-close,
++  .hw-tabs button,
++  .hw-dashboard-main .hw-card > button {
++    box-sizing: border-box;
++    min-width: 44px;
++    min-height: 44px;
++  }
++
++  .hw-dashboard-contacts > a[href="/spend"] {
++    box-sizing: border-box;
++    display: inline-flex;
++    align-items: center;
++    min-width: 44px;
++    min-height: 44px;
++  }
++}

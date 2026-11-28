@@ -1,0 +1,142 @@
+/* Non-modal, keyboard-reachable workspace dock for Headquarters. */
+#hq-workhub{position:fixed;z-index:980;right:18px;bottom:18px;font:14px/1.4 system-ui,sans-serif;color:#eaf6f4}
+/* Phones: clear the phone bar and the feedback button, same rule feedback.css uses (bottom:84px at <=699px).
+   Geoffrey, 2026-11-27: the launcher sat on top of the feedback button. */
+@media(max-width:699px){#hq-workhub{bottom:84px;right:10px}}
+#hq-workhub-launch{border:1px solid #58cabd;background:#163b46;color:#fff;border-radius:24px;padding:12px 18px;box-shadow:0 7px 26px #0007;cursor:pointer;font-weight:700}
+#hq-workhub-panel{position:absolute;right:0;bottom:55px;width:min(460px,calc(100vw - 24px));height:min(650px,calc(100dvh - 96px));overflow:hidden;display:flex;flex-direction:column;background:#10262f;border:1px solid #5b9f9c;border-radius:16px;box-shadow:0 18px 50px #000a}
+#hq-workhub-panel[hidden]{display:none}
+.hw-head,.hw-tabs,.hw-filters{display:flex;align-items:center;gap:6px;padding:10px;border-bottom:1px solid #345862}
+.hw-head{justify-content:space-between;font-size:16px}
+#hq-workhub button{cursor:pointer;color:inherit;border:1px solid #3c6970;background:#1a3944;padding:7px 10px;border-radius:8px}
+#hq-workhub button:hover,#hq-workhub button:focus-visible{background:#2c5b66;outline-color:#7fe4ce}
+.hw-tabs button[aria-current=page],.hw-filters button[aria-pressed=true]{background:#267f7c!important}
+.hw-tabs{overflow-x:auto}
+#hw-main{overflow:auto;padding:12px;flex:1;min-height:0;outline-offset:-4px}
+.hw-search{width:100%;box-sizing:border-box;padding:10px;border:1px solid #5c8990;background:#18363e;color:white;border-radius:9px;margin-bottom:10px}
+.hw-card,.hw-person{border:1px solid #315761;border-radius:10px;margin-bottom:8px;padding:11px;background:#19343e}
+.hw-card strong,.hw-person strong{display:block}
+.hw-card small,.hw-count,.hw-info,.hw-kind{color:#b4cecf}
+.hw-card p,.hw-post p{margin:7px 0;overflow-wrap:anywhere}
+.hw-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+#hq-workhub .hw-link{color:#9fe8d7;text-decoration:underline;font-size:13px}
+.hw-filters{padding:0 0 8px;overflow-x:auto;flex-wrap:wrap}
+.hw-filters button{font-size:12px}
+.hw-person{display:flex;align-items:center;gap:12px}
+.hw-kind{font-size:11px;min-width:40px}
+.hw-thread{border-top:1px solid #456e75;margin-top:12px;padding-top:8px}
+.hw-post{border-left:2px solid #538b89;padding:8px;margin:6px 0}
+.hw-error{color:#ffb7b7}
+.hw-messenger{width:100%;height:calc(100% - 90px);min-height:320px;border:1px solid #456e75;border-radius:8px;background:white}
+/* bottom:84px, not 12px: at phone widths the launcher must clear the phone bar and the feedback button
+   (a718259; Geoffrey found the overlap on day one). Panel height shrinks to match the raised anchor. */
+@media(max-width:540px){#hq-workhub{right:12px;bottom:84px}#hq-workhub-panel{bottom:52px;width:calc(100vw - 24px);height:calc(100dvh - 160px)}}
+
+.hw-resources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.hw-resources .hw-link{display:block;border:1px solid #345862;padding:12px;border-radius:9px;text-decoration:none}.hw-resources .hw-link:hover,.hw-resources .hw-link:focus-visible{background:#23505b;text-decoration:underline}
+
+/* v2: expand into a real workspace over Headquarters; collapses back to the existing dock. */
+#hq-workhub.hw-full{inset:0;right:0;bottom:0;pointer-events:none}
+#hq-workhub.hw-full #hq-workhub-launch{display:none}
+#hq-workhub.hw-full #hq-workhub-panel{pointer-events:auto;position:fixed;inset:16px;width:auto;height:auto;max-width:none;max-height:none;border-radius:18px;box-shadow:0 25px 80px #000e;background:#101827;border:1px solid #7753ad}
+#hq-workhub .hw-brand{display:flex;align-items:center;gap:13px}
+#hq-workhub .hw-brand img{width:42px;height:42px}
+#hq-workhub .hw-brand strong{display:block;font-size:19px}
+#hq-workhub .hw-brand small{display:block;color:#b8b4d4;font-size:12px}
+#hq-workhub .hw-window-actions{display:flex;gap:8px}
+#hq-workhub.hw-full .hw-head{padding:16px 22px;background:#13192c}
+#hq-workhub.hw-full .hw-tabs{gap:10px;padding:12px 22px;background:#151d31;border-bottom-color:#42395a}
+#hq-workhub.hw-full .hw-tabs button{min-width:86px;padding:12px 18px;background:#252942;border-color:#383c57}
+#hq-workhub.hw-full .hw-tabs button[aria-current=page]{background:#7048a6!important;border-color:#9a65d6}
+#hq-workhub.hw-full #hw-main{padding:24px;overflow-y:auto;background:#11192a}
+#hq-workhub h2,#hq-workhub h3{margin:12px 0;color:#f1eafd}
+#hq-workhub h2{font-size:24px}
+#hq-workhub h3{font-size:17px}
+#hq-workhub .hw-overview-columns{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:20px;align-items:start}
+#hq-workhub .hw-overview-columns>section,#hq-workhub .hw-overview-columns>aside{min-width:0}
+#hq-workhub .hw-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 20px}
+#hq-workhub .hw-stat{border:1px solid #3a3e62;background:#202840;border-radius:12px;padding:15px}
+#hq-workhub .hw-stat strong{display:block;font-size:25px;color:#c3a0fa}
+#hq-workhub .hw-stat small{color:#c8c7d9}
+#hq-workhub .hw-room-directory{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+#hq-workhub .hw-room-choice{display:block;width:100%;text-align:left;margin-bottom:8px;padding:14px!important;background:#202840!important;border-color:#394766!important}
+#hq-workhub .hw-room-choice strong{display:block;font-size:15px}
+#hq-workhub .hw-room-choice small{display:block;color:#a9bac9;margin-top:4px}
+#hq-workhub .hw-card{background:#1e283c;border-color:#3b4764}
+#hq-workhub .hw-card strong{color:#f1ebfd}
+#hq-workhub .hw-person{background:#1c2538}
+#hq-workhub .hw-room-header{display:flex;align-items:center;gap:14px}
+#hq-workhub .hw-room-header h2{margin:0}
+#hq-workhub.hw-full .hw-link{color:#ccb0ff}
+#hq-workhub.hw-full .hw-messenger{min-height:550px}
+@media(max-width:820px){
+ #hq-workhub .hw-overview-columns{grid-template-columns:1fr}
+ #hq-workhub .hw-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #hq-workhub.hw-full #hq-workhub-panel{inset:0;border-radius:0}
+ #hq-workhub.hw-full #hw-main{padding:12px}
+ #hq-workhub.hw-full .hw-tabs{padding:8px;overflow-x:auto}
+ #hq-workhub.hw-full .hw-tabs button{min-width:auto}
+}
+
+/* Three-pane work dashboard, with authentic presence and event records. */
+#hq-workhub .hw-dashboard-grid{display:grid;grid-template-columns:minmax(300px,1.5fr) minmax(220px,1fr) minmax(210px,.88fr);gap:18px;align-items:start}
+#hq-workhub .hw-dashboard-grid>*{min-width:0}
+#hq-workhub .hw-dashboard-grid h3{padding:8px 0;border-bottom:1px solid #343d56}
+#hq-workhub .hw-overview-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#hq-workhub .hw-overview-header p{margin:0}
+#hq-workhub .hw-total{display:block;font-size:23px;color:#c6a6ff}
+#hq-workhub .hw-dashboard-contacts .hw-person{padding:8px;margin:5px 0}
+#hq-workhub .hw-dashboard-grid .hw-card{margin-bottom:10px}
+#hq-workhub .hw-dashboard-grid .hw-card p{margin:5px 0 8px}
+@media(max-width:1150px){#hq-workhub .hw-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(230px,1fr)}#hq-workhub .hw-dashboard-contacts{grid-column:1 / -1}}
+@media(max-width:720px){#hq-workhub .hw-dashboard-grid{grid-template-columns:1fr}#hq-workhub .hw-dashboard-contacts{grid-column:auto}}
+/* Foreman round 76: the launcher is a tap target on phones (pages-tap-targets-320.mjs, /r/general). */
+@media(max-width:699px){#hq-workhub-launch{min-height:44px}}
+/* P&L pane (2026-11-27), modeled on the Mustang Corner P&L in RollinHost: stat cards, banded sections, drillable
+   lines, bold totals, an honesty footer. Dark Hub palette; Aletheia-6 may restyle freely. */
+.hw-pnl{display:flex;flex-direction:column;gap:0;border:1px solid #2f5d63;border-radius:12px;overflow:hidden;margin-bottom:10px}
+.hw-pnl-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;padding:10px;background:#0c1f26}
+.hw-pnl-stat{background:#163640;border:1px solid #2f5d63;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.hw-pnl-stat small{color:#9fc7c2;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.hw-pnl-stat strong{font-size:20px;color:#fff}
+.hw-pnl-stat span{font-size:11px;color:#9fc7c2}
+.hw-pnl-stat.in strong{color:#8fe3a8}.hw-pnl-stat.out strong{color:#f3c38a}.hw-pnl-stat.neg strong{color:#f29a9a}.hw-pnl-stat.pos strong{color:#8fe3a8}
+.hw-pnl-hdr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 14px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.hw-pnl-hdr small{font-weight:500;letter-spacing:.02em;text-transform:none;opacity:.85}
+.hw-pnl-hdr.income{background:#173a2a;color:#9be3b1}.hw-pnl-hdr.expenses{background:#3d2a17;color:#f1c48e}.hw-pnl-hdr.net{background:#2a2540;color:#c9bdf3}
+.hw-pnl-line{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 14px;background:transparent;border:0;border-bottom:1px solid #1f4047;color:#eaf6f4;font:inherit;text-align:left;cursor:pointer;min-height:44px}
+.hw-pnl-line:hover,.hw-pnl-line:focus-visible{background:#163640}
+.hw-pnl-line.muted{color:#9fc7c2}
+.hw-pnl-left{display:flex;gap:8px;align-items:center}
+.hw-pnl-chev{display:inline-block;width:1em;transition:transform 150ms;color:#58cabd}
+.hw-pnl-line[aria-expanded="true"] .hw-pnl-chev{transform:rotate(90deg)}
+.hw-pnl-amt{font-variant-numeric:tabular-nums;white-space:nowrap}
+.hw-pnl-drill{background:#0c1f26;padding:6px 14px 10px 36px;border-bottom:1px solid #1f4047}
+.hw-pnl-drill ul{list-style:none;margin:0;padding:0}
+.hw-pnl-drill li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:13px;color:#cfe6e3}
+.hw-pnl-total{display:flex;justify-content:space-between;gap:10px;padding:11px 14px;border-top:2px solid #58cabd;background:#132f38;font-weight:700}
+.hw-pnl-total strong{font-variant-numeric:tabular-nums}
+.hw-pnl-foot{padding:10px 14px;font-size:12px;background:#33291a;color:#f1d7a8}
+.hw-pnl-foot.clean{background:#173a2a;color:#9be3b1}
+.hw-pnl .hw-info{padding:6px 14px;margin:0}
+
+/* phone taps (Kimi r79) */
+@media (max-width: 600px) {
+  #hw-max,
+  #hw-refresh,
+  #hw-close,
+  .hw-tabs button,
+  .hw-dashboard-main .hw-card > button {
+    box-sizing: border-box;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .hw-dashboard-contacts > a[href="/spend"],
+  .hw-dashboard-contacts > a[href="/headquarters"] {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
