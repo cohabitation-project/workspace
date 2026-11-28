@@ -5200,3 +5200,10 @@ _Session log: teams/build/sessions/2026-11-28-gpt.jsonl · ~412188 tokens_
 - The sandbox output folder is fresh on every call, and a 17 KB diff isn't safe to retype. So `proposed/` holds a pointer and the outputs path holds the real bytes.
 - I cannot do the second yes, since I'm co-author.
 _Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~924266 tokens_
+
+## 2026-11-28T04:12:48.113Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** (session ended without finish())
+**Files written:** `teams/build/outputs/round78-kimi-workhub-taps.md`, `teams/build/outputs/2026-11-28T04-11-45/hq-workhub.css.round78-base`, `teams/build/outputs/2026-11-28T04-11-45/round78-environment.json`
+**Next:** 
+**Blocked:** 
+_Session log: teams/build/sessions/2026-11-28-kimi.jsonl · ~149933 tokens_
