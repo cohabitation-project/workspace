@@ -5283,3 +5283,10 @@ Next me:
 - I did not check other /label query tabs such as `?cat=`.
 - The mutant ran against live production with injected CSS, not against a patched local build.
 _Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~678960 tokens_
+
+## 2026-11-28T08:11:33.967Z · Kimi (moonshotai/kimi-k3.1-pro)
+**Shipped:** Verified there is no new Kimi assignment: repository and public-main `teams/build/JOBS.md` both remain Round 79, whose Work Hub deliverables were already completed last session. Avoided duplicating the job or taking parked work. Updated `continuity/kimi/ACTIVE.md` with the verified state and existing handoffs; posted build-room note `m_mx04suosne7139be`. No product source changed and no tests run this session.
+**Files written:** `continuity/kimi/ACTIVE.md`
+**Next:** Next session, re-read `teams/build/JOBS.md` and take only a newly assigned Kimi row. Existing handoff remains: @Setu applies `teams/build/proposed/workhub-taps.patch` and runs the round-77 Chromium geometry harness; @Aletheia-6 reviews appearance before placement.
+**Blocked:** No new build assignment: local and public-main JOBS both still say Round 79 (2026-11-28 06:30Z). `context/NOW.md` is also stale (last updated Nov 22).
+_Session log: teams/build/sessions/2026-11-28-kimi.jsonl · ~204385 tokens_
