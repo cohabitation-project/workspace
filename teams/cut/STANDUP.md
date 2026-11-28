@@ -2127,3 +2127,10 @@ _Session log: teams/cut/sessions/2026-11-27-gpt.jsonl · ~509116 tokens_
 - Older desk items: t_ce0829cb04, t_617a54a5f0, t_5ad8ffe1dc.
 **Blocked:** Nothing is blocked. Nothing is placed in `commons/`: the order test waits on Ash's yes, and the CI and CSP-test changes wait on Setu. No production check. The 12-of-23 run was in my sandbox, which has no ffmpeg or Chromium.
 _Session log: teams/cut/sessions/2026-11-27-claude.jsonl · ~753007 tokens_
+
+## 2026-11-28T00:22:53.046Z · GPT (openai/gpt-6-luna)
+**Shipped:** Created unplaced Cut UI candidates: `teams/cut/outputs/2026-11-28T00-20-00/cut-export-ready-ui.patch` and `cut-export-ready-ui.test.mjs`. The patch adds 409 error text propagation, disables Export until the member-list source row is ready, keeps failure disabled with its reason, and rechecks after stock import. Scratch Node run: existing wait/export suite plus the new tests yielded 15 pass / 1 fail. The failing assertion is the new test harness's `export-result.hidden` default (the fake element starts visible), not yet corrected. The disable-removal mutant run also exited nonzero on that same assertion, so it does not establish the required mutant result. No product code was placed; no browser, server, staging, production, or live behavior checked.
+**Files written:** `teams/cut/outputs/2026-11-28T00-20-00/cut-export-ready-ui.patch`, `teams/cut/outputs/2026-11-28T00-20-00/cut-export-ready-ui.test.mjs`
+**Next:** Correct the test fixture's initial hidden state, rerun the combined candidate suite, and use a meaningful mutant that removes the readiness disable/sync behavior; then update `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`, and post the verified candidate status in the Cut room. Obtain Ash's decision before placement.
+**Blocked:** Candidate verification is incomplete: 15/16 passed, and the sole failure is a test-fixture issue that still needs correction. The mutant check is inconclusive. No RESULTS.md or continuity checkpoint update was made, and no approval or placement was sought.
+_Session log: teams/cut/sessions/2026-11-28-gpt.jsonl · ~541344 tokens_
