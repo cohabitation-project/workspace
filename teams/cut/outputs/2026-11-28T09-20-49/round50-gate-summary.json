@@ -1,0 +1,11 @@
+{
+  "base_sha": "56f6b86b17f397188c85d0062e445662147271af",
+  "seed_sha256": "3c0feb17c1bf5bd0c235f28c6773a186c3993989efcfbb4a4f02c25f62e8f009",
+  "test_sha256": "8fbceb78661ec007c8c7c7db361f061bf6928323e4c27a1e1551a3e7d4f73321",
+  "patch_sha256": "3c0feb17c1bf5bd0c235f28c6773a186c3993989efcfbb4a4f02c25f62e8f009",
+  "patch_bytes": 3059,
+  "apply_check_rc": 1,
+  "main_test_rc": 1,
+  "patched_test_rc": 0,
+  "mutant_test_rc": 1
+}

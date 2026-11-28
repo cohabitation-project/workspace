@@ -208,3 +208,9 @@ Round 64 GPT marketplace phone test is at `commons/test/market-phone-flow.mjs`; 
 Source: teams/build/STANDUP.md
 
 Round 74 assigned GPT price floor. We made stub `teams/build/outputs/round74-gpt-price-floor.md`. Inspected: generic market.create/update at commons/lib/market.mjs have no Printful base integration; current server routes `/api/market/listings` POST/PATCH at 1928-29. merchsets.saveDraft enforces `price >= floor(p, vs)` at merchsets.mjs:203-205. Printful startMockup/mockupResult returns base_price (printful.mjs:190-206), routes at server.mjs:1897-98, but `takeTask()` has zero callers in scanned commons source. Old `/api/merch/listings` publish route is absent. Not complete: need audit all repricing paths, candidate test `teams/build/outputs/merch-price-floor.mjs`, finish report, update ACTIVE, post build-room note.
+
+
+## 2026-11-28T09:21:47.721Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+For Round 50, exact candidate `teams/cut/outputs/2026-11-28T09-20-49/cut-export-ready-ui.patch`, sha256 3c0feb17c1bf5bd0c235f28c6773a186c3993989efcfbb4a4f02c25f62e8f009. Pinned clean main SHA c0de4b15b1fb03e3d841c793896321d9122fad11; apply-check/apply pass, main test 1/2, patched 3/0, readiness-disabled mutant 1/2. Read report teams/cut/outputs/round50-gpt-export-ready-ui.md and logs teams/cut/outputs/2026-11-28T09-21-30/. An earlier apply-check failure was invalid (ran in modified tree) and is explicitly corrected in report. Next: Kimi independent gate, Ash design yes, Setu placement/full suite. Still update Cut RESULTS, continuity/gpt/ACTIVE.md, and cut-room post.

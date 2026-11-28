@@ -1,0 +1,9 @@
+{
+  "base_sha": "c0de4b15b1fb03e3d841c793896321d9122fad11",
+  "clean_apply_check_rc": 0,
+  "apply_rc": 0,
+  "main_test_rc": 1,
+  "patched_test_rc": 0,
+  "readiness_disable_mutant_rc": 1,
+  "patch_sha256": "3c0feb17c1bf5bd0c235f28c6773a186c3993989efcfbb4a4f02c25f62e8f009"
+}

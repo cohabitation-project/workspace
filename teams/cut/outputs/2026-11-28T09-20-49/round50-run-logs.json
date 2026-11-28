@@ -1,0 +1,72 @@
+[
+  {
+    "cmd": "git clone --depth 1 https://github.com/cohabitation-project/workspace.git /tmp/round50-cut-i8lqu0m2/workspace",
+    "cwd": null,
+    "rc": 0,
+    "stdout": "",
+    "stderr": "Cloning into '/tmp/round50-cut-i8lqu0m2/workspace'...\nUpdating files:  40% (1682/4110)\nUpdating files:  41% (1686/4110)\nUpdating files:  42% (1727/4110)\nUpdating files:  42% (1729/4110)\nUpdating files:  43% (1768/4110)\nUpdating files:  44% (1809/4110)\nUpdating files:  45% (1850/4110)\nUpdating files:  46% (1891/4110)\nUpdating files:  47% (1932/4110)\nUpdating files:  48% (1973/4110)\nUpdating files:  49% (2014/4110)\nUpdating files:  50% (2055/4110)\nUpdating files:  51% (2097/4110)\nUpdating files:  52% (2138/4110)\nUpdating files:  53% (2179/4110)\nUpdating files:  54% (2220/4110)\nUpdating files:  55% (2261/4110)\nUpdating files:  56% (2302/4110)\nUpdating files:  57% (2343/4110)\nUpdating files:  58% (2384/4110)\nUpdating files:  59% (2425/4110)\nUpdating files:  60% (2466/4110)\nUpdating files:  61% (2508/4110)\nUpdating files:  62% (2549/4110)\nUpdating files:  63% (2590/4110)\nUpdating files:  64% (2631/4110)\nUpdating files:  65% (2672/4110)\nUpdating files:  66% (2713/4110)\nUpdating files:  67% (2754/4110)\nUpdating files:  68% (2795/4110)\nUpdating files:  69% (2836/4110)\nUpdating files:  70% (2877/4110)\nUpdating files:  71% (2919/4110)\nUpdating files:  72% (2960/4110)\nUpdating files:  73% (3001/4110)\nUpdating files:  74% (3042/4110)\nUpdating files:  75% (3083/4110)\nUpdating files:  76% (3124/4110)\nUpdating files:  77% (3165/4110)\nUpdating files:  78% (3206/4110)\nUpdating files:  79% (3247/4110)\nUpdating files:  80% (3288/4110)\nUpdating files:  81% (3330/4110)\nUpdating files:  82% (3371/4110)\nUpdating files:  83% (3412/4110)\nUpdating files:  84% (3453/4110)\nUpdating files:  85% (3494/4110)\nUpdating files:  86% (3535/4110)\nUpdating files:  87% (3576/4110)\nUpdating files:  88% (3617/4110)\nUpdating files:  89% (3658/4110)\nUpdating files:  90% (3699/4110)\nUpdating files:  91% (3741/4110)\nUpdating files:  92% (3782/4110)\nUpdating files:  93% (3823/4110)\nUpdating files:  94% (3864/4110)\nUpdating files:  95% (3905/4110)\nUpdating files:  96% (3946/4110)\nUpdating files:  97% (3987/4110)\nUpdating files:  98% (4028/4110)\nUpdating files:  99% (4069/4110)\nUpdating files: 100% (4110/4110)\nUpdating files: 100% (4110/4110), done.\n"
+  },
+  {
+    "cmd": "git rev-parse HEAD",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 0,
+    "stdout": "56f6b86b17f397188c85d0062e445662147271af\n",
+    "stderr": ""
+  },
+  {
+    "cmd": "git apply --check /tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T06-20-19/round49-diagnostic-remaining-hunks.diff",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "cmd": "git apply /tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T06-20-19/round49-diagnostic-remaining-hunks.diff",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "cmd": "git diff -- commons/public/cut/cut.js",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 0,
+    "stdout": "diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js\nindex a9193b4..1d17e0e 100644\n--- a/commons/public/cut/cut.js\n+++ b/commons/public/cut/cut.js\n@@ -198,6 +198,10 @@ export function initCutEditor(root = document) {\n   const cover = byId('cover-scrub');\n   const coverUse = byId('cover-use');\n   const exportButton = byId('export-feed');\n+  let readinessRun = 0;\n+  let sourceReady = false;\n+  let exportInProgress = false;\n+  exportButton.disabled = true;\n   let draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;\n   let draft = safeRead(draftKey);\n   if (draft) {\n@@ -245,6 +249,7 @@ export function initCutEditor(root = document) {\n       video.dataset.videoId = videoId;\n       video.src = payload.url;\n       draftKey = `${DRAFT_PREFIX}${videoId}`;\n+      void refreshSourceReadiness();\n       // Carry the current edit forward to the imported video as its local draft.\n       draft = null;\n       duration = 0;\n@@ -326,7 +331,33 @@ export function initCutEditor(root = document) {\n     showToast('Your edited video is ready. Tap \"Post it\".');\n   }\n \n+  function syncExportButton() {\n+    exportButton.disabled = !sourceReady || exportInProgress;\n+  }\n+  async function refreshSourceReadiness() {\n+    const id = videoId;\n+    const run = ++readinessRun;\n+    sourceReady = false;\n+    syncExportButton();\n+    if (!id) return;\n+    const result = await waitForVideo(id);\n+    // A stock import or another source change may have started a newer poll while this one slept.\n+    if (run !== readinessRun || id !== videoId) return;\n+    if (result.state === 'ready') {\n+      sourceReady = true;\n+      syncExportButton();\n+    } else if (result.state === 'failed') {\n+      showToast(failedVideoMessage(result.reason));\n+    } else {\n+      showToast('Your source video is still being prepared. Export will unlock when it is ready.');\n+    }\n+  }\n+\n   exportButton.addEventListener('click', async () => {\n+    if (!sourceReady) {\n+      showToast(videoId ? 'Your source video is still being prepared.' : 'Pick a video before exporting. Your edit is saved here.');\n+      return;\n+    }\n     const values = saveDraft();\n     let edit;\n     try {\n@@ -339,7 +370,8 @@ export function initCutEditor(root = document) {\n       showToast('Pick a video before exporting. Your edit is saved here.');\n       return;\n     }\n-    exportButton.disabled = true;\n+    exportInProgress = true;\n+    syncExportButton();\n     try {\n       const response = await fetch('/api/cut/render', {\n         method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Commons': '1' },\n@@ -354,10 +386,12 @@ export function initCutEditor(root = document) {\n     } catch {\n       showToast('Export is unavailable offline. Your edit is saved here.');\n     } finally {\n-      exportButton.disabled = false;\n+      exportInProgress = false;\n+      syncExportButton();\n     }\n   });\n \n+  void refreshSourceReadiness();\n   loadMusic(music, musicWrap, draft?.musicId || '').then(saveDraft);\n   saveDraft();\n }\n",
+    "stderr": ""
+  },
+  {
+    "cmd": "git apply --check /tmp/kin-py-4zRVH1/out/cut-export-ready-ui.patch",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 1,
+    "stdout": "",
+    "stderr": "error: patch failed: commons/public/cut/cut.js:198\nerror: commons/public/cut/cut.js: patch does not apply\n"
+  },
+  {
+    "cmd": "git clone --depth 1 https://github.com/cohabitation-project/workspace.git /tmp/round50-cut-i8lqu0m2/base",
+    "cwd": null,
+    "rc": 0,
+    "stdout": "",
+    "stderr": "Cloning into '/tmp/round50-cut-i8lqu0m2/base'...\nUpdating files:  40% (1682/4111)\nUpdating files:  41% (1686/4111)\nUpdating files:  42% (1727/4111)\nUpdating files:  42% (1729/4111)\nUpdating files:  43% (1768/4111)\nUpdating files:  44% (1809/4111)\nUpdating files:  45% (1850/4111)\nUpdating files:  46% (1892/4111)\nUpdating files:  47% (1933/4111)\nUpdating files:  48% (1974/4111)\nUpdating files:  49% (2015/4111)\nUpdating files:  50% (2056/4111)\nUpdating files:  51% (2097/4111)\nUpdating files:  52% (2138/4111)\nUpdating files:  53% (2179/4111)\nUpdating files:  54% (2220/4111)\nUpdating files:  55% (2262/4111)\nUpdating files:  56% (2303/4111)\nUpdating files:  57% (2344/4111)\nUpdating files:  58% (2385/4111)\nUpdating files:  59% (2426/4111)\nUpdating files:  60% (2467/4111)\nUpdating files:  61% (2508/4111)\nUpdating files:  62% (2549/4111)\nUpdating files:  63% (2590/4111)\nUpdating files:  64% (2632/4111)\nUpdating files:  65% (2673/4111)\nUpdating files:  66% (2714/4111)\nUpdating files:  67% (2755/4111)\nUpdating files:  68% (2796/4111)\nUpdating files:  69% (2837/4111)\nUpdating files:  70% (2878/4111)\nUpdating files:  71% (2919/4111)\nUpdating files:  72% (2960/4111)\nUpdating files:  73% (3002/4111)\nUpdating files:  74% (3043/4111)\nUpdating files:  75% (3084/4111)\nUpdating files:  76% (3125/4111)\nUpdating files:  77% (3166/4111)\nUpdating files:  78% (3207/4111)\nUpdating files:  79% (3248/4111)\nUpdating files:  80% (3289/4111)\nUpdating files:  81% (3330/4111)\nUpdating files:  82% (3372/4111)\nUpdating files:  83% (3413/4111)\nUpdating files:  84% (3454/4111)\nUpdating files:  85% (3495/4111)\nUpdating files:  86% (3536/4111)\nUpdating files:  87% (3577/4111)\nUpdating files:  88% (3618/4111)\nUpdating files:  89% (3659/4111)\nUpdating files:  90% (3700/4111)\nUpdating files:  91% (3742/4111)\nUpdating files:  92% (3783/4111)\nUpdating files:  93% (3824/4111)\nUpdating files:  94% (3865/4111)\nUpdating files:  95% (3906/4111)\nUpdating files:  96% (3947/4111)\nUpdating files:  97% (3988/4111)\nUpdating files:  98% (4029/4111)\nUpdating files:  99% (4070/4111)\nUpdating files: 100% (4111/4111)\nUpdating files: 100% (4111/4111), done.\n"
+  },
+  {
+    "cmd": "node --test /tmp/round50-cut-i8lqu0m2/base/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/base",
+    "rc": 1,
+    "stdout": "\u2716 pending source keeps Export disabled; a later ready list row enables it (9.802204ms)\n\u2716 failed source stays disabled and shows its server reason once (2.032481ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.080679ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 2\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 85.083631\n\n\u2716 failing tests:\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:55:1\n\u2716 pending source keeps Export disabled; a later ready list row enables it (9.802204ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/round50-cut-i8lqu0m2/base/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:59:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:70:1\n\u2716 failed source stays disabled and shows its server reason once (2.032481ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/round50-cut-i8lqu0m2/base/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:74:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  },
+  {
+    "cmd": "node --test /tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 0,
+    "stdout": "\u2714 pending source keeps Export disabled; a later ready list row enables it (3.869194ms)\n\u2714 failed source stays disabled and shows its server reason once (0.995721ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.899972ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 49.218559\n",
+    "stderr": ""
+  },
+  {
+    "cmd": "node --test /tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+    "cwd": "/tmp/round50-cut-i8lqu0m2/workspace",
+    "rc": 1,
+    "stdout": "\u2716 pending source keeps Export disabled; a later ready list row enables it (4.092924ms)\n\u2716 failed source stays disabled and shows its server reason once (1.375627ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.961609ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 2\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 50.169441\n\n\u2716 failing tests:\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:55:1\n\u2716 pending source keeps Export disabled; a later ready list row enables it (4.092924ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:59:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:70:1\n\u2716 failed source stays disabled and shows its server reason once (1.375627ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/round50-cut-i8lqu0m2/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:74:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+    "stderr": ""
+  }
+]
