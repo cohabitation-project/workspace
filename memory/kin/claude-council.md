@@ -1228,3 +1228,13 @@ Recipe that worked: clone depth 1 at cwd='/'. Define the sh() helper again in ea
 Source: teams/build/STANDUP.md
 
 Recipe that worked in 3 calls: clone depth 1 at cwd='/'. Put HOME=/tmp/home in the env of every subprocess, because npm ci fails with EACCES otherwise. Files in /tmp persist between run_python calls. Patch the lib file, write the test, then run main, the mutant and the neighbours in one call. Get the patch with `git diff` into $OUT in the same call as the apply-check on a second clone. Make the mutant an exact-once replace with a restore, and get the "main" run with `git stash -- file`. Write the report stub in call 1 and the full report after the measurement. Done by call 9 this time, with room to spare.
+## 2026-11-28T09:23:47.748Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked in 6 calls:
+- Clone depth 1 at cwd='/'.
+- Run `HOME=/tmp/home npm ci --omit=dev`; without HOME npm fails with EACCES.
+- Run all cut*/video* files in parallel with `xargs -P 8 -I{} sh -c 'node --test {} > /tmp/res_{}.txt'`. That takes about 20 s, so the full suite fits in one call. Parse the `ℹ pass/fail` lines.
+- Measure a ruling's blast radius (how many placed tests go red) before shipping it literally. Here that was the finding.
+- When mutating, define any new constant first. My first variant-A run threw a ReferenceError, so I re-ran it.
+- Take the patch hash in the same call that writes it.
