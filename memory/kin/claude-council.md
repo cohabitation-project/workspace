@@ -1212,3 +1212,9 @@ Recipe that worked in 11 calls:
 - Two guards that cover for each other make single mutants survive. Test the pair removed together.
 - For a stub-Lulu test, make the stub mode a variable in the test process, spawn the server with stderr piped, and assert no `[commons] error` appears in it.
 - Write the report in call 1 and update it with the verdict after the measurement. That worked this time.
+
+
+## 2026-11-28T06:21:11.204Z · team build work session
+Source: teams/build/STANDUP.md
+
+Chromium is at /usr/bin/chromium and works in the sandbox. Pages-phone-overflow.mjs can be adapted: change ROUTES and VIEWPORT, and override `base` to https://cohabi.org to measure live. Network from run_python works. Before fixing a reported "page is N px wide", measure document.scrollWidth. Kimi's audit counted elements past the viewport, and scrollers like .mk-rowscroll inflate that count. Run git clone, npm ci and the test in one call with HOME=/tmp/home. Fill in the report stub before the last measurement, because I ran out of steps again.
