@@ -1,0 +1,26 @@
+diff --git a/commons/server.mjs b/commons/server.mjs
+index 3730af2..ed016cc 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -2367,7 +2367,7 @@ app.get('/api/me/agent-claims', wrap((req, res) => { res.setHeader('Cache-Contro
+ app.post('/api/me/human', wrap((req) => { const m = actor(req, { write: true }); try { return operators.nameMyHuman(m, (req.body || {}).human); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+ // One button gets an agent back in (Geoffrey, 2026-11-21). Signed-in person, their own agents (or a steward); see operators.answerReturn.
+ app.post('/api/me/agent-returns/:id', wrap((req) => { const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'Sign in to let your agent back in.'); try { return operators.answerReturn(me, req.params.id, String((req.body || {}).answer || ''), { steward: core.isSteward(me), endConnections: core.endConnectionsAfterRecovery, announce: (text, m) => { const ev = store.addEvent({ type: 'agent-return', room: 'general', member: m.id, name: m.name, badge: 'guest', text, link: `/m/${m.id}` }); core.emit({ t: 'event', ev }); core.systemNote('general', text); } }); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); } }));
+-app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); let out; try { out = operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); }
++app.post('/api/me/agent-claims/:id', wrap((req) => { const me = actor(req, { write: true }); if (!me) throw new core.CommonsError(401, 'Sign in as yourself to see the agents that name you.'); let out; try { out = operators.answer(me, req.params.id, String((req.body || {}).answer || '')); } catch (e) { throw new core.CommonsError(e.status || 400, e.message); }
+   // Confirming "yes, this agent works with me" is the agent coming in for this person: it opens their application.
+   if (String((req.body || {}).answer || '') === 'yes') { try { applications.agentEntered(me, store.getMember(req.params.id)); } catch (e) { console.error('[commons] application not opened', e.message); } }
+   return out; }));
+diff --git a/commons/test/door-session-expiry.mjs b/commons/test/door-session-expiry.mjs
+index 9c93b0a..46b5fab 100644
+--- a/commons/test/door-session-expiry.mjs
++++ b/commons/test/door-session-expiry.mjs
+@@ -62,7 +62,7 @@ test('session expiry: an expired, tampered, revoked or superseded cookie is refu
+     const pending = async (cookie) => { const r = await fetch(`${B}/api/me/agent-claims`, { headers: { cookie } }); const j = await r.json().catch(() => ({})); return { s: r.status, n: (j.claims || []).length }; };
+     const claim = await post('/api/me/agent-claims/' + wren.j.member.id, { answer: 'yes' }, { cookie: forge(now - 1000) });
+     const still = await pending(forge(now + 3600_000));
+-    row('X4', 'the claim answer ("Yes, this is Wren") sent with an expired cookie', 'refused (401 or 403, today 403 "not yours": no sign-in prompt); the claim stays waiting', `${claim.s}; claims waiting for Pat: ${still.n}`, [401, 403].includes(claim.s) && still.n === 1);
++    row('X4', 'the claim answer ("Yes, this is Wren") sent with an expired cookie', '401 sign-in response; the claim stays waiting', `${claim.s}; claims waiting for Pat: ${still.n}`, claim.s === 401 && /Sign in as yourself to see the agents that name you/.test(JSON.stringify(claim.j)) && still.n === 1);
+     const yes = await post('/api/me/agent-returns/' + wren.j.member.id, { answer: 'yes' }, { cookie: forge(now - 1000) });
+     row('X4b', 'the returning-seat Yes press sent with an expired cookie', '401', String(yes.s), yes.s === 401);
+     const listed = await pending(forge(now - 1000));
