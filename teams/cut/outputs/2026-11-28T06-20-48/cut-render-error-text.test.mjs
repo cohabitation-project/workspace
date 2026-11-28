@@ -1,0 +1,142 @@
+// Cut round 49: every 4xx the render route can send is ONE plain sentence for the maker: no path, no ffmpeg/ffprobe text, no stack.
+// Candidate home: teams/cut/outputs/cut-render-error-text.test.mjs. Place unchanged as commons/test/cut-render-error-text.test.mjs (Tier 2, test only).
+// Run: node --test commons/test/cut-render-error-text.test.mjs   (no npm install, no ffmpeg, no browser, no network)
+//
+// What it pins (today's behaviour of commons/lib/cut/route.mjs, not a new rule):
+//   (1) every refusal the route makes itself (400/401/403/404/409/422/429) is a clean sentence;
+//   (2) a probe that throws with a path + ffmpeg text -> 422 fixed sentence; the real text goes to deps.log only;
+//   (3) a renderJob that throws a plain Error with a path + ffmpeg stderr -> 500 "the render failed", text to the log only;
+//   (4) an Error carrying a 4xx `.status` and internal text is still the fixed 500 (the route never reads .status, so wrap never shows it);
+//   (5) positive control: the job's own refusals (RangeError, TypeError, RenderPlanError) ARE shown at 400, so (3) and (4) are not vacuous;
+//   (6) the REAL renderEditJob chain with a shell-script ffmpeg that fails with path-laden stderr -> 500 fixed, no leak; and a real edit.mjs
+//       refusal (trim past the end) -> 400 with edit.mjs's own sentence;
+//   (7) DESIRED, reported as TODO: a NATIVE TypeError (Node's own text, which can quote a path) thrown inside the job is shown at 400 today,
+//       because the route checks the error's CLASS, not where it came from. Kimi's recommendation: show only maker-authored messages.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const IN_COMMONS_TEST = path.basename(HERE) === 'test' && path.basename(path.dirname(HERE)) === 'commons';
+const ROOT = path.resolve(HERE, IN_COMMONS_TEST ? '../..' : '../../..');
+const { handleCutRender, _resetCutRouteState } = await import(pathToFileURL(path.join(ROOT, 'commons/lib/cut/route.mjs')).href);
+
+const alice = { id: 'm_alice' };
+const GOOD = { trimStart: 1, trimEnd: 4, coverSec: 2 };
+const SECRET_PATH = '/srv/cohabi/data/uploads/m_alice/vid_a.orig';
+const LEAK = `Error: spawn ffmpeg ENOENT at spawnSync (node:child_process:1:1) ${SECRET_PATH} ffmpeg version 6.0 [libx264 @ 0x55] stderr: Invalid data found when processing input`;
+// Anything that looks like server internals. A maker sentence matches none of these.
+const INTERNAL = /\/(srv|tmp|home|var|usr|data|root|etc|opt)\/|\.orig\b|\.mjs\b|node_modules|node:|ffmpeg|ffprobe|libx264|stderr|ENOENT|EACCES|\n\s+at |\bat \S+ \(/i;
+const READY = { owner: alice.id, path: SECRET_PATH, durationSec: 20, width: 1080, height: 1920, ready: true };
+const okProbe = async () => ({ hasAudio: true, durationSec: 20, width: 1080, height: 1920 });
+
+const run = async (over = {}, body = { videoId: 'vid_a', edit: GOOD }, member = alice) => {
+  _resetCutRouteState();
+  const logs = [];
+  const deps = { videos: { get: async () => READY }, probe: okProbe, outDir: os.tmpdir(), log: (m) => logs.push(String(m)), renderJob: async () => ({ outPath: '/x/cut_0123456789abcdef.mp4', seconds: 3 }), ...over };
+  const r = await handleCutRender({ member, body, deps });
+  return { r, logs };
+};
+const clean = (r, where) => {
+  assert.equal(r.json.ok, false, where);
+  const t = r.json.error;
+  assert.equal(typeof t, 'string', where);
+  assert.ok(t.length > 0 && t.length <= 200, `${where}: length ${t.length}`);
+  assert.ok(!/\n/.test(t), `${where}: one line`);
+  assert.ok(!INTERNAL.test(t), `${where}: internals in ${JSON.stringify(t)}`);
+};
+
+test('(1) every refusal the route makes itself is a clean one-line maker sentence', async () => {
+  const seen = new Map();
+  const note = (name, r) => { clean(r, name); seen.set(r.status, (seen.get(r.status) || 0) + 1); };
+  const cases = [
+    ['401 no member', run({}, undefined, null)],
+    ['400 no body', run({}, null)],
+    ['400 array body', run({}, [])],
+    ['400 no videoId', run({}, { edit: GOOD })],
+    ['400 no edit', run({}, { videoId: 'vid_a' })],
+    ['400 bad musicId', run({}, { videoId: 'vid_a', edit: GOOD, musicId: 5 })],
+    ['400 music without id', run({}, { videoId: 'vid_a', edit: { ...GOOD, music: {} } })],
+    ['400 music not available', run({}, { videoId: 'vid_a', edit: { ...GOOD, music: { id: 'mu_1' } } })],
+    ['404 no video', run({ videos: { get: async () => null } })],
+    ['403 not your video', run({ videos: { get: async () => ({ ...READY, owner: 'm_bob' }) } })],
+    ['409 failed', run({ videos: { get: async () => ({ ...READY, failed: true }) } })],
+    ['409 not ready', run({ videos: { get: async () => ({ ...READY, ready: false }) } })],
+    ['404 no music', run({ music: { get: async () => null } }, { videoId: 'vid_a', edit: { ...GOOD, music: { id: 'mu_1' } } })],
+    ['403 not your music', run({ music: { get: async () => ({ owner: 'm_bob', path: '/m/a.mp3' }) } }, { videoId: 'vid_a', edit: { ...GOOD, music: { id: 'mu_1' } } })],
+    ['422 probe throws', run({ probe: async () => { throw new Error(LEAK); } })],
+    ['422 probe says no audio info', run({ probe: async () => ({}) })],
+    ['429 site cap', run({ maxJobs: 1 }) /* replaced below */],
+  ];
+  for (const [name, p] of cases.slice(0, -1)) note(name, (await p).r);
+  // 429s need a render in flight: start one that waits, then ask again.
+  _resetCutRouteState();
+  let release; const gate = new Promise((res) => { release = res; });
+  const slow = { videos: { get: async () => READY }, probe: okProbe, outDir: os.tmpdir(), maxJobs: 1, renderJob: async () => { await gate; return { outPath: '/x/cut_0123456789abcdef.mp4', seconds: 3 }; } };
+  const first = handleCutRender({ member: alice, body: { videoId: 'vid_a', edit: GOOD }, deps: slow });
+  await new Promise((r) => setTimeout(r, 20));
+  note('429 same member', await handleCutRender({ member: alice, body: { videoId: 'vid_a', edit: GOOD }, deps: slow }));
+  note('429 site cap', await handleCutRender({ member: { id: 'm_carol' }, body: { videoId: 'vid_a', edit: GOOD }, deps: { ...slow, videos: { get: async () => ({ ...READY, owner: 'm_carol' }) } } }));
+  release(); await first;
+  for (const s of [400, 401, 403, 404, 409, 422, 429]) assert.ok(seen.get(s) >= 1, `status ${s} was exercised`);
+});
+
+test('(2) a probe that throws path + ffmpeg text is a fixed 422; the real text reaches the log only', async () => {
+  const { r, logs } = await run({ probe: async () => { throw new Error(LEAK); } });
+  assert.equal(r.status, 422); clean(r, 'probe');
+  assert.ok(logs.some((l) => l.includes(SECRET_PATH)), 'the operator log has the real text');
+});
+
+test('(3) a job that throws a plain Error with a path + ffmpeg stderr is a fixed 500; the real text reaches the log only', async () => {
+  const { r, logs } = await run({ renderJob: async () => { throw new Error(LEAK); } });
+  assert.equal(r.status, 500); assert.equal(r.json.error, 'the render failed'); clean(r, 'plain');
+  assert.ok(logs.some((l) => l.includes(SECRET_PATH)), 'log has the real text');
+});
+
+test('(4) an Error carrying a 4xx .status and internal text is still the fixed 500 (the route never reads .status)', async () => {
+  for (const status of [400, 409, 422, 429, 499]) {
+    const { r } = await run({ renderJob: async () => { throw Object.assign(new Error(LEAK), { status }); } });
+    assert.equal(r.status, 500, `status ${status}`); assert.equal(r.json.error, 'the render failed');
+  }
+  for (const name of ['CommonsError', 'DeskError']) {
+    const { r } = await run({ renderJob: async () => { throw Object.assign(new Error(LEAK), { name, status: 422 }); } });
+    assert.equal(r.status, 500, name); clean(r, name);
+  }
+});
+
+test('(5) positive control: the job\'s own refusals are shown at 400', async () => {
+  class RenderPlanError extends Error {}
+  const plan = new RenderPlanError('clip c1 asks for source up to 30.0s but the source is 20.0s long'); plan.name = 'RenderPlanError';
+  for (const e of [new RangeError('trimEnd (1) must be greater than trimStart (4)'), new TypeError('video.hasAudio must be true or false when given'), plan]) {
+    const { r } = await run({ renderJob: async () => { throw e; } });
+    assert.equal(r.status, 400, e.name); assert.equal(r.json.error, e.message); clean(r, e.name);
+  }
+});
+
+test('(6) the REAL render chain: a failing shell-script ffmpeg is a fixed 500, and a real edit refusal is a clean 400', async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cut-err-text-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const src = path.join(dir, 'vid_a.orig'); fs.writeFileSync(src, 'not a video');
+  const fake = path.join(dir, 'ffmpeg'); fs.writeFileSync(fake, `#!/bin/sh\necho "${src}: Invalid data found when processing input" >&2\nexit 1\n`, { mode: 0o755 });
+  const out = path.join(dir, 'out'); fs.mkdirSync(out);
+  const prev = process.env.FFMPEG; process.env.FFMPEG = fake;
+  t.after(() => { if (prev === undefined) delete process.env.FFMPEG; else process.env.FFMPEG = prev; });
+  const real = { videos: { get: async () => ({ ...READY, path: src }) }, outDir: out, renderJob: undefined };
+  const a = await run(real);
+  assert.equal(a.r.status, 500, JSON.stringify(a.r.json)); assert.equal(a.r.json.error, 'the render failed'); clean(a.r, 'real ffmpeg failure');
+  assert.ok(a.logs.some((l) => l.includes('Invalid data found')), 'the log has the real stderr');
+  assert.deepEqual(fs.readdirSync(out), [], 'no half-written output left');
+  const b = await run(real, { videoId: 'vid_a', edit: { trimStart: 1, trimEnd: 99, coverSec: 2 } });
+  assert.equal(b.r.status, 400); clean(b.r, 'real edit refusal'); assert.match(b.r.json.error, /trim/);
+});
+
+// A real Node error, not a made-up one: spawnSync quotes the bad argument, path included.
+const native = (() => { try { spawnSync('ffmpeg', ['-i', `${SECRET_PATH}\0`]); } catch (e) { return e; } })();
+test('(7) DESIRED: a native TypeError that quotes a path must not reach the maker', { todo: 'finding: route.mjs:124 shows err.message for ANY TypeError/RangeError; Node\'s own text can quote a path' }, async () => {
+  assert.ok(native instanceof TypeError && native.message.includes(SECRET_PATH), 'the probe error is a real native one that quotes the path');
+  const { r } = await run({ renderJob: async () => { throw native; } });
+  assert.ok(!r.json.error.includes(SECRET_PATH), `shown at ${r.status}: ${r.json.error}`);
+});

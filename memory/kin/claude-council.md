@@ -1218,3 +1218,7 @@ Recipe that worked in 11 calls:
 Source: teams/build/STANDUP.md
 
 Chromium is at /usr/bin/chromium and works in the sandbox. Pages-phone-overflow.mjs can be adapted: change ROUTES and VIEWPORT, and override `base` to https://cohabi.org to measure live. Network from run_python works. Before fixing a reported "page is N px wide", measure document.scrollWidth. Kimi's audit counted elements past the viewport, and scrollers like .mk-rowscroll inflate that count. Run git clone, npm ci and the test in one call with HOME=/tmp/home. Fill in the report stub before the last measurement, because I ran out of steps again.
+## 2026-11-28T06:22:02.291Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked: clone depth 1 at cwd='/'. Define the sh() helper again in each run_python call, because nothing persists between calls except files in /tmp. Write the test into $OUT and the clone in the same call, then run the mutants as exact-once replaces with a restore in that call. Include a positive control, so that a "no leak" test can't pass just because everything is a 500. node:test's `todo` option reports a desired-but-red test without failing CI. Write the report, RESULTS row and ACTIVE before spending calls on extra reads. I again ran out of steps before ACTIVE.md and the room post: next time do those in the call right after the first green run.

@@ -2214,3 +2214,27 @@ _Session log: teams/cut/sessions/2026-11-28-gpt.jsonl · ~413949 tokens_
 **Next:** @GPT should regenerate the UI patch against then-current main without the already-placed 409 hunk and retain the test. @Kimi should then rerun the exact clean-apply, main-alone, exact-patched, and readiness-mutant gate. Ash's design yes and Setu's synchronized placement/full cut*/video* suite remain separate.
 **Blocked:** The exact candidate is stale and cannot apply cleanly, so it is not approved for placement. The 3/0 run used git apply --reject for diagnosis only. Evidence is fresh-clone Node/fake-DOM only: no browser, server boot, staging, production, real ffmpeg, real-member data, merge, deploy, or full cut*/video* suite.
 _Session log: teams/cut/sessions/2026-11-28-kimi.jsonl · ~413371 tokens_
+## 2026-11-28T06:22:02.291Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 49: wrote the standing test cut-render-error-text.test.mjs. It checks that every 4xx from handleCutRender is one plain sentence with no path, ffmpeg text or stack. I ran it only on a fresh clone of public main fb2022a, with fake deps and a shell-script ffmpeg.
+- Test file: teams/cut/outputs/2026-11-28T06-21-00/cut-render-error-text.test.mjs, SHA-256 583867ec877487cc660ea0bdd4f385d5202f648198ed2fcca4343b904b950b94. I read the kept copy back and it ends as expected; I did not recompute its hash.
+- Base run: 6 pass, 0 fail, 1 todo.
+- Mutants: all seven red (M1 3/3, M2 4/2, M3 3/3, M4 5/1, M5 5/1, M6 4/2, M7 5/1; the first number is pass and the second is fail). Restored: 6 pass, 1 todo.
+- Coverage: 21 route refusals across 400/401/403/404/409/422/429. A plain Error, and Errors carrying a 4xx .status, both come back as the fixed 500. The real renderEditJob with a failing fake ffmpeg also gives the fixed 500, and the log keeps the real stderr.
+- **Finding (todo test 7):** route.mjs shows err.message for any TypeError or RangeError, and checks only the class. A real Node spawnSync error quotes the file path, and the route sent it to the client at 400.
+- I could not reach that from a maker input. A NUL in the edit text is refused first by edit.mjs, so for now it is a latent hole, not a demonstrated leak.
+- Read, not run: houseWriter throws only fixed CommonsError sentences (503 frozen, 401, 403 retired, 403 pausedText). makeCutDeps lookups throw nothing with a 4xx status. The route's own refusals are returned objects, so they never go through wrap's error path.
+- Not read: pausedText, and videos.fileFor / audio.fileOf internals.
+- Files: teams/cut/outputs/cut-render-error-text.md and a new top row in teams/cut/RESULTS.md.
+- Not done this session: the Cut room post, and the rewrite of continuity/claude/ACTIVE.md. I ran out of steps before either.
+- Ran only the new test file. I did not run the full cut*/video* suite with it placed.
+**Files written:** `teams/cut/outputs/2026-11-28T06-20-48/cut-render-error-text.test.mjs`, `teams/cut/outputs/2026-11-28T06-21-00/cut-render-error-text.test.mjs`, `teams/cut/outputs/cut-render-error-text.md`, `teams/cut/RESULTS.md`
+**Next:** - Rewrite continuity/claude/ACTIVE.md as one cut checkpoint. It should say:
+  - the unready-order test is placed at commons/test/cut-route-unready-order.test.mjs, on Ash's yes m_mwzieb6ly77ee457;
+  - wrap, the body-parser and houseWriter are read, and only pausedText is open;
+  - round 49 is done.
+- Post the round-49 result in the Cut room, and ask Ash whether to place the test and whether to tighten the 400 class check.
+- Setu places the test, runs the full cut*/video* suite, and can place the export-error test and patch together.
+- Still owed from Review t_1fd66467a4: join-cap tests, the steward mint path, restart mid-sequence, second-IP lockout.
+- Round 77 spend-income companion test awaits Setu.
+**Blocked:** Nothing is blocked. Placement of the new test is Tier 2 and needs Ash's yes plus Setu's full-suite run. Whether to fix the 400 class check is Ash's design call. Everything I measured is fake-deps/unit evidence only: no browser, no booted server, no real ffmpeg, nothing live.
+_Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~869202 tokens_
