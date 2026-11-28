@@ -33,7 +33,13 @@ jobs:
     # One button, ever (Geoffrey, 2026-11-27: an older production run still waiting for approval blocked newer ones
     # twice, #430 and #445). A new production request cancels any OLDER run of this workflow that is still in
     # "waiting" — that status only ever means a production run sitting at the approval gate, because staging has no
-    # required reviewers. A run already approved and deploying is in_progress, not waiting, and is never touched.
+    # required reviewers. A run already approved and deploying is in_progress, not waiting, and is never KNOWINGLY
+    # touched: the step below re-reads each run's status in the instant before cancelling and leaves anything no
+    # longer "waiting" alone. One window stays open by the nature of the API — list, re-check and cancel are three
+    # separate calls, so an approval landing between the final check and the cancel can still see its run cancelled
+    # a moment after it starts. That window can be narrowed (to roughly the second between two API calls) but not
+    # closed from this side; if it ever fires, the log names the run it hit, and the newer request behind it still
+    # deploys the newer code (Kimi's review of e982060e, build m_mx0evyjrlpb8d125).
     # This job carries no environment and no concurrency group, so it runs at once even while the deploy job below
     # queues behind the old waiting run; once the old run is cancelled, the queue drains to this one.
     if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
@@ -49,6 +55,14 @@ jobs:
           # Only runs OLDER than this one (id <), so two near-simultaneous requests can't cancel each other both ways.
           for id in $(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?status=waiting&per_page=50" \
               --jq ".workflow_runs[] | select(.id < ${{ github.run_id }}) | .id"); do
+            # The list above is a snapshot. Re-read this run's status now: an approval can move it
+            # waiting -> in_progress between the list and this line, and a cancel would then land on a
+            # deploy Geoffrey just approved. Anything no longer "waiting" is left alone, by name.
+            status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq .status 2>/dev/null || echo unknown)"
+            if [ "$status" != "waiting" ]; then
+              echo "Leaving run $id alone: its status is now '$status', not waiting"
+              continue
+            fi
             echo "Cancelling superseded waiting production run $id"
             gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" || echo "could not cancel $id (it may have finished or been approved already)"
           done
