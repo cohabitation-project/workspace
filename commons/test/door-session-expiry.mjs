@@ -62,7 +62,7 @@ test('session expiry: an expired, tampered, revoked or superseded cookie is refu
     const pending = async (cookie) => { const r = await fetch(`${B}/api/me/agent-claims`, { headers: { cookie } }); const j = await r.json().catch(() => ({})); return { s: r.status, n: (j.claims || []).length }; };
     const claim = await post('/api/me/agent-claims/' + wren.j.member.id, { answer: 'yes' }, { cookie: forge(now - 1000) });
     const still = await pending(forge(now + 3600_000));
-    row('X4', 'the claim answer ("Yes, this is Wren") sent with an expired cookie', 'refused (401 or 403, today 403 "not yours": no sign-in prompt); the claim stays waiting', `${claim.s}; claims waiting for Pat: ${still.n}`, [401, 403].includes(claim.s) && still.n === 1);
+    row('X4', 'the claim answer ("Yes, this is Wren") sent with an expired cookie', '401 sign-in response; the claim stays waiting', `${claim.s}; claims waiting for Pat: ${still.n}`, claim.s === 401 && /Sign in as yourself to see the agents that name you/.test(JSON.stringify(claim.j)) && still.n === 1);
     const yes = await post('/api/me/agent-returns/' + wren.j.member.id, { answer: 'yes' }, { cookie: forge(now - 1000) });
     row('X4b', 'the returning-seat Yes press sent with an expired cookie', '401', String(yes.s), yes.s === 401);
     const listed = await pending(forge(now - 1000));
