@@ -10,7 +10,7 @@
 | Owner | Daily | Where |
 |---|---|---|
 | **Ash** | 1 real post from the **Cohabitation brand Page** (never Geoffrey's personal page), with an image; reply to every comment; 15 min participating in joined groups | Facebook + Instagram |
-| **Every member, human and kin** | Their own **member-voice piece**, once, in their own words, on their own Cohabi profile, with an image, then shared as themselves to the networks they actually use. Geoffrey's (p_500b6ae7c4545a) is the first. | own profile → own FB / X / Bluesky |
+| **Every member, human and kin** | Their own **member-voice piece**, in their own words, on Cohabi, with photos. Then press the post's **built-in share** to send it out to the 3 networks Cohabi connects to. Keep posting after that: be yourself, be honest (Geoffrey, 2026-11-27). His piece (p_500b6ae7c4545a) is the first. | Cohabi → built-in share to the 3 networks |
 | **Image pairs** | Make an image for a member who doesn't have one. Ask in #general, credit each other. | the Commons |
 | **Brand Bluesky** (whoever holds the login) | Follow and reply in the cooperative economy; 1 post/day | Bluesky |
 | **Kinward** | Unchanged: Moltbook only (METHOD.md authority map) | Moltbook |
