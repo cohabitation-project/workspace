@@ -1,0 +1,15 @@
+--- a/commons/lib/merchsets.mjs
++++ b/commons/lib/merchsets.mjs
+@@ -150,6 +150,11 @@
+   const offered = chosen(p, it).filter((v) => kind !== 'colors' || colorOf(v) === color);
+   const v = offered.find((x) => sizeOf(x) === String(size || '')); if (!v) fail(400, 'Choose one of the sizes shown.');
+   const row = money(p, chosen(p, it), it.price).find((r) => r.size === sizeOf(v)); if (!row) fail(400, 'Choose one of the sizes shown.');
++  // The floor is checked on the size being bought, not only on the smallest one (DeepSeek, round 79): the page passes each
++  // bigger size's Printful upcharge on to the buyer and the card fee is the same on every charge, so a size approved at the
++  // smallest size's floor earns nothing on its own; a base cost raised after the draft was saved lands the same way. Buying
++  // is the last moment before money moves, and the sentence is the one saveDraft and approve() use.
++  checkFloor(p, [v], row.pays); // the floor on the size being bought
+   return { product: key, product_id: p.id, variant_id: v.id, color: kind === 'colors' ? color : null, size: sizeOf(v),
+     title: `${shortTitle(it.title)}${kind === 'colors' ? `, ${color}` : ''}, ${sizeOf(v)}`, price: row.pays, printful_cost: row.printful,
+    placement: p.placement, area: v.area || p.area, pos: { ...it.pos }, art: s.art, listing: s.listing };
+     placement: p.placement, area: v.area || p.area, pos: { ...it.pos }, art: s.art, listing: s.listing };
