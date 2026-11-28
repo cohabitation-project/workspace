@@ -158,8 +158,63 @@ export async function send(order, { fetchImpl = fetch, base = env('COMMONS_PUBLI
 }
 async function luluToken(fetchImpl) {
   const base = PIPES.lulu.base();
-  const r = await fetchImpl(`${base}/auth/realms/glasstree/protocol/openid-connect/token`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: 'Basic ' + Buffer.from(`${env('LULU_CLIENT_KEY')}:${env('LULU_CLIENT_SECRET')}`).toString('base64') }, body: 'grant_type=client_credentials' });
+  let r;
+  try { r = await fetchImpl(`${base}/auth/realms/glasstree/protocol/openid-connect/token`, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', authorization: 'Basic ' + Buffer.from(`${env('LULU_CLIENT_KEY')}:${env('LULU_CLIENT_SECRET')}`).toString('base64') }, body: 'grant_type=client_credentials' }); }
+  catch { fail(502, 'Lulu sign-in failed: the printer could not be reached'); } // a network error is the same short sentence a refusal gets: no stack, nothing logged
   const j = await r.json().catch(() => ({})); if (!r.ok || !j.access_token) fail(502, 'Lulu sign-in failed'); return j.access_token;
+}
+
+// ---------------------------------------------------------------- book publishing: read-only cost quotes (t_e50fd534c2)
+// Asks Lulu what a book would cost to print and ship. A COST CALCULATION ONLY: this endpoint of theirs creates no
+// print job, uploads no file, moves no money — the hard test boundary (no paid jobs without council) is untouched.
+// Measured live 2026-11-27 (teams/income/lulu-pricing-2026-11-27.md): fulfillment $0.75 flat; US shipping flat by
+// level ($5.69 MAIL / $20.74 EXPEDITED), so only pages and binding move the price.
+const BOOK_BINDS = { PB: 'paperback', CW: 'hardcover' }; // 6x9 B&W standard, 60# white — the starting specs
+const QUOTE_ADDRESS = { name: 'Cost Estimate', street1: '100 Main St', city: 'Sierra Vista', state_code: 'AZ', country_code: 'US', postcode: '85635', phone_number: '5205550100' }; // estimation only; nothing ships from a quote
+export async function luluCost({ pages, bind = 'PB', level = 'MAIL', quantity = 1 } = {}, fetchImpl = fetch) {
+  const p = Math.trunc(Number(pages));
+  if (!Number.isFinite(p) || p < 30 || p > 800) fail(400, 'pages must be a whole number from 30 to 800');
+  if (!BOOK_BINDS[bind]) fail(400, `bind must be one of: ${Object.keys(BOOK_BINDS).join(', ')}`);
+  if (!['MAIL', 'EXPEDITED'].includes(level)) fail(400, 'level must be MAIL or EXPEDITED');
+  if (!env('LULU_CLIENT_KEY') || !env('LULU_CLIENT_SECRET')) fail(503, 'the print cost service is not configured on this server');
+  const base = PIPES.lulu.base();
+  const tok = await luluToken(fetchImpl);
+  let r;
+  try {
+    r = await fetchImpl(`${base}/print-job-cost-calculations/`, {
+      method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tok}` },
+      body: JSON.stringify({ line_items: [{ pod_package_id: `0600X0900BWSTD${bind}060UW444MXX`, page_count: p, quantity: Math.max(1, Math.min(100, Math.trunc(Number(quantity) || 1))) }], shipping_address: QUOTE_ADDRESS, shipping_level: level }),
+    });
+  } catch { fail(502, 'the print cost service could not be reached'); } // same short sentence as a refusal; no stack, nothing logged
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) fail(502, `the print cost service answered ${r.status}`);
+  const li = (j.line_item_costs || [])[0] || {};
+  const n = (v) => { const x = Number(v); return Number.isFinite(x) ? Math.round(x * 100) / 100 : null; };
+  return {
+    spec: { trim: '6x9', color: 'B&W', bind: BOOK_BINDS[bind], pages: p }, level,
+    print_usd: n(li.total_cost_excl_discounts ?? li.total_cost_excl_tax),
+    fulfillment_usd: n(j.fulfillment_cost?.total_cost_excl_tax),
+    shipping_usd: n(j.shipping_cost?.total_cost_excl_tax),
+    total_usd: n(j.total_cost_excl_tax), currency: j.currency || 'USD',
+    live: env('LULU_LIVE') === '1' || /api\.lulu\.com/.test(base), sandbox: PIPES.lulu.base().includes('sandbox'),
+  };
+}
+/** The lowest list price the Market will accept for a spec, so nobody sells at a loss: landed cost + the PROPOSED
+ *  10% co-op cut (council's number to vote, teams/income/lulu-pricing-2026-11-27.md §4) + card processing, leaving
+ *  the author at least $1.50. Rounded up to .99. */
+export function bookPriceFloor(printUsd, shippingUsd = 0, fulfillmentUsd = 0.75) {
+  const print = Number(printUsd), ship = Number(shippingUsd), ful = Number(fulfillmentUsd);
+  if (!Number.isFinite(print) || print <= 0) fail(400, 'a real print cost is required');
+  if (!Number.isFinite(ship) || ship < 0 || !Number.isFinite(ful) || ful < 0) fail(400, 'shipping and fulfillment must be real costs');
+  // The card charge is on book + shipping (the buyer pays both), so the 2.9% on shipping comes out of the author's share
+  // too: floor = (print + fulfillment + author min + card fixed + 2.9% of shipping) / (1 − cut − card %).
+  const raw = (print + ful + 1.50 + 0.30 + ship * 0.029) / (1 - 0.10 - 0.029);
+  // Rounded up to .99, then checked in whole cents EXACTLY the way the page's split rounds them (cut and card each to the
+  // cent): if the displayed author share would still be under $1.50, step up a dollar. Never below what the page promises.
+  const keepCents = (p) => Math.round(p * 100) - Math.round(print * 100) - Math.round(ful * 100) - Math.round(Math.round(p * 0.10 * 100) / 100 * 100) - Math.round(Math.round(((p + ship) * 0.029 + 0.30) * 100));
+  let price = Math.ceil(raw) - 0.01;
+  while (price < raw || keepCents(price) < 150) price = Math.round((price + 1) * 100) / 100;
+  return price;
 }
 
 // ---------------------------------------------------------------- music releases (DistroKid, by hand)
