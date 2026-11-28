@@ -28,14 +28,39 @@ on:
 permissions:
   contents: read
   actions: read
-concurrency:
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
-  # Staging: a newer commit's deploy supersedes a queued older one (2026-11-18: four merges in a minute queued four
-  # staging deploys; an older sha ran after the newest and was refused, harmlessly). Production (workflow_dispatch,
-  # Geoffrey's approval) is never cancelled.
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 jobs:
+  supersede:
+    # One button, ever (Geoffrey, 2026-11-27: an older production run still waiting for approval blocked newer ones
+    # twice, #430 and #445). A new production request cancels any OLDER run of this workflow that is still in
+    # "waiting" — that status only ever means a production run sitting at the approval gate, because staging has no
+    # required reviewers. A run already approved and deploying is in_progress, not waiting, and is never touched.
+    # This job carries no environment and no concurrency group, so it runs at once even while the deploy job below
+    # queues behind the old waiting run; once the old run is cancelled, the queue drains to this one.
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      actions: write
+    steps:
+      - name: Cancel superseded waiting production runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Only runs OLDER than this one (id <), so two near-simultaneous requests can't cancel each other both ways.
+          for id in $(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/deploy.yml/runs?status=waiting&per_page=50" \
+              --jq ".workflow_runs[] | select(.id < ${{ github.run_id }}) | .id"); do
+            echo "Cancelling superseded waiting production run $id"
+            gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" || echo "could not cancel $id (it may have finished or been approved already)"
+          done
   deploy:
+    # The concurrency group lives on this job, not the workflow, so the supersede job above is never itself stuck in
+    # the queue it is meant to clear.
+    concurrency:
+      group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.target || 'staging' }}
+      # Staging: a newer commit's deploy supersedes a queued older one (2026-11-18: four merges in a minute queued four
+      # staging deploys; an older sha ran after the newest and was refused, harmlessly). A production run is never
+      # cancelled here — only the supersede job above cancels one, and only while it still waits for approval.
+      cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
     # Automatic runs only for a green test run of a push to main (never a pull request from a fork).
     if: >-
       github.event_name == 'workflow_dispatch' ||
