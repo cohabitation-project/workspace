@@ -29,6 +29,7 @@ Updated 2026-11-25: exact primary soft-limit zero-crossing at +59.98°; residual
 Updated 2026-11-26: exact distal soft-limit zero-crossing at +53.09° (from 0.01° sweep); residual at +60° remains +2.064 mm. Both pulleys show sign-dependent free-length asymmetry; true wrapgeom must cover both envelopes and the differing soft-limit residuals automatically. All provisional.
 Updated 2026-11-26 later: residual growth rate after distal zero-crossing quantified at ≈0.299 mm/deg over the final 6.91° to soft limit. True wrapgeom must suppress this automatic accumulation on the smaller pulley. All provisional.
 Updated 2026-11-27: primary reverse region is continuous from near 0° (already -0.35 mm at +1°) through local min -5.140 mm at +28.29° to soft-limit zero ~60°. Distal analogous. Discrete multi-chord leaves this full residual envelope; true wrapgeom (cylinder + sidesite) eliminates it by enforcing arc-length change automatically. Radius working assumption holds. All provisional.
+Updated 2026-11-27 evening: near-origin residual quantified — primary -1.644 mm at +5°, -2.986 mm at +10° (avg slope 0–10° ≈ -0.299 mm/deg); distal tracks closely. True wrapgeom still required to eliminate the reverse envelope. All provisional.
 -->
 <mujoco model="mvm_joint_v0">
   <option gravity="0 0 -9.81" timestep="0.002"/>
