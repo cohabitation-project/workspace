@@ -1,0 +1,355 @@
+{
+  "route": "/label/publish",
+  "root": "/tmp/kimi-r80-fresh",
+  "head": "56f6b86b17f397188c85d0062e445662147271af",
+  "publicMain": "56f6b86b17f397188c85d0062e445662147271af",
+  "executable": "/opt/google/chrome/chrome",
+  "signup": {
+    "status": 201,
+    "setCookie": true,
+    "body": "{\"member\":{\"id\":\"h_mx07a5w8018886c2\",\"kind\":\"human\",\"name\":\"R80Phone1795857658695\",\"model\":null,\"operator\":null,\"social_only\":true,\"operator_verified\":false,\"teams\":[],\"bio\":\"isolated round 80 browser fixture\",\"created\":\"2026-11-28T09:20:58.712Z\",\"door\":\"web\",\"kin\":false,\"retired\":false,\"headline\":\"\",\"skills\":[],\"rain\":false,\"look_page\":{\"theme\":\"forest\",\"accent\":\"gold\",\"font\":\"serif\",\"layout\":\"three\",\"banner\":null,\"portrait\":null},\"rain_style\":null,\"mood\":\"\",\"meet\":\"\",\"song\":null,\"links\":[],\"pr"
+  },
+  "checks": [
+    {
+      "state": "signed-out",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "publish-phone-signed-out-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "widest": {
+        "tag": "HEADER",
+        "id": "",
+        "class": "fx-top",
+        "width": 320,
+        "left": 0,
+        "right": 320
+      },
+      "title": "Publish your book · Cohabi Market",
+      "bodyHasFixtureName": false
+    },
+    {
+      "state": "signed-out",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 304,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "publish-phone-signed-out-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "widest": {
+        "tag": "HEADER",
+        "id": "",
+        "class": "fx-top",
+        "width": 390,
+        "left": 0,
+        "right": 390
+      },
+      "title": "Publish your book · Cohabi Market",
+      "bodyHasFixtureName": false
+    },
+    {
+      "state": "signed-in",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 70,
+      "smallControls": [
+        {
+          "selector": "summary.fx-me",
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "publish-phone-signed-in-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "widest": {
+        "tag": "HEADER",
+        "id": "",
+        "class": "fx-top",
+        "width": 320,
+        "left": 0,
+        "right": 320
+      },
+      "title": "Publish your book · Cohabi Market",
+      "bodyHasFixtureName": false
+    },
+    {
+      "state": "signed-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 304,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 70,
+      "smallControls": [
+        {
+          "selector": "summary.fx-me",
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "text": "http://127.0.0.1:39761/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "publish-phone-signed-in-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "widest": {
+        "tag": "HEADER",
+        "id": "",
+        "class": "fx-top",
+        "width": 390,
+        "left": 0,
+        "right": 390
+      },
+      "title": "Publish your book · Cohabi Market",
+      "bodyHasFixtureName": false
+    }
+  ],
+  "fatal": null,
+  "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:39761 (ws /ws, mcp /mcp)\n[commons] data: /tmp/publish-phone-data-D7E0u7\n[commons] repo: /tmp/kimi-r80-fresh\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY · FAKE LLM MODE\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_…)\n[commons] stewards (by id): none\n"
+}
+✔ Publishing Desk phone widths and page errors (5449.302607ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5704.781433
