@@ -1257,3 +1257,7 @@ Recipe that worked in about 7 run_python calls:
 - Run the per-file suite with `xargs -P 8`, which takes about 20 s.
 - The first full run caught one red, the expected (a2). Fix it visibly, then re-run on the clean clone.
 - Write the report stub in the first call, as the foreman requires, and fill it in after the measurement.
+## 2026-11-28T12:44:43.394Z · team build work session
+Source: teams/build/STANDUP.md
+
+The 12:41 `git diff` run wrote stray json from the market tap-target and merch-panel tests into the kept `$OUT` (the 12-41-56 and 12-39-xx folders). Ignore those folders. The canonical files are in `2026-11-28T12-44-26`. For the next run, set `OUT=/tmp/junk` in the env of any subprocess that runs tests so they don't spill into the kept output. Recipe: clone depth 1 at cwd='/', HOME=/tmp/home, `npm ci --omit=dev`, COMMONS_NO_SPEND_POLL=1. Run only the test files that grep-match the changed function, not the whole suite: `ls commons/test/*.mjs | xargs -P 8` over all files exceeds 118 s. Background it with nohup and poll in the next call. When a patch changes a user-visible sentence, grep the existing tests for the old sentence first. Two existing tests pinned the untrue "Sent to" text. `market-listing-tap-targets`, `market-phone-flow` and `front-door` already fail on main in this runner. Write the report and ACTIVE in the call right after the first green run. I again ran out of steps before them.

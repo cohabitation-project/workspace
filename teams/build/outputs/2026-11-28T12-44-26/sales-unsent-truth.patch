@@ -1,0 +1,23 @@
+diff --git a/commons/lib/marketpage.mjs b/commons/lib/marketpage.mjs
+index 19c2af8..ce0da37 100644
+--- a/commons/lib/marketpage.mjs
++++ b/commons/lib/marketpage.mjs
+@@ -740,7 +740,7 @@ export function salesPage({ me, sales = [] }) {
+     // exists — so the words here match what the page actually holds.
+ 
+     let printer = null, pstate = null;
+-    if (mine && !post.length && o.status === 'paid') { const f = o.printer; if (f && f.provider) { printer = f.provider; pstate = f.state || null; } else { try { printer = fulfillment.plan(o).provider || null; } catch { printer = null; } } }
++    if (mine && !post.length && o.status === 'paid') { const f = o.printer; if (f && f.provider) { printer = f.provider; pstate = f.state || null; } else { try { printer = fulfillment.plan(o).provider || null; if (printer) pstate = 'unsent'; } catch { printer = null; } } }
+     const pname = printer ? esc(({ printful: 'Printful', printify: 'Printify', lulu: 'Lulu' })[printer] || printer) : '';
+     // Round 57 (DeepSeek): a printer order that is still a draft, or that the printer refused, says so in the seller's own
+     // words instead of "Sent to …". The printer's `error` text is never repeated here: it can name the printer's own
+@@ -750,6 +750,9 @@ export function salesPage({ me, sales = [] }) {
+       // Round 62 (DeepSeek): a refused order gets its maker the button, not only a sentence. `failed` only, on purpose:
+       // a draft is already at the printer, and a record with no state at all is one the printer already has.
+       : printer && pstate === 'failed' ? `<div class="mk-postto small" data-printer-state="failed"><strong>${pname} refused this order${o.printer && o.printer.provider_order ? ` (#${esc(String(o.printer.provider_order))})` : ''}</strong><br>You can send it again. The buyer has paid; you do not post it.<br><button type="button" class="btn small" data-printer-send="${esc(o.id)}">Send it again</button> <span class="small" role="status"></span></div>`
++      // Round 81 (Claude): no printer record means nothing has been sent (a linked Lulu/Printify order is not auto-sent; payments
++      // are closed). plan() only says who WILL ship it, so the page must not say "Sent to" it.
++      : printer && pstate === 'unsent' ? `<div class="mk-postto small" data-printer-state="unsent"><strong>Not sent to ${pname} yet</strong><br>Nothing has gone to the printer for this order; a steward will send it or refund it.</div>`
+       : printer ? `<div class="mk-postto small" data-sent-to><strong>Sent to ${pname}</strong><br>They print and ship it, so there is no address for you to post.</div>` : '';
+     const fulfillmentLink = o.hasFulfillment ? ` · <a href="/api/market/listings/${encodeURIComponent(o.listing)}/fulfillment">Fulfillment details</a>` : '';
+     return `<li class="mk-order"><div><h2><a href="/label/l/${esc(o.listing)}">${esc(o.title)}</a></h2><p class="small"><span>Buyer: ${esc(buyer)}</span> · ${esc(amount)} · <time datetime="${esc(o.ts)}">${esc(dateText)}</time>${fulfillmentLink}</p></div>${postBlock}<p class="mk-order-status">${esc(orderStatusWords(o))}</p></li>`;
