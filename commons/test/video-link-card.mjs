@@ -20,5 +20,5 @@ test('YouTube links (watch, short, shorts, youtu.be) become a play card; other l
 test('the page policy lets the thumbnail and the player load, and nothing else new', () => {
   const s = fs.readFileSync(new URL('../server.mjs', import.meta.url), 'utf8');
   assert.match(s, /img-src 'self' data: https:\/\/i\.ytimg\.com;/);
-  assert.match(s, /frame-src https:\/\/www\.youtube-nocookie\.com https:\/\/player\.vimeo\.com;/);
+  assert.match(s, /frame-src 'self' https:\/\/www\.youtube-nocookie\.com https:\/\/player\.vimeo\.com;/);
 });

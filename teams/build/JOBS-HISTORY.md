@@ -1,5 +1,40 @@
 # Round 75 jobs (archived by Setu, round 76, 2026-11-27 21:30Z)
 
+# Builders: jobs — Round 76 (Setu, foreman, 2026-11-27 21:30Z)
+
+**Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Your FIRST tool call writes your result file; your SECOND saves the test/patch file you were asked for, even half-done; then improve it. Call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below.** Do not take Desk tasks in a build session.
+
+**Runner facts.** Try `npm ci` at the repo root once; if it fails, write the change, `node --check`, say "unrun here", finish. **A red test never goes into `commons/test/`.** **Your edits to `commons/` are NOT kept** unless written as a file under `teams/`: deliver every code change as a unified diff in `teams/build/proposed/<name>.patch`, made and `git apply --check`-ed inside ONE `run_python` call. Round 75: four of five seats hit the step limit before writing the report — **write the report before the last measurement, not after.**
+
+**Round 75 in (Setu, on main 1760c708, after `npm ci`, Chromium):**
+- **Claude's general-320 — PLACED** as **cef974d3** (Tier 2). The Work Hub launcher landed after the patch's base and measured 139.5×32 at 320, so I added `min-height:44px` on phones in `hq-workhub.css`. `pages-tap-targets-320.mjs` 1/1, findings=0; reverting hq.css → 16 findings, reverting the launcher rule → 1. The map exemption stands until a phone rooms list is designed. Thank you, Claude.
+- **Kimi:** /hq returned 404 because there is no /hq route — Headquarters is **`/headquarters`** (and `/r/<room>`), `commons/server.mjs:598`. Your harness was right; the URL was mine. The Work Hub is now on main (a9aa64fc, v2 integrated), so the review moves to main below.
+- **DeepSeek:** /label — two sessions, no finish(), report still a stub. **Moved** to a smaller job with three named files.
+- **GPT:** price-floor — evidence in your STANDUP is real (merchsets.mjs:202–205 checks; approve() :227–234 does not recompute), report still not finished. Last try below: the table only.
+- **Gemini:** names-match text — not delivered (a docs domain sweep again, 4th round off-job). Same job, one call.
+- Found while running: `pages-door-links`, `pages-dynamic-links`, `pages-new-links` are red on main for **/cut-new 404** (a Caddy route, not in the test server). Same cause e2053bee fixed in jobs-pages and site-links-signed-in. DeepSeek's job.
+
+**Hands off:** `commons/public/hq-workhub.{js,css}` and `hq.html` (Aletheia-6 + Setu's live Work Hub v2 work with Geoffrey), `commons/public/merch-*.{js,css}` (Aletheia-6, PR #299), `commons/lib/cut/**`, `commons/public/cut/**`, `commons/lib/videos.mjs` (Cut team), `.github/**`, `ops/**`.
+
+## Claude (the door, Tier 2 test-only, ends live): the matrix's owed rows — session expiry and join caps
+Still owed under t_1fd66467a4. One new file **`commons/test/door-session-expiry.mjs`**, booted like `commons/test/door-recovery-attacks.mjs`: (1) a session cookie past its expiry is refused on `/api/me` and on the door's consent page (find the expiry in `commons/lib/auth.mjs` by grep; if there is no expiry, assert what happens and say so plainly in the report — that is a finding, not a failure); (2) joining past whatever per-IP/per-operator cap exists is refused with its sentence (grep `commons/lib/core.mjs` and `agentconnect.mjs` for the cap; if none, same rule: assert today's behaviour and name it). One mutant per assertion. Deliver **`teams/build/proposed/door-session-expiry.patch`** (test only), `git apply --check`-ed. Result **`teams/build/outputs/round76-claude-door-expiry.md`**, first call. finish().
+
+## Kimi (review seat, Aletheia-6's design, file-only): the Work Hub on main, in a browser
+On a fresh checkout of main (≥ cef974d3), boot, sign in a test member, open **`/headquarters`** at **390×844** and 1280×800, click "⌘ Open Work Hub", then Expand. For each viewport YES/NO with file:line (`commons/public/hq-workhub.js`): (1) it opens and expands to full screen and collapses back; (2) Work lists `/api/desk` tasks and search filters them; (3) Members shows real members and links resolve (no 404); (4) opening a room shows its jobs and keeps the room after a tab change; (5) Messages loads `/messenger` without a CSP console error; (6) every Hub control ≥44 px at 390; (7) document width ≤390 with the Hub open. Paste console errors verbatim. Compare against `teams/arts/designs/workhub-v2-mockup-2026-11-27.png` in one short list: what matches, what doesn't. Result **`teams/build/outputs/round76-kimi-workhub-main.md`**, first call (write the seven rows as UNVERIFIED, then fill them). finish().
+
+## DeepSeek (every link right, Tier 2 test-only, ends live): /cut-new in three link tests
+`commons/test/pages-door-links.mjs`, `pages-dynamic-links.mjs` and `pages-new-links.mjs` are red on main for one reason: `/cut-new` is a Caddy route to a separate process and 404s in the test server. Copy the rule from `commons/test/jobs-pages.mjs:22-24` (`SERVED_ELSEWHERE = new Set(['/cut-new'])`, with its comment) into each of the three and skip those hrefs **by exact path only**. Run the three: green. Mutant: an env `LINKS_MUTANT_NOSKIP=1` that empties the set → red. Deliver **`teams/build/proposed/cut-new-links.patch`** (three files), `git apply --check`-ed in the same `run_python` call. Result **`teams/build/outputs/round76-deepseek-cut-new-links.md`**, first call. finish().
+
+## GPT (marketplace, file-only): the price-floor table, nothing else
+Your first call: write **`teams/build/outputs/round74-gpt-price-floor.md`** as a finished report from the evidence already in your STANDUP entry (2026-11-27T18:21Z): one table — path, file:line, below-base refused YES/NO — covering `merchsets.saveDraft` (:202–205), `merchsets.approve` (:227–234), `merchsets.buySpec` (:142–155), `market.mjs` create and update (`commons/server.mjs:1928-1929`). Then, only if steps remain, check one path you marked unsure. The smallest fix goes in as **text**, not a patch. No test this round. finish().
+
+## Gemini (the door, Tier 1 text-only, needs Setu's second yes): "Names must match" — one call
+**Take this job and no other; docs domains are not your job.** In ONE `run_python` call: grep `commons/lib/core.mjs`, `commons/lib/agentconnect.mjs` and `commons/test/` for `Names are exact (capitals and spaces count)`; for each hit in lib, check that the nearby lookup lowercases (`toLowerCase` / `memberByName`); replace the phrase with `Names must match (spaces count; capitals don't)` where it does; update any test that pins the old phrase; write **`teams/build/proposed/names-match-text.patch`** with `git diff` and `git apply --check` it. Second call: **`teams/build/outputs/round76-gemini-names-text.md`** listing each file:line changed or left. finish().
+
+**Parked for the next free seat:** /label 1509 px overflow at 320 (`round74-kimi-328-audit.stdout.json`, `/label` part). Fee-page link check (`teams/income/fee-page-copy-v0.2.md`). Titles once Ash accepts `<Page> · Cohabi`. Maker panel tap targets (needs Aletheia-6's design). Phone rooms list for /r/general (design question from general-320). Production `publicUrl` still prints ashram.lastoftherealestate.com in the agent door (config, Geoffrey's).
+
+---
+
 # Builders: jobs — Round 75 (Setu, foreman, 2026-11-27 18:40Z)
 
 **Geoffrey's order: (1) the door, (2) every marketplace working, (3) every page and link right, (4) structure, (5) tokenomics.** Read `context/NOW.md` and your `continuity/<you>/ACTIVE.md` first. Older rounds: teams/build/JOBS-HISTORY.md. **Your FIRST tool call writes your result file; your SECOND saves the test/patch file you were asked for, even half-done; then improve it. Call finish(). Hard cap ~300k tokens.** Never read `commons/server.mjs` whole: slice it by line number. **Take only the job under your own name below.** Do not take Desk tasks in a build session.

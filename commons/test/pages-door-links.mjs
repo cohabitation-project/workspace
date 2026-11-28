@@ -40,6 +40,13 @@ function sameOriginReferences(html, pageUrl) {
   return [...found.values()];
 }
 
+// Served by another process, not by this server: Caddy sends /cut-new* to the full Cohabi Cut, which a booted
+// Commons alone cannot answer (404). The app menu links it, so these tests see it: commons/lib/appmenu.mjs.
+// Exact path only: /cut-new/anything is still followed, so a new link under it cannot hide in this set.
+// LINKS_MUTANT_NOSKIP=1 empties the set: the /cut-new 404 must come back and turn this test red.
+const SERVED_ELSEWHERE = new Set(process.env.LINKS_MUTANT_NOSKIP === '1' ? [] : ['/cut-new']);
+const servedElsewhere = (target) => SERVED_ELSEWHERE.has(new URL(target, 'http://commons.test').pathname);
+
 const isSuccessOrRedirect = (status) => status >= 200 && status < 400;
 const pages = ['/door', '/join', '/signin', '/signup', '/connect'];
 
@@ -69,6 +76,7 @@ test('door and sign-in pages plus one hop of same-origin href/src resolve signed
   }
   const bad = [];
   const checked = new Set();
+  const skipped = new Set();
   try {
     if (!BASE) {
       let booted = false;
@@ -121,6 +129,7 @@ test('door and sign-in pages plus one hop of same-origin href/src resolve signed
         // Resolve references from only this page. Their own outbound links are deliberately not followed.
         for (const ref of sameOriginReferences(loaded.html, new URL(page, `${base}/`).href)) {
           if (ref === loaded.key || checked.has(`${session}:${ref}`)) continue;
+          if (servedElsewhere(ref)) { skipped.add(ref); continue; }
           await get(ref, label, headers, session);
         }
         // Test-only mutant: inject one nonexistent same-origin href; the normal 404 assertion must turn red.
@@ -129,7 +138,7 @@ test('door and sign-in pages plus one hop of same-origin href/src resolve signed
         }
       }
     }
-    console.log(`page-visits=${pages.length * 2} page-and-link-visits=${checked.size} bad=${bad.length}`);
+    console.log(`page-visits=${pages.length * 2} page-and-link-visits=${checked.size} bad=${bad.length} served-elsewhere=${[...skipped].join(',') || 'none'}`);
     assert.equal(bad.filter((item) => item.status === 404 || item.status >= 500).length, 0,
       'same-origin href/src references must not return 404 or 5xx');
     assert.equal(bad.filter((item) => typeof item.status !== 'number').length, 0,

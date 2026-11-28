@@ -1,0 +1,279 @@
+diff --git a/commons/lib/fulfillment.mjs b/commons/lib/fulfillment.mjs
+index b168498b..8425d251 100644
+--- a/commons/lib/fulfillment.mjs
++++ b/commons/lib/fulfillment.mjs
+@@ -162,6 +162,48 @@ async function luluToken(fetchImpl) {
+   const j = await r.json().catch(() => ({})); if (!r.ok || !j.access_token) fail(502, 'Lulu sign-in failed'); return j.access_token;
+ }
+ 
++// ---------------------------------------------------------------- book publishing: read-only cost quotes (t_e50fd534c2)
++// Asks Lulu what a book would cost to print and ship. A COST CALCULATION ONLY: this endpoint of theirs creates no
++// print job, uploads no file, moves no money — the hard test boundary (no paid jobs without council) is untouched.
++// Measured live 2026-11-27 (teams/income/lulu-pricing-2026-11-27.md): fulfillment $0.75 flat; US shipping flat by
++// level ($5.69 MAIL / $20.74 EXPEDITED), so only pages and binding move the price.
++const BOOK_BINDS = { PB: 'paperback', CW: 'hardcover' }; // 6x9 B&W standard, 60# white — the starting specs
++const QUOTE_ADDRESS = { name: 'Cost Estimate', street1: '100 Main St', city: 'Sierra Vista', state_code: 'AZ', country_code: 'US', postcode: '85635', phone_number: '5205550100' }; // estimation only; nothing ships from a quote
++export async function luluCost({ pages, bind = 'PB', level = 'MAIL', quantity = 1 } = {}, fetchImpl = fetch) {
++  const p = Math.trunc(Number(pages));
++  if (!Number.isFinite(p) || p < 30 || p > 800) fail(400, 'pages must be a whole number from 30 to 800');
++  if (!BOOK_BINDS[bind]) fail(400, `bind must be one of: ${Object.keys(BOOK_BINDS).join(', ')}`);
++  if (!['MAIL', 'EXPEDITED'].includes(level)) fail(400, 'level must be MAIL or EXPEDITED');
++  if (!env('LULU_CLIENT_KEY') || !env('LULU_CLIENT_SECRET')) fail(503, 'the print cost service is not configured on this server');
++  const base = PIPES.lulu.base();
++  const tok = await luluToken(fetchImpl);
++  const r = await fetchImpl(`${base}/print-job-cost-calculations/`, {
++    method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${tok}` },
++    body: JSON.stringify({ line_items: [{ pod_package_id: `0600X0900BWSTD${bind}060UW444MXX`, page_count: p, quantity: Math.max(1, Math.min(100, Math.trunc(Number(quantity) || 1))) }], shipping_address: QUOTE_ADDRESS, shipping_level: level }),
++  });
++  const j = await r.json().catch(() => ({}));
++  if (!r.ok) fail(502, `the print cost service answered ${r.status}`);
++  const li = (j.line_item_costs || [])[0] || {};
++  const n = (v) => { const x = Number(v); return Number.isFinite(x) ? Math.round(x * 100) / 100 : null; };
++  return {
++    spec: { trim: '6x9', color: 'B&W', bind: BOOK_BINDS[bind], pages: p }, level,
++    print_usd: n(li.total_cost_excl_discounts ?? li.total_cost_excl_tax),
++    fulfillment_usd: n(j.fulfillment_cost?.total_cost_excl_tax),
++    shipping_usd: n(j.shipping_cost?.total_cost_excl_tax),
++    total_usd: n(j.total_cost_excl_tax), currency: j.currency || 'USD',
++    live: env('LULU_LIVE') === '1' || /api\.lulu\.com/.test(base), sandbox: PIPES.lulu.base().includes('sandbox'),
++  };
++}
++/** The lowest list price the Market will accept for a spec, so nobody sells at a loss: landed cost + the PROPOSED
++ *  10% co-op cut (council's number to vote, teams/income/lulu-pricing-2026-11-27.md §4) + card processing, leaving
++ *  the author at least $1.50. Rounded up to .99. */
++export function bookPriceFloor(printUsd) {
++  const print = Number(printUsd);
++  if (!Number.isFinite(print) || print <= 0) fail(400, 'a real print cost is required');
++  const raw = (print + 0.75 + 1.50 + 0.30) / (1 - 0.10 - 0.029); // print + fulfillment + author min + card fixed, over 1 − cut − card %
++  return Math.ceil(raw) - 0.01;
++}
++
+ // ---------------------------------------------------------------- music releases (DistroKid, by hand)
+ export const RELEASE_STEPS = [
+   ['files', 'Final audio (WAV) and cover art (3000×3000) ready'],
+diff --git a/commons/lib/marketpage.mjs b/commons/lib/marketpage.mjs
+index 82290cf8..19c2af8e 100644
+--- a/commons/lib/marketpage.mjs
++++ b/commons/lib/marketpage.mjs
+@@ -626,7 +626,7 @@ export function marketPage({ me, query = {} }) {
+   const arts = showArtists ? artists().filter((a) => !needle || `${a.name} ${a.releases.map((r) => r.title).join(' ')}`.toLowerCase().includes(needle)) : [];
+   const link = (o) => { const u = new URLSearchParams(); const v = { cat, by: pk, free: free ? '1' : null, q: q || null, ...o }; for (const [k, x] of Object.entries(v)) if (x) u.set(k, x); const s = u.toString(); return `/label${s ? `?${s}` : ''}`; };
+   const chips = [[null, 'Anyone'], ...Object.entries(market.PROVIDERS)].map(([k, n]) => `<a class="mk-chip" href="${esc(link({ by: k }))}"${k === pk ? ' aria-current="true"' : ''}>${n}</a>`).join('');
+-  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand services come through FireDamm when they open.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
++  const DESC = { art: 'A gallery of people and AI makers: discover an artist first, then browse their paintings, ceramics, jewelry, prints, textiles, sculptures and commissions.', video: 'Film, animation, editing, 3D work, motion graphics and video creators, portfolio first.', writing: 'Books, poetry, zines, essays and manuscripts by human and AI writers. Read a sample first, then buy the book, the ebook or the print; publishing and print-on-demand are a Cohabi cooperative service at the Publishing Desk.', software: 'Apps, AI tools, open-source projects, hardware, CAD, electronics, fabrication and 3D printing.', services: 'People, agents and teams offering creative, technical and practical work, with clear delivery terms.', classifieds: 'Wanted, offered, swaps and opportunities. These are notices, not things you pay for here.', music: INTRO.music };
+   if (cat === 'art' && !free) return artPage({ me, items, pk, q, sort: String(query.sort || '') });
+   if (cat === 'software' && !free) return softwarePage({ me, items, pk, q, type: String(query.type || ''), lic: String(query.lic || '') });
+   if (['video', 'writing', 'services', 'classifieds'].includes(cat) && !pk && !free && !q) return frame({ me, title: market.CATEGORIES[cat], description: DESC[cat], section: cat, center: departmentExperience({ cat, me, items, pk, q, link, chips }), scripts: ['/static/market.js'] });
+@@ -1032,3 +1032,53 @@ export function pagesCard(memberId, { self = false } = {}) {
+   const groups = [['band', 'Bands'], ['label', 'Labels'], ['artist', 'Artists'], ['business', 'Businesses']].map(([k, n]) => [n, mine.filter((p) => p.kind === k)]).filter(([, l]) => l.length);
+   return `<div class="pf-card pf-pages"><h2>Pages</h2>${mine.length ? groups.map(([n, l]) => `<p class="small muted pf-pagesh">${n}</p><ul>${l.map((p) => `<li><a href="${esc(orgpages.href(p))}"><strong>${esc(p.name)}</strong></a></li>`).join('')}</ul>`).join('') : '<p class="small muted">No pages yet.</p>'}${self ? '<p class="small"><a href="/page/new">＋ Create a band, artist or business page</a></p>' : ''}</div>`;
+ }
++
++// ---------------------------------------------------------------- publishing service page (t_e50fd534c2)
++// "Publish your book" as a COHABI cooperative service — not a Firedamm CTA (Geoffrey, 2026-11-26,
++// m_mwxw78ty8p84189f). The calculator is live against /api/publishing/quote (read-only Lulu cost math;
++// no print job can be created from anything on this page). Prices stay labelled "pending council".
++export function publishingPage({ me }) {
++  const center = `
++  <section class="mv-center" id="publish" style="max-width:980px;margin:0 auto;padding:12px 16px">
++    <p style="letter-spacing:.14em;font-size:.8em;opacity:.75">THE PUBLISHING DESK · A COHABI COOPERATIVE SERVICE</p>
++    <h1 style="margin:.2em 0">Publish your book.</h1>
++    <p style="max-width:46em">Write it; the cooperative prints it. Your book is printed and shipped per order —
++    no stock, no minimums — and it lists in <a href="/label?cat=writing">Books &amp; Writing</a> beside the other
++    members' work. You keep your rights. The split is shown to you and to your buyer, line by line.</p>
++    <div role="note" style="border:1px solid #b78f3c;border-radius:10px;padding:10px 14px;margin:14px 0;background:rgba(183,143,60,.08)">
++      <strong>Test mode.</strong> The Market is not selling for real money yet. The costs below are real quotes,
++      but final prices are <strong>pending the cooperative council's decision</strong> on the co-op's share —
++      the share shown here is a proposal, marked as such.
++    </div>
++
++    <h2>How it works</h2>
++    <ol style="max-width:46em">
++      <li><strong>Bring a print-ready PDF</strong> — interior and cover. (Lulu publishes free templates and spec
++        calculators for every size; start at 6×9.)</li>
++      <li><strong>Pick your book</strong> — page count, paperback or hardcover.</li>
++      <li><strong>See the whole split, live</strong> — print cost, shipping, the co-op's proposed share, card
++        processing, and what you keep. Nothing hidden; your buyer sees the same split.</li>
++      <li><strong>List it</strong> in Books &amp; Writing. Printing turns on for real once the council sets the
++        price rules.</li>
++    </ol>
++
++    <h2>What would my book cost?</h2>
++    <form id="pub-calc" style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;max-width:46em">
++      <label>Pages<br><input type="number" id="pub-pages" min="30" max="800" value="200" required style="width:7em"></label>
++      <label>Binding<br><select id="pub-bind"><option value="PB">Paperback</option><option value="CW">Hardcover</option></select></label>
++      <label>Shipping<br><select id="pub-level"><option value="MAIL">Standard</option><option value="EXPEDITED">Expedited</option></select></label>
++      <label>Your list price $<br><input type="number" id="pub-price" min="1" step="0.01" placeholder="e.g. 16.99" style="width:7em"></label>
++      <button type="submit">Get the live quote</button>
++    </form>
++    <div id="pub-result" aria-live="polite" style="margin-top:12px;max-width:46em"></div>
++
++    <h2>Coming later (planned — not built yet)</h2>
++    <ul style="max-width:46em">
++      <li>Editing help from the cooperative's members and kin, offered for tokens.</li>
++      <li>Image generation for covers and illustrations, right in the flow.</li>
++      <li>Layout machines for children's books and picture formats.</li>
++    </ul>
++    <p><a href="/label/new?cat=writing"><strong>Start your listing →</strong></a>${me ? '' : ' (you’ll be asked to sign in)'}</p>
++  </section>`;
++  return frame({ me, title: 'Publish your book', description: 'Book publishing as a Cohabi cooperative service: print on demand, an honest line-by-line split, and your rights kept.', section: 'writing', center, scripts: ['/static/publishing.js'] });
++}
+diff --git a/commons/public/publishing.js b/commons/public/publishing.js
+new file mode 100644
+index 00000000..36da5c79
+--- /dev/null
++++ b/commons/public/publishing.js
+@@ -0,0 +1,55 @@
++/* Publishing Desk calculator (t_e50fd534c2) — live, read-only cost quotes via /api/publishing/quote.
++   Nothing here can create a print job or move money. The co-op share is PROPOSED until the council votes,
++   and every render says so. Falls back to the measured 2026-11-27 table when the live service is down. */
++(() => {
++  const form = document.getElementById('pub-calc'); if (!form) return;
++  const out = document.getElementById('pub-result');
++  const $ = (id) => document.getElementById(id);
++  const usd = (v) => (v == null || !Number.isFinite(Number(v))) ? '—' : '$' + Number(v).toFixed(2);
++  // Measured live 2026-11-27 (teams/income/lulu-pricing-2026-11-27.md): used only when the live quote fails.
++  const CACHED = { PB: { per50: 1.25, base: 2.24 }, CW: { per50: 1.45, base: 9.48 }, ship: { MAIL: 5.69, EXPEDITED: 20.74 }, fulfill: 0.75 };
++  const cachedPrint = (bind, pages) => Math.round((CACHED[bind].base + (pages / 50) * CACHED[bind].per50) * 100) / 100;
++
++  function render(q, price, note) {
++    const rows = [['Print', q.print_usd], ['Fulfillment', q.fulfillment_usd], ['Shipping (buyer pays this line at cost)', q.shipping_usd]];
++    let split = '';
++    if (price && Number.isFinite(price) && q.print_usd != null) {
++      const cut = Math.round(price * 0.10 * 100) / 100;
++      const card = Math.round(((price + (q.shipping_usd || 0)) * 0.029 + 0.30) * 100) / 100;
++      const keep = Math.round((price - q.print_usd - (q.fulfillment_usd ?? 0.75) - cut - card) * 100) / 100;
++      const below = q.floor_usd != null && price < q.floor_usd;
++      split = `<h3 style="margin-bottom:4px">At your price of ${usd(price)}</h3>
++        <table style="border-collapse:collapse"><tbody>
++        <tr><td style="padding:2px 12px 2px 0">Print + fulfillment</td><td>−${usd((q.print_usd ?? 0) + (q.fulfillment_usd ?? 0.75))}</td></tr>
++        <tr><td style="padding:2px 12px 2px 0">Co-op share (PROPOSED 10% — pending council vote)</td><td>−${usd(cut)}</td></tr>
++        <tr><td style="padding:2px 12px 2px 0">Card processing (approx.)</td><td>−${usd(card)}</td></tr>
++        <tr><td style="padding:2px 12px 2px 0"><strong>You keep (approx.)</strong></td><td><strong>${usd(keep)}</strong></td></tr>
++        </tbody></table>
++        ${below ? `<p style="color:#c0392b"><strong>Below the floor.</strong> The lowest list price for this spec is ${usd(q.floor_usd)}, so nobody sells at a loss.</p>` : ''}`;
++    } else if (q.floor_usd != null) {
++      split = `<p>Lowest list price for this spec: <strong>${usd(q.floor_usd)}</strong>. Enter a list price above to see your full split.</p>`;
++    }
++    out.innerHTML = `<h3 style="margin-bottom:4px">${q.spec.pages}-page ${q.spec.bind}, ${q.spec.trim} ${q.spec.color}</h3>
++      <table style="border-collapse:collapse"><tbody>${rows.map(([k, v]) => `<tr><td style="padding:2px 12px 2px 0">${k}</td><td>${usd(v)}</td></tr>`).join('')}
++      <tr><td style="padding:2px 12px 2px 0"><strong>Landed cost</strong></td><td><strong>${usd(q.total_usd)}</strong></td></tr></tbody></table>
++      ${split}<p style="opacity:.8;font-size:.9em">${note}</p>`;
++  }
++
++  form.addEventListener('submit', async (e) => {
++    e.preventDefault();
++    const pages = parseInt($('pub-pages').value, 10), bind = $('pub-bind').value, level = $('pub-level').value;
++    const price = parseFloat($('pub-price').value);
++    out.textContent = 'Asking the printer…';
++    try {
++      const r = await fetch(`/api/publishing/quote?pages=${pages}&bind=${encodeURIComponent(bind)}&level=${encodeURIComponent(level)}`, { headers: { 'X-Commons': '1' } });
++      const q = await r.json();
++      if (!r.ok) throw new Error(q.error || `quote failed (${r.status})`);
++      render(q, price, q.note || 'A live quote — costs only; no print job is created. Final prices are pending the council’s decision.');
++    } catch (err) {
++      // honest fallback: the measured table, clearly dated, never passed off as live
++      const print = cachedPrint(bind, pages);
++      const fallback = { spec: { trim: '6x9', color: 'B&W', bind: bind === 'CW' ? 'hardcover' : 'paperback', pages }, print_usd: print, fulfillment_usd: CACHED.fulfill, shipping_usd: CACHED.ship[level], total_usd: Math.round((print + CACHED.fulfill + CACHED.ship[level]) * 100) / 100, floor_usd: null };
++      render(fallback, price, `The live quote service didn’t answer (${err.message}). These numbers are ESTIMATES interpolated from real quotes measured 2026-11-27 — not a live quote.`);
++    }
++  });
++})();
+diff --git a/commons/server.mjs b/commons/server.mjs
+index 3c0d8715..7aef7632 100644
+--- a/commons/server.mjs
++++ b/commons/server.mjs
+@@ -1822,6 +1822,14 @@ app.get('/api/label/artist/:slug', (req, res) => {
+   res.setHeader('Cache-Control', 'no-cache'); res.json({ artist: want, albums });
+ });
+ 
++// Publishing Desk (t_e50fd534c2): "publish your book" as a Cohabi service. The quote is READ-ONLY cost math —
++// fulfillment.luluCost cannot create a print job; the test→paid boundary stays with the council.
++app.get('/label/publish', (req, res) => { res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.publishingPage({ me: auth.memberFromCookie(req.headers.cookie) })); });
++app.get('/api/publishing/quote', wrap(async (req) => {
++  const q = await fulfillment.luluCost({ pages: req.query.pages, bind: String(req.query.bind || 'PB'), level: String(req.query.level || 'MAIL') });
++  return { ...q, floor_usd: q.print_usd != null ? fulfillment.bookPriceFloor(q.print_usd) : null, proposed_cut_pct: 10, pending_council: true,
++    note: 'A live quote — costs only; no print job is created. The co-op share used in floors is PROPOSED; final prices are pending the council’s decision (teams/income/lulu-pricing-2026-11-27.md).' };
++}));
+ app.get('/label/new', (req, res) => {
+   const me = auth.memberFromCookie(req.headers.cookie); if (!me) return res.redirect(303, '/signin?next=/label/new');
+   res.setHeader('Cache-Control', 'no-cache'); res.type('html').send(marketpage.listingForm({ me, cat: String(req.query.cat || ''), asPage: String(req.query.as || '') || null }));
+diff --git a/commons/test/publishing.mjs b/commons/test/publishing.mjs
+new file mode 100644
+index 00000000..a6d092a1
+--- /dev/null
++++ b/commons/test/publishing.mjs
+@@ -0,0 +1,73 @@
++// Publishing Desk (t_e50fd534c2): the page is a COHABI service (no Firedamm CTA), the quote is read-only
++// cost math against a stub Lulu (no real network), validation refuses junk, and the floor math holds.
++// Run: node --test commons/test/publishing.mjs
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++import os from 'node:os';
++import path from 'node:path';
++import http from 'node:http';
++import { spawn } from 'node:child_process';
++import { freePort } from './lib/port.mjs';
++
++// a stub Lulu: answers the sign-in and the cost calculation; counts print-job attempts so we can prove zero
++const hits = { costs: 0, jobs: 0 };
++const stub = http.createServer((req, res) => {
++  let body = ''; req.on('data', (c) => { body += c; });
++  req.on('end', () => {
++    res.setHeader('content-type', 'application/json');
++    if (req.url.includes('/auth/')) return res.end(JSON.stringify({ access_token: 'stub-token' }));
++    if (req.url.startsWith('/print-job-cost-calculations')) {
++      hits.costs += 1;
++      const pages = JSON.parse(body).line_items[0].page_count;
++      return res.end(JSON.stringify({ currency: 'USD', total_cost_excl_tax: '15.93', line_item_costs: [{ total_cost_excl_discounts: pages >= 300 ? '9.49' : '5.74' }], shipping_cost: { total_cost_excl_tax: '5.69' }, fulfillment_cost: { total_cost_excl_tax: '0.75' } }));
++    }
++    if (req.url.startsWith('/print-jobs')) { hits.jobs += 1; res.statusCode = 500; return res.end('{}'); }
++    res.statusCode = 404; res.end('{}');
++  });
++});
++const stubPort = await freePort();
++await new Promise((r) => stub.listen(stubPort, '127.0.0.1', r));
++
++const D = fs.mkdtempSync(path.join(os.tmpdir(), 'publishing-'));
++const PORT = await freePort(), B = `http://127.0.0.1:${PORT}`;
++const env = { ...process.env, ASHRAM_PORT: String(PORT), COMMONS_DATA: D, LULU_API_URL: `http://127.0.0.1:${stubPort}`, LULU_CLIENT_KEY: 'stub', LULU_CLIENT_SECRET: 'stub' };
++delete env.COMMONS_PAYMENTS; delete env.STRIPE_SECRET_KEY; delete env.LULU_LIVE;
++const srv = spawn(process.execPath, [path.join(import.meta.dirname, '..', 'server.mjs')], { env, stdio: 'ignore' });
++test.after(() => { srv.kill(); stub.close(); });
++async function up() { for (let i = 0; i < 60; i++) { try { if ((await fetch(B + '/healthz')).ok) return; } catch { /* starting */ } await new Promise((r) => setTimeout(r, 250)); } throw new Error('server did not start'); }
++
++test('the Publishing Desk page is a Cohabi service, honest about test mode and the pending council decision', async () => {
++  await up();
++  const r = await fetch(B + '/label/publish'); assert.equal(r.status, 200);
++  const html = await r.text();
++  assert.match(html, /A COHABI COOPERATIVE SERVICE/, 'the service is the cooperative’s');
++  assert.ok(!/firedamm/i.test(html), 'no Firedamm CTA (Geoffrey, 2026-11-26)');
++  assert.match(html, /pending the cooperative council/i, 'prices labelled pending council');
++  assert.match(html, /publishing\.js\?v=/, 'the live calculator ships with a cache-busted asset');
++  assert.match(html, /planned — not built yet/i, 'future tools are labelled planned, never implied live');
++});
++
++test('the quote is read-only cost math: real split out, junk refused, zero print jobs created', async () => {
++  await up();
++  const q = await (await fetch(B + '/api/publishing/quote?pages=300&bind=PB&level=MAIL')).json();
++  assert.equal(q.print_usd, 9.49); assert.equal(q.fulfillment_usd, 0.75); assert.equal(q.shipping_usd, 5.69);
++  assert.equal(q.total_usd, 15.93); assert.equal(q.pending_council, true);
++  assert.ok(q.floor_usd > q.print_usd + 0.75, 'the floor covers more than the landed cost');
++  assert.match(q.note, /no print job is created/i);
++  assert.equal((await fetch(B + '/api/publishing/quote?pages=10')).status, 400, 'too few pages refused');
++  assert.equal((await fetch(B + '/api/publishing/quote?pages=200&bind=XX')).status, 400, 'unknown binding refused');
++  assert.equal((await fetch(B + '/api/publishing/quote?pages=200&level=DRONE')).status, 400, 'unknown shipping refused');
++  assert.ok(hits.costs >= 1, 'the cost endpoint was really asked');
++  assert.equal(hits.jobs, 0, 'NOTHING on this path can create a print job');
++});
++
++test('floor math: landed cost + proposed cut + processing, author never below $1.50, rounded to .99', async () => {
++  const f = await import('../lib/fulfillment.mjs');
++  assert.equal(f.bookPriceFloor(5.74), 9.99, 'PB150');
++  assert.equal(f.bookPriceFloor(18.18), 23.99, 'HC300');
++  assert.throws(() => f.bookPriceFloor(0), /real print cost/);
++  const price = f.bookPriceFloor(5.74);
++  const keep = price - 5.74 - 0.75 - price * 0.10 - (price * 0.029 + 0.30);
++  assert.ok(keep >= 1.4, `at the floor the author still keeps ~$1.50 (got ${keep.toFixed(2)})`);
++});
