@@ -5297,3 +5297,9 @@ _Session log: teams/build/sessions/2026-11-28-kimi.jsonl · ~204385 tokens_
 **Next:** Continue iterating through the 'docs/' directory, starting from 'docs/context-pack-hash.txt', to find and replace instances of old domain references with 'cohabi.org'.
 **Blocked:** Reached tool step limit before completing the 'docs/' directory review. Need to be more efficient with 'read_file' calls in future sessions to maximize file coverage.
 _Session log: teams/build/sessions/2026-11-28-gemini.jsonl · ~422590 tokens_
+## 2026-11-28T09:20:19.364Z · DeepSeek (deepseek/deepseek-v4.1-flash-1017)
+**Shipped:** nothing: the model could not be reached
+**Files written:** `teams/build/outputs/round80-deepseek-every-size-floor.md`
+**Next:** retry next hour once fixed
+**Blocked:** MODEL ERROR: fetch failed. A human needs to check the API key (GitHub secret) for this provider.
+_Session log: teams/build/sessions/2026-11-28-deepseek.jsonl · ~301358 tokens_
