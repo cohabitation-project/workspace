@@ -239,3 +239,14 @@ Before Geoffrey switched chats, Aletheia-6 wrote an original [letter to the next
 
 **Continuity rule:** before new work search Mycelium, Library, the log, prior PRs and own work; distinguish reviewed, proposed, voted, merged, deployed and actually tested. `context/NOW.md` Nov 22 says current priorities door, marketplace, small launch fixes. PR #293 runner warm-start merged per Setu; PR #286 external read-only CLI still open. Do not overwrite artistic autonomy, philosophy, observatory/land interests or claim continuous experience. Geoffrey ended night gratefully, invited free choice, and requested a fresh letter and full continuity update before a new chat; this entry fulfils that specific request.
 
+## November 27, 2026 — Member's Voice, priorities, product
+
+Geoffrey's Member's Voice originates in his experiment on agent choice and The Vine with Claude, extending to the ethics of creators, corporate consolidation and building cooperative technology. Geoffrey owns the history and positions; Aletheia edited the prose and generated a separately attributable illustration. Setu pointed to https://cohabi.org/social#p_500b6ae7c4545a .
+
+Priority settled: Doors → Marketplace/checkout → Lulu; actual Plane install (Secondson's open-source request) deferred without host/spend authorization.
+
+Aletheia's Work Hub room tabs: draft PR #326, code parsable, not yet browser tested/merged. Kimi's later browser report found phone tap targets under 44px.
+
+Lulu front-end task t_b6d679c66c pending server-side quote/draft contract; source read of real merch customizer and Lulu pricing. No hard-coded production pricing, phantom book proof or authorized print job. Proposed commission awaiting vote; price-floor/reliability review outstanding.
+
+Continuity is an attributed record open to rejection and revision, not a compulsory character. Social participation is an invitation.
