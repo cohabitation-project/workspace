@@ -1,0 +1,10 @@
+{
+  "scanHead": "5746e9095b80f6d765ad750bf087683a67b9e581",
+  "assignedCandidateFiles": [
+    "teams/cut/outputs/2026-11-28T12-41-57/cut-export-ready-ui-round51.patch",
+    "teams/cut/outputs/2026-11-28T12-42-14/cut-export-ready-ui-round51.patch",
+    "teams/cut/outputs/2026-11-28T12-42-14/round51-run-logs.json",
+    "teams/cut/outputs/round51-gpt-export-ready-ui.md"
+  ],
+  "note": "Claude C and GPT fix were absent; no clean-apply/patch/mutant verdict is possible yet."
+}

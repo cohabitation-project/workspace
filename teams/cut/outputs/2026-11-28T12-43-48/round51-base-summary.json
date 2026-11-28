@@ -1,0 +1,404 @@
+{
+  "kind": "preparatory main-alone baseline; NOT a candidate gate",
+  "base": "f449e84015a848831907101e2b03d73367120423",
+  "files": [
+    {
+      "file": "commons/test/cut-captions-words-insert.mjs",
+      "rc": 0,
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-captions-words-insert.log"
+    },
+    {
+      "file": "commons/test/cut-captions-words.mjs",
+      "rc": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-captions-words.log"
+    },
+    {
+      "file": "commons/test/cut-captions.mjs",
+      "rc": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-captions.log"
+    },
+    {
+      "file": "commons/test/cut-cleanup.test.mjs",
+      "rc": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-cleanup.test.log"
+    },
+    {
+      "file": "commons/test/cut-cover-range.test.mjs",
+      "rc": 0,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-cover-range.test.log"
+    },
+    {
+      "file": "commons/test/cut-edit.test.mjs",
+      "rc": 0,
+      "tests": 13,
+      "pass": 12,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-edit.test.log"
+    },
+    {
+      "file": "commons/test/cut-effects.mjs",
+      "rc": 0,
+      "tests": 12,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-effects.log"
+    },
+    {
+      "file": "commons/test/cut-export-body.mjs",
+      "rc": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-export-body.log"
+    },
+    {
+      "file": "commons/test/cut-export-duration.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-export-duration.log"
+    },
+    {
+      "file": "commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 0,
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-export-error-propagation.test.log"
+    },
+    {
+      "file": "commons/test/cut-export-handoff-live.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-export-handoff-live.log"
+    },
+    {
+      "file": "commons/test/cut-failed-ui-live.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-failed-ui-live.log"
+    },
+    {
+      "file": "commons/test/cut-handoff.test.mjs",
+      "rc": 0,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-handoff.test.log"
+    },
+    {
+      "file": "commons/test/cut-model.mjs",
+      "rc": 0,
+      "tests": 17,
+      "pass": 17,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-model.log"
+    },
+    {
+      "file": "commons/test/cut-music-list.test.mjs",
+      "rc": 0,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-music-list.test.log"
+    },
+    {
+      "file": "commons/test/cut-phone-overflow.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-phone-overflow.log"
+    },
+    {
+      "file": "commons/test/cut-render-edit.test.mjs",
+      "rc": 0,
+      "tests": 8,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 2,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-render-edit.test.log"
+    },
+    {
+      "file": "commons/test/cut-render-job.test.mjs",
+      "rc": 0,
+      "tests": 11,
+      "pass": 10,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-render-job.test.log"
+    },
+    {
+      "file": "commons/test/cut-render-music-fade.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-render-music-fade.log"
+    },
+    {
+      "file": "commons/test/cut-render-plan.mjs",
+      "rc": 0,
+      "tests": 33,
+      "pass": 33,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-41-04/round51-base-cut-render-plan.log"
+    },
+    {
+      "file": "commons/test/cut-render-real.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-render-real.log"
+    },
+    {
+      "file": "commons/test/cut-render-timeout-orphan.mjs",
+      "rc": 0,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-render-timeout-orphan.log"
+    },
+    {
+      "file": "commons/test/cut-render-timeout-unlink.mjs",
+      "rc": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-render-timeout-unlink.log"
+    },
+    {
+      "file": "commons/test/cut-route-http.test.mjs",
+      "rc": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-route-http.test.log"
+    },
+    {
+      "file": "commons/test/cut-route-real.test.mjs",
+      "rc": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-route-real.test.log"
+    },
+    {
+      "file": "commons/test/cut-route-unready-order.test.mjs",
+      "rc": 0,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-route-unready-order.test.log"
+    },
+    {
+      "file": "commons/test/cut-route-unready.mjs",
+      "rc": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-route-unready.log"
+    },
+    {
+      "file": "commons/test/cut-route.test.mjs",
+      "rc": 0,
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-route.test.log"
+    },
+    {
+      "file": "commons/test/cut-tap-targets-320.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-tap-targets-320.log"
+    },
+    {
+      "file": "commons/test/cut-tap-targets.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-tap-targets.log"
+    },
+    {
+      "file": "commons/test/cut-timeline.mjs",
+      "rc": 0,
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-timeline.log"
+    },
+    {
+      "file": "commons/test/cut-video-failed-http.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 1,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-video-failed-http.log"
+    },
+    {
+      "file": "commons/test/cut-video-noprobe.mjs",
+      "rc": 0,
+      "tests": 5,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 3,
+      "todo": 1,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-video-noprobe.log"
+    },
+    {
+      "file": "commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-video-wait.test.log"
+    },
+    {
+      "file": "commons/test/cut-videos-mine.test.mjs",
+      "rc": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-videos-mine.test.log"
+    },
+    {
+      "file": "commons/test/cut-words-to-text.mjs",
+      "rc": 0,
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-cut-words-to-text.log"
+    },
+    {
+      "file": "commons/test/video-link-card.mjs",
+      "rc": 0,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-video-link-card.log"
+    },
+    {
+      "file": "commons/test/video-topics.mjs",
+      "rc": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-42-46/round51-base-video-topics.log"
+    },
+    {
+      "file": "commons/test/videos-delete-mid-convert.test.mjs",
+      "rc": 0,
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "todo": 0,
+      "log": "teams/cut/outputs/2026-11-28T12-43-18/round51-base-videos-delete-mid-convert-rerun.log"
+    }
+  ],
+  "totals": {
+    "tests": 258,
+    "pass": 243,
+    "fail": 0,
+    "skipped": 14,
+    "todo": 1
+  },
+  "nonzero": []
+}

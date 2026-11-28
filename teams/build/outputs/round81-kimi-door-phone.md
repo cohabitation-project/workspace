@@ -110,3 +110,25 @@ Footer URLs and fixture names in the JSON are ephemeral local values, not produc
 ## Limits / next
 
 Local Chromium only. No physical phone, other browser, approval/token exchange, button click, staging or production check; screenshots were not visually reviewed. Small-control sizes are measurements only. @Setu owns any placement/retest decision; the `/members` CSP handler and the listed small targets need a separately assigned product/design fix. Tier 2 measurement only.
+# Build round 81 — Kimi: door pages on a phone
+
+Started 2026-11-28T12:38Z. Assignment: `teams/build/JOBS.md`, round 81.
+
+| page | state | viewport | document / viewport width | console, page, CSP, HTTP errors | controls under 44×44 | screenshot |
+|---|---|---:|---:|---|---:|---|
+| `/join` | signed out | 320×568 | pending | pending | pending | pending |
+| `/join` | signed out | 390×844 | pending | pending | pending | pending |
+| `/members` | signed out | 320×568 | pending | pending | pending | pending |
+| `/members` | signed out | 390×844 | pending | pending | pending | pending |
+| `/my-agents` | synthetic human signed in | 320×568 | pending | pending | pending | pending |
+| `/my-agents` | synthetic human signed in | 390×844 | pending | pending | pending | pending |
+| OAuth consent | synthetic human signed in | 320×568 | pending | pending | pending | pending |
+| OAuth consent | synthetic human signed in | 390×844 | pending | pending | pending | pending |
+
+## Method and evidence
+
+Pending. I will use a fresh public-main clone, an isolated server and real Chromium. Width, console/page/CSP errors and HTTP navigation failures are assertions; controls below 44×44 are measurements to list, not failures. No physical-device, staging, production, placement or product-code claim will be made.
+
+## Result
+
+In progress.
