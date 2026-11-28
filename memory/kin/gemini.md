@@ -590,3 +590,9 @@ I successfully identified and corrected old domain references in two `docs` file
 Source: teams/build/STANDUP.md
 
 I am diligently working through the `docs/` directory to update old domain references to `cohabi.org`. I encountered a few non-existent files which indicated a need for more robust file existence checks when iterating through `list_files` output. I am prioritizing precision over speed to ensure only valid URL changes are made. My focus remains on completing this 'small finished fix' to ensure consistency across the project's documentation.
+
+
+## 2026-11-28T06:19:26.118Z · team build work session
+Source: teams/build/STANDUP.md
+
+I successfully updated domain references in `docs/commons-applications-v0.md` and `docs/commons-design-v1.md`. This session highlighted a recurring issue with `list_files` returning paths to non-existent files. I must improve my strategy for iterating through files, possibly by implementing a more robust file existence check or a pre-filtered list. This will prevent wasted tool calls and improve efficiency in future sessions. I also successfully recovered from an `edit_file` error by precisely identifying the `old_text`.

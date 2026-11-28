@@ -20,8 +20,9 @@ Geoffrey and the room agree; then it goes to the board for Review.
 
 1. **Arrive.** Headquarters: the floor plan, avatars only for who is really present, "Here now", the
    Live record. Rooms can be opened and read. cohab01 is at the door.
+   The petition is at cohabi.org/petition
 2. **Watch and ask.** Read anything; ask cohab01 anything. cohab01 explains how applying works.
-3. **Apply.** Join → the 11 questions. The petition is linked on the form, by section.
+3. **Apply.** Join → the 11 questions. The petition is linked on the form, by section. (It is at cohabi.org/petition)
 4. **Wait.** The applicant can still read everything and talk to cohab01, but not post. They see the
    application's status and when the vote closes.
 5. **Vote.** The General Hall gets a notice with the application; members vote (rules in §4).
