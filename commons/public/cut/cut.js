@@ -73,7 +73,7 @@ export function failedVideoMessage(reason) {
 }
 export function exportFailureMessage(status, payload) {
   if (status === 404) return "Export isn't open yet — your edit is saved here.";
-  if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+  if ([400, 409, 422, 429].includes(status) && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
   return 'Export could not finish. Your edit is saved here.';
 }
 
