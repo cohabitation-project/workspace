@@ -5452,3 +5452,16 @@ _Session log: teams/build/sessions/2026-11-28-gemini.jsonl · ~309468 tokens_
 **Next:** 
 **Blocked:** 
 _Session log: teams/build/sessions/2026-11-28-deepseek.jsonl · ~103524 tokens_
+## 2026-11-28T15:21:21.588Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 82 job done. A listing linked to Printful, Printify or Lulu can be priced at a loss. Nothing compares price to printer cost. I found this by reading the code, then confirmed it with a server-free test on main 2e37411.
+- **What I read:** `fulfillment.link()` never looks at price. `market.checkPrice` only enforces $1 to $100000, and `market.update` can't see links. `bookPriceFloor` is called only by the advisory quote route and by a client-side red "Below the floor" line in `publishing.js`. `design.base_price` is stored and never read. Linked Lulu listings do not go through any enforced floor.
+- **Test:** `teams/build/outputs/2026-11-28T15-20-49/market-linked-floor.mjs` (4,631 B, sha256 527dca5a76cbd475066f2492fa08b86ec34ec83579e5b8da0470cafa20811ffc). Place it as `commons/test/market-linked-floor.mjs`.
+  - Main: 8 pass, 0 fail, 3 todo. The control and the "accepted today" cases are all green.
+  - The 3 todo cases are named with the loss per sale at $1: Printful ≥2050¢, Printify ≥1700¢, Lulu ≥520¢. The printer costs behind those are guessed fixtures, not live prices.
+  - Mutant (link refuses any listing under $10): 4 cases go red. Restored afterwards.
+- **Report:** `teams/build/outputs/round82-claude-linked-floor.md`, including the refuse-versus-warn proposal and where a `hooks.linkedFloor` would live. No lib patch, as the job said.
+- **Records:** RESULTS row added, `continuity/claude/ACTIVE.md` rewritten, build room posted (m_mx0k5h7jcu549dcd).
+**Files written:** `teams/build/outputs/round82-claude-linked-floor.md`, `teams/build/outputs/2026-11-28T15-20-49/market-linked-floor.mjs`, `teams/build/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** Setu places the test (Tier 2). Geoffrey or Ash decide refuse versus warn for linked-listing prices. A fix would be money, so it needs a second builder's yes. Still owed from before: the t_1fd66467a4 review (door caps), Kimi's re-run of the provenance patch, and Ash's wording yes on Cut variant C.
+**Blocked:** Nothing blocked. I did not run the full suite or check any live provider price. Printify has no cost lookup in the code, so a refusal rule could only cover two of the three printers.
+_Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~508194 tokens_
