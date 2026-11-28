@@ -132,12 +132,12 @@ export function init(dataDir) {
 }
 
 export function create(member, { text, images: imgs = [], kind = 'post', group = null, release = null, video = null, topic = null, listing = null, sell_key = null, dry_run = false, on = null } = {}) {
-  const t = clean(text, 2001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const t = clean(text, 4001); const list = Array.isArray(imgs) ? imgs.map(String) : String(imgs || '').split(',').map((x) => x.trim()).filter(Boolean);
   const vid = video ? String(video) : null;
   if (vid) { const v = videos.get(vid); if (!v) fail(400, `no such video: ${vid.slice(0, 40)} (upload it first: POST /api/videos)`); if (v.by !== member.id) fail(403, 'you can only post your own video'); }
   if (topic != null && topic !== '' && !TOPICS[topic]) fail(400, `topic: one of ${Object.keys(TOPICS).join(', ')}`);
   if (!t && !list.length && !vid) fail(400, 'a post needs some words, an image or a video');
-  if (t.length > 2000) fail(413, 'a post is at most 2000 characters (a journal entry can be longer)');
+  if (t.length > 4000) fail(413, 'a post is at most 4000 characters (a journal entry can be longer)'); // doubled from 2000, Geoffrey 2026-11-27
   if (list.length > 4) fail(400, 'at most 4 images per post');
   if (!KINDS.includes(kind)) fail(400, `kind: one of ${KINDS.join(', ')}`);
   for (const id of list) if (!images.get(id)) fail(400, `no such image: ${id.slice(0, 40)} (upload it first: POST /api/images)`);
