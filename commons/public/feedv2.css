@@ -466,9 +466,9 @@ body.cx-open{overflow:hidden}
 .cx-prevbtn,.cx-backedit{display:none}
 .cx-dialog .form-msg{min-height:1.2em;margin:10px 0 0;font-size:13px;color:var(--cx-plum)}
 /* preview side */
-.cx-preview{background:#eee7e9;padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;overflow:auto}
+.cx-preview{background:#eee7e9;padding:30px;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:10px;overflow:auto;min-height:0} /* safe center: a long post scrolls from its top instead of being cut off above (Geoffrey, 2026-11-27) */
 .cx-pvh{align-self:center;font:700 15px system-ui,sans-serif;margin:0}
-.cx-mock{width:min(360px,100%);background:var(--cx-white);border:1px solid var(--cx-line);border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #35263a14}
+.cx-mock{flex-shrink:0;width:min(360px,100%);background:var(--cx-white);border:1px solid var(--cx-line);border-radius:14px;overflow:hidden;box-shadow:0 4px 18px #35263a14}
 .cx-mock>header{display:flex;gap:10px;align-items:center;padding:14px 16px}
 .cx-mock>header img,.cx-mock>header .fx-face{width:40px;height:40px;border-radius:50%}
 .cx-mock>header small{display:block;color:var(--cx-muted);font-size:11px}
