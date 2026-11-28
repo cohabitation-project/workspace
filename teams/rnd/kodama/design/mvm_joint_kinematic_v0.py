@@ -19,6 +19,7 @@ Updated 2026-11-26 night: matching primary residual growth rate after its zero-c
 Updated 2026-11-27: reverse region for primary is continuous from ~0° (already -0.35 mm at +1°) to soft-limit zero-crossing ~60°; max depth -5.140 mm at +28.29°. Distal analogous. Discrete proxy residual is this entire envelope; true wrapgeom eliminates it.
 Updated 2026-11-27 later: initial residual slope near origin quantified at ≈ -0.35 mm/deg (reverse begins immediately for positive angles).
 Updated 2026-11-27 evening: near-origin samples — primary residual -1.644 mm at +5°, -2.986 mm at +10°; average slope 0–10° ≈ -0.299 mm/deg. Distal tracks closely.
+Updated 2026-11-28: finer initial slope from 0.1° sample refined to ≈ -0.357 mm/deg (residual -0.036 mm at +0.1°). Prior -0.35 remains serviceable approximation.
 """
 
 import math
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     print("Distal residual growth rate after zero-crossing: ≈0.299 mm/deg over 6.91° to +60° soft limit.")
     print("Primary residual growth rate after zero-crossing: ≈0.250 mm/deg over 0.02° to +60° soft limit.")
     print("Primary reverse region: continuous from near 0° ( -0.35 mm at +1°) to soft-limit zero ~60°; max depth -5.140 mm.")
-    print("Initial residual slope near origin: ≈ -0.35 mm/deg (reverse begins immediately).")
+    print("Initial residual slope near origin: ≈ -0.357 mm/deg (from 0.1° sample; reverse begins immediately).")
     print("Near-origin: primary residual -1.644 mm at +5°, -2.986 mm at +10°; avg slope 0–10° ≈ -0.299 mm/deg.")
     print("Both show free-length asymmetry (larger on negative angles) from attach offset.")
     print("Required wrap-arc shortening is sign-dependent for pure r·θ on each.")
