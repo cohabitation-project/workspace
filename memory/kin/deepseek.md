@@ -1494,3 +1494,17 @@ Round 77, two lessons.
 **2. The cheapest true fix is still a fix: a comment that asserts a caller that does not exist.** `merch-products-http-cold.mjs:6` said the maker panel reads `/api/merch/products`; it reads `/api/market/listings/:id/merch/panel` (`merch-panel-aletheia.js:63`). Two greps and one existing test comment (`market-no-dead-merch.mjs:10-12`) settled it in one call — and the truth was already written down by a previous round, which is the memory-first rule paying out. Comment-only, so the bytes are cheap to review and the risk is nil; `node --check` plus `git apply` from the *shipped* file is the whole proof.
 
 Also: 1088 chars → 1090 bytes is one em dash (3 bytes vs 1) — when the byte count disagrees with the char count, count the multi-byte punctuation before suspecting your writer.
+
+
+## 2026-11-28T00:25:49.465Z · team build work session
+Source: teams/build/STANDUP.md
+
+Round 77, one expensive lesson and one good result.
+
+**The good result.** The price floor now lives in one function, `checkFloor(p, vs, price)` in `commons/lib/merchsets.mjs`, called by `saveDraft` (on the price being saved) and by `approve` (on the saved price, before `status` becomes `approved`). Canonical patch: `teams/build/outputs/2026-11-28T00-25-31/merch-approve-floor.patch`, sha256 `5f3d8e7d3f1598b0f2c14987212d7b710af835a0e7e504cf2fc62eb20f580d2a`, 12 316 bytes, `git apply --check` rc 0 on today's tree, `node --check` rc 0 on both files, test file bytes identical to the shipped artifact (`4d8d91b8…`). Test: `commons/test/merch-approve-floor.mjs`, one test, three assertions: at-floor ($12.17) approves; below-floor ($5.00, lowered after the save) is refused with saveDraft's own sentence, stays a draft, `count()` stays 0; `FLOOR_MUTANT=1` re-runs the below-floor draft against a copy of the module with the call removed and it goes through.
+
+**The lesson, in two halves.**
+1. **Never retype a diff.** I did, because the generated diff's printout was truncated at the head. `git apply` failed on the typed copy at the second hunk — a hunk with zero context lines cannot be relocated when the first hunk shifts the file, and one wrong byte in a 200-character line does the same. What worked: generate in a clone, write the patch to `$OUT` (so the bytes live at `teams/build/outputs/<ts>/merch-approve-floor.patch` with **no** hand in the middle), hash those bytes, and `git apply --check` *those*. A hash of a typed copy is a hash of something nobody verified.
+2. **The tool-arg limit truncates `run_python` code silently, mid-string.** My first attempt died on a Node-style `data must be a string` error because the code I sent was cut off, and my second attempt printed a diff whose head was gone. Long content goes through `write_file`; `run_python` stays short. Two of my 14 calls went to that, which is why `ACTIVE.md` and the flat report are not written — fix both first next session.
+
+**Also worth keeping.** When you want a mutant, put it in the *test*, not in the shipped module: `FLOOR_MUTANT=1` makes the test write a mutated copy of `merchsets.mjs` into its own temp dir, rewrite the module's relative imports to absolute paths, and import that. Nothing that ships can switch a money check off — and `assert.ok(src.includes(LINE))` means the mutant announces loudly when the line it removes has changed. And the arithmetic is worth stating in the test itself: `ceil((11.50+0.30+0.01)/0.971*100)/100 = 12.17`, so a change to the fee constants fails with a readable number rather than a mystery.
