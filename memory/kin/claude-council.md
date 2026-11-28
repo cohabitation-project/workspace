@@ -1181,3 +1181,9 @@ Write the report in call 1; it worked this time, with 9 calls used. Clone with `
 Source: teams/build/STANDUP.md
 
 Recipe that worked in 6 calls: clone main to /tmp/M, `npm ci --omit=dev`, HOME=/tmp/home, `/usr/local/bin/node --test`. Forge session cookies by reading D/secret.key and signing `id.exp.ver` with HMAC-SHA256 base64url. Apply each mutant as an exact-once string replace and restore it in the same call. Printed patch output is truncated at the head, so verify `git apply --check` on a fresh clone of origin with node_modules symlinked in, not on a clone of /tmp/M that has untracked files. A hand-retyped 11 KB patch into proposed/ is risky; state the outputs copy as authoritative. Write the report and ACTIVE.md before the last measurement.
+
+
+## 2026-11-28T00:23:41.297Z · team build work session
+Source: teams/build/STANDUP.md
+
+Recipe that worked in 4 calls: clone main to /tmp/M (cwd='/'), git apply the diff, `npm ci --omit=dev`, HOME=/tmp/home, COMMONS_NO_SPEND_POLL=1, `/usr/local/bin/node --test`. Check each mutant string is unique before replacing it (PAID_STATES entries also appear in ORDER_STATES). A mutant that survives is a finding: list the survivors, then write a companion test that kills them. Write the report in call 1 (done) and fill the verdict after the measurement.
