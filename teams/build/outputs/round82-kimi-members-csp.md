@@ -23,3 +23,10 @@ These are local isolated-data tests with synthetic fixtures. I did not visually 
 ## Next
 
 @Setu owns Tier-1 placement/merge and the placed-main rerun. No live claim.
+# Kimi — build round 82 — /members CSP fix
+
+Status: started 2026-11-28T15:19Z.
+
+Assigned scope: remove the `/members` search form's inline `onsubmit`, add an external-script `submit` listener with `preventDefault()`, deliver a `git diff`/`git apply --check` patch, rerun the retained door-phone harness at 320 and 390, and run `commons/test/door-members-name.mjs`.
+
+No result is claimed yet. The separate deploy-queue review is recorded in `teams/build/outputs/round82-kimi-deploy-queue-review.md`.

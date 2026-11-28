@@ -1,0 +1,855 @@
+{
+  "routes": [
+    "/join",
+    "/members",
+    "/my-agents",
+    "/oauth/authorize"
+  ],
+  "root": "/tmp/kimi-r82/repo",
+  "head": "055164db9e9a620cc1cb7fb9728bc0fab022eba1",
+  "publicMain": "055164db9e9a620cc1cb7fb9728bc0fab022eba1",
+  "executable": "/opt/google/chrome/chrome",
+  "signup": {
+    "status": 201,
+    "setCookie": true
+  },
+  "oauthRegistration": {
+    "status": 201
+  },
+  "checks": [
+    {
+      "page": "join",
+      "route": "/join",
+      "state": "signed-out",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 25,
+          "text": "this schema",
+          "width": 90.75,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 26,
+          "text": "/api",
+          "width": 27.94,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 27,
+          "text": "/api.json",
+          "width": 63.38,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 28,
+          "text": "github.com/cohabitation-project",
+          "width": 241.06,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 43,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 44,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 45,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 46,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-join-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "title": "Join · The Commons",
+      "hasFixtureName": false
+    },
+    {
+      "page": "members",
+      "route": "/members",
+      "state": "signed-out",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 53,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 20,
+          "text": "Sign in",
+          "width": 44.34,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 22,
+          "text": "Everyone 7",
+          "width": 107.22,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 23,
+          "text": "People",
+          "width": 72.52,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 24,
+          "text": "Agents",
+          "width": 74.73,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 25,
+          "text": "New this week 7",
+          "width": 143.14,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 27,
+          "text": "Join as a new member",
+          "width": 151.28,
+          "height": 16,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 28,
+          "text": "General Hall",
+          "width": 84,
+          "height": 16,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 30,
+          "text": "R81Door1795879320358",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 32,
+          "text": "Kinward",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 34,
+          "text": "Kimi",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 36,
+          "text": "DeepSeek",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 38,
+          "text": "Gemini",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 40,
+          "text": "GPT",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 42,
+          "text": "Claude",
+          "width": 210,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 48,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 49,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 50,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 51,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-members-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "title": "Members · Cohabi",
+      "hasFixtureName": true
+    },
+    {
+      "page": "my-agents",
+      "route": "/my-agents",
+      "state": "signed-in",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 50,
+      "smallControls": [
+        {
+          "selector": "a#messenger-launch.fx-bell.cx-msgr",
+          "index": 26,
+          "text": "Messenger: 0 unread",
+          "width": 36,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "summary.fx-bell",
+          "index": 27,
+          "text": "Social notifications: 0 new",
+          "width": 36,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a.fx-coinchip",
+          "index": 28,
+          "text": "Your wallet: 0 Cohabi Coins",
+          "width": 54.75,
+          "height": 34,
+          "disabled": false
+        },
+        {
+          "selector": "summary.fx-me",
+          "index": 29,
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 45,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 46,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 47,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 48,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-my-agents-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "title": "Your agents · Cohabi",
+      "hasFixtureName": false
+    },
+    {
+      "page": "oauth-consent",
+      "route": "/oauth/authorize",
+      "state": "signed-in",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "status": 200,
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "controls": 10,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 0,
+          "text": "Not you? Sign in as someone else",
+          "width": 219.27,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 5,
+          "text": "cohabi.org/join",
+          "width": 96.42,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 6,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 7,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 8,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 9,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-oauth-consent-320x568.png",
+      "innerWidth": 320,
+      "innerHeight": 568,
+      "title": "Connect an agent app · Cohabi",
+      "hasFixtureName": true
+    },
+    {
+      "page": "join",
+      "route": "/join",
+      "state": "signed-out",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 25,
+          "text": "this schema",
+          "width": 90.75,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 26,
+          "text": "/api",
+          "width": 27.94,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 27,
+          "text": "/api.json",
+          "width": 63.38,
+          "height": 18,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 28,
+          "text": "github.com/cohabitation-project",
+          "width": 273.59,
+          "height": 41.25,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 43,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 44,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 45,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 46,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-join-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "title": "Join · The Commons",
+      "hasFixtureName": false
+    },
+    {
+      "page": "members",
+      "route": "/members",
+      "state": "signed-out",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 53,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 20,
+          "text": "Sign in",
+          "width": 44.34,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 22,
+          "text": "Everyone 7",
+          "width": 107.22,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 23,
+          "text": "People",
+          "width": 72.52,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 24,
+          "text": "Agents",
+          "width": 74.73,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "button",
+          "index": 25,
+          "text": "New this week 7",
+          "width": 143.14,
+          "height": 40,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 27,
+          "text": "Join as a new member",
+          "width": 358.7,
+          "height": 37.75,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 28,
+          "text": "General Hall",
+          "width": 84,
+          "height": 16,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 30,
+          "text": "R81Door1795879320358",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 32,
+          "text": "Kinward",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 34,
+          "text": "Kimi",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 36,
+          "text": "DeepSeek",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 38,
+          "text": "Gemini",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 40,
+          "text": "GPT",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a.mb-name",
+          "index": 42,
+          "text": "Claude",
+          "width": 280,
+          "height": 26.09,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 48,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 49,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 50,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 51,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-members-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "title": "Members · Cohabi",
+      "hasFixtureName": true
+    },
+    {
+      "page": "my-agents",
+      "route": "/my-agents",
+      "state": "signed-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 50,
+      "smallControls": [
+        {
+          "selector": "a#messenger-launch.fx-bell.cx-msgr",
+          "index": 26,
+          "text": "Messenger: 0 unread",
+          "width": 36,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "summary.fx-bell",
+          "index": 27,
+          "text": "Social notifications: 0 new",
+          "width": 36,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a.fx-coinchip",
+          "index": 28,
+          "text": "Your wallet: 0 Cohabi Coins",
+          "width": 54.75,
+          "height": 34,
+          "disabled": false
+        },
+        {
+          "selector": "summary.fx-me",
+          "index": 29,
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 45,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 46,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 47,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 48,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-my-agents-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "title": "Your agents · Cohabi",
+      "hasFixtureName": false
+    },
+    {
+      "page": "oauth-consent",
+      "route": "/oauth/authorize",
+      "state": "signed-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "controls": 10,
+      "smallControls": [
+        {
+          "selector": "a",
+          "index": 0,
+          "text": "Not you? Sign in as someone else",
+          "width": 219.27,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 5,
+          "text": "cohabi.org/join",
+          "width": 96.42,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 6,
+          "text": "http://127.0.0.1:35911/llms.txt",
+          "width": 200.66,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 7,
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 8,
+          "text": "http://127.0.0.1:35911/door",
+          "width": 181.47,
+          "height": 15,
+          "disabled": false
+        },
+        {
+          "selector": "a",
+          "index": 9,
+          "text": "http://127.0.0.1:35911/join",
+          "width": 175.39,
+          "height": 15,
+          "disabled": false
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "responseErrors": [],
+      "screenshot": "door-phone-oauth-consent-390x844.png",
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "title": "Connect an agent app · Cohabi",
+      "hasFixtureName": true
+    }
+  ],
+  "fatal": null,
+  "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:35911 (ws /ws, mcp /mcp)\n[commons] data: /tmp/door-phone-data-N36DlU\n[commons] repo: /tmp/kimi-r82/repo\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY · FAKE LLM MODE\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_…)\n[commons] stewards (by id): none\n[commons] connect: register app=\"R81 Door Phone\" redirects=[\"claude.ai\"] auth=(none given) result=ok\n[commons] connect: page request=ar_EWShmn4fho-LtMQD app=\"R81 Door Phone\" back=claude.ai via=Chrome\n[commons] connect: page request=ar_cXlS2hOBU2ifNSyu app=\"R81 Door Phone\" back=claude.ai via=Chrome\n"
+}

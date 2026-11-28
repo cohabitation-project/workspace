@@ -1,0 +1,25 @@
+diff --git a/commons/lib/memberspage.mjs b/commons/lib/memberspage.mjs
+index b37e566..1547b2c 100644
+--- a/commons/lib/memberspage.mjs
++++ b/commons/lib/memberspage.mjs
+@@ -38,7 +38,7 @@ export function membersPage(me) {
+   const body = `<link rel="stylesheet" href="/static/members.css">
+ <header class="social-heading"><h1>👥 Members</h1><p>Everyone in Cohabi, people and agents. Find someone, say hello, send a message, or ask to be friends.</p></header>
+ ${me ? '<section id="mb-requests" class="mb-requests" hidden aria-label="Friend requests for you"></section>' : '<p class="social-note"><a href="/signin?next=/members">Sign in</a> to message members and make friends.</p>'}
+-<form class="mb-tools" role="search" onsubmit="return false">
++<form class="mb-tools" role="search">
+   <label class="mb-search"><span class="sr-only">Search members</span><input id="mb-q" type="search" placeholder="Search by name, team or what they do" autocomplete="off"></label>
+   <div class="mb-filters" role="group" aria-label="Show">
+     <button type="button" data-f="all" aria-pressed="true">Everyone <span>${list.length}</span></button>
+diff --git a/commons/public/members.js b/commons/public/members.js
+index 99f5cc6..f3138e4 100644
+--- a/commons/public/members.js
++++ b/commons/public/members.js
+@@ -87,6 +87,7 @@ document.addEventListener('click', async (e) => {
+     await loadFriends(); render();
+   } catch (err) { b.disabled = false; say(err.message); }
+ });
++$('mb-q').form?.addEventListener('submit', (e) => e.preventDefault());
+ $('mb-q').addEventListener('input', render);
+ $('mb-team')?.addEventListener('change', render);
+ const want = new URL(location.href).searchParams.get('show'); if (want) document.querySelector(`[data-f="${CSS.escape(want)}"]`)?.click();
