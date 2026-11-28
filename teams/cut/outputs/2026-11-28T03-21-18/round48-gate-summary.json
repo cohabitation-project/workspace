@@ -1,0 +1,204 @@
+{
+  "main": "82d42a7f134de79ef367674904aa13dbc23c3a0c",
+  "main_commit_date": "2026-11-28T03:20:18Z",
+  "remote": "https://github.com/cohabitation-project/workspace.git",
+  "candidate_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+  "candidate_bytes": 7566,
+  "placed_path": "commons/test/cut-export-error-propagation.test.mjs",
+  "byte_for_byte": true,
+  "patch_sha256": "86bcbe3fab228fd51dc5e917dc5fb2eb47a0d2fb08e4dda71fe7bcf961e86045",
+  "git_apply_check_exit": 0,
+  "git_apply_exit": 0,
+  "node_version": "v24.22.3",
+  "runs": {
+    "main_red_alone": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 4,
+      "fail": 6,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-main-red-alone.tap"
+    },
+    "patched_green": {
+      "exit": 0,
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-patched-green.tap"
+    },
+    "M1-drop-409": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 6,
+      "fail": 4,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-M1-drop-409.tap"
+    },
+    "M2-drop-422": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 8,
+      "fail": 2,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-M2-drop-422.tap"
+    },
+    "M3-drop-429": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 8,
+      "fail": 2,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-M3-drop-429.tap"
+    },
+    "M4-add-500": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 8,
+      "fail": 2,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-M4-add-500.tap"
+    },
+    "M5-only-400": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 4,
+      "fail": 6,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-M5-only-400.tap"
+    },
+    "restored_main_red": {
+      "exit": 1,
+      "tests": 10,
+      "pass": 4,
+      "fail": 6,
+      "skipped": null,
+      "todo": 0,
+      "cancelled": 0,
+      "failures": [],
+      "tap": "teams/cut/outputs/2026-11-28T03-21-02/round48-restored-main-red.tap"
+    }
+  },
+  "route_errors": [
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 59,
+      "status": 400,
+      "expression": "\"send { videoId, edit }\"",
+      "source": "if (!body || typeof body !== \"object\" || Array.isArray(body)) return fail(400, \"send { videoId, edit }\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 61,
+      "status": 400,
+      "expression": "\"videoId is required\"",
+      "source": "if (!goodId(videoId)) return fail(400, \"videoId is required\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 62,
+      "status": 400,
+      "expression": "\"edit is required\"",
+      "source": "if (!edit || typeof edit !== \"object\" || Array.isArray(edit)) return fail(400, \"edit is required\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 63,
+      "status": 400,
+      "expression": "\"musicId must be a short text id\"",
+      "source": "if (body.musicId !== undefined && body.musicId !== null && !goodId(body.musicId)) return fail(400, \"musicId must be a short text id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 65,
+      "status": 400,
+      "expression": "\"music id must be a short text id\"",
+      "source": "if (musicId !== undefined && musicId !== null && !goodId(musicId)) return fail(400, \"music id must be a short text id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 68,
+      "status": 400,
+      "expression": "\"the edit asks for music but gives no music id\"",
+      "source": "if (wantsMusic && !musicId) return fail(400, \"the edit asks for music but gives no music id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 75,
+      "status": 409,
+      "expression": "\"This video could not be prepared. Upload it again.\"",
+      "source": "if (video.failed === true) return fail(409, \"This video could not be prepared. Upload it again.\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 76,
+      "status": 409,
+      "expression": "\"This video is still being prepared. Try again when it shows ready.\"",
+      "source": "if (video.ready === false) return fail(409, \"This video is still being prepared. Try again when it shows ready.\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 80,
+      "status": 400,
+      "expression": "\"music is not available on this server\"",
+      "source": "if (!deps.music || typeof deps.music.get !== \"function\") return fail(400, \"music is not available on this server\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 89,
+      "status": 429,
+      "expression": "\"one export at a time\"",
+      "source": "if (memberBusy.has(member.id)) return fail(429, \"one export at a time\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 90,
+      "status": 429,
+      "expression": "\"the editor is busy, try again in a minute\"",
+      "source": "if (active >= maxJobs) return fail(429, \"the editor is busy, try again in a minute\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 103,
+      "status": 422,
+      "expression": "\"could not read that video\"",
+      "source": "return fail(422, \"could not read that video\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 105,
+      "status": 422,
+      "expression": "\"could not read that video\"",
+      "source": "if (typeof hasAudio !== \"boolean\") return fail(422, \"could not read that video\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 124,
+      "status": 400,
+      "expression": "String(err.message || \"the edit was refused\")",
+      "source": "return fail(400, String(err.message || \"the edit was refused\"));"
+    }
+  ],
+  "raw_evidence_dir": "teams/cut/outputs/2026-11-28T03-21-02/"
+}

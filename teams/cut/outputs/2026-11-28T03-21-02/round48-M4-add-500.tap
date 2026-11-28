@@ -1,0 +1,59 @@
+✔ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (1.092208ms)
+✖ client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.902682ms)
+✔ client: a 409/422 with no usable error falls back to the generic sentence, not "undefined" or blank (0.269536ms)
+✔ chain: unready source -> 409 -> the maker reads "still being prepared" (0.553365ms)
+✔ chain: failed source -> 409 -> the maker reads "could not be prepared" (0.336628ms)
+✔ chain: probe throws -> 422 -> the maker reads "could not read that video"; the probe error text stays server-side (0.326022ms)
+✖ chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (0.4438ms)
+✔ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (5.564085ms)
+✔ click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.500695ms)
+✔ click: render answers 500 with no body -> the generic toast, button enabled again (0.51013ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 75.453411
+
+✖ failing tests:
+
+test at commons/test/cut-export-error-propagation.test.mjs:23:1
+✖ client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.902682ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ffmpeg: /var/x.mp4 exploded'
+  - 'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:24:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ffmpeg: /var/x.mp4 exploded',
+    expected: 'Export could not finish. Your edit is saved here.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:54:1
+✖ chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (0.4438ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'the render failed'
+  - 'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:56:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'the render failed',
+    expected: 'Export could not finish. Your edit is saved here.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

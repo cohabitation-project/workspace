@@ -1,0 +1,57 @@
+✖ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (1.74988ms)
+✔ client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.3114ms)
+✔ client: a 409/422 with no usable error falls back to the generic sentence, not "undefined" or blank (0.345742ms)
+✔ chain: unready source -> 409 -> the maker reads "still being prepared" (0.54975ms)
+✔ chain: failed source -> 409 -> the maker reads "could not be prepared" (0.439623ms)
+✔ chain: probe throws -> 422 -> the maker reads "could not read that video"; the probe error text stays server-side (0.317539ms)
+✔ chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (3.557989ms)
+✖ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (5.16332ms)
+✔ click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.598031ms)
+✔ click: render answers 500 with no body -> the generic toast, button enabled again (0.408176ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76.88759
+
+✖ failing tests:
+
+test at commons/test/cut-export-error-propagation.test.mjs:20:1
+✖ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (1.74988ms)
+  AssertionError [ERR_ASSERTION]: status 429
+  + actual - expected
+  
+  + 'Export could not finish. Your edit is saved here.'
+  - 'Plain sentence 429'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:21:48)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: 'Plain sentence 429',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:58:1
+✖ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (5.16332ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /one export at a time/. Input:
+  
+  'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:65:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: /one export at a time/,
+    operator: 'match',
+    diff: 'simple'
+  }

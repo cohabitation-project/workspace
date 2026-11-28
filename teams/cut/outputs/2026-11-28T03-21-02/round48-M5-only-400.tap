@@ -1,0 +1,129 @@
+✖ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (1.723229ms)
+✔ client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.320804ms)
+✔ client: a 409/422 with no usable error falls back to the generic sentence, not "undefined" or blank (0.248214ms)
+✖ chain: unready source -> 409 -> the maker reads "still being prepared" (0.640686ms)
+✖ chain: failed source -> 409 -> the maker reads "could not be prepared" (0.413964ms)
+✖ chain: probe throws -> 422 -> the maker reads "could not read that video"; the probe error text stays server-side (0.419973ms)
+✔ chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (3.652348ms)
+✖ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (6.110116ms)
+✖ click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.696869ms)
+✔ click: render answers 500 with no body -> the generic toast, button enabled again (0.464731ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 4
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.726503
+
+✖ failing tests:
+
+test at commons/test/cut-export-error-propagation.test.mjs:20:1
+✖ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (1.723229ms)
+  AssertionError [ERR_ASSERTION]: status 409
+  + actual - expected
+  
+  + 'Export could not finish. Your edit is saved here.'
+  - 'Plain sentence 409'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:21:48)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: 'Plain sentence 409',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:42:1
+✖ chain: unready source -> 409 -> the maker reads "still being prepared" (0.640686ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /still being prepared/. Input:
+  
+  'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:44:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: /still being prepared/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:46:1
+✖ chain: failed source -> 409 -> the maker reads "could not be prepared" (0.413964ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /could not be prepared/. Input:
+  
+  'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:48:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: /could not be prepared/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:50:1
+✖ chain: probe throws -> 422 -> the maker reads "could not read that video"; the probe error text stays server-side (0.419973ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Export could not finish. Your edit is saved here.'
+  - 'could not read that video'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:52:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: 'could not read that video',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:58:1
+✖ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (6.110116ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /one export at a time/. Input:
+  
+  'Export could not finish. Your edit is saved here.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:65:39)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: /one export at a time/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at commons/test/cut-export-error-propagation.test.mjs:90:1
+✖ click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.696869ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Export could not finish. Your edit is saved here.'
+  - 'This video is still being prepared. Try again when it shows ready.'
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-round48-032039/commons/test/cut-export-error-propagation.test.mjs:93:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Export could not finish. Your edit is saved here.',
+    expected: 'This video is still being prepared. Try again when it shows ready.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,238 @@
+{
+  "gate_utc": "2026-11-28T03:21:02.366455+00:00",
+  "remote": "https://github.com/cohabitation-project/workspace.git",
+  "main": "82d42a7f134de79ef367674904aa13dbc23c3a0c",
+  "main_commit_date": "2026-11-28T03:20:18Z",
+  "main_subject": "teams: work session 2026-11-28T03:20Z",
+  "candidate_path": "teams/cut/outputs/2026-11-28T00-23-17/cut-export-error-propagation.mjs",
+  "candidate_bytes": 7566,
+  "candidate_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+  "placed_path": "commons/test/cut-export-error-propagation.test.mjs",
+  "byte_for_byte": true,
+  "patch_path": "teams/cut/outputs/2026-11-28T00-23-17/exportFailureMessage-409.patch",
+  "patch_sha256": "86bcbe3fab228fd51dc5e917dc5fb2eb47a0d2fb08e4dda71fe7bcf961e86045",
+  "patch_diff_stat": "commons/public/cut/cut.js | 2 +-\n 1 file changed, 1 insertion(+), 1 deletion(-)",
+  "route_errors": [
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 59,
+      "status": 400,
+      "expression": "\"send { videoId, edit }\"",
+      "source": "if (!body || typeof body !== \"object\" || Array.isArray(body)) return fail(400, \"send { videoId, edit }\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 61,
+      "status": 400,
+      "expression": "\"videoId is required\"",
+      "source": "if (!goodId(videoId)) return fail(400, \"videoId is required\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 62,
+      "status": 400,
+      "expression": "\"edit is required\"",
+      "source": "if (!edit || typeof edit !== \"object\" || Array.isArray(edit)) return fail(400, \"edit is required\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 63,
+      "status": 400,
+      "expression": "\"musicId must be a short text id\"",
+      "source": "if (body.musicId !== undefined && body.musicId !== null && !goodId(body.musicId)) return fail(400, \"musicId must be a short text id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 65,
+      "status": 400,
+      "expression": "\"music id must be a short text id\"",
+      "source": "if (musicId !== undefined && musicId !== null && !goodId(musicId)) return fail(400, \"music id must be a short text id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 68,
+      "status": 400,
+      "expression": "\"the edit asks for music but gives no music id\"",
+      "source": "if (wantsMusic && !musicId) return fail(400, \"the edit asks for music but gives no music id\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 75,
+      "status": 409,
+      "expression": "\"This video could not be prepared. Upload it again.\"",
+      "source": "if (video.failed === true) return fail(409, \"This video could not be prepared. Upload it again.\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 76,
+      "status": 409,
+      "expression": "\"This video is still being prepared. Try again when it shows ready.\"",
+      "source": "if (video.ready === false) return fail(409, \"This video is still being prepared. Try again when it shows ready.\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 80,
+      "status": 400,
+      "expression": "\"music is not available on this server\"",
+      "source": "if (!deps.music || typeof deps.music.get !== \"function\") return fail(400, \"music is not available on this server\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 89,
+      "status": 429,
+      "expression": "\"one export at a time\"",
+      "source": "if (memberBusy.has(member.id)) return fail(429, \"one export at a time\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 90,
+      "status": 429,
+      "expression": "\"the editor is busy, try again in a minute\"",
+      "source": "if (active >= maxJobs) return fail(429, \"the editor is busy, try again in a minute\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 103,
+      "status": 422,
+      "expression": "\"could not read that video\"",
+      "source": "return fail(422, \"could not read that video\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 105,
+      "status": 422,
+      "expression": "\"could not read that video\"",
+      "source": "if (typeof hasAudio !== \"boolean\") return fail(422, \"could not read that video\");"
+    },
+    {
+      "file": "commons/lib/cut/route.mjs",
+      "line": 124,
+      "status": 400,
+      "expression": "String(err.message || \"the edit was refused\")",
+      "source": "return fail(400, String(err.message || \"the edit was refused\"));"
+    }
+  ],
+  "cut_js_refs_after_patch": [
+    {
+      "line": 74,
+      "source": "export function exportFailureMessage(status, payload) {"
+    },
+    {
+      "line": 75,
+      "source": "if (status === 404) return \"Export isn't open yet \u2014 your edit is saved here.\";"
+    },
+    {
+      "line": 76,
+      "source": "if ([400, 409, 422, 429].includes(status) && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;"
+    },
+    {
+      "line": 77,
+      "source": "return 'Export could not finish. Your edit is saved here.';"
+    },
+    {
+      "line": 350,
+      "source": "showToast(exportFailureMessage(response.status, payload));"
+    }
+  ],
+  "node_version": "v24.22.3",
+  "results": {
+    "main_red_alone": {
+      "label": "main-red-alone",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-main-red-alone.tap"
+    },
+    "git_apply_check": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "git_apply": {
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "patched_green": {
+      "label": "patched-green",
+      "exit": 0,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-patched-green.tap"
+    },
+    "M1-drop-409": {
+      "label": "M1-drop-409",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-M1-drop-409.tap"
+    },
+    "M2-drop-422": {
+      "label": "M2-drop-422",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-M2-drop-422.tap"
+    },
+    "M3-drop-429": {
+      "label": "M3-drop-429",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-M3-drop-429.tap"
+    },
+    "M4-add-500": {
+      "label": "M4-add-500",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-M4-add-500.tap"
+    },
+    "M5-only-400": {
+      "label": "M5-only-400",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-M5-only-400.tap"
+    },
+    "restored_main_red": {
+      "label": "restored-main-red",
+      "exit": 1,
+      "pass": null,
+      "fail": null,
+      "todo": null,
+      "skipped": null,
+      "placed_sha256": "0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033",
+      "failing_top_level": [],
+      "tap_file": "round48-restored-main-red.tap"
+    }
+  }
+}

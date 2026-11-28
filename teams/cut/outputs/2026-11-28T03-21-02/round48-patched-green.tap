@@ -1,0 +1,18 @@
+✔ client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (0.984456ms)
+✔ client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.241765ms)
+✔ client: a 409/422 with no usable error falls back to the generic sentence, not "undefined" or blank (0.234514ms)
+✔ chain: unready source -> 409 -> the maker reads "still being prepared" (0.521587ms)
+✔ chain: failed source -> 409 -> the maker reads "could not be prepared" (0.401236ms)
+✔ chain: probe throws -> 422 -> the maker reads "could not read that video"; the probe error text stays server-side (0.333864ms)
+✔ chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (0.270218ms)
+✔ chain: a second export from the same member while one runs -> 429 -> the maker reads "one export at a time" (4.239387ms)
+✔ click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.486002ms)
+✔ click: render answers 500 with no body -> the generic toast, button enabled again (0.425402ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67.060041
