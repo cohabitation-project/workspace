@@ -1,0 +1,72 @@
+{
+  "base": "c4fc82e92023d664f0fe116595160444f49672c3",
+  "node": "v24.22.3",
+  "candidate_dir": "teams/cut/outputs/2026-11-28T03-19-23",
+  "patch_sha256": "1d365a9f3dacd0c5fe9bf6239fe6de9aaa0e9be5ffbaedd3278c14e48fe2024e",
+  "test_sha256": "8fbceb78661ec007c8c7c7db361f061bf6928323e4c27a1e1551a3e7d4f73321",
+  "exact_apply_check_rc": 1,
+  "exact_apply_check_stderr": "error: patch failed: commons/public/cut/cut.js:73\nerror: commons/public/cut/cut.js: patch does not apply\n",
+  "diagnostic_reject_apply_rc": 1,
+  "diagnostic_note": "Main already has the 409 hunk. --reject used only to measure the remaining UI hunks; this is NOT a clean application of the exact candidate.",
+  "mutant": {
+    "from": "exportButton.disabled = !sourceReady || exportInProgress;",
+    "to": "exportButton.disabled = exportInProgress;"
+  },
+  "runs": [
+    {
+      "label": "main-alone-correct-path",
+      "rc": 1,
+      "counts": {
+        "tests": 3,
+        "pass": 1,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "fail_markers": [
+        "\u2716 pending source keeps Export disabled; a later ready list row enables it (5.618341ms)",
+        "\u2716 failed source stays disabled and shows its server reason once (1.261724ms)",
+        "\u2716 failing tests:",
+        "\u2716 pending source keeps Export disabled; a later ready list row enables it (5.618341ms)",
+        "\u2716 failed source stays disabled and shows its server reason once (1.261724ms)"
+      ],
+      "log": "round49-main-alone-correct-path.tap"
+    },
+    {
+      "label": "diagnostic-remaining-hunks",
+      "rc": 0,
+      "counts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "fail_markers": [],
+      "log": "round49-diagnostic-remaining-hunks.tap"
+    },
+    {
+      "label": "diagnostic-readiness-disable-mutant",
+      "rc": 1,
+      "counts": {
+        "tests": 3,
+        "pass": 1,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "fail_markers": [
+        "\u2716 pending source keeps Export disabled; a later ready list row enables it (3.853793ms)",
+        "\u2716 failed source stays disabled and shows its server reason once (1.318893ms)",
+        "\u2716 failing tests:",
+        "\u2716 pending source keeps Export disabled; a later ready list row enables it (3.853793ms)",
+        "\u2716 failed source stays disabled and shows its server reason once (1.318893ms)"
+      ],
+      "log": "round49-diagnostic-readiness-disable-mutant.tap"
+    }
+  ],
+  "scope": "fresh public clone; candidate run at its native teams/cut/outputs path so its ../../../../ import resolves; fake DOM only; no browser/server/staging/production/ffmpeg"
+}

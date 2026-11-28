@@ -1,0 +1,11 @@
+✔ pending source keeps Export disabled; a later ready list row enables it (3.356476ms)
+✔ failed source stays disabled and shows its server reason once (0.821125ms)
+✔ 409 render response shows the server sentence once and keeps the draft screen (1.656374ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45.176143

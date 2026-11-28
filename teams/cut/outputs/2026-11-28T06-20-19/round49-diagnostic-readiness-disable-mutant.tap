@@ -1,0 +1,47 @@
+✖ pending source keeps Export disabled; a later ready list row enables it (3.853793ms)
+✖ failed source stays disabled and shows its server reason once (1.318893ms)
+✔ 409 render response shows the server sentence once and keeps the draft screen (1.918374ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 49.526169
+
+✖ failing tests:
+
+test at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:55:1
+✖ pending source keeps Export disabled; a later ready list row enables it (3.853793ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-r49-export-ready-correct-path-fqa24oba/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:59:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:70:1
+✖ failed source stays disabled and shows its server reason once (1.318893ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tmp/kimi-r49-export-ready-correct-path-fqa24oba/workspace/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:74:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
