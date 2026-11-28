@@ -103,6 +103,8 @@ for (const [provider, name, link] of PRINTERS) {
     fs.writeFileSync(path.join(D, 'payments', 'orders.jsonl'), [
       row(created(`ord_${provider}`, listing, `${name} print`)),
       row({ op: 'status', order: `ord_${provider}`, status: 'paid', ship_to: ship('3 Mill Lane') }),
+      // Round 81: "Sent to <printer>" now needs a printer record (the printer has the order). Without one the page says "Not sent".
+      row({ op: 'fulfillment', order: `ord_${provider}`, fulfillment: { provider, provider_order: `${provider}-1` } }),
     ].join('\n') + '\n');
 
     const checkout = await import('../lib/checkout.mjs'); checkout.init(D);

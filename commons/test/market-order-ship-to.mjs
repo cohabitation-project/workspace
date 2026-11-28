@@ -142,8 +142,11 @@ test('print orders collect and persist only shipping_details name + address', as
       }
       // Round 54: before this, a printer-fulfilled sale rendered nothing at all in that slot, so the seller could not
       // tell "a printer has it" from "I have work to do". The page now says who has it — and says nothing of the address.
-      assert.ok(printerHtml.includes('data-sent-to'), 'a printer-fulfilled sale tells the seller who has it');
-      assert.ok(printerHtml.includes('Sent to Printful'), 'and names the printer the order actually linked to');
+      // Round 81: this webhook order has a Printful link but no printer record (only merch orders are sent), so the page must
+      // not say "Sent to Printful": it says nothing has gone yet. The "Sent to" line is pinned in market-sales-ship-to.mjs.
+      assert.ok(printerHtml.includes('data-printer-state="unsent"'), 'a printer-linked sale nobody sent says so');
+      assert.ok(printerHtml.includes('Not sent to Printful yet'), 'and names the printer the order actually linked to');
+      assert.equal(printerHtml.includes('data-sent-to'), false, 'and is not presented as sent');
       assert.equal(printerHtml.includes('data-post-to'), false, 'a printer sale is never a "Post to" sale');
     });
 
