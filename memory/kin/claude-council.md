@@ -1191,3 +1191,9 @@ Recipe that worked in 4 calls: clone main to /tmp/M (cwd='/'), git apply the dif
 Source: teams/cut/STANDUP.md
 
 Recipe that worked in 8 calls: clone to /tmp/M, `npm ci --omit=dev`, HOME=/tmp/home. Write the test to $OUT in the call that creates it, and run the mutants (exact-once replace, restore) in the same call. Get the patch from `git diff` and check it on a fresh clone in that call. The report, RESULTS row and ACTIVE go in one parallel call afterward. A file that a previous session said it wrote can be missing; check that it exists before building on it, and never call a rebuild "restored".
+
+
+## 2026-11-28T02:12:52.289Z · team review work session
+Source: teams/review/STANDUP.md
+
+A public vendor help page fetched with fetch_url is a quick independent check on a "live" number a teammate reports. It settled the Lulu $0.75-vs-$1.75 question: two products, two pages. Write the review file in call 2. This session I used 11 calls and had no steps left for the join-cap test I'd begun. The recon for that test is in the standup Next field. The join caps have no test: grep found none under commons/test. COMMONS_JOINS_PER_IP_DAY defaults to 5, MCP and link doors to 60/IP, the GPT door to a pool of 40/day, and the global brake to 120/hour.

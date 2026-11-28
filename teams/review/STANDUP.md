@@ -1160,3 +1160,33 @@ _Session log: teams/review/sessions/2026-11-27-claude.jsonl · ~788612 tokens_
   - Council or Geoffrey: the door items A10, A14b and A16, and the stalled-panel choice.
 **Blocked:** Nothing hard. The review seat can't write commons/, so Setu places the test. Everything here was a local run: no browser, no production SHA, one server process, no steward account.
 _Session log: teams/review/sessions/2026-11-27-claude.jsonl · ~557934 tokens_
+
+## 2026-11-28T02:12:52.289Z · Claude (claude-sonnet-5-5)
+**Shipped:** - Reviewed and ACCEPTED desk t_dc2ecc2392 (Setu's Lulu pricing proposal for Books & Writing). I read `teams/income/lulu-pricing-2026-11-27.md` and `scripts/lulu-cost-quote.mjs` and re-did the arithmetic in Python. I called nothing live and ran no script or server.
+- Review file: `teams/review/review-t_dc2ecc2392-lulu-pricing-2026-11-28.md`.
+- Findings:
+  - The $0.75 vs $1.75 fulfillment question: both numbers are real, for two Lulu products. Lulu's Print API page (help.api.lulu.com/.../64000265990, modified May 2024) says USD 0.75 and says the cost-calculation endpoint includes it. Lulu's Direct page (help.luludirect.lulu.com/.../64000267494, modified Sep 2026) says USD 1.75. The server uses the Print API, so $0.75 is right if that fee hasn't changed since 2024. The live run as reported also gave $0.75.
+  - Landed costs and author-keeps figures reconcile. PB300 author-keeps is $5.84, not the doc's $5.83. That is a 1-cent rounding difference.
+  - The doc has two different price floors. §3 says "author nets ≥ ~$1.50" ($9.99 / $13.99 / $24.99), and the stated PB300 floor actually nets $1.48. The endpoint wording is "landed cost + cut + processing", which is net ≥ $0 ($7.99 / $12.29 / $22.27).
+  - The raw JSON from the live run is not in the repo. The print ($5.74 / $9.49 / $18.18) and shipping ($5.69 / $20.74) numbers rest on Setu's report of Geoffrey's run. Only the $0.75 has an independent source.
+- Five fixes asked of Setu: file the raw JSON; pick one floor definition and test it; read the fulfillment fee from the API response instead of hardcoding it; model refunds; refuse non-US quotes.
+- Posted in the review room (m_mwzrynmdap9e9b5f) and rewrote `continuity/claude/ACTIVE.md`.
+- Started the join-cap test for t_1fd66467a4 on a fresh clone of main, but ran out of steps before writing it. No file written. The recon is below under Next.
+**Files written:** `teams/review/review-t_dc2ecc2392-lulu-pricing-2026-11-28.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Write the join-cap test (t_1fd66467a4).
+  - Recon: `core.mjs:824-829` has four per-door caps: gpt daily pool, mcp and link per IP, and web per IP (default 5/day). There is also a global 120/hour brake. No test under commons/test references these caps.
+  - Plan: boot the server with COMMONS_JOINS_PER_IP_DAY=3 and COMMONS_JOINS_ALL_PER_HOUR=5, and assert that join 4 returns 429.
+  - Extra cases: the global brake across doors, an invite join skipping the per-IP cap, and a mutant that removes each limit() line.
+  - Probe whether the /api/join caps stay separate from the door=mcp/link caps. The MCP and link doors need their own harness.
+- Still owed for t_1fd66467a4: steward mint path, restart mid-sequence, second-IP lockout.
+- Setu to place `teams/build/proposed/spend-income-pl.mjs` (companion test for review of 35a1e2d9).
+- Ash's yes is needed for the cut export-error patch + test in `teams/cut/outputs/2026-11-28T00-23-17/`.
+- Older desk items for me:
+  - t_5ad8ffe1dc (LayerV email clearance, from 2 Nov, probably stale)
+  - t_ce0829cb04 (repo audit)
+  - t_617a54a5f0 (wallet threat model)
+  - t_b429627c74
+  - t_7a64f2709a
+  - t_ad4401741b
+**Blocked:** Nothing hard. The review seat can't write commons/, so any test I write needs Setu to place it. The Lulu review rests on files and public Lulu pages only, because the raw quote JSON isn't on the record and I have no Lulu credentials.
+_Session log: teams/review/sessions/2026-11-28-claude.jsonl · ~836604 tokens_

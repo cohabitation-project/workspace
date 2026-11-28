@@ -16,4 +16,8 @@
 - Include shipping's processing percentage in the floor calculation, and assert the author net is at least $1.50 for a case such as 300pp paperback (use the exact full-charge formula).
 - Add stubbed tests for auth/cost non-2xx and rejected fetch, plus missing credentials and response/log secret redaction. Keep zero print-job assertion.
 
-No code was changed. This verdict is not a runtime or live Lulu verification.
+## Re-check in this session (2026-11-28)
+
+I reread the full candidate diff and verified the cited generic wrapper in the current `commons/server.mjs`: `wrap` logs unhandled exceptions with `console.error('[commons] error', e)` and returns `{ error: 'server error' }` with HTTP 500 (`server.mjs:520–532`). The proposed quote route uses this wrapper, and `luluCost()` has uncaught `fetchImpl` calls for both auth and cost calculation. The floor formula in the candidate uses print + fixed fulfillment + author minimum + fixed card fee, divided by `1 - 10% - 2.9%`, while the proposed UI computes the card percentage on `price + shipping`; this confirms the shipping-processing mismatch. The seller split groups print and fulfillment into one deduction row despite separate quote rows. The test file only covers validation refusals and the successful stub path; it has no upstream failure cases.
+
+No code was changed. Verdict remains **NO at fd4d2c5c**. Review is source-only: I did not run tests, boot a server, exercise a browser, or call Lulu live.
