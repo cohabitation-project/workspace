@@ -18,7 +18,7 @@ test('missing income is said out loud, never drawn as $0', () => {
 });
 test("co-op income is the cut (fees + reserves), never sellers' gross", () => {
   assert.match(pane, /cohabi_fee_cents\)\|\|0\)\+\(Number\(inc\.reserves_cents/);
-  assert.match(pane, /sellers\\u2019 money, passed through/);
+  assert.match(pane, /sellers’ money, passed through/);
 });
 test('every line opens to show what built it, keyboard-reachable, 44px tall', () => {
   assert.match(pane, /setAttribute\('aria-expanded'/);
