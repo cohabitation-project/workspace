@@ -1,0 +1,45 @@
+{
+  "method": "synthetic git baseline created from supplied REPO snapshot; .git/package manifests absent, so this is not the required fresh public clone",
+  "candidate_sha256": "17866c513db450c7edf9cc74866cff142dbdd8861858c116e3d642f9dfe8eeb9",
+  "corrected_patch_sha256": "153984bcead12ecd20f22efffd7c178aada0cad2e9c12aff3576552bc7b99537",
+  "corrected_patch_bytes": 6199,
+  "corrected_patch_path": "/tmp/kin-py-n1iKkq/out/round52-export-ready-ui.patch",
+  "results": [
+    {
+      "check": "node --check commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "node --check commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "node --check teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "node --test commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 ready after two polls (1.921456ms)\n\u2714 failed returns the server reason, so Cut can show it and withhold \"Post it\" (0.175824ms)\n\u2714 only the asked-for id counts (another ready video does not end the wait) (0.185228ms)\n\u2714 a failed fetch or network error is retried, then times out; it never claims ready (0.27312ms)\n\u2714 export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (6.808639ms)\n\u2714 export flow: the upload response itself says failed -> same message, nothing to post (0.628324ms)\n\u2714 export flow: a video that becomes ready still offers Post it (the failure path did not break success) (0.759971ms)\n\u2714 export flow: failed with no reason from the poll -> the plain default sentence, once (0.590718ms)\n\u2714 export flow: failed on the upload answer with no reason -> the plain default sentence (0.510407ms)\n\u2714 failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.290006ms)\n\u2714 waitForVideo: failed with no reason resolves reason \"\" (the page supplies the default) (0.144838ms)\n\u2714 export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden (0.945691ms)\n\u2714 export save HTTP 500 with no response body: status fallback, Post box hidden (0.539ms)\n\u2139 tests 13\n\u2139 suites 0\n\u2139 pass 13\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 67.993383\n",
+      "stderr": ""
+    },
+    {
+      "check": "node --test commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 1,
+      "stdout": "node:internal/modules/esm/resolve:272\n    throw new ERR_MODULE_NOT_FOUND(\n          ^\n\nError [ERR_MODULE_NOT_FOUND]: Cannot find module '/tmp/r52-snapshot-u5m3vf3z/commons/lib/cut/route.mjs' imported from /tmp/r52-snapshot-u5m3vf3z/commons/test/cut-export-error-propagation.test.mjs\n    at finalizeResolution (node:internal/modules/esm/resolve:272:11)\n    at moduleResolve (node:internal/modules/esm/resolve:879:10)\n    at defaultResolve (node:internal/modules/esm/resolve:1006:11)\n    at #cachedDefaultResolve (node:internal/modules/esm/loader:705:20)\n    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:725:38)\n    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:763:56)\n    at #resolve (node:internal/modules/esm/loader:687:17)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:607:35)\n    at ModuleJob.syncLink (node:internal/modules/esm/module_job:276:33)\n    at ModuleJob.link (node:internal/modules/esm/module_job:381:17) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///tmp/r52-snapshot-u5m3vf3z/commons/lib/cut/route.mjs'\n}\n\nNode.js v24.22.3\n\u2716 commons/test/cut-export-error-propagation.test.mjs (34.214082ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 40.488709\n\n\u2716 failing tests:\n\ntest at commons/test/cut-export-error-propagation.test.mjs:1:1\n\u2716 commons/test/cut-export-error-propagation.test.mjs (34.214082ms)\n  'test failed'\n",
+      "stderr": ""
+    },
+    {
+      "check": "node --test teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 pending source keeps Export disabled; a later ready list row enables it (3.783625ms)\n\u2714 failed source stays disabled and shows its server reason once (1.680295ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.098901ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 52.833907\n",
+      "stderr": ""
+    }
+  ]
+}

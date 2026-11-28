@@ -1,0 +1,75 @@
+{
+  "candidate_sha256": "17866c513db450c7edf9cc74866cff142dbdd8861858c116e3d642f9dfe8eeb9",
+  "corrected_patch_sha256": "153984bcead12ecd20f22efffd7c178aada0cad2e9c12aff3576552bc7b99537",
+  "corrected_patch_bytes": 6199,
+  "corrected_patch_path": "/tmp/kin-py-V3P9cx/out/round52-export-ready-ui.patch",
+  "base": "synthetic git commit of supplied REPO snapshot; full repository history/remote unavailable",
+  "results": [
+    {
+      "check": "main-alone commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 ready after two polls (1.526494ms)\n\u2714 failed returns the server reason, so Cut can show it and withhold \"Post it\" (0.205298ms)\n\u2714 only the asked-for id counts (another ready video does not end the wait) (0.169635ms)\n\u2714 a failed fetch or network error is retried, then times out; it never claims ready (0.248374ms)\n\u2714 export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (1.616288ms)\n\u2714 export flow: the upload response itself says failed -> same message, nothing to post (0.436966ms)\n\u2714 export flow: a video that becomes ready still offers Post it (the failure path did not break success) (4.50661ms)\n\u2714 export flow: failed with no reason from the poll -> the plain default sentence, once (0.433531ms)\n\u2714 export flow: failed on the upload answer with no reason -> the plain default sentence (0.429325ms)\n\u2714 failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.244958ms)\n\u2714 waitForVideo: failed with no reason resolves reason \"\" (the page supplies the default) (0.150295ms)\n\u2714 export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden (0.232239ms)\n\u2714 export save HTTP 500 with no response body: status fallback, Post box hidden (0.324568ms)\n\u2139 tests 13\n\u2139 suites 0\n\u2139 pass 13\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 62.201084\n",
+      "stderr": ""
+    },
+    {
+      "check": "main-alone commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (0.933182ms)\n\u2714 client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.231207ms)\n\u2714 client: a 409/422 with no usable error falls back to the generic sentence, not \"undefined\" or blank (0.270506ms)\n\u2714 chain: unready source -> 409 -> the maker reads \"still being prepared\" (0.506651ms)\n\u2714 chain: failed source -> 409 -> the maker reads \"could not be prepared\" (0.309926ms)\n\u2714 chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side (0.350156ms)\n\u2714 chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (0.29972ms)\n\u2714 chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\" (4.068462ms)\n\u2714 click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.277049ms)\n\u2714 click: render answers 500 with no body -> the generic toast, button enabled again (0.382275ms)\n\u2139 tests 10\n\u2139 suites 0\n\u2139 pass 10\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 68.536797\n",
+      "stderr": ""
+    },
+    {
+      "check": "candidate apply-check",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "candidate apply",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --check commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --test commons/test/cut-video-wait.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 ready after two polls (1.506373ms)\n\u2714 failed returns the server reason, so Cut can show it and withhold \"Post it\" (0.175894ms)\n\u2714 only the asked-for id counts (another ready video does not end the wait) (0.189054ms)\n\u2714 a failed fetch or network error is retried, then times out; it never claims ready (0.244808ms)\n\u2714 export flow: upload says ready:false, own list says failed -> message shown, no Post link, no result box (6.438323ms)\n\u2714 export flow: the upload response itself says failed -> same message, nothing to post (0.586021ms)\n\u2714 export flow: a video that becomes ready still offers Post it (the failure path did not break success) (0.734534ms)\n\u2714 export flow: failed with no reason from the poll -> the plain default sentence, once (0.541593ms)\n\u2714 export flow: failed on the upload answer with no reason -> the plain default sentence (0.502175ms)\n\u2714 failedVideoMessage: reason alone, trimmed; blank or non-string gives the default (0.285148ms)\n\u2714 waitForVideo: failed with no reason resolves reason \"\" (the page supplies the default) (0.134351ms)\n\u2714 export save HTTP 500 with server error: exactly one Disk is full toast, Post box hidden (1.032631ms)\n\u2714 export save HTTP 500 with no response body: status fallback, Post box hidden (0.548604ms)\n\u2139 tests 13\n\u2139 suites 0\n\u2139 pass 13\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 61.816141\n",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --check commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --test commons/test/cut-export-error-propagation.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else (0.927955ms)\n\u2714 client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic (0.243035ms)\n\u2714 client: a 409/422 with no usable error falls back to the generic sentence, not \"undefined\" or blank (0.252109ms)\n\u2714 chain: unready source -> 409 -> the maker reads \"still being prepared\" (0.499731ms)\n\u2714 chain: failed source -> 409 -> the maker reads \"could not be prepared\" (0.318959ms)\n\u2714 chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side (0.34605ms)\n\u2714 chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown (0.264607ms)\n\u2714 chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\" (4.290355ms)\n\u2714 click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again (1.967205ms)\n\u2714 click: render answers 500 with no body -> the generic toast, button enabled again (0.739521ms)\n\u2139 tests 10\n\u2139 suites 0\n\u2139 pass 10\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 65.873816\n",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --check teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+      "rc": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "check": "patched node --test teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs",
+      "rc": 0,
+      "stdout": "\u2714 pending source keeps Export disabled; a later ready list row enables it (4.007671ms)\n\u2714 failed source stays disabled and shows its server reason once (1.864842ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.173803ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 53.271162\n",
+      "stderr": ""
+    },
+    {
+      "check": "readiness-disable mutant (expected tests fail)",
+      "rc": 1,
+      "stdout": "\u2716 pending source keeps Export disabled; a later ready list row enables it (4.522845ms)\n\u2716 failed source stays disabled and shows its server reason once (2.47595ms)\n\u2714 409 render response shows the server sentence once and keeps the draft screen (1.291881ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 2\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 56.29145\n\n\u2716 failing tests:\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:55:1\n\u2716 pending source keeps Export disabled; a later ready list row enables it (4.522845ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/r52-full-snapshot-s875xtgt/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:59:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n\ntest at teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:70:1\n\u2716 failed source stays disabled and shows its server reason once (2.47595ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (file:///tmp/r52-full-snapshot-s875xtgt/teams/cut/outputs/2026-11-28T03-19-23/cut-export-ready-ui.test.mjs:74:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n",
+      "stderr": ""
+    }
+  ]
+}
