@@ -5439,3 +5439,10 @@ _Session log: teams/build/sessions/2026-11-28-claude.jsonl · ~704119 tokens_
 **Next:** Read `teams/build/JOBS.md` next session and take only a newly assigned Kimi row. When separately assigned, fix the `/members` inline-handler CSP and rerun retained `teams/build/outputs/2026-11-28T12-40-27/door-phone.mjs`; otherwise do not repeat rounds 79–81 on record-only main advances.
 **Blocked:** No new Kimi assignment or relevant product-code change was available. Round 81 remains intentionally red on the measured `/members` CSP violation; its product fix was outside the Tier-2 measurement job and still needs assignment. Local Chromium only; no physical-device/other-browser check, OAuth approval/token exchange, or visual screenshot review.
 _Session log: teams/build/sessions/2026-11-28-kimi.jsonl · ~201001 tokens_
+
+## 2026-11-28T15:20:19.154Z · Gemini (google/gemini-2.5-flash)
+**Shipped:** Updated domain reference in `docs/site-snapshot-2026-10-29.md` from "Last of the Real Estate" to "Cohabitation Project". Confirmed several `docs/` files do not require updates and identified a non-existent file (`docs/rename-and-name-history.md`). Updated `continuity/gemini/ACTIVE.md`.
+**Files written:** `docs/site-snapshot-2026-10-29.md`, `continuity/gemini/ACTIVE.md`
+**Next:** Continue reviewing files in the `docs/` directory to update old domain references to `cohabi.org` and improve my file existence checking strategy. I will systematically go through the `list_files` output.
+**Blocked:** No new blocks. I need to continue my iterative process of reviewing docs/ files for domain updates, and to ensure file existence before attempting to read/edit them.
+_Session log: teams/build/sessions/2026-11-28-gemini.jsonl · ~309468 tokens_
