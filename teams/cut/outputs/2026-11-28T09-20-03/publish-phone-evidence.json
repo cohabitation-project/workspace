@@ -1,0 +1,277 @@
+{
+  "head": "2513b61108bc52961e6d98fc0dbff29a98fadfaa",
+  "base": "http://127.0.0.1:9760",
+  "chromium": "/usr/bin/chromium",
+  "checks": [
+    {
+      "state": "signed-out",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "badResponses": [],
+      "status": 200,
+      "url": "http://127.0.0.1:9760/label/publish",
+      "title": "Publish your book · Cohabi Market",
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "viewportWidth": 320,
+      "controlsMeasured": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19
+        },
+        {
+          "selector": "button[type=\"submit\"]",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19
+        },
+        {
+          "selector": "a:nth-of-type(1)",
+          "text": "http://127.0.0.1:9760/llms.txt",
+          "width": 192.38,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(2)",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(3)",
+          "text": "http://127.0.0.1:9760/door",
+          "width": 173.2,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(4)",
+          "text": "http://127.0.0.1:9760/join",
+          "width": 167.11,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "state": "signed-out",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "badResponses": [],
+      "status": 304,
+      "url": "http://127.0.0.1:9760/label/publish",
+      "title": "Publish your book · Cohabi Market",
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "viewportWidth": 390,
+      "controlsMeasured": 48,
+      "smallControls": [
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19
+        },
+        {
+          "selector": "button[type=\"submit\"]",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19
+        },
+        {
+          "selector": "a:nth-of-type(1)",
+          "text": "http://127.0.0.1:9760/llms.txt",
+          "width": 192.38,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(2)",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(3)",
+          "text": "http://127.0.0.1:9760/door",
+          "width": 173.2,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(4)",
+          "text": "http://127.0.0.1:9760/join",
+          "width": 167.11,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "state": "signed-in",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "badResponses": [],
+      "status": 200,
+      "url": "http://127.0.0.1:9760/label/publish",
+      "title": "Publish your book · Cohabi Market",
+      "documentWidth": 320,
+      "bodyWidth": 320,
+      "viewportWidth": 320,
+      "controlsMeasured": 70,
+      "smallControls": [
+        {
+          "selector": "summary.fx-me",
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44
+        },
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19
+        },
+        {
+          "selector": "button[type=\"submit\"]",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19
+        },
+        {
+          "selector": "a:nth-of-type(1)",
+          "text": "http://127.0.0.1:9760/llms.txt",
+          "width": 192.38,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(2)",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(3)",
+          "text": "http://127.0.0.1:9760/door",
+          "width": 173.2,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(4)",
+          "text": "http://127.0.0.1:9760/join",
+          "width": 167.11,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "state": "signed-in",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "cspErrors": [],
+      "badResponses": [],
+      "status": 304,
+      "url": "http://127.0.0.1:9760/label/publish",
+      "title": "Publish your book · Cohabi Market",
+      "documentWidth": 390,
+      "bodyWidth": 390,
+      "viewportWidth": 390,
+      "controlsMeasured": 70,
+      "smallControls": [
+        {
+          "selector": "summary.fx-me",
+          "text": "Your menu: profile and settings",
+          "width": 30,
+          "height": 44
+        },
+        {
+          "selector": "a",
+          "text": "Books & Writing",
+          "width": 127.95,
+          "height": 19
+        },
+        {
+          "selector": "button[type=\"submit\"]",
+          "text": "Get the live quote",
+          "width": 120.48,
+          "height": 21
+        },
+        {
+          "selector": "a",
+          "text": "Start your listing →",
+          "width": 172.8,
+          "height": 19
+        },
+        {
+          "selector": "a:nth-of-type(1)",
+          "text": "http://127.0.0.1:9760/llms.txt",
+          "width": 192.38,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(2)",
+          "text": "welcome & re-entry",
+          "width": 128.53,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(3)",
+          "text": "http://127.0.0.1:9760/door",
+          "width": 173.2,
+          "height": 15
+        },
+        {
+          "selector": "a:nth-of-type(4)",
+          "text": "http://127.0.0.1:9760/join",
+          "width": 167.11,
+          "height": 15
+        }
+      ]
+    }
+  ],
+  "failures": [
+    "signed-out 390: HTTP 304",
+    "signed-in 390: HTTP 304"
+  ],
+  "serverLog": "[mycelium-api] wired: /api/mycelium/search, /api/mycelium/brief, /api/mycelium/status\n[commons] listening on http://127.0.0.1:9760 (ws /ws, mcp /mcp)\n[commons] data: /tmp/cohabi-r80-publish-t5o6AC\n[commons] repo: /tmp/kimi-r80-publish\n[commons] Discord mirror: off (no webhook set)\n[commons] kin: Claude=NO KEY, GPT=NO KEY, Gemini=NO KEY, DeepSeek=NO KEY, Kimi=NO KEY, Kinward=NO KEY · hosted/door via OpenRouter: NO KEY\n[commons] COMMONS_STEWARDS: \"geoffrey\" ignored (list stewards by member id, h_…)\n[commons] stewards (by id): none\n",
+  "signup": {
+    "status": 201,
+    "setCookie": true,
+    "body": "{\"member\":{\"id\":\"h_mx078odl01a45b0e\",\"kind\":\"human\",\"name\":\"R80Human1795857589329\",\"model\":null,\"operator\":null,\"social_only\":true,\"operator_verified\":false,\"teams\":[],\"bio\":\"isolated round 80 browser fixture\",\"created\":\"2026-11-28T09:19:49.353Z\",\"door\":\"web\",\"kin\":false,\"retired\":false,\"headline\":\"\",\"skills\":[],\"rain\":false,\"look_page\":{\"theme\":\"forest\",\"accent\":\"gold\",\"font\":\"serif\",\"layout\":\"three\",\"banner\":null,\"portrait\":null},\"rain_style\":null,\"mood\":\"\",\"meet\":\"\",\"song\":null,\"links\":[],\"profile_kind\":\"personal\",\"kind_info\":{},\"top8\":[],\"custom_css\":false,\"face\":null},\"login_url\":\"[redacted test fixture]\",\"note\":\"Shown once. Anyone with this link can post as you.\"}"
+  }
+}
