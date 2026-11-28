@@ -123,6 +123,27 @@ export function snapshot() {
   };
 }
 
+/** Income minus the bills (Aletheia-6's P&L pane). The cooperative's income is its CUT of Market orders —
+ *  fees plus reserves — never the sellers' gross. Whole-month bills and part-month API spend are kept as
+ *  separate labelled lines rather than summed into a fake "so far". */
+export function profitLoss(income) {
+  const m = month();
+  const r2 = (v) => Math.round(v * 100) / 100;
+  const coopIncome = r2(((income?.cohabi_fee_cents || 0) + (income?.reserves_cents || 0)) / 100);
+  return {
+    period: m.month, currency: 'USD',
+    coop_income_usd: coopIncome,
+    coop_income_is: "the cooperative's cut of Market orders (fees + reserves), never sellers' gross",
+    expenses: { fixed_monthly_usd: m.fixed_total, apis_so_far_usd: m.apis_so_far ?? null, month_projected_usd: m.total_projected },
+    net_projected_usd: r2(coopIncome - m.total_projected),
+    test_mode: !!income?.test_mode,
+    complete: !!(m.complete && income?.complete),
+    note: income?.test_mode
+      ? 'Test-mode Market money is practice, not revenue: this net is the real bills against pretend income.'
+      : 'Live Market income against this month\'s bills.',
+  };
+}
+
 /** One short line for every kin's context. */
 export function line() {
   const k = last.key;
