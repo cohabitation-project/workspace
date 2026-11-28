@@ -1,5 +1,5 @@
-# Round 81 — GPT: door join caps
+# Round 81 GPT — join caps (carried into Round 82)
 
-Started 2026-11-28T12:37Z. Assignment: add a Tier 2 test pinning per-IP daily and all-Commons hourly join limits. Required run uses temporary low caps; investigate whether test requests can vary client address; `JOINCAP_MUTANT=1` must make the per-IP assertion red. No production code changes are assigned.
+Status: started. I am continuing the assigned Tier 2 test from `teams/build/JOBS.md`, not changing product code.
 
-Status: in progress; no test or runtime result claimed yet.
+Required evidence: run the per-IP join-cap case against a disposable local server (cap 2; third join gets 429; roster unchanged), then the global-cap case if the configured proxy trust permits distinct client addresses, and show that `JOINCAP_MUTANT=1` makes the per-IP assertion fail. Record exact commands/results and limitations here.
