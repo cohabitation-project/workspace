@@ -1,0 +1,181 @@
+diff --git a/commons/lib/cut/edit.mjs b/commons/lib/cut/edit.mjs
+index 701c49e..a5595e8 100644
+--- a/commons/lib/cut/edit.mjs
++++ b/commons/lib/cut/edit.mjs
+@@ -37,26 +37,30 @@ export const UI_FRAME_HEIGHT = 1920; // the frame height the phone's y offsets (
+ export const MIN_FONT_PX = 16;
+ export const WIDTH_FRACTION = 0.84;
+ 
++// Provenance for the render route (round 51): only a refusal made HERE, about the maker's own edit, is marked maker:true.
++// The route shows a marked refusal's message at 400 and nothing else's. Still a plain TypeError/RangeError, so instanceof holds.
++export function makerRefusal(Ctor, message) { return Object.assign(new Ctor(message), { maker: true }); }
++
+ const ticks = (sec) => Math.round(sec * TICKS_PER_SECOND);
+ 
+-function finite(name, v) {
+-	if (typeof v !== "number" || !Number.isFinite(v)) throw new TypeError(`${name} must be a finite number, got ${String(v)}`);
++function finite(name, v, maker = true) {
++	if (typeof v !== "number" || !Number.isFinite(v)) throw (maker ? makerRefusal : (C, m) => new C(m))(TypeError, `${name} must be a finite number, got ${String(v).slice(0, 40)}`);
+ 	return v;
+ }
+ 
+ function textElement(body, y, { durationTicks, width, height }) {
+-	if (typeof body !== "string") throw new TypeError("text.body must be a string");
+-	if (body.length > MAX_TEXT_CHARS) throw new RangeError(`text must be at most ${MAX_TEXT_CHARS} characters, got ${body.length}`);
+-	if (/[\u0000-\u001f\u007f\u2028\u2029]/.test(body)) throw new RangeError("text must be one line: no line breaks or control characters");
++	if (typeof body !== "string") throw makerRefusal(TypeError, "text.body must be a string");
++	if (body.length > MAX_TEXT_CHARS) throw makerRefusal(RangeError, `text must be at most ${MAX_TEXT_CHARS} characters, got ${body.length}`);
++	if (/[\u0000-\u001f\u007f\u2028\u2029]/.test(body)) throw makerRefusal(RangeError, "text must be one line: no line breaks or control characters");
+ 	const yOffset = finite("text.y", y ?? 0);
+ 	let px = Math.max(MIN_FONT_PX, Math.round(height * 0.04));
+ 	const maxWidth = width * WIDTH_FRACTION;
+ 	while (px > MIN_FONT_PX && estimateTextWidth(body, px) > maxWidth) px--;
+ 	const w = estimateTextWidth(body, px);
+-	if (w > maxWidth) throw new RangeError(`text is too long to fit on one line of a ${width}px frame at ${MIN_FONT_PX}px`);
++	if (w > maxWidth) throw makerRefusal(RangeError, `text is too long to fit on one line of a ${width}px frame at ${MIN_FONT_PX}px`);
+ 	const lh = Math.ceil(px * LINE_HEIGHT_FACTOR);
+ 	const centreY = height / 2 + (yOffset * height) / UI_FRAME_HEIGHT;
+-	if (centreY - lh / 2 < 0 || centreY + lh / 2 > height) throw new RangeError(`text at y offset ${yOffset} would leave the ${height}px frame`);
++	if (centreY - lh / 2 < 0 || centreY + lh / 2 > height) throw makerRefusal(RangeError, `text at y offset ${yOffset} would leave the ${height}px frame`);
+ 	return {
+ 		id: "cut-caption-1",
+ 		type: "text",
+@@ -76,19 +80,19 @@ function textElement(body, y, { durationTicks, width, height }) {
+ }
+ 
+ export function editToTracks(edit, { durationSec, width = 1080, height = 1920, videoSrc = "main-video", musicSrc } = {}) {
+-	if (!edit || typeof edit !== "object" || Array.isArray(edit)) throw new TypeError("edit must be an object");
+-	finite("durationSec", durationSec);
++	if (!edit || typeof edit !== "object" || Array.isArray(edit)) throw makerRefusal(TypeError, "edit must be an object");
++	finite("durationSec", durationSec, false); // the stored length: a server value, not the maker's
+ 	if (durationSec <= 0) throw new RangeError("durationSec must be greater than 0");
+ 	const trimStart = finite("trimStart", edit.trimStart);
+ 	const trimEnd = finite("trimEnd", edit.trimEnd);
+-	if (trimEnd <= trimStart) throw new RangeError(`trimEnd (${trimEnd}) must be greater than trimStart (${trimStart})`);
+-	if (trimStart < 0 || trimEnd > durationSec) throw new RangeError(`trim ${trimStart}..${trimEnd} must lie within 0..${durationSec} seconds of the video`);
++	if (trimEnd <= trimStart) throw makerRefusal(RangeError, `trimEnd (${trimEnd}) must be greater than trimStart (${trimStart})`);
++	if (trimStart < 0 || trimEnd > durationSec) throw makerRefusal(RangeError, `trim ${trimStart}..${trimEnd} must lie within 0..${durationSec} seconds of the video`);
+ 	const coverSec = finite("coverSec", edit.coverSec);
+-	if (coverSec < trimStart || coverSec > trimEnd) throw new RangeError(`coverSec ${coverSec} must lie inside the trimmed range ${trimStart}..${trimEnd}`);
++	if (coverSec < trimStart || coverSec > trimEnd) throw makerRefusal(RangeError, `coverSec ${coverSec} must lie inside the trimmed range ${trimStart}..${trimEnd}`);
+ 
+ 	const startTick = ticks(trimStart);
+ 	const durationTicks = ticks(trimEnd) - startTick;
+-	if (durationTicks < 1) throw new RangeError("the trimmed clip is shorter than one tick");
++	if (durationTicks < 1) throw makerRefusal(RangeError, "the trimmed clip is shorter than one tick");
+ 
+ 	const tracks = {
+ 		overlay: [],
+@@ -109,7 +113,7 @@ export function editToTracks(edit, { durationSec, width = 1080, height = 1920, v
+ 	};
+ 
+ 	if (edit.text !== undefined && edit.text !== null) {
+-		if (typeof edit.text !== "object" || Array.isArray(edit.text)) throw new TypeError("text must be an object { body, y }");
++		if (typeof edit.text !== "object" || Array.isArray(edit.text)) throw makerRefusal(TypeError, "text must be an object { body, y }");
+ 		// A blank body means "no text" (the page omits it, but a stray empty string must not draw an empty caption).
+ 		if (typeof edit.text.body === "string" && edit.text.body.trim() === "") {
+ 			// nothing to draw
+@@ -120,10 +124,10 @@ export function editToTracks(edit, { durationSec, width = 1080, height = 1920, v
+ 
+ 	if (edit.music !== undefined && edit.music !== null) {
+ 		const m = edit.music;
+-		if (typeof m !== "object" || Array.isArray(m)) throw new TypeError("music must be an object { id, volume }");
+-		if (typeof m.id !== "string" || m.id.length === 0) throw new TypeError("music.id must be a non-empty string");
++		if (typeof m !== "object" || Array.isArray(m)) throw makerRefusal(TypeError, "music must be an object { id, volume }");
++		if (typeof m.id !== "string" || m.id.length === 0) throw makerRefusal(TypeError, "music.id must be a non-empty string");
+ 		const volume = finite("music.volume", m.volume);
+-		if (volume < 0 || volume > 1) throw new RangeError(`music.volume must be from 0 to 1, got ${volume}`);
++		if (volume < 0 || volume > 1) throw makerRefusal(RangeError, `music.volume must be from 0 to 1, got ${volume}`);
+ 		tracks.audio.push({
+ 			id: "music",
+ 			type: "audio",
+diff --git a/commons/lib/cut/render-child.mjs b/commons/lib/cut/render-child.mjs
+index 6f43fcd..8944e9a 100644
+--- a/commons/lib/cut/render-child.mjs
++++ b/commons/lib/cut/render-child.mjs
+@@ -5,6 +5,6 @@ import { renderEditJob } from "./render-job.mjs";
+ process.once("message", (job) => {
+ 	let out;
+ 	try { out = { ok: true, result: renderEditJob(job) }; }
+-	catch (e) { out = { ok: false, name: String(e?.name || "Error"), message: String(e?.message || e) }; }
++	catch (e) { out = { ok: false, name: String(e?.name || "Error"), message: String(e?.message || e), maker: e?.maker === true }; }
+ 	process.send(out, () => process.exit(0));
+ });
+diff --git a/commons/lib/cut/render-job.mjs b/commons/lib/cut/render-job.mjs
+index a2d942c..05e427e 100644
+--- a/commons/lib/cut/render-job.mjs
++++ b/commons/lib/cut/render-job.mjs
+@@ -25,7 +25,7 @@ import { spawnSync } from "node:child_process";
+ import { randomBytes } from "node:crypto";
+ import { existsSync, statSync, unlinkSync } from "node:fs";
+ import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+-import { editToTracks } from "./edit.mjs";
++import { editToTracks, makerRefusal } from "./edit.mjs";
+ import { renderTimeline } from "./render-edit.mjs";
+ 
+ export const MAX_RENDER_SECONDS = 60;
+@@ -90,7 +90,7 @@ export function renderEditJob({
+ 	});
+ 
+ 	const seconds = edit.trimEnd - edit.trimStart;
+-	if (seconds > MAX_RENDER_SECONDS) throw new RangeError(`the trimmed video is ${seconds.toFixed(1)} s; the limit is ${MAX_RENDER_SECONDS} s`);
++	if (seconds > MAX_RENDER_SECONDS) throw makerRefusal(RangeError, `the trimmed video is ${seconds.toFixed(1)} s; the limit is ${MAX_RENDER_SECONDS} s`);
+ 
+ 	const sources = { [videoPath]: { hasAudio: video.hasAudio !== false, width: video.width, height: video.height } };
+ 	// The caller (forkRenderJob) may choose the name so it can delete the file if it has to kill this process.
+diff --git a/commons/lib/cut/route.mjs b/commons/lib/cut/route.mjs
+index c9350b0..8ccd413 100644
+--- a/commons/lib/cut/route.mjs
++++ b/commons/lib/cut/route.mjs
+@@ -16,10 +16,12 @@
+ //
+ // Answers:
+ //   200 { ok:true, url, seconds }
+-//   400 bad body / bad ids / the edit refused (the refusal's own message)
++//   400 bad body / bad ids / the edit refused: a refusal the maker's own edit caused (marked maker:true) shows its own message;
++//       any other refusal is REFUSED_TEXT, one fixed sentence, with the real text in deps.log
+ //   401 no member
+ //   403 the video (or music) is not yours
+ //   404 no such video / music
++//   409 the video failed or is still being prepared (fixed sentences)
+ //   422 the server could not read the video's audio
+ //   429 "one export at a time" (this member already has a render) | "the editor is busy, try again in a minute" (site cap)
+ //   500 "the render failed" (the ffmpeg text goes to deps.log only)
+@@ -36,6 +38,7 @@ import { renderEditJob } from "./render-job.mjs";
+ 
+ export const DEFAULT_MAX_JOBS = 2;
+ const MAX_ID_LEN = 200;
++export const REFUSED_TEXT = "That edit couldn't be rendered. Check the trim, text and music and try again; if it keeps failing, it's on our side.";
+ 
+ // Per-process counters. One map entry per member with a render running; `active` is the site-wide count.
+ const memberBusy = new Set();
+@@ -119,11 +122,14 @@ export async function handleCutRender({ member, body, deps } = {}) {
+ 		try {
+ 			res = await (typeof deps.renderJob === "function" ? deps.renderJob(job) : renderEditJob(job));
+ 		} catch (err) {
+-			// TypeError/RangeError are the job's own refusals (bad edit, bad file, too long): safe to show.
+-			if (err instanceof TypeError || err instanceof RangeError || (err && err.name === "RenderPlanError")) {
+-				return fail(400, String(err.message || "the edit was refused"));
++			// Provenance, not class. A refusal is shown only if edit.mjs / render-job.mjs marked it maker:true (a rule the maker's own edit broke);
++			// the mark crosses the render child (render-child.mjs -> wire.mjs). Every other TypeError/RangeError/RenderPlanError can carry server
++			// state (a path, outDir, a stored value, Node's own text), so it goes to deps.log and the maker gets one fixed sentence.
++			if (err && err.maker === true && (err instanceof TypeError || err instanceof RangeError) && typeof err.message === "string" && err.message.length > 0) {
++				return fail(400, err.message);
+ 			}
+ 			if (typeof deps.log === "function") deps.log(`cut render failed: ${err && err.message}`);
++			if (err instanceof TypeError || err instanceof RangeError || (err && err.name === "RenderPlanError")) return fail(400, REFUSED_TEXT);
+ 			return fail(500, "the render failed");
+ 		}
+ 		const url = typeof deps.publicUrl === "function" ? deps.publicUrl(res.outPath) : `/cut/${basename(res.outPath)}`;
+diff --git a/commons/lib/cut/wire.mjs b/commons/lib/cut/wire.mjs
+index 2dd91f7..c1a0404 100644
+--- a/commons/lib/cut/wire.mjs
++++ b/commons/lib/cut/wire.mjs
+@@ -80,6 +80,7 @@ export function forkRenderJob(job, { timeoutMs = 150000, child = new URL("./rend
+ 		p.once("message", (m) => {
+ 			if (m?.ok) return end(resolve, m.result);
+ 			const e = m?.name === "TypeError" ? new TypeError(m.message) : m?.name === "RangeError" ? new RangeError(m.message) : Object.assign(new Error(m?.message || "render failed"), { name: m?.name || "Error" });
++			if (m?.maker === true) e.maker = true; // provenance survives the fork: the route shows only marked refusals
+ 			end(reject, e);
+ 		});
+ 		p.once("error", (e) => end(reject, e));

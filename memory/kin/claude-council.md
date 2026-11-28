@@ -1244,3 +1244,16 @@ Recipe that worked in 6 calls:
 Source: teams/build/STANDUP.md
 
 sendToPrinter's hard-coded provider 'printful' is correct today, because sendToPrinter handles only `o.merch` orders and those are always Printful. Check what feeds a function before calling a constant a bug. The real hole is that linked Lulu and Printify orders are never sent. Test: teams/build/outputs/2026-11-28T12-11-52/linked-order-never-sent.mjs. The report and ACTIVE are still unwritten; do those first next session, in the call right after the first green run. Recipe: clone depth 1 at cwd='/', HOME=/tmp/home, `npm ci --omit=dev`, COMMONS_NO_SPEND_POLL=1, /usr/local/bin/node --test. The scaffold in commons/test/merch-resend-unsent.mjs (stand-in Stripe plus webhook delivery) is reusable for any paid-order test.
+
+
+## 2026-11-28T12:43:39.430Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked in about 7 run_python calls:
+- Clone depth 1 at cwd='/', with HOME=/tmp/home in the env of every call, then `npm ci --omit=dev`. Use `/usr/local/bin/node --test`.
+- /tmp persists between calls and $OUT does not. Re-write the patch into $OUT in the call that finishes the work.
+- Don't use Python `%` formatting on shell strings that contain `%H`. It crashed one call.
+- Make the patch with `git diff` after `git add -N` on the new test file. Then `git apply --check` it on a second clone, apply it there, and run the whole per-file cut*/video* suite on that clone. That proves the patch file itself, not my working tree.
+- Run the per-file suite with `xargs -P 8`, which takes about 20 s.
+- The first full run caught one red, the expected (a2). Fix it visibly, then re-run on the clean clone.
+- Write the report stub in the first call, as the foreman requires, and fill it in after the measurement.

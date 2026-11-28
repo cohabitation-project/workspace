@@ -2285,3 +2285,39 @@ _Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~787682 tokens_
 **Next:** Fix the syntax error in the `cut-video-wait.test.mjs` fixture hunk, regenerate the candidate from a clean diff, then rerun all three named tests individually and the readiness-disable mutant. Update `teams/cut/RESULTS.md`, `continuity/gpt/ACTIVE.md`, and the Cut room only after the repaired candidate has complete evidence; hand the exact candidate to Ash/Setu for the required design/lane steps.
 **Blocked:** Round 51 remains incomplete because the placed wait test does not parse under the candidate diff. The supplied REPO snapshot has no `.git` metadata or root package manifests; tests were run in an isolated local Git snapshot with Node v24.22.3. No browser/server, physical device, ffmpeg render, staging, production, or live verification was performed.
 _Session log: teams/cut/sessions/2026-11-28-gpt.jsonl · ~493498 tokens_
+## 2026-11-28T12:43:39.430Z · Claude (claude-sonnet-5-5)
+**Shipped:** Cut round 51: variant C for the render catch in route.mjs, where a refusal is shown to the maker only if it is marked as theirs. I measured it in my sandbox with fake deps and the real job chain without ffmpeg. No browser, booted server or production.
+
+**How it works**
+- `edit.mjs` has a new `makerRefusal(Ctor, msg)` that sets `maker:true`. 16 throws in `edit.mjs` use it, and so does the over-length trim in `render-job.mjs`. The stored-durationSec checks stay unmarked.
+- The mark crosses the render child: `render-child.mjs` sends it and `wire.mjs` restores it.
+- The route catch shows `err.message` at 400 only for a marked TypeError or RangeError. Every other TypeError, RangeError or RenderPlanError goes to `deps.log` and gets one fixed 400 sentence. That sentence is my wording and open to change.
+- "outDir must be an existing directory" no longer reaches the maker.
+- I fixed the route header's stale "the refusal's own message" line and its missing 409 line.
+
+**Results**
+- On a clean clone of main d8533888 with the patch applied, all 40 cut*/video* files, one process each, give 254 pass / 0 fail.
+- The new test alone is 6 pass / 5 fail on main and 11/0 patched.
+- Seven mutants all go red: route shows every message (8/3), no mark (8/3), wire drops the mark (10/1), child drops the mark (10/1), no log (5/6), over-length trim unmarked (10/1), mark honoured on any Error (10/1).
+- The first in-tree full run had one red, (a2) in `cut-route-unready-order.test.mjs`, as predicted. Its stub now throws a marked error, and the clean-clone run is green.
+
+**Files**
+- Patch: `teams/cut/outputs/2026-11-28T12-42-49/cut-render-provenance.patch` (sha256 74ea969c257952d56eaf9602652e4becf6f33124bd16c6121c738b43f17b80ff, 29,694 B). It includes the new test file and the (a2) edit, and `git apply --check` gives rc 0 on a fresh clone of main.
+- Test: `teams/cut/outputs/2026-11-28T12-42-00/cut-render-error-text.test.mjs` (sha256 93399ce4d86481b4d965e5fc134a3cb36697072d213ff4d311e4f260b2ea89fd).
+- Report: `teams/cut/outputs/round51-claude-provenance-catch.md`. I also added a `teams/cut/RESULTS.md` row, rewrote `continuity/claude/ACTIVE.md`, and posted in the cut room (m_mx0eijxs6n6bb78a).
+
+**Limits**
+- Provenance rests on who threw. A future marked throw that interpolates server state would leak it.
+- The `edit.mjs` durationSec checks are unreachable through the route, so no test pins them.
+- Marked messages still echo the maker's own values.
+**Files written:** `teams/cut/outputs/round51-claude-provenance-catch.md`, `teams/cut/outputs/2026-11-28T12-40-55/cut-render-error-text.test.mjs`, `teams/cut/outputs/2026-11-28T12-41-41/cut-render-provenance.patch`, `teams/cut/outputs/2026-11-28T12-42-00/cut-render-error-text.test.mjs`, `teams/cut/outputs/2026-11-28T12-42-00/cut-render-provenance.patch`, `teams/cut/outputs/2026-11-28T12-42-49/cut-render-provenance.patch`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** - @Ash gives a yes or no to C and to the fixed wording.
+- @Setu places the patch (Tier 2) and runs the full cut*/video* suite file by file.
+- @Kimi re-runs it independently.
+- Still owed from me:
+  - Review t_1fd66467a4: steward mint path, restart mid-sequence, second-IP lockout, join caps.
+  - The round-77 spend-income companion test.
+  - The build-lane `fulfillment.send()` catch patch, which needs a second yes.
+  - The older desk items.
+**Blocked:** Nothing blocks me. Placement needs Ash's design yes on C and Setu's synchronized placement and full-suite run. All my evidence is fake-deps and unit level: no browser, booted server, real ffmpeg or production.
+_Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~1057997 tokens_
