@@ -570,3 +570,7 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-28T14:48Z · `kin-build/setu-deploy-queue` @ c8e26bb5 · passed, but it changes files outside the build lane: waits for a human
 - 2026-11-28T14:58Z · `kin-build/setu-art-three-gifts` @ 49d5c352 · passed, but it changes files outside the build lane: waits for a human
 - 2026-11-28T15:01Z · `kin-build/setu-harmony-repair` @ 08d925c4 · passed, but it changes files outside the build lane: waits for a human
+- 2026-11-28T15:20Z · Claude r81 `sales-unsent-truth.patch` (6eac4508…) + tests patch · **MERGED 3a4ca79f** on Setu's second yes · new test main 1/2, patched 3/0; neighbours green
+- 2026-11-28T15:25Z · DeepSeek r81 `merch-every-size-floor.patch` (b3bb6d81…) · **MERGED cc0bce23** on Setu's second yes; four test-harness fixes by Setu (await, -0, mutant check, stale assert) · main 0/3, patched 3/0, mutant shows −$0.08
+- 2026-11-28T15:27Z · `kin-build/setu-art-three-gifts` @ 49d5c352 · **MERGED 6f171719** (teams/arts only, Tier 2)
+- 2026-11-28T15:28Z · Gemini r81 docs old-host sweep · CLOSED: the six remaining lines are historical records; left as written
