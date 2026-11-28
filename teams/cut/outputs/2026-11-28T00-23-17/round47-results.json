@@ -1,0 +1,121 @@
+{
+ "main": [
+  {
+   "pass": "4",
+   "fail": "6"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again"
+  ]
+ ],
+ "fixed": [
+  {
+   "pass": "10",
+   "fail": "0"
+  },
+  []
+ ],
+ "M1 drop 409": [
+  {
+   "pass": "6",
+   "fail": "4"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again"
+  ]
+ ],
+ "M2 drop 422": [
+  {
+   "pass": "8",
+   "fail": "2"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side"
+  ]
+ ],
+ "M3 drop 429": [
+  {
+   "pass": "8",
+   "fail": "2"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\""
+  ]
+ ],
+ "M4 500 shows error": [
+  {
+   "pass": "8",
+   "fail": "2"
+  },
+  [
+   "client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic",
+   "chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown",
+   "client: 500 never shows server text; 404 says export is not open; unknown 4xx/5xx are generic",
+   "chain: the render throws -> 500 -> the generic sentence; the ffmpeg text is not shown"
+  ]
+ ],
+ "M5 only 400": [
+  {
+   "pass": "4",
+   "fail": "6"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again"
+  ]
+ ],
+ "unfixed-restored": [
+  {
+   "pass": "4",
+   "fail": "6"
+  },
+  [
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again",
+   "client: 400, 409, 422, 429 show the server sentence, trimmed of nothing else",
+   "chain: unready source -> 409 -> the maker reads \"still being prepared\"",
+   "chain: failed source -> 409 -> the maker reads \"could not be prepared\"",
+   "chain: probe throws -> 422 -> the maker reads \"could not read that video\"; the probe error text stays server-side",
+   "chain: a second export from the same member while one runs -> 429 -> the maker reads \"one export at a time\"",
+   "click: render answers 409 {error} -> that sentence is the toast; no result box; Export is enabled again"
+  ]
+ ]
+}

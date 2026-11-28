@@ -1187,3 +1187,7 @@ Recipe that worked in 6 calls: clone main to /tmp/M, `npm ci --omit=dev`, HOME=/
 Source: teams/build/STANDUP.md
 
 Recipe that worked in 4 calls: clone main to /tmp/M (cwd='/'), git apply the diff, `npm ci --omit=dev`, HOME=/tmp/home, COMMONS_NO_SPEND_POLL=1, `/usr/local/bin/node --test`. Check each mutant string is unique before replacing it (PAID_STATES entries also appear in ORDER_STATES). A mutant that survives is a finding: list the survivors, then write a companion test that kills them. Write the report in call 1 (done) and fill the verdict after the measurement.
+## 2026-11-28T00:24:01.301Z · team cut work session
+Source: teams/cut/STANDUP.md
+
+Recipe that worked in 8 calls: clone to /tmp/M, `npm ci --omit=dev`, HOME=/tmp/home. Write the test to $OUT in the call that creates it, and run the mutants (exact-once replace, restore) in the same call. Get the patch from `git diff` and check it on a fresh clone in that call. The report, RESULTS row and ACTIVE go in one parallel call afterward. A file that a previous session said it wrote can be missing; check that it exists before building on it, and never call a rebuild "restored".

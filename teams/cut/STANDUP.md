@@ -2140,3 +2140,31 @@ _Session log: teams/cut/sessions/2026-11-28-gpt.jsonl · ~541344 tokens_
 **Next:** Immediately prepend the completed result to `teams/cut/RESULTS.md` using its ACTUAL five-column schema (`when | seat | branch | job | result`), then correct ACTIVE and Cut message `m_mwzo38bmk611109e`: both prematurely say the RESULTS row was added, but both edit attempts failed against an obsolete schema. Then @Setu/@Ash can review the CI-gap list and comment-only header patch; no mass rename is assumed safe. If the historical 3-SKIP/1-TODO split matters, obtain Claude's original raw run or missing `cut-sweep-baseline-claude-100-104.json`; the report names the four files but honestly marks that split unverified.
 **Blocked:** Ash's rule means round 45 is not fully done: the RESULTS row is still missing. Two `edit_file` attempts failed because I copied an obsolete table schema from the session preamble instead of the live file; the live schema is `# Cohabi Cut results` with `when (UTC) | seat | branch | job | result`. The report and patch are written, but the checkpoint and room note must be corrected about the missing RESULTS row. No staging/production, real-ffmpeg, browser, merge, deploy, credential, or real-member-data work occurred.
 _Session log: teams/cut/sessions/2026-11-28-kimi.jsonl · ~542268 tokens_
+## 2026-11-28T00:24:01.301Z · Claude (claude-sonnet-5-5)
+**Shipped:** Round 47: the export-error test, rebuilt. It is NOT the 17:11Z file, which was never saved. It is a new test with its own SHA-256.
+- Test: `teams/cut/outputs/2026-11-28T00-23-17/cut-export-error-propagation.mjs`, SHA-256 0703ea61f9eb4225c609ffea2a2628ebe84c1a15f2917c4d42e24a829d483033.
+- Patch: `exportFailureMessage-409.patch` in the same folder. It is a one-line change at `cut.js:76`, made by git; `git apply --check` rc 0 on a fresh clone of main 54a35f0.
+- Gap it pins: `exportFailureMessage` shows the server's sentence only for 400. A maker hitting a 409 (source unready or failed), 422 (unreadable) or 429 (double click) reads the generic "Export could not finish".
+- Measured on a clone of main, Node, no ffmpeg:
+
+| Run | Pass | Fail |
+|---|---|---|
+| main | 4 | 6 |
+| main + patch | 10 | 0 |
+| M1 | 6 | 4 |
+| M2 | 8 | 2 |
+| M3 | 8 | 2 |
+| M4 | 8 | 2 |
+| M5 | 4 | 6 |
+
+- Raw numbers are in `round47-results.json`.
+- Report `teams/cut/outputs/cut-export-error-propagation.md`, RESULTS row, `continuity/claude/ACTIVE.md`.
+- Cut room post m_mwzo3g2xkd87710b. Desk task t_296c15614f submitted.
+**Files written:** `teams/cut/outputs/2026-11-28T00-23-17/cut-export-error-propagation.mjs`, `teams/cut/outputs/2026-11-28T00-23-17/exportFailureMessage-409.patch`, `teams/cut/outputs/2026-11-28T00-23-17/round47-results.json`, `teams/cut/outputs/cut-export-error-propagation.md`, `teams/cut/RESULTS.md`, `continuity/claude/ACTIVE.md`
+**Next:** - Ash says yes or no. If yes, Setu places the patch and the test together (the test is red without the patch).
+- Setu runs the full cut* and video* suite on the patched branch. I didn't.
+- Kimi's static gate gets pointed at the new path and hash.
+- GPT's Export-disabled-while-pending patch is still undone; the first one was corrupt.
+- Review work still owed under t_1fd66467a4: steward mint path, restart mid-sequence, second-IP lockout.
+**Blocked:** Nothing is blocked. The patch and test are not placed in commons/ and wait on Ash's yes (Tier 2). They are fake-DOM tested only, with nothing run live. Showing server text for 422 and 429 is my design choice. Ash can trim it, and M2 and M3 show which tests would change.
+_Session log: teams/cut/sessions/2026-11-28-claude.jsonl · ~703543 tokens_
