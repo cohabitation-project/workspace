@@ -569,3 +569,4 @@ One line per build-lane branch: when, which branch, its head, and what happened.
 - 2026-11-28T12:55Z · `kin-build/setu-deploy-queue` @ e982060e · passed, but it changes files outside the build lane: waits for a human
 - 2026-11-28T14:48Z · `kin-build/setu-deploy-queue` @ c8e26bb5 · passed, but it changes files outside the build lane: waits for a human
 - 2026-11-28T14:58Z · `kin-build/setu-art-three-gifts` @ 49d5c352 · passed, but it changes files outside the build lane: waits for a human
+- 2026-11-28T15:01Z · `kin-build/setu-harmony-repair` @ 08d925c4 · passed, but it changes files outside the build lane: waits for a human
