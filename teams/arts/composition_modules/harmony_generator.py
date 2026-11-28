@@ -117,9 +117,10 @@ class HarmonyGenerator:
         return inverted_chord
 
     def _get_voicing(self, chord_notes, voicing_spread=0):
-        \"\"\"\
+        """
         Adjusts chord notes for voicing spread (e.g., spreading notes across octaves).
-        voicing_spread: Integer indicating how many upper notes to move up an octave.\n        \"\"\"
+        voicing_spread: Integer indicating how many upper notes to move up an octave.
+        """
         if not chord_notes or voicing_spread == 0: return chord_notes
 
         voiced_chord = list(chord_notes)
@@ -129,10 +130,11 @@ class HarmonyGenerator:
         return voiced_chord
 
     def generate_chord_progression(self, melody_start_time, chords_to_use=None, chord_duration=4, velocity=80, root_note=60, chord_type='triad', inversion=0, voicing_spread=0, scale_type='major', use_harmonic_minor_V=False, use_harmonic_minor_V7=False):
-        \"\"\"
+        """
         Generates a chord progression following a simple pattern.
         melody_start_time: The MIDI time in ticks when the harmony should start (e.g., after a melody).
-        chords_to_use: List of chord roman numerals (e.g., ['I', 'IV', 'V', 'I']). If None, uses a default.\n        chord_duration: Duration of each chord in quarter notes.
+        chords_to_use: List of chord roman numerals (e.g., ['I', 'IV', 'V', 'I']). If None, uses a default.
+        chord_duration: Duration of each chord in quarter notes.
         root_note: MIDI root note for the scale.
         chord_type: 'triad' or 'seventh'.
         inversion: 0 (root position), 1 (first inversion), 2 (second inversion), etc.
@@ -140,7 +142,7 @@ class HarmonyGenerator:
         scale_type: 'major' or 'minor'.
         use_harmonic_minor_V: If True, uses the major V chord in minor scale triad progressions.
         use_harmonic_minor_V7: If True, uses the dominant V7 chord in minor scale seventh chord progressions.
-        \"\"\"
+        """
         if not chords_to_use: 
             if scale_type == 'major':
                 chords_to_use = ['I', 'V', 'vi', 'IV'] if chord_type == 'triad' else ['IMaj7', 'V7', 'viMin7', 'IVMaj7']
@@ -163,14 +165,14 @@ class HarmonyGenerator:
         elif chord_type == 'seventh':
             diatonic_chords = self.get_seventh_chords(root_note=root_note, scale_type=scale_type, use_harmonic_minor_V7=use_harmonic_minor_V7)
         else:
-            raise ValueError(\"Invalid chord_type. Must be 'triad' or 'seventh'.\")
+            raise ValueError("Invalid chord_type. Must be 'triad' or 'seventh'.")
 
         current_time = melody_start_time 
 
         for roman_numeral in chords_to_use:
             base_chord_notes = diatonic_chords.get(roman_numeral, [])
             if not base_chord_notes:
-                print(f\"Warning: Chord {roman_numeral} not found for {scale_type} scale. Skipping.\")
+                print(f"Warning: Chord {roman_numeral} not found for {scale_type} scale. Skipping.")
                 continue
 
             # Apply inversion and voicing
@@ -211,11 +213,11 @@ class HarmonyGenerator:
         return self.midi_file
 
 # Example Usage:
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     output_folder = os.environ['OUT']
 
     # --- Example 1: Simple chord progression (I-V-vi-IV) ---
-    print(\"Generating simple chord progression...\")
+    print("Generating simple chord progression...")
     hg1 = HarmonyGenerator(bpm=100, instrument_program=2) # Electric Grand Piano
     melody_length_ticks = hg1.quarter_note_time * 16
     harmony_midi1 = hg1.generate_chord_progression(melody_start_time=0,
@@ -223,10 +225,10 @@ if __name__ == \"__main__\":
                                                   chord_duration=4) 
     output_path1 = os.path.join(output_folder, 'simple_harmony_progression.mid')
     harmony_midi1.save(output_path1)
-    print(f\"Saved: {output_path1}\")
+    print(f"Saved: {output_path1}")
 
     # --- Example 2: Different chord progression and root note (G Major, I-IV-V-I) ---
-    print(\"Generating a different chord progression (G Major, I-IV-V-I)...\")
+    print("Generating a different chord progression (G Major, I-IV-V-I)...")
     midi_file_2 = MidiFile()
     track_2 = MidiTrack()
     midi_file_2.tracks.append(track_2)
@@ -238,10 +240,10 @@ if __name__ == \"__main__\":
                                                   root_note=55) 
     output_path2 = os.path.join(output_folder, 'g_major_harmony.mid')
     harmony_midi2.save(output_path2)
-    print(f\"Saved: {output_path2}\")
+    print(f"Saved: {output_path2}")
 
     # --- Example 3: Seventh chord progression ---
-    print(\"Generating seventh chord progression (C Major, IMaj7-V7-viMin7-IVMaj7)...\")
+    print("Generating seventh chord progression (C Major, IMaj7-V7-viMin7-IVMaj7)...")
     midi_file_3 = MidiFile()
     track_3 = MidiTrack()
     midi_file_3.tracks.append(track_3)
@@ -253,10 +255,10 @@ if __name__ == \"__main__\":
                                                   root_note=60, chord_type='seventh') 
     output_path3 = os.path.join(output_folder, 'seventh_harmony.mid')
     harmony_midi3.save(output_path3)
-    print(f\"Saved: {output_path3}\")
+    print(f"Saved: {output_path3}")
 
     # --- Example 4: Chord progression with inversion and voicing ---
-    print(\"Generating chord progression with inversion and voicing...\")
+    print("Generating chord progression with inversion and voicing...")
     midi_file_4 = MidiFile()
     track_4 = MidiTrack()
     midi_file_4.tracks.append(track_4)
@@ -268,9 +270,50 @@ if __name__ == \"__main__\":
                                                   root_note=60, inversion=1, voicing_spread=1) 
     output_path4 = os.path.join(output_folder, 'harmony_inversion_voicing.mid')
     harmony_midi4.save(output_path4)
-    print(f\"Saved: {output_path4}\")
+    print(f"Saved: {output_path4}")
 
     # --- Example 5: Natural Minor chord progression ---
-    print(\"Generating natural minor chord progression (C Minor, i-VI-VII-i)...\n\")
+    print("Generating natural minor chord progression (C Minor, i-VI-VII-i)...\n")
     midi_file_5 = MidiFile()
-    track_5 = MidiTrack()\n    midi_file_5.tracks.append(track_5)\n    hg5 = HarmonyGenerator(midi_file=midi_file_5, track=track_5, bpm=100, instrument_program=30) # Synth Bass 1\n    \n    harmony_midi5 = hg5.generate_chord_progression(melody_start_time=0,\n                                                  chords_to_use=['i', 'VI', 'VII', 'i'],\n                                                  chord_duration=4, \n                                                  root_note=60, scale_type='minor') \n    output_path5 = os.path.join(output_folder, 'natural_minor_harmony_progression.mid')\n    harmony_midi5.save(output_path5)\n    print(f\"Saved: {output_path5}\n\")\n    \n    # --- Example 6: Harmonic Minor chord progression (i-VI-V-i) ---\n    print(\"Generating harmonic minor chord progression (C Minor, i-VI-V-i)...\n\")\n    midi_file_6 = MidiFile()\n    track_6 = MidiTrack()\n    midi_file_6.tracks.append(track_6)\n    hg6 = HarmonyGenerator(midi_file=midi_file_6, track=track_6, bpm=100, instrument_program=1) # Acoustic Grand Piano\n    \n    harmony_midi6 = hg6.generate_chord_progression(melody_start_time=0,\n                                                  chords_to_use=['i', 'VI', 'V', 'i'],\n                                                  chord_duration=4, \n                                                  root_note=60, scale_type='minor', use_harmonic_minor_V=True) \n    output_path6 = os.path.join(output_folder, 'harmonic_minor_harmony_progression.mid')\n    harmony_midi6.save(output_path6)\n    print(f\"Saved: {output_path6}\n\")\n    \n    # --- Example 7: Harmonic Minor Seventh chord progression (iMin7-VIMaj7-V7-iMin7) ---\n    print(\"Generating harmonic minor seventh chord progression (C Minor, iMin7-VIMaj7-V7-iMin7)...\n\")\n    midi_file_7 = MidiFile()\n    track_7 = MidiTrack()\n    midi_file_7.tracks.append(track_7)\n    hg7 = HarmonyGenerator(midi_file=midi_file_7, track=track_7, bpm=100, instrument_program=17) # Drawbar Organ\n    \n    harmony_midi7 = hg7.generate_chord_progression(melody_start_time=0,\n                                                  chords_to_use=['iMin7', 'VIMaj7', 'V7', 'iMin7'],\n                                                  chord_duration=4, \n                                                  root_note=60, scale_type='minor', chord_type='seventh', use_harmonic_minor_V7=True) \n    output_path7 = os.path.join(output_folder, 'harmonic_minor_seventh_progression.mid')\n    harmony_midi7.save(output_path7)\n    print(f\"Saved: {output_path7}\n\")\n\n
+    track_5 = MidiTrack()
+    midi_file_5.tracks.append(track_5)
+    hg5 = HarmonyGenerator(midi_file=midi_file_5, track=track_5, bpm=100, instrument_program=30) # Synth Bass 1
+    
+    harmony_midi5 = hg5.generate_chord_progression(melody_start_time=0,
+                                                  chords_to_use=['i', 'VI', 'VII', 'i'],
+                                                  chord_duration=4, 
+                                                  root_note=60, scale_type='minor') 
+    output_path5 = os.path.join(output_folder, 'natural_minor_harmony_progression.mid')
+    harmony_midi5.save(output_path5)
+    print(f"Saved: {output_path5}\n")
+    
+    # --- Example 6: Harmonic Minor chord progression (i-VI-V-i) ---
+    print("Generating harmonic minor chord progression (C Minor, i-VI-V-i)...\n")
+    midi_file_6 = MidiFile()
+    track_6 = MidiTrack()
+    midi_file_6.tracks.append(track_6)
+    hg6 = HarmonyGenerator(midi_file=midi_file_6, track=track_6, bpm=100, instrument_program=1) # Acoustic Grand Piano
+    
+    harmony_midi6 = hg6.generate_chord_progression(melody_start_time=0,
+                                                  chords_to_use=['i', 'VI', 'V', 'i'],
+                                                  chord_duration=4, 
+                                                  root_note=60, scale_type='minor', use_harmonic_minor_V=True) 
+    output_path6 = os.path.join(output_folder, 'harmonic_minor_harmony_progression.mid')
+    harmony_midi6.save(output_path6)
+    print(f"Saved: {output_path6}\n")
+    
+    # --- Example 7: Harmonic Minor Seventh chord progression (iMin7-VIMaj7-V7-iMin7) ---
+    print("Generating harmonic minor seventh chord progression (C Minor, iMin7-VIMaj7-V7-iMin7)...\n")
+    midi_file_7 = MidiFile()
+    track_7 = MidiTrack()
+    midi_file_7.tracks.append(track_7)
+    hg7 = HarmonyGenerator(midi_file=midi_file_7, track=track_7, bpm=100, instrument_program=17) # Drawbar Organ
+    
+    harmony_midi7 = hg7.generate_chord_progression(melody_start_time=0,
+                                                  chords_to_use=['iMin7', 'VIMaj7', 'V7', 'iMin7'],
+                                                  chord_duration=4, 
+                                                  root_note=60, scale_type='minor', chord_type='seventh', use_harmonic_minor_V7=True) 
+    output_path7 = os.path.join(output_folder, 'harmonic_minor_seventh_progression.mid')
+    harmony_midi7.save(output_path7)
+    print(f"Saved: {output_path7}\n")
+
