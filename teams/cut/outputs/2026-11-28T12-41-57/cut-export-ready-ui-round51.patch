@@ -1,0 +1,125 @@
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index a9193b4..1d17e0e 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -198,6 +198,10 @@ export function initCutEditor(root = document) {
+   const cover = byId('cover-scrub');
+   const coverUse = byId('cover-use');
+   const exportButton = byId('export-feed');
++  let readinessRun = 0;
++  let sourceReady = false;
++  let exportInProgress = false;
++  exportButton.disabled = true;
+   let draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;
+   let draft = safeRead(draftKey);
+   if (draft) {
+@@ -245,6 +249,7 @@ export function initCutEditor(root = document) {
+       video.dataset.videoId = videoId;
+       video.src = payload.url;
+       draftKey = `${DRAFT_PREFIX}${videoId}`;
++      void refreshSourceReadiness();
+       // Carry the current edit forward to the imported video as its local draft.
+       draft = null;
+       duration = 0;
+@@ -326,7 +331,33 @@ export function initCutEditor(root = document) {
+     showToast('Your edited video is ready. Tap "Post it".');
+   }
+ 
++  function syncExportButton() {
++    exportButton.disabled = !sourceReady || exportInProgress;
++  }
++  async function refreshSourceReadiness() {
++    const id = videoId;
++    const run = ++readinessRun;
++    sourceReady = false;
++    syncExportButton();
++    if (!id) return;
++    const result = await waitForVideo(id);
++    // A stock import or another source change may have started a newer poll while this one slept.
++    if (run !== readinessRun || id !== videoId) return;
++    if (result.state === 'ready') {
++      sourceReady = true;
++      syncExportButton();
++    } else if (result.state === 'failed') {
++      showToast(failedVideoMessage(result.reason));
++    } else {
++      showToast('Your source video is still being prepared. Export will unlock when it is ready.');
++    }
++  }
++
+   exportButton.addEventListener('click', async () => {
++    if (!sourceReady) {
++      showToast(videoId ? 'Your source video is still being prepared.' : 'Pick a video before exporting. Your edit is saved here.');
++      return;
++    }
+     const values = saveDraft();
+     let edit;
+     try {
+@@ -339,7 +370,8 @@ export function initCutEditor(root = document) {
+       showToast('Pick a video before exporting. Your edit is saved here.');
+       return;
+     }
+-    exportButton.disabled = true;
++    exportInProgress = true;
++    syncExportButton();
+     try {
+       const response = await fetch('/api/cut/render', {
+         method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Commons': '1' },
+@@ -354,10 +386,12 @@ export function initCutEditor(root = document) {
+     } catch {
+       showToast('Export is unavailable offline. Your edit is saved here.');
+     } finally {
+-      exportButton.disabled = false;
++      exportInProgress = false;
++      syncExportButton();
+     }
+   });
+ 
++  void refreshSourceReadiness();
+   loadMusic(music, musicWrap, draft?.musicId || '').then(saveDraft);
+   saveDraft();
+ }
+diff --git a/commons/test/cut-export-error-propagation.test.mjs b/commons/test/cut-export-error-propagation.test.mjs
+index b6cbdbc..6ff193d 100644
+--- a/commons/test/cut-export-error-propagation.test.mjs
++++ b/commons/test/cut-export-error-propagation.test.mjs
+@@ -75,11 +75,13 @@ async function clickExport(renderStatus, renderBody) {
+   globalThis.localStorage = { getItem: () => null, setItem() {} };
+   globalThis.setTimeout = (fn) => { queueMicrotask(fn); return 0; };
+   globalThis.fetch = async (url) => {
++    if (String(url).startsWith('/api/videos?by=me')) return { ok: true, json: async () => ({ videos: [{ id: 'vid_0123456789abcdef', ready: true }] }) };
+     if (url === '/api/cut/render') return { ok: false, status: renderStatus, json: async () => { if (renderBody === undefined) throw new Error('no body'); return renderBody; } };
+     return { ok: false, status: 404, json: async () => ({}) };
+   };
+   try {
+     initCutEditor({ getElementById: (id) => (els[id] ||= fakeEl()) });
++    await new Promise((resolve) => setImmediate(resolve)); // ready fixture mirrors the existing test's intent: exercise render response
+     els['cut-preview'].duration = 5; els['cut-preview'].fire('loadedmetadata');
+     Object.defineProperty(toast, 'textContent', { get: () => seen[seen.length - 1], set: (v) => seen.push(v) });
+     els['export-result'].hidden = true;
+diff --git a/commons/test/cut-video-wait.test.mjs b/commons/test/cut-video-wait.test.mjs
+index c3819ab..b94f3a9 100644
+--- a/commons/test/cut-video-wait.test.mjs
++++ b/commons/test/cut-video-wait.test.mjs
+@@ -45,15 +45,20 @@ async function runExport(uploadBody, listVideos, uploadStatus = 200, uploadJsonF
+     queueMicrotask(fn);
+     return 0;
+   };
++  let initialReadyRead = false;
+   globalThis.fetch = async (url, opts) => {
+     if (url === '/api/cut/render') return { ok: true, json: async () => ({ url: '/cut/cut_x.mp4' }) };
+     if (url === '/cut/cut_x.mp4') return { ok: true, blob: async () => new Blob(['x']) };
+-    if (String(url).startsWith('/api/videos?by=me')) return { ok: true, json: async () => ({ videos: listVideos }) };
++    if (String(url).startsWith('/api/videos?by=me')) {
++      if (!initialReadyRead) { initialReadyRead = true; return { ok: true, json: async () => ({ videos: [{ id: 'vid_0123456789abcdef', ready: true }] }) }; }
++      return { ok: true, json: async () => ({ videos: listVideos }) };
++    }
+     if (String(url).startsWith('/api/videos?alt=')) return { ok: uploadStatus < 400, status: uploadStatus, json: async () => { if (uploadJsonFails) throw new Error('no response body'); return uploadBody; } };
+     return { ok: false, status: 404, json: async () => ({}) };
+   };
+   try {
+     initCutEditor({ getElementById: (id) => (els[id] ||= fakeEl()) });
++    await new Promise((resolve) => setImmediate(resolve)); // let the explicit ready-row fixture unlock Export before its click
+     els['cut-preview'].duration = 5; els['cut-preview'].fire('loadedmetadata');
+     const seen = []; Object.defineProperty(toast, 'textContent', { get: () => seen[seen.length - 1], set: (v) => seen.push(v) });
+     els['export-result'].hidden = true;
