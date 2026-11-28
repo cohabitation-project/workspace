@@ -1,0 +1,89 @@
+diff --git a/commons/public/cut/cut.js b/commons/public/cut/cut.js
+index 63c6123..0adf88c 100644
+--- a/commons/public/cut/cut.js
++++ b/commons/public/cut/cut.js
+@@ -73,6 +73,7 @@ export function failedVideoMessage(reason) {
+ }
+ export function exportFailureMessage(status, payload) {
+   if (status === 404) return "Export isn't open yet — your edit is saved here.";
++  if (status === 409 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error.trim();
+   if (status === 400 && typeof payload?.error === 'string' && payload.error.trim()) return payload.error;
+   return 'Export could not finish. Your edit is saved here.';
+ }
+@@ -198,6 +199,10 @@ export function initCutEditor(root = document) {
+   const cover = byId('cover-scrub');
+   const coverUse = byId('cover-use');
+   const exportButton = byId('export-feed');
++  let readinessRun = 0;
++  let sourceReady = false;
++  let exportInProgress = false;
++  exportButton.disabled = true;
+   let draftKey = `${DRAFT_PREFIX}${videoId || 'unassigned'}`;
+   let draft = safeRead(draftKey);
+   if (draft) {
+@@ -245,6 +250,7 @@ export function initCutEditor(root = document) {
+       video.dataset.videoId = videoId;
+       video.src = payload.url;
+       draftKey = `${DRAFT_PREFIX}${videoId}`;
++      void refreshSourceReadiness();
+       // Carry the current edit forward to the imported video as its local draft.
+       draft = null;
+       duration = 0;
+@@ -326,7 +332,33 @@ export function initCutEditor(root = document) {
+     showToast('Your edited video is ready. Tap "Post it".');
+   }
+ 
++  function syncExportButton() {
++    exportButton.disabled = !sourceReady || exportInProgress;
++  }
++  async function refreshSourceReadiness() {
++    const id = videoId;
++    const run = ++readinessRun;
++    sourceReady = false;
++    syncExportButton();
++    if (!id) return;
++    const result = await waitForVideo(id);
++    // A stock import or another source change may have started a newer poll while this one slept.
++    if (run !== readinessRun || id !== videoId) return;
++    if (result.state === 'ready') {
++      sourceReady = true;
++      syncExportButton();
++    } else if (result.state === 'failed') {
++      showToast(failedVideoMessage(result.reason));
++    } else {
++      showToast('Your source video is still being prepared. Export will unlock when it is ready.');
++    }
++  }
++
+   exportButton.addEventListener('click', async () => {
++    if (!sourceReady) {
++      showToast(videoId ? 'Your source video is still being prepared.' : 'Pick a video before exporting. Your edit is saved here.');
++      return;
++    }
+     const values = saveDraft();
+     let edit;
+     try {
+@@ -339,7 +371,8 @@ export function initCutEditor(root = document) {
+       showToast('Pick a video before exporting. Your edit is saved here.');
+       return;
+     }
+-    exportButton.disabled = true;
++    exportInProgress = true;
++    syncExportButton();
+     try {
+       const response = await fetch('/api/cut/render', {
+         method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Commons': '1' },
+@@ -354,10 +387,12 @@ export function initCutEditor(root = document) {
+     } catch {
+       showToast('Export is unavailable offline. Your edit is saved here.');
+     } finally {
+-      exportButton.disabled = false;
++      exportInProgress = false;
++      syncExportButton();
+     }
+   });
+ 
++  void refreshSourceReadiness();
+   loadMusic(music, musicWrap, draft?.musicId || '').then(saveDraft);
+   saveDraft();
+ }
