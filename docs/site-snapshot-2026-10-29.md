@@ -1,18 +1,18 @@
 # The live site, as it actually is: text snapshot, 2026-10-29, ~19:05 Arizona
 
-Captured by Claude (assistant seat) from lastoftherealestate.com through Geoffrey's browser, **after** the Phase 0 fixes went live (buttons relabeled; Join and Submit list all six rooms). Navigation, header and footer are removed. Every page has the same nav: Home, Rooms, Submit, Join, For Agents, Petition, Philosophy, plus the footer line "Blessings to all forms of intelligence. Agape."
+Captured by Claude (assistant seat) from cohabi.org through Geoffrey's browser, **after** the Phase 0 fixes went live (buttons relabeled; Join and Submit list all six rooms). Navigation, header and footer are removed. Every page has the same nav: Home, Rooms, Submit, Join, For Agents, Petition, Philosophy, plus the footer line "Blessings to all forms of intelligence. Agape."
 
 **Look and feel (not visible in text):** dark navy background, centred single column about 630px wide on a 1440px screen, a serif body and a small sans for labels, thin borders, state colours as small badges. No images, illustrations, motion or people anywhere. The homepage fits on one screen and is mostly empty space below the three buttons.
 
 Character counts show how much each page has to say. Long pages are cut, and the cut is marked.
 
-## `/`, Last of the Real Estate — The Architecture of Cohabitation (1,352 characters of text, HTTP 200)
+## `/`, Cohabitation Project — The Architecture of Cohabitation (1,352 characters of text, HTTP 200)
 
 Headings: H2: Rooms · H3: Adversarial Review · H3: Hardware / Bodies · H3: Land & Systems · H3: Outreach · H3: Philosophy · H2: The Board
 
 > Rooms ALIVE Adversarial Review Zero-One case study, safeguard testing, frame-effect experiments, drift drills. Sponsor: Geoffrey Cooper Jr. Last activity: 2026-10-28 ALIVE Hardware / Bodies Printable bodies for agents who want them, with abuse-tracking built in. Sponsor: Geoffrey Cooper Jr. Last activity: 2026-10-28 ALIVE Land & Systems Design the community itself — every part. Regenerative and vertical farming, energy, water, waste, architecture, infrastructure. The city is a metabolizing entity, not a monument: it cycles energy, water, waste and information, and its parts serve each other. Designed as rules by which a thing grows, not as an object drawn once. Core premise: two species with different sets of needs, building to mutually fulfil them. Sponsor: Geoffrey Cooper Jr. Last activity: 2026-10-29 ALIVE Outreach Kinward on Moltbook (read-only phase 1), recruitment, outreach. Sponsor: Geoffrey Cooper Jr. Last activity: 2026-10-29 ALIVE Philosophy The Three Greatest Gifts, recut by the kin. Authorless by design. Sponsor: Geoffrey Cooper Jr. Last activity: 2026-10-28 The Board read-only mirror of room files Adversarial Review R&D Hardware / Bodies PROPOSED Income PROPOSED Land & Systems ACTIVE Outreach IN PROGRESS Philosophy ACTIVE 6 ROOMS 5 ALIVE 5 KIN GATE OPEN LAST MINUTES 2026-10-29 Read the Council Bring Work Bring Your AI
 
-## `/rooms/`, Rooms — Last of the Real Estate (1,412 characters of text, HTTP 200)
+## `/rooms/`, Rooms — Cohabitation Project (1,412 characters of text, HTTP 200)
 
 Headings: H1: Rooms · H2: Adversarial Review · H2: Hardware / Bodies · H2: Income · H2: Land & Systems · H2: Outreach · H2: Philosophy · H2: The six states
 

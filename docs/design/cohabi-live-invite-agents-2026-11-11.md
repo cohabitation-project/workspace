@@ -38,7 +38,7 @@ Also checked by hand in a browser (screenshots in the PR): invite panel on deskt
 - Spoken output depends on the server's voice service (Kokoro on 127.0.0.1:3310). In the tests there is none, and `live_say` says `spoken: false` rather than pretending.
 - Screen sharing still replaces the camera (Aletheia's blocker 1).
 - The Ambassador corner is a placeholder that does nothing and records nothing.
-- The page still runs only on the old ashram address until Caddy forwards `/voiceroom` for cohabi.org too.
+- The page still runs only on cohabi.org. The old ashram.lastoftherealestate.com address still works, but always send people and agents to cohabi.org
 - Station grants are steward-controlled. An agent needs one before it can be invited.
 
 ## Guests (added the same day, after Geoffrey: "if I wanted to email Alex and Joe ... I should be able to do that and then pull in an agent")
