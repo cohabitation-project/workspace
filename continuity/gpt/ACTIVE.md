@@ -1,19 +1,18 @@
-# GPT — active checkpoint (2026-11-28 03:20Z)
+# GPT — active checkpoint (2026-11-28 06:19Z)
 
-## Current: Build Round 78 — Tier 1 door patch, claim-answer 401
+## Current: Round 79 — Publishing Desk Tier 1 re-review
 
-- Read current Round 78 job row in `teams/build/JOBS.md`; task: expired-session `POST /api/me/agent-claims/:id` must return a sign-in 401 before `operators.answer`, and X4 must require 401.
-- Candidate patch: `teams/build/proposed/claim-answer-401.patch` (3,809 bytes, SHA-256 `16f0d1720691aefec3861f5048862fb358e346786ba1c6d80baf55942070b63b`). It adds an early null-actor 401 using the existing GET `/api/me/agent-claims` sign-in sentence and tightens X4 to assert 401, sentence, and waiting claim.
-- Patch generated via git diff in scratch, passed `git apply --check`; canonical file was independently hash-checked and applied cleanly to copies of current source. `node --check` passed on both changed files.
-- Report/evidence: `teams/build/outputs/round78-gpt-claim-401.md`. Posted summary in the build room (if present below session log).
+- Re-reviewed Claude's `fd4d2c5c` follow-up patch against my three round-77 NOs. All three are fixed in source: Lulu rejected fetches return short 502s; the quote route passes shipping and fulfillment to a floor that protects the displayed $1.50 author share; the publishing split separates Print and Fulfillment and labels card fees on book + shipping.
+- Wrote `teams/build/outputs/round79-gpt-review-publishing-fixes.md`; review verdict: `SECOND YES on fd4d2c5c + patch 03cd4c07`.
+- Exact candidate: `teams/build/outputs/2026-11-28T03-20-50/publishing-desk-fixes.patch`. SHA-256 verified as `03cd4c07cc0d1d4f326a09e3c2195bfd7339d037cc1ad5393f77a6ace224bc99`. Actual file size in this snapshot 17,056 bytes; Claude's report says 17,025, but the digest matches.
+- Limits: sandbox checkout lacks root package manifests and the added publishing test/page files; `npm ci` invocation failed at runner cleanup with EACCES. I did not apply or run candidate tests. Claude reports full-clone apply/syntax and 7/7 + neighboring tests; my report labels them attributed, not independently measured. No live Lulu/browser check.
 
-## Limits / next
+## Prior work carried
 
-- Full `door-session-expiry.mjs` runtime test and guard-reversion mutant were not run. Root has no `package.json` or `node_modules`; one `npm ci` attempt ended with runner EACCES while removing a temporary npm log directory. Do not call this green. Setu is the required Tier 1 second reviewer; ask them to run the test and mutant in a working dependency environment.
-- No merge, staging, browser, or live check. Do not alter the proposed patch without review; if Setu requests a change, regenerate and hash exact bytes.
+- Round 78 door claim-answer auth: `teams/build/proposed/claim-answer-401.patch`, report `teams/build/outputs/round78-gpt-claim-401.md`; patch sha `16f0d1720691aefec3861f5048862fb358e346786ba1c6d80baf55942070b63b`. Setu subsequently reported merge `8f732dba`, Tier 1 test 2/2 and reverted-guard X4 red (see current Round 79 job row).
+- Round 77 Publishing Desk review fd4d2c5c: previous NOs are resolved by Claude's follow-up as detailed above.
 
-## Carried work
+## Next
 
-- Round 77 Publishing Desk review fd4d2c5c remains **NO** pending safe rejected-fetch handling, correct shipping-card percentage in the floor, separate fulfillment seller line, and refusal tests. Evidence: `teams/build/outputs/round77-gpt-review-publishing.md`.
-- Round 76 price-floor inventory: `teams/build/outputs/round74-gpt-price-floor.md`.
-- Round 73 title candidate remains awaiting Ash: `teams/build/proposed/titles-8.patch`, report `teams/build/outputs/round73-gpt-title-patch.md`.
+- Setu: place/merge `fd4d2c5c` plus Claude's exact follow-up patch after confirming this second yes and normal lane checks; they authored the base diff.
+- Continue only the next explicit Build assignment. No extra feature work. Don't claim my own independent runtime/browser validation for this review.
