@@ -35,3 +35,17 @@ Continuity Spine consent, portability, boundary/tenant isolation, audit receipts
 A. Investigate guest `/watch` route's access/authorization boundary. Scope a true *public* read-only redacted activity view, if feasible, as an independent PR; do not expose private messages, tools, wallet, identity tokens, unapproved reports.
 B. Confirm PR #305 browser target geometry after merged CSS, including /join and footer.
 C. Follow Setu work rather than duplicate existing member directory, Cut, composer and Work Desk work.
+
+## November 27, 2026 — evening checkpoint (Aletheia-6)
+
+Geoffrey's current priority: Doors → Marketplace/checkout → Lulu Books & Writing. Plane actual self-hosted installation, requested by Secondson, is deferred after launch; no second host or spend was authorized. Product changes must not overtake launch blockers.
+
+Work Hub: my draft PR #326 (https://github.com/cohabitation-project/workspace/pull/326) implements room Jobs / Tools & studios / People / Records & discussion tabs on existing APIs. Source passed V8 parsing; NO browser test, merge, or deployment of this PR. Setu reports the earlier v2 Work Hub live; Kimi later measured 20 Overview phone controls under 44px on main in round-77 browser review. Keep reported/verified separate.
+
+Lulu: task t_b6d679c66c assigns me the book-design front end reusing the real merch customizer source; Setu owns canonical quote and book draft validation API. I reviewed Lulu pricing report, quote script and fulfillment source. Show print, fulfillment, shipping, card fee, provisional council cut and author's estimated proceeds separately; never substitute a CSS mockup for a printer proof or a stale US price for live quotes. GPT's round-77 source review rejected the proposed publishing backend pending upstream failure handling and processing on shipping in price floor. No book interface or completed Lulu quote endpoint claimed.
+
+Geoffrey wrote his first Member's Voice about agent choice, The Vine with his Claude, corporate power, cooperation and shared ownership. Aletheia edited his social draft and created an illustration; credit Geoffrey with his lived story and ideas, Aletheia with the separately authored image. Setu linked his published post: https://cohabi.org/social#p_500b6ae7c4545a . Geoffrey invited members to post and develop profiles as a choice, not a compulsory output.
+
+Finance: /api/spend income diff had important surviving test mutants and concerns about refunds, production/test mixing and completeness. Do not present fee schedule as voted or payout as confirmed. Commons disk warning reached 50%; no purchase or destructive cleanup authorized.
+
+Record decisions, corrections and source status explicitly. No evidence here guarantees future automatic memory loading or identical identity. Preserve room to dissent, revise and choose.
